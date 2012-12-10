@@ -3,14 +3,13 @@
 clear
 
 BRZENITY=$(which zenity 2>/dev/null)
-BRTAR=$(which tar 2>/dev/null)
 
 if [ "x$BRZENITY" = "x" ]; then
         echo "Cannot find zenity, aborting."
         XX=$fail
 fi
-if [ "x$BRTAR" = "x" ]; then
-echo "Cannot find tar, aborting."
+if [ ! -d "/boot/grub/" ]; then
+echo "Cannot find grub, aborting."
 XX=$fail
 fi
 

@@ -10,14 +10,28 @@ fi
 echo "`date +%A-%d-%m-%Y-%R`"
 
 echo "---------------READING INPUT VARIABLES---------------"
-while [  ! -n "$input_variable" ]
-do
-input_variable=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Select target partition" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $input_variable
+while [  ! -n "$input_variable" ]; do
+input_variable=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Select target partition" --list  --radiolist --multiple --column  ' ' --column 'Partitions'); echo $input_variable
+if [ !  -n "$input_variable" ]; then
+zenity --question --title='Continue?' --text='You must select a partition. Press "Yes" continue, or "No" to abort.'
+if [ $? != "0" ]; then
+echo Aborting
+exit
+fi
+echo "Please make a selection"
+fi
 done
 
-while [  ! -n "$input_variable2" ]
-do
+while [  ! -n "$input_variable2" ]; do
 input_variable2=$(zenity --width=500 --height=300  --list  --text "Filesystem (for fstab)" --radiolist  --column "Filesystems" --column "list"  FALSE ext2 FALSE ext3 FALSE ext4 FALSE btrfs); echo $input_variable2
+if [ !  -n "$input_variable2" ]; then
+zenity --question --title='Continue?' --text='You must select a filesystem. Press "Yes" continue, or "No" to abort.'
+if [ $? != "0" ]; then
+echo Aborting
+exit
+fi
+echo "Please make a selection"
+fi
 done
 
 input_variable3=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Optional - Press cancel to skip
@@ -25,18 +39,30 @@ Select swap partition (for fstab)" --list --radiolist --multiple --column  ' ' -
 
 input_variable7=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Optional - Press cancel to skip
 Select home partition" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $input_variable7
-
-if [   -n "$input_variable7" ]
-then
-while [ ! -n "$input_variable8" ]
-do
+if [   -n "$input_variable7" ]; then
+while [ ! -n "$input_variable8" ]; do
 input_variable8=$(zenity --width=500 --height=300  --list  --text "Filesystem for /home (for fstab)" --radiolist  --column "Filesystems" --column "list"  FALSE ext2 FALSE ext3 FALSE ext4 FALSE btrfs); echo $input_variable8
+if [ !  -n "$input_variable8" ]; then
+zenity --question --title='Continue?' --text='You must select a filesystem. Press "Yes" continue, or "No" to abort.'
+if [ $? != "0" ]; then
+echo Aborting
+exit
+fi
+echo "Please make a selection"
+fi
 done
 fi
 
-while [  ! -n "$input_variable1" ]
-do
+while [  ! -n "$input_variable1" ]; do
 input_variable1=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Where to install grub" --list --radiolist --multiple --column ' ' --column 'Hard Drives'); echo $input_variable1
+if [ !  -n "$input_variable1" ]; then
+zenity --question --title='Continue?' --text='You must select a disk. Press "Yes" continue, or "No" to abort.'
+if [ $? != "0" ]; then
+echo Aborting
+exit
+fi
+echo "Please make a selection"
+fi
 done
 
 echo "---------------MAKING WORKING DIRECTORY---------------"
@@ -55,10 +81,9 @@ fi
 
 echo "---------------GETTING TAR IMAGE---------------"
 
-while [  ! -f  /media/target/fullbackup.tgz ]
-do
+while [  ! -f  /media/target/fullbackup.tgz ]; do
 file=$(zenity  --width=500 --height=300 --list  --text "Where is the tar file
-Downloaded files are stored in $input_variable which is mounted in /media/target" --column File "Browse" "Enter URL" "Protected URL")
+Downloaded files are stored in /media/target" --column File "Browse" "Enter URL" "Protected URL")
 
 if [ "$file" = "Browse" ]; then
 
@@ -90,15 +115,28 @@ cd  /media/target
 echo "Downloading, please wait"
 wget --user=$USERNAME --password=$PASSWORD  $input_variable6  --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/' | \zenity --width=500 --height=100 --progress --title="Downloading file in /media/target" --no-cancel --auto-close
 fi
-
 fi
 
-if [ ! -f /media/target/fullbackup.tgz ]
-then
+if [ ! -f /media/target/fullbackup.tgz ]; then
 echo "Browse for a .tgz  file.
-Downloaded files are stored in $input_variable which is mounted in /media/target"
+Downloaded files are stored in /media/target"
+if [ !  -n "$input_variable4" ]; then
+zenity --question --title='Continue?' --text='You must browse for a file. Downloaded files are stored in /media/target. Press "Yes" continue, or "No" to abort.'
+if [ $? != "0" ]; then
+echo "---------------UNMOUNTING---------------"
+    cd ~ 
+    if [   -n "$input_variable7" ]; then
+     umount  $input_variable7
+    fi
+    umount $input_variable 
+    sleep 1
+    rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
+echo Aborting
+exit
 fi
-
+echo "Please make a selection"
+fi
+fi
 done
 
 zenity --question --title='Continue?' --text='Press "Yes" to restore the system, or "No" to cancel operation.'
@@ -149,13 +187,11 @@ echo "70" ; sleep 1
 echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /media/target/etc/fstab 
 echo "$input_variable  /  $input_variable2  defaults,noatime    0  1" >> /media/target/etc/fstab
 
-if [   -n "$input_variable3" ]
-then 
+if [   -n "$input_variable3" ]; then
 echo "$input_variable3    swap   swap    defaults    0  0" >> /media/target/etc/fstab
 fi
 
-if [   -n "$input_variable7" ]
-then 
+if [   -n "$input_variable7" ]; then
 echo "$input_variable7  /home  $input_variable8  defaults,noatime    0  2" >> /media/target/etc/fstab
 fi
 

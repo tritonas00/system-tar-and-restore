@@ -1,0 +1,174 @@
+#!/bin/bash
+
+clear
+echo "`date +%A-%d-%m-%Y-%R`"
+
+echo "---------------READING INPUT VARIABLES---------------"
+while [  ! -n "$input_variable" ]
+do
+input_variable=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Select target partition" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $input_variable
+done
+
+while [  ! -n "$input_variable2" ]
+do
+input_variable2=$(zenity --width=500 --height=300  --list  --text "Filesystem (for fstab)" --radiolist  --column "Filesystems" --column "list"  FALSE ext2 FALSE ext3 FALSE ext4 FALSE btrfs); echo $input_variable2
+done
+
+input_variable3=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Optional - Press cancel to skip
+Select swap partition (for fstab)" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $input_variable3
+
+while [  ! -n "$input_variable1" ]
+do
+input_variable1=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Where to install grub" --list --radiolist --multiple --column ' ' --column 'Hard Drives'); echo $input_variable1
+done
+
+echo "---------------MAKING WORKING DIRECTORY---------------"
+mkdir /media/target  2>&1 && echo SUCCESS  || echo WARNING
+sleep 1
+
+echo "---------------MOUNTING $input_variable---------------"
+mount $input_variable /media/target  2>&1 && echo SUCCESS  || echo WARNING
+
+echo "---------------GETTING TAR IMAGE---------------"
+
+while [  ! -f  /media/target/fullbackup.tgz ]
+do
+file=$(zenity  --width=500 --height=300 --list  --text "Where is the tar file
+Downloaded files are stored in $input_variable which is mounted in /media/target" --column File "Browse" "Enter URL" "Protected URL")
+
+if [ "$file" = "Browse" ]; then
+
+IFS=$'\n' input_variable4=$(zenity --width=500 --height=300  --file-selection --separator=$'\n' --file-filter=*.tgz); echo $input_variable4
+if [   -n "$input_variable4" ]
+then 
+echo "Copying, please wait"
+cp "${input_variable4[@]}" "/media/target/fullbackup.tgz" 2>&1 |  zenity --width=500 --height=100 --no-cancel  --progress --pulsate  --text "Copying file in $input_variable as fullbackup.tgz" --auto-close
+fi
+
+elif [ "$file" = "Enter URL" ]; then
+
+input_variable5=$(zenity --width=500 --height=300 --entry --text=URL); echo $input_variable5
+if [   -n "$input_variable5" ]
+then 
+cd  /media/target
+echo "Downloading, please wait"
+wget  $input_variable5  2>&1 |  \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/' | \zenity --width=500 --height=100 --progress --title="Downloading file in /media/target" --no-cancel  --auto-close
+fi
+
+elif [ "$file" = "Protected URL" ]; then
+
+input_variable6=$(zenity --width=500 --height=300 --entry --text=URL); echo $input_variable6
+if [   -n "$input_variable6" ]
+then 
+USERNAME=$(zenity --width=500 --height=100 --entry --text=USERNAME --title="Enter your Username" )
+PASSWORD=$(zenity  --width=500 --height=100 --entry --hide-text --text=PASSWORD --title="Enter your Password" ) 
+cd  /media/target
+echo "Downloading, please wait"
+wget --user=$USERNAME --password=$PASSWORD  $input_variable6  --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/' | \zenity --width=500 --height=100 --progress --title="Downloading file in /media/target" --no-cancel --auto-close
+fi
+
+fi
+
+if [ ! -f /media/target/fullbackup.tgz ]
+then
+echo "Browse for a .tgz  file.
+Downloaded files are stored in $input_variable which is mounted in /media/target"
+fi
+
+done
+
+zenity --question --title='Continue?' --text='Press "Yes" to restore the system, or "No" to cancel operation.'
+
+if [ $? != "0" ]; then
+    echo "---------------CLEANING AND UNMOUNTING---------------"
+    cd ~ 
+    rm /media/target/fullbackup.tgz
+    umount $input_variable 
+    sleep 1
+    rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
+    exit
+else
+
+
+(
+        echo "5" ; sleep 1
+        echo "# Starting up" ; sleep 1
+
+echo "10" ; sleep 1
+        echo "# Extracting files in $input_variable..." ; sleep 1
+
+
+echo "---------------EXTRACTING---------------"
+cd /media/target
+tar xvpfz fullbackup.tgz -C /media/target   2>&1 && echo SUCCESS  || echo WARNING  
+cd ~ 
+
+echo "50" ; sleep 1
+        echo "# Mounting /dev /proc and /sys" ; sleep 1
+echo "---------------MOUNTING /dev /proc /sys---------------"
+mount --bind /dev /media/target/dev
+mount -t proc /proc /media/target/proc
+mount -t sysfs /sys /media/target/sys 2>&1 && echo SUCCESS  || echo FAILED
+
+echo "60" ; sleep 1
+        echo "# Installing and updating grub2 on $input_variable1 (MBR)" ; sleep 1
+echo "---------------INSTALLING AND UPDATING GRUB 2 IN $input_variable1---------------"
+chroot /media/target grub-install --target=i386-pc  $input_variable1 
+cp /media/target/usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /media/target/boot/grub/locale/en.mo 
+chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+
+echo "70" ; sleep 1
+        echo "# Ganerating fstab..." ; sleep 1
+echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /media/target/etc/fstab 
+echo "$input_variable  /  $input_variable2  defaults,noatime    0  1" >> /media/target/etc/fstab
+
+if [   -n "$input_variable3" ]
+then 
+echo "$input_variable3    swap   swap    defaults    0  0" >> /media/target/etc/fstab
+fi
+
+
+sed -n 's|^/dev/\([sh]d[a-z][0-9]\).*|\1|p' </media/target/etc/fstab > /media/target/etc/fstab2
+
+while read LINE; do   
+    UUID=`ls -l /dev/disk/by-uuid | grep "$LINE" | sed -n 's/^.* \([^ ]*\) -> .*$/\1/p'`
+    sed -i "s|^/dev/${LINE}|UUID=${UUID}|" /media/target/etc/fstab
+done </media/target/etc/fstab2
+rm /media/target/etc/fstab2
+
+echo "---------------READING GENERATED FSTAB---------------"
+cat /media/target/etc/fstab
+
+echo "80" ; sleep 1
+        echo "# Building initramfs image..." ; sleep 1
+
+echo "---------------BUILDING INITRAMFS IMAGE---------------"
+chroot /media/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
+
+echo "90" ; sleep 1
+        echo "# Ganerating locales..." ; sleep 1
+
+echo "---------------GENERATING LOCALES---------------"
+chroot /media/target  locale-gen   2>&1 && echo SUCCESS || echo FAILED
+
+echo "100" ; sleep 1
+        echo "# Done." ; sleep 1 
+
+
+) |  tee   >( zenity --width=500 --height=100 --progress --no-cancel --title="Restore"  --percentage=0 --auto-close )
+
+zenity  --info --text="Completed.Press OK to unmount and clean, then reboot your system." --title=Completed
+sleep 2
+
+echo "---------------CLEANING AND UNMOUNTING---------------"
+
+cd ~
+umount /media/target/dev
+umount /media/target/proc
+umount /media/target/sys
+rm /media/target/fullbackup.tgz 
+umount $input_variable
+sleep 1
+rm  -r /media/target  2>&1 && echo SUCCESS  || echo FAILED
+
+fi

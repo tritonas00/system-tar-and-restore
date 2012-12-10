@@ -1,0 +1,80 @@
+#!/bin/bash
+
+clear
+
+BRZENITY=$(which zenity 2>/dev/null)
+BRTAR=$(which tar 2>/dev/null)
+
+if [ "x$BRZENITY" = "x" ]; then
+        echo "Cannot find zenity, aborting."
+        XX=$fail
+fi
+if [ "x$BRTAR" = "x" ]; then
+echo "Cannot find tar, aborting."
+XX=$fail
+fi
+
+
+if [ -n "${XX+x}" ]; then
+  exit
+else
+
+zenity  --info --text="This script will make a full tar backup image of your entire system.Press OK and select the location where the backup file will be created.Make sure you have enough free space." --title=Backup
+
+echo "
+---->Select the location where the backup file will be created
+---->Make sure you have enough free space
+---->Press Cancel to abort"
+
+IFS=$'\n' FOLDER=$(zenity --title="Select the location where the backup file will be created" --width=500 --height=300  --file-selection  --separator=$'\n' --directory); echo $FOLDER
+
+if [   -n "$FOLDER" ]
+then 
+
+(
+
+echo "Preparing"
+mkdir $FOLDER/"`date +%A-%d-%m-%Y`"
+touch $FOLDER/"`date +%A-%d-%m-%Y`"/log
+touch $FOLDER/"`date +%A-%d-%m-%Y`"/errors
+echo ------------------------
+
+sleep 1
+echo "Creating backup image, please wait"
+
+rotdash2()
+{
+p=$1
+while [ -d /proc/$p ]
+do
+echo -en . ; sleep 5
+echo -en . ; sleep 5
+echo -en . ; sleep 5
+echo -en . ; sleep 5
+echo -en . ; tput sgr0 ; sleep .2
+done
+}
+
+tar cvpzf  $FOLDER/"`date +%A-%d-%m-%Y`"/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$FOLDER/"`date +%A-%d-%m-%Y`" /  1>> $FOLDER/"`date +%A-%d-%m-%Y`"/log 2>> $FOLDER/"`date +%A-%d-%m-%Y`"/errors &
+
+rotdash2 $!
+
+echo
+echo ------------------------
+
+sleep 2
+echo "Setting permissions"
+chmod ugo+rw -R "${FOLDER[@]}/"`date +%A-%d-%m-%Y`"" 2>> $FOLDER/"`date +%A-%d-%m-%Y`"/errors
+echo ------------------------
+
+echo Done. Tar image and logs saved in $FOLDER/"`date +%A-%d-%m-%Y`"
+
+sleep 3
+
+) |  tee   >( zenity --width=500 --height=100 --progress --pulsate  --no-cancel --title="Making the tar image, please wait..."   --auto-close )
+
+zenity  --info --text="Tar image and logs saved in $FOLDER/"`date +%A-%d-%m-%Y`"" --title=Done
+
+fi
+
+fi

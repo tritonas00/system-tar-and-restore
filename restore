@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ $(id -u) -gt 0 ]; then
+echo "Please run the script as root. Exit"
+exit
+fi
+
 clear
 echo "`date +%A-%d-%m-%Y-%R`"
 

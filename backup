@@ -2,6 +2,12 @@
 
 clear
 
+if [ $(id -u) -gt 0 ]; then
+echo "Please run the script as root. Exit"
+exit
+fi
+
+
 BRZENITY=$(which zenity 2>/dev/null)
 
 if [ "x$BRZENITY" = "x" ]; then

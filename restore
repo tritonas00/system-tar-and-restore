@@ -1,11 +1,12 @@
 #!/bin/bash
 
+clear
+
 if [ $(id -u) -gt 0 ]; then
 echo "Please run the script as root. Exit"
 exit
 fi
 
-clear
 echo "`date +%A-%d-%m-%Y-%R`"
 
 echo "---------------READING INPUT VARIABLES---------------"
@@ -22,6 +23,17 @@ done
 input_variable3=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Optional - Press cancel to skip
 Select swap partition (for fstab)" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $input_variable3
 
+input_variable7=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Optional - Press cancel to skip
+Select home partition" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $input_variable7
+
+if [   -n "$input_variable7" ]
+then
+while [ ! -n "$input_variable8" ]
+do
+input_variable8=$(zenity --width=500 --height=300  --list  --text "Filesystem for /home (for fstab)" --radiolist  --column "Filesystems" --column "list"  FALSE ext2 FALSE ext3 FALSE ext4 FALSE btrfs); echo $input_variable8
+done
+fi
+
 while [  ! -n "$input_variable1" ]
 do
 input_variable1=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Where to install grub" --list --radiolist --multiple --column ' ' --column 'Hard Drives'); echo $input_variable1
@@ -31,8 +43,15 @@ echo "---------------MAKING WORKING DIRECTORY---------------"
 mkdir /media/target  2>&1 && echo SUCCESS  || echo WARNING
 sleep 1
 
-echo "---------------MOUNTING $input_variable---------------"
+echo "---------------MOUNTING $input_variable (/)---------------"
 mount $input_variable /media/target  2>&1 && echo SUCCESS  || echo WARNING
+
+if [   -n "$input_variable7" ]
+then
+echo "---------------MOUNTING $input_variable7 (/home)---------------"
+mkdir /media/target/home
+mount $input_variable7 /media/target/home  2>&1 && echo SUCCESS  || echo WARNING
+fi
 
 echo "---------------GETTING TAR IMAGE---------------"
 
@@ -87,6 +106,9 @@ zenity --question --title='Continue?' --text='Press "Yes" to restore the system,
 if [ $? != "0" ]; then
     echo "---------------CLEANING AND UNMOUNTING---------------"
     cd ~ 
+    if [   -n "$input_variable7" ]; then
+     umount  $input_variable7
+    fi
     rm /media/target/fullbackup.tgz
     umount $input_variable 
     sleep 1
@@ -132,6 +154,10 @@ then
 echo "$input_variable3    swap   swap    defaults    0  0" >> /media/target/etc/fstab
 fi
 
+if [   -n "$input_variable7" ]
+then 
+echo "$input_variable7  /home  $input_variable8  defaults,noatime    0  2" >> /media/target/etc/fstab
+fi
 
 sed -n 's|^/dev/\([sh]d[a-z][0-9]\).*|\1|p' </media/target/etc/fstab > /media/target/etc/fstab2
 
@@ -168,6 +194,9 @@ sleep 2
 echo "---------------CLEANING AND UNMOUNTING---------------"
 
 cd ~
+if [   -n "$input_variable7" ]; then
+umount  $input_variable7
+fi
 umount /media/target/dev
 umount /media/target/proc
 umount /media/target/sys
@@ -177,3 +206,4 @@ sleep 1
 rm  -r /media/target  2>&1 && echo SUCCESS  || echo FAILED
 
 fi
+

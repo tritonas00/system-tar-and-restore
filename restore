@@ -138,7 +138,14 @@ while [  ! -f  /media/target/fullbackup.tgz ]; do
   
 done
 
-zenity --question --title='Continue?' --text='Press "Yes" to restore the system, or "No" to cancel operation.'
+zenity --question --title='Continue?' --text="SUMMARY
+
+Root Partition: $input_variable $input_variable2
+Swap Partition: $input_variable3
+Home Partition: $input_variable7 $input_variable8
+Backup File: $input_variable4
+
+Press "Yes" to restore the system, or "No" to cancel operation."
 
 if [ $? != "0" ]; then
   echo "---------------CLEANING AND UNMOUNTING---------------"

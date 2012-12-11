@@ -152,7 +152,8 @@ if [ $? != "0" ]; then
   rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
   exit
 fi
-  
+
+(
 echo "5" ; sleep 1
 echo "# Starting up" ; sleep 1
 echo "10" ; sleep 1

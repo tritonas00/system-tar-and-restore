@@ -7,22 +7,17 @@ echo "Please run the script as root. Exit"
 exit
 fi
 
-
 BRZENITY=$(which zenity 2>/dev/null)
 
-if [ "x$BRZENITY" = "x" ]; then
+if [ -z $BRZENITY ]; then
         echo "Cannot find zenity, aborting."
-        XX=$fail
+        exit
 fi
+
 if [ ! -d "/boot/grub/" ]; then
 echo "Cannot find grub, aborting."
-XX=$fail
+exit
 fi
-
-
-if [ -n "${XX+x}" ]; then
-  exit
-else
 
 zenity  --info --text="This script will make a full tar backup image of your entire system.Press OK and select the location where the backup file will be created.Make sure you have enough free space." --title=Backup
 
@@ -79,7 +74,5 @@ sleep 3
 ) |  tee   >( zenity --width=500 --height=100 --progress --pulsate  --no-cancel --title="Making the tar image, please wait..."   --auto-close )
 
 zenity  --info --text="Tar image and logs saved in $FOLDER/"`date +%A-%d-%m-%Y`"" --title=Done
-
-fi
 
 fi

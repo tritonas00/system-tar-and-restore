@@ -55,6 +55,23 @@ if [   -n "$input_variable7" ]; then
   done
 fi
 
+input_variable9=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Optional - Press cancel to skip
+Select boot partition" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $input_variable9
+
+if [   -n "$input_variable9" ]; then
+  while [ ! -n "$input_variable10" ]; do
+    input_variable10=$(zenity --width=500 --height=300  --list  --text "Filesystem for /boot (for fstab)" --radiolist  --column "Filesystems" --column "list"  FALSE ext2 FALSE ext3 FALSE ext4 FALSE btrfs); echo $input_variable10
+    if [ !  -n "$input_variable10" ]; then
+      zenity --question --title='Continue?' --text='You must select a filesystem. Press "Yes" continue, or "No" to abort.'
+      if [ $? != "0" ]; then
+      echo Aborting
+      exit
+      fi
+      echo "Please make a selection"
+    fi
+  done
+fi
+
 while [  ! -n "$input_variable1" ]; do
   input_variable1=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Where to install grub" --list --radiolist --multiple --column ' ' --column 'Hard Drives'); echo $input_variable1
   if [ !  -n "$input_variable1" ]; then
@@ -80,6 +97,12 @@ if [   -n "$input_variable7" ]; then
   echo "---------------MOUNTING $input_variable7 (/home)---------------"
   mkdir /media/target/home
   mount $input_variable7 /media/target/home  2>&1 && echo SUCCESS  || echo WARNING
+fi
+
+if [   -n "$input_variable9" ]; then
+  echo "---------------MOUNTING $input_variable9 (/boot)---------------"
+  mkdir /media/target/boot
+  mount $input_variable9 /media/target/boot  2>&1 && echo SUCCESS  || echo WARNING
 fi
 
 echo "---------------GETTING TAR IMAGE---------------"
@@ -125,8 +148,13 @@ while [  ! -f  /media/target/fullbackup.tgz ]; do
 	cd ~ 
 	if [   -n "$input_variable7" ]; then
 	  umount  $input_variable7
+          rm -r /media/target/home
 	fi
-	umount $input_variable 
+	if [   -n "$input_variable9" ]; then
+	  umount  $input_variable9
+          rm -r /media/target/boot
+	fi
+       	umount $input_variable 
 	sleep 1
 	rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
 	echo Aborting
@@ -142,6 +170,7 @@ zenity --question --title='Continue?' --text="SUMMARY
 
 Root Partition: $input_variable $input_variable2
 Swap Partition: $input_variable3
+Boot Partition: $input_variable9 $input_variable10
 Home Partition: $input_variable7 $input_variable8
 Backup File: $input_variable4
 
@@ -152,6 +181,11 @@ if [ $? != "0" ]; then
   cd ~ 
   if [   -n "$input_variable7" ]; then
     umount  $input_variable7
+    rm -r /media/target/home
+  fi
+  if [   -n "$input_variable9" ]; then
+    umount  $input_variable9
+    rm -r /media/target/boot
   fi
   rm /media/target/fullbackup.tgz
   umount $input_variable 
@@ -199,6 +233,10 @@ if [   -n "$input_variable7" ]; then
   echo "$input_variable7  /home  $input_variable8  defaults,noatime    0  2" >> /media/target/etc/fstab
 fi
 
+if [   -n "$input_variable9" ]; then
+  echo "$input_variable9  /boot  $input_variable10  defaults    0  1" >> /media/target/etc/fstab
+fi
+
 sed -n 's|^/dev/\([sh]d[a-z][0-9]\).*|\1|p' </media/target/etc/fstab > /media/target/etc/fstab2
 
 while read LINE; do   
@@ -237,6 +275,9 @@ cd ~
 
 if [   -n "$input_variable7" ]; then
   umount  $input_variable7
+fi
+if [   -n "$input_variable9" ]; then
+  umount  $input_variable9
 fi
 
 umount /media/target/dev

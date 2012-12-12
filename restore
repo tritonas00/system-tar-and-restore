@@ -11,9 +11,9 @@ echo "`date +%A-%d-%m-%Y-%R`"
 
 echo "---------------READING INPUT VARIABLES---------------"
 
-while [  ! -n "$root" ]; do
+while [ -z "$root" ]; do
   root=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Select target partition" --list  --radiolist --multiple --column  ' ' --column 'Partitions'); echo $root
-  if [ !  -n "$root" ]; then
+  if [ -z "$root" ]; then
     zenity --question --title='Continue?' --text='You must select a partition. Press "Yes" continue, or "No" to abort.'
     if [ $? != "0" ]; then
       echo Aborting
@@ -23,9 +23,9 @@ while [  ! -n "$root" ]; do
   fi
 done
 
-while [  ! -n "$fsystem" ]; do
+while [ -z "$fsystem" ]; do
   fsystem=$(zenity --width=500 --height=300  --list  --text "Filesystem (for fstab)" --radiolist  --column "Filesystems" --column "list"  FALSE ext2 FALSE ext3 FALSE ext4 FALSE btrfs); echo $fsystem
-  if [ !  -n "$fsystem" ]; then
+  if [ -z "$fsystem" ]; then
     zenity --question --title='Continue?' --text='You must select a filesystem. Press "Yes" continue, or "No" to abort.'
     if [ $? != "0" ]; then
       echo Aborting
@@ -41,7 +41,7 @@ Select swap partition (for fstab)" --list --radiolist --multiple --column  ' ' -
 home=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Optional - Press cancel to skip
 Select home partition" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $home
 
-if [   -n "$home" ]; then
+if [ -n "$home" ]; then
   while [ ! -n "$homefsystem" ]; do
     homefsystem=$(zenity --width=500 --height=300  --list  --text "Filesystem for /home (for fstab)" --radiolist  --column "Filesystems" --column "list"  FALSE ext2 FALSE ext3 FALSE ext4 FALSE btrfs); echo $homefsystem
     if [ !  -n "$homefsystem" ]; then
@@ -58,7 +58,7 @@ fi
 boot=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Optional - Press cancel to skip
 Select boot partition" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $boot
 
-if [   -n "$boot" ]; then
+if [ -n "$boot" ]; then
   while [ ! -n "$bootfsystem" ]; do
     bootfsystem=$(zenity --width=500 --height=300  --list  --text "Filesystem for /boot (for fstab)" --radiolist  --column "Filesystems" --column "list"  FALSE ext2 FALSE ext3 FALSE ext4 FALSE btrfs); echo $bootfsystem
     if [ !  -n "$bootfsystem" ]; then
@@ -72,9 +72,9 @@ if [   -n "$boot" ]; then
   done
 fi
 
-while [  ! -n "$grub" ]; do
+while [ -z "$grub" ]; do
   grub=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Where to install grub" --list --radiolist --multiple --column ' ' --column 'Hard Drives'); echo $grub
-  if [ !  -n "$grub" ]; then
+  if [ -z "$grub" ]; then
     zenity --question --title='Continue?' --text='You must select a disk. Press "Yes" continue, or "No" to abort.'
     if [ $? != "0" ]; then
       echo Aborting
@@ -141,16 +141,16 @@ while [  ! -f  /media/target/fullbackup.tgz ]; do
   if [ ! -f /media/target/fullbackup.tgz ]; then
     echo "Browse for a .tgz  file.
     Downloaded files are stored in /media/target"
-    if [ !  -n "$input_variable4" ]; then
+    if [ -z "$input_variable4" ]; then
       zenity --question --title='Continue?' --text='You must browse for a file. Downloaded files are stored in /media/target. Press "Yes" continue, or "No" to abort.'
       if [ $? != "0" ]; then
 	echo "---------------UNMOUNTING---------------"
 	cd ~ 
-	if [   -n "$home" ]; then
+	if [ -n "$home" ]; then
 	  umount  $home
           rm -r /media/target/home
 	fi
-	if [   -n "$boot" ]; then
+	if [ -n "$boot" ]; then
 	  umount  $boot
           rm -r /media/target/boot
 	fi
@@ -179,11 +179,11 @@ Press "Yes" to restore the system, or "No" to cancel operation."
 if [ $? != "0" ]; then
   echo "---------------CLEANING AND UNMOUNTING---------------"
   cd ~ 
-  if [   -n "$home" ]; then
+  if [ -n "$home" ]; then
     umount  $home
     rm -r /media/target/home
   fi
-  if [   -n "$boot" ]; then
+  if [ -n "$boot" ]; then
     umount  $boot
     rm -r /media/target/boot
   fi
@@ -225,15 +225,15 @@ echo "# Ganerating fstab..." ; sleep 1
 echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /media/target/etc/fstab 
 echo "$root  /  $fsystem  defaults,noatime    0  1" >> /media/target/etc/fstab
 
-if [   -n "$swap" ]; then
+if [ -n "$swap" ]; then
   echo "$swap    swap   swap    defaults    0  0" >> /media/target/etc/fstab
 fi
 
-if [   -n "$home" ]; then
+if [ -n "$home" ]; then
   echo "$home  /home  $homefsystem  defaults,noatime    0  2" >> /media/target/etc/fstab
 fi
 
-if [   -n "$boot" ]; then
+if [ -n "$boot" ]; then
   echo "$boot  /boot  $bootfsystem  defaults    0  1" >> /media/target/etc/fstab
 fi
 
@@ -273,10 +273,10 @@ echo "---------------CLEANING AND UNMOUNTING---------------"
 
 cd ~
 
-if [   -n "$home" ]; then
+if [ -n "$home" ]; then
   umount  $home
 fi
-if [   -n "$boot" ]; then
+if [ -n "$boot" ]; then
   umount  $boot
 fi
 

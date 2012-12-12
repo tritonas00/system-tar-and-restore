@@ -19,7 +19,6 @@ while [ -z "$root" ]; do
       echo Aborting
       exit
     fi
-    echo "Please make a selection"
   fi
 done
 
@@ -31,7 +30,6 @@ while [ -z "$fsystem" ]; do
       echo Aborting
       exit
     fi
-    echo "Please make a selection"
   fi
 done
 
@@ -50,7 +48,6 @@ if [ -n "$home" ]; then
       echo Aborting
       exit
       fi
-      echo "Please make a selection"
     fi
   done
 fi
@@ -67,7 +64,6 @@ if [ -n "$boot" ]; then
       echo Aborting
       exit
       fi
-      echo "Please make a selection"
     fi
   done
 fi
@@ -80,7 +76,6 @@ while [ -z "$grub" ]; do
       echo Aborting
       exit
     fi
-    echo "Please make a selection"
   fi
 done
 
@@ -139,8 +134,7 @@ while [  ! -f  /media/target/fullbackup.tgz ]; do
   fi
 
   if [ ! -f /media/target/fullbackup.tgz ]; then
-    echo "Browse for a .tgz  file.
-    Downloaded files are stored in /media/target"
+
     if [ -z "$input_variable4" ]; then
       zenity --question --title='Continue?' --text='You must browse for a file. Downloaded files are stored in /media/target. Press "Yes" continue, or "No" to abort.'
       if [ $? != "0" ]; then
@@ -160,10 +154,9 @@ while [  ! -f  /media/target/fullbackup.tgz ]; do
 	echo Aborting
 	exit
       fi
-      echo "Please make a selection"
+
     fi
-  fi
-  
+  fi 
 done
 
 zenity --question --title='Continue?' --text="SUMMARY

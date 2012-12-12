@@ -7,6 +7,8 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
+IFS=$'\n'
+
 echo "`date +%A-%d-%m-%Y-%R`"
 
 echo "---------------READING INPUT VARIABLES---------------"
@@ -108,7 +110,7 @@ while [  ! -f  /media/target/fullbackup.tgz ]; do
   Downloaded files are stored in /media/target" --column File "Browse" "Enter URL" "Protected URL")
 
   if [ "$file" = "Browse" ]; then
-    IFS=$'\n' input_variable4=$(zenity --width=500 --height=300  --file-selection --separator=$'\n' --file-filter=*.tgz); echo $input_variable4
+    input_variable4=$(zenity --width=500 --height=300  --file-selection --separator=$'\n' --file-filter=*.tgz); echo $input_variable4
     if [   -n "$input_variable4" ]; then 
       echo "Copying, please wait"
       cp "${input_variable4[@]}" "/media/target/fullbackup.tgz" 2>&1 |  zenity --width=500 --height=100 --no-cancel  --progress --pulsate  --text "Copying file in $root as fullbackup.tgz" --auto-close

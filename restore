@@ -270,7 +270,7 @@ while [  ! -f  /media/target/fullbackup.tgz ]; do
     
   else
     while [ ! -f /media/target/fullbackup.tgz ]; do
-      read -p "Enter the path of the backup file:" $file  
+      read -p "Enter the path of the backup file: " file  
       if [ ! -f $file ]; then
 	echo "File not found"
       else

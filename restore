@@ -373,6 +373,7 @@ if [ $TEXTMODE = "false" ] ; then
   Boot Partition: $boot $bootfsystem
   Home Partition: $home $homefsystem
   Backup File: $input_variable4
+  Backup File from URL: $input_variable5$input_variable6
 
   Press "Yes" to restore the system, or "No" to cancel operation."
   

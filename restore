@@ -36,7 +36,8 @@ while getopts "r:s:b:h:f:u:n:p:y" arg; do
       def="y"
     ;;
     \?)
-      echo "Usage:"
+      echo "Usage: ./restore -r [root partition] -s [swap partition] -b [boot partition]"
+      echo -e "\t\t-h [home partition] -f [backup file path] -u [url] -n [username] -p [password]"
       exit
     ;;
   esac

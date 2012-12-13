@@ -2,6 +2,33 @@
 
 clear
 
+while getopts "r:s:b:h:" arg; do
+  case $arg in
+    r) 
+      root=$OPTARG
+      fsystem=(`blkid -s TYPE -o value $root`)
+    ;;
+    s) 
+      swap=$OPTARG
+    ;;
+    b) 
+      boot=$OPTARG
+      bootfsystem=(`blkid -s TYPE -o value $boot`)
+    ;;
+    h) 
+      home=$OPTARG
+      homefsystem=(`blkid -s TYPE -o value $home`)
+    ;;
+    \?) 
+      echo "Usage:"
+      exit
+    ;;
+  esac
+done
+
+if [ -n $root ]; then
+#if arguments exist, skip reading input
+
 if [ $(id -u) -gt 0 ]; then
   echo "Please run the script as root. Exit"
   exit
@@ -211,6 +238,9 @@ if [   -n "$boot" ]; then
   mkdir /media/target/boot
   mount $boot /media/target/boot  2>&1 && echo SUCCESS  || echo WARNING
 fi
+
+fi
+#will be moved when we have arguments for tar
 
 echo -e "\n---------------GETTING TAR IMAGE---------------"
 

@@ -9,6 +9,13 @@ fi
 
 IFS=$'\n'
 
+TEXTMODE=false
+
+if [ -z "$BRZENITY" ]; then
+  TEXTMODE=true
+fi
+
+
 echo "`date +%A-%d-%m-%Y-%R`"
 
 echo "---------------READING INPUT VARIABLES---------------"

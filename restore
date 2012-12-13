@@ -344,10 +344,12 @@ while [  ! -f  /media/target/fullbackup.tgz ]; do
 	  read -p "Enter the username: " USERNAME
 	  read -sp "Enter the password: " PASSWORD
 	  echo " "
-	  wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+	  wget --user=$USERNAME --password=$PASSWORD $url --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+	  echo -e "\nDownloaded file: `pwd`/$file"
 	  break
 	fi
-	  wget  -O /media/target/fullbackup.tgz  $url  2>&1 |  \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+	  wget $url  2>&1 |  \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+	  echo -e "\nDownloaded file: `pwd`/$file"
 	  break
       else
 	echo "Please select a valid option from the list or enter Q to quit"

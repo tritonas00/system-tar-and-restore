@@ -2,7 +2,7 @@
 
 clear
 
-while getopts "r:s:b:h:" arg; do
+while getopts "r:s:b:h:f:u:n:p:" arg; do
   case $arg in
     r) 
       root=$OPTARG
@@ -19,6 +19,18 @@ while getopts "r:s:b:h:" arg; do
       home=$OPTARG
       homefsystem=(`blkid -s TYPE -o value $home`)
     ;;
+    f) 
+      file=$OPTARG
+    ;;
+    u) 
+      url=$OPTARG
+    ;;
+    n) 
+      USERNAME=$OPTARG
+    ;;
+    p) 
+      PASSWORD=$OPTARG
+    ;;
     \?) 
       echo "Usage:"
       exit
@@ -26,8 +38,17 @@ while getopts "r:s:b:h:" arg; do
   esac
 done
 
-if [ -n $root ]; then
-#if arguments exist, skip reading input
+if [ -n $file ]; then
+  cp $file "/media/target/fullbackup.tgz" 2>&1
+fi
+
+if [ -n $url ]; then
+  if [ -n $USERNAME ]; then
+    wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+  else
+    wget -O /media/target/fullbackup.tgz  $url --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+  fi
+fi
 
 if [ $(id -u) -gt 0 ]; then
   echo "Please run the script as root. Exit"
@@ -42,8 +63,10 @@ if [ -z "$BRZENITY" ]; then
   TEXTMODE=true
 fi
 
-
 echo "`date +%A-%d-%m-%Y-%R`"
+
+if [ -n $root ]; then
+#if arguments exist, skip reading input
 
 echo -e "\n---------------READING INPUT VARIABLES---------------"
 
@@ -239,9 +262,6 @@ if [   -n "$boot" ]; then
   mount $boot /media/target/boot  2>&1 && echo SUCCESS  || echo WARNING
 fi
 
-fi
-#will be moved when we have arguments for tar
-
 echo -e "\n---------------GETTING TAR IMAGE---------------"
 
 while [  ! -f  /media/target/fullbackup.tgz ]; do
@@ -338,6 +358,9 @@ while [  ! -f  /media/target/fullbackup.tgz ]; do
     done
   fi
 done
+
+fi
+#skipped reading variables
 
 if [ $TEXTMODE = "false" ] ; then
   zenity --question --title='Continue?' --text="SUMMARY

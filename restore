@@ -2,7 +2,7 @@
 
 clear
 
-while getopts "r:s:b:h:f:u:n:p:" arg; do
+while getopts "r:s:b:h:f:u:n:p:y" arg; do
   case $arg in
     r) 
       root=$OPTARG
@@ -32,7 +32,10 @@ while getopts "r:s:b:h:f:u:n:p:" arg; do
     p) 
       PASSWORD=$OPTARG
     ;;
-    \?) 
+    y) 
+      def="y"
+    ;;
+    \?)
       echo "Usage:"
       exit
     ;;
@@ -58,68 +61,32 @@ fi
 
 IFS=$'\n'
 PS3="Choice: "
-TEXTMODE=false
-
-if [ -z "$BRZENITY" ]; then
-  TEXTMODE=true
-fi
 
 echo "`date +%A-%d-%m-%Y-%R`"
-
-if [ -n $root ]; then
-#if arguments exist, skip reading input
 
 echo -e "\n---------------READING INPUT VARIABLES---------------"
 
 list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(blkid -s TYPE -o value $f) $(lsblk -d -n -o size $f)\r"; done`)
 
 while [ -z "$root" ]; do
-  if [ $TEXTMODE = "false" ] ; then
-    root=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Select target partition" --list  --radiolist --multiple --column  ' ' --column 'Partitions'); echo $root
-    if [ -z "$root" ]; then
-      zenity --question --title='Continue?' --text='You must select a partition. Press "Yes" continue, or "No" to abort.'
-      if [ $? != "0" ]; then
-	echo Aborting
-	exit
-      fi
+  echo -e "\nSelect the number of your root partition or enter Q to quit"
+  select c in ${list[@]}; do
+    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      echo "Now quiting"
+      exit
+    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+      root=(`echo $c | awk '{ print $1 }'`)
+      fsystem=(`echo $c | awk '{ print $2 }'`)
+      echo "You selected $root as your root partition" 
+      echo "The filesystem is $fsystem"
+      break
+    else
+      echo "Please select a valid option from the list or enter Q to quit"
     fi
-    
-    while [ -z "$fsystem" ]; do
-      fsystem=$(zenity --width=500 --height=300  --list  --text "Filesystem (for fstab)" --radiolist  --column "Filesystems" --column "list"  FALSE ext2 FALSE ext3 FALSE ext4 FALSE btrfs); echo $fsystem
-      if [ -z "$fsystem" ]; then
-	zenity --question --title='Continue?' --text='You must select a filesystem. Press "Yes" continue, or "No" to abort.'
-	if [ $? != "0" ]; then
-	  echo Aborting
-	  exit
-	fi
-      fi
-done
-  else
-
-    echo -e "\nSelect the number of your root partition or enter Q to quit"
-    select c in ${list[@]}; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-	echo "Now quiting"
-	exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
-	root=(`echo $c | awk '{ print $1 }'`)
-	fsystem=(`echo $c | awk '{ print $2 }'`)
-	echo "You selected $root as your root partition" 
-	echo "The filesystem is $fsystem"
-	break
-      else
-	echo "Please select a valid option from the list or enter Q to quit"
-      fi
-    done
-  fi  
+  done  
 done
 
-
-
-if [ $TEXTMODE = "false" ] ; then
-  swap=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Optional - Press cancel to skip
-  Select swap partition (for fstab)" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $swap
-else
+if [ -z $swap ]; then
   echo -e "\n(Optional - Press C to skip) Select the number of your swap partition (for fstab) or enter Q to quit"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
@@ -138,22 +105,7 @@ else
   done
 fi
 
-if [ $TEXTMODE = "false" ] ; then
-  home=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Optional - Press cancel to skip
-  Select home partition" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $home
-  if [ -n "$home" ]; then
-    while [ ! -n "$homefsystem" ]; do
-      homefsystem=$(zenity --width=500 --height=300  --list  --text "Filesystem for /home (for fstab)" --radiolist  --column "Filesystems" --column "list"  FALSE ext2 FALSE ext3 FALSE ext4 FALSE btrfs); echo $homefsystem
-	if [ !  -n "$homefsystem" ]; then
-	zenity --question --title='Continue?' --text='You must select a filesystem. Press "Yes" continue, or "No" to abort.'
-	  if [ $? != "0" ]; then
-	  echo Aborting
-	  exit
-	  fi
-	fi
-    done
-  fi
-else
+if [ -z $home ]
   echo -e "\n(Optional - Press C to skip) Select the number of your home partition (for fstab) or enter Q to quit"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
@@ -174,24 +126,7 @@ else
   done
 fi
 
-if [ $TEXTMODE = "false" ] ; then
-  boot=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Optional - Press cancel to skip
-  Select boot partition" --list --radiolist --multiple --column  ' ' --column 'Partitions'); echo $boot
-
-  if [ -n "$boot" ]; then
-    while [ ! -n "$bootfsystem" ]; do
-      bootfsystem=$(zenity --width=500 --height=300  --list  --text "Filesystem for /boot (for fstab)" --radiolist  --column "Filesystems" --column "list"  FALSE ext2 FALSE ext3 FALSE ext4 FALSE btrfs); echo $bootfsystem
-      if [ !  -n "$bootfsystem" ]; then
-	zenity --question --title='Continue?' --text='You must select a filesystem. Press "Yes" continue, or "No" to abort.'
-	if [ $? != "0" ]; then
-	echo Aborting
-	exit
-	fi
-      fi
-    done
-  fi
-  
-else
+if [ -z $boot ]
   echo -e "\n(Optional - Press C to skip) Select the number of your boot partition (for fstab) or enter Q to quit"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
@@ -213,33 +148,21 @@ else
 fi
 
 while [ -z "$grub" ]; do
-  if [ $TEXTMODE = "false" ] ; then
-    grub=$(find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z]"  -printf 'FALSE\0%p\0' | xargs -0 zenity --width=500 --height=300 --text "Where to install grub" --list --radiolist --multiple --column ' ' --column 'Hard Drives'); echo $grub
-    if [ -z "$grub" ]; then
-      zenity --question --title='Continue?' --text='You must select a disk. Press "Yes" continue, or "No" to abort.'
-      if [ $? != "0" ]; then
-	echo Aborting
-	exit
-      fi
+  list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f $(blkid -s TYPE -o value $f) $(lsblk -d -n -o size $f)\r"; done`)
+
+  echo -e "\nWhere to install GRUB? Enter Q to quit"
+  select c in ${list[@]}; do
+    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      echo "Now quiting"
+      exit
+    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+      grub=(`echo $c | awk '{ print $1 }'`)
+      echo "You selected $grub to install GRUB"  
+      break
+    else
+      echo "Please select a valid option from the list or enter Q to quit"
     fi
-  else
-    
-    list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f $(blkid -s TYPE -o value $f) $(lsblk -d -n -o size $f)\r"; done`)
-  
-    echo -e "\nWhere to install GRUB? Enter Q to quit"
-    select c in ${list[@]}; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-	echo "Now quiting"
-	exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
-	grub=(`echo $c | awk '{ print $1 }'`)
-	echo "You selected $grub to install GRUB"  
-	break
-      else
-	echo "Please select a valid option from the list or enter Q to quit"
-      fi
   done
-  fi
 done
 
 echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
@@ -265,141 +188,58 @@ fi
 
 echo -e "\n---------------GETTING TAR IMAGE---------------"
 
-while [  ! -f  /media/target/fullbackup.tgz ]; do
-
-  if [ $TEXTMODE = "false" ] ; then
-  
-    file=$(zenity  --width=500 --height=300 --list  --text "Where is the tar file
-    Downloaded files are stored in /media/target" --column File "Browse" "Enter URL" "Protected URL")
-
-    if [ "$file" = "Browse" ]; then
-      input_variable4=$(zenity --width=500 --height=300  --file-selection --separator=$'\n' --file-filter=*.tgz); echo $input_variable4
-      if [   -n "$input_variable4" ]; then 
-	echo "Copying, please wait"
-	cp "${input_variable4[@]}" "/media/target/fullbackup.tgz" 2>&1 |  zenity --width=500 --height=100 --no-cancel  --progress --pulsate  --text "Copying file in $root as fullbackup.tgz" --auto-close
-      fi
-    elif [ "$file" = "Enter URL" ]; then
-      input_variable5=$(zenity --width=500 --height=300 --entry --text=URL); echo $input_variable5
-      if [   -n "$input_variable5" ]; then 
-	cd  /media/target
-	echo "Downloading, please wait"
-	wget  $input_variable5  2>&1 |  \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/' | \zenity --width=500 --height=100 --progress --title="Downloading file in /media/target" --no-cancel  --auto-close
-      fi
-    elif [ "$file" = "Protected URL" ]; then
-      input_variable6=$(zenity --width=500 --height=300 --entry --text=URL); echo $input_variable6
-      if [   -n "$input_variable6" ]; then 
-	USERNAME=$(zenity --width=500 --height=100 --entry --text=USERNAME --title="Enter your Username" )
-	PASSWORD=$(zenity  --width=500 --height=100 --entry --hide-text --text=PASSWORD --title="Enter your Password" ) 
-	cd  /media/target
-	echo "Downloading, please wait"
-	wget --user=$USERNAME --password=$PASSWORD  $input_variable6  --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/' | \zenity --width=500 --height=100 --progress --title="Downloading file in /media/target" --no-cancel --auto-close
-      fi
-    fi
+while [ ! -f /media/target/fullbackup.tgz ]; do
     
-    if [ ! -f /media/target/fullbackup.tgz ]; then
-      if [ -z "$input_variable4" ]; then
-	zenity --question --title='Continue?' --text='You must browse for a file. Downloaded files are stored in /media/target. Press "Yes" continue, or "No" to abort.'
-	if [ $? != "0" ]; then
-	  echo -e "\n---------------UNMOUNTING---------------"
-	  cd ~ 
-	  if [ -n "$home" ]; then
-	    umount  $home
-	    rm -r /media/target/home
-	  fi
-	  if [ -n "$boot" ]; then
-	    umount  $boot
-	    rm -r /media/target/boot
-	  fi
-	  umount $root 
-	  sleep 1
-	  rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
-	  echo Aborting
-	  exit
+  echo -e "\nSelect an option or enter Q to quit"
+  select c in "File" "URL" "Protected URL"; do
+    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      echo "Now quiting"
+      exit      
+    elif [ $REPLY = "1" ]; then
+      while [ ! -f /media/target/fullbackup.tgz ]; do
+	read -p "Enter the path of the backup file: " file
+	if [ ! -f $file ] || [ -z $file ]; then
+	  echo "File not found"
+	else
+	  cp $file "/media/target/fullbackup.tgz" 2>&1
 	fi
-      fi
-    fi 
-    
-  else
-    while [ ! -f /media/target/fullbackup.tgz ]; do
-    
-      echo -e "\nSelect an option or enter Q to quit"
-      select c in "File" "URL" "Protected URL"; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-	echo "Now quiting"
-	exit      
-      elif [ $REPLY = "1" ]; then
-	while [ ! -f /media/target/fullbackup.tgz ]; do
-	  read -p "Enter the path of the backup file: " file
-	  if [ ! -f $file ] || [ -z $file ]; then
-	    echo "File not found"
-	  else
-	    cp $file "/media/target/fullbackup.tgz" 2>&1
-	  fi
-	done
-	break
-      
-      elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
-	read -p "Enter the URL for the backup file: " url
-	echo " "
-	if [ $REPLY = "3" ]; then
-	  read -p "Enter the username: " USERNAME
-	  read -sp "Enter the password: " PASSWORD
-	  echo " "
-	  wget --user=$USERNAME --password=$PASSWORD $url --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
-	  echo -e "\nDownloaded file: `pwd`/$file"
-	  break
-	fi
-	  wget $url  2>&1 |  \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
-	  echo -e "\nDownloaded file: `pwd`/$file"
-	  break
-      else
-	echo "Please select a valid option from the list or enter Q to quit"
-      fi
       done
-    
+      break
       
-    done
-  fi
+    elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
+      read -p "Enter the URL for the backup file: " url
+      echo " "
+      if [ $REPLY = "3" ]; then
+	read -p "Enter the username: " USERNAME
+	read -sp "Enter the password: " PASSWORD
+	echo " "
+	wget --user=$USERNAME --password=$PASSWORD $url --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+	echo -e "\nDownloaded file: `pwd`/$file"
+	break
+      fi
+      wget $url  2>&1 |  \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+      echo -e "\nDownloaded file: `pwd`/$file"
+      break
+    else
+      echo "Please select a valid option from the list or enter Q to quit"
+    fi
+  done
 done
 
-fi
-#skipped reading variables
+echo -e "\nRoot Partition: $root $fsystem"
+echo "Swap Partition: $swap"
+echo "Boot Partition: $boot $bootfsystem"
+echo "Home Partition: $home $homefsystem"
 
-if [ $TEXTMODE = "false" ] ; then
-  zenity --question --title='Continue?' --text="SUMMARY
-
-  Root Partition: $root $fsystem
-  Swap Partition: $swap
-  Boot Partition: $boot $bootfsystem
-  Home Partition: $home $homefsystem
-  Backup File: $input_variable4
-  Backup File from URL: $input_variable5$input_variable6
-
-  Press "Yes" to restore the system, or "No" to cancel operation."
-  
-  if [ $? != "0" ]; then
-    CANCEL=true
-  fi
-  
+if [ $urlflag = false ]; then
+  echo -e "Backup File: $file\n"
 else
-  echo -e "\nRoot Partition: $root $fsystem"
-  echo "Swap Partition: $swap"
-  echo "Boot Partition: $boot $bootfsystem"
-  echo "Home Partition: $home $homefsystem"
-  if [ $urlflag = false ]; then
-    echo -e "Backup File: $file\n"
-  else
-    echo -e "Backup File from URL: $url\n"
-  fi  
-  
-  read -p "Do you want continue? (Y/n): " def
-
-  if [ $def = "n" ] || [ $def = "N" ]; then
-    CANCEL=true
-  fi
+  echo -e "Backup File from URL: $url\n"
 fi  
   
-if [ $CANCEL = "true" ]; then
+read -p "Do you want continue? (Y/n): " def
+
+if [ $def = "n" ] || [ $def = "N" ]; then
 
   echo -e "\n---------------CLEANING AND UNMOUNTING---------------"
   cd ~ 
@@ -419,160 +259,79 @@ if [ $CANCEL = "true" ]; then
   
 fi  
 
-if [ $TEXTMODE = "false" ]
-  (
-  echo "5" ; sleep 1
-  echo "# Starting up" ; sleep 1
-  echo "10" ; sleep 1
-  echo "# Extracting files in $root..." ; sleep 1
+echo "5" ; sleep 1
+echo "# Starting up" ; sleep 1
+echo "10" ; sleep 1
+echo "# Extracting files in $root..." ; sleep 1
 
-  echo -e "\n---------------EXTRACTING---------------"
-  cd /media/target
-  tar xvpfz fullbackup.tgz -C /media/target   2>&1 && echo SUCCESS  || echo WARNING  
-  cd ~ 
+echo -e "\n---------------EXTRACTING---------------"
+cd /media/target
+tar xvpfz fullbackup.tgz -C /media/target   2>&1 && echo SUCCESS  || echo WARNING  
+cd ~ 
 
-  echo "50" ; sleep 1
-  echo "# Mounting /dev /proc and /sys" ; sleep 1
+echo "50" ; sleep 1
+echo "# Mounting /dev /proc and /sys" ; sleep 1
 
-  echo -e "\n---------------MOUNTING /dev /proc /sys---------------"
-  mount --bind /dev /media/target/dev
-  mount -t proc /proc /media/target/proc
-  mount -t sysfs /sys /media/target/sys 2>&1 && echo SUCCESS  || echo FAILED
+echo -e "\n---------------MOUNTING /dev /proc /sys---------------"
+mount --bind /dev /media/target/dev
+mount -t proc /proc /media/target/proc
+mount -t sysfs /sys /media/target/sys 2>&1 && echo SUCCESS  || echo FAILED
 
-  echo "60" ; sleep 1
-  echo "\n---------------INSTALLING AND UPDATING GRUB 2 IN $grub---------------"
-  chroot /media/target grub-install --target=i386-pc  $grub 
-  cp /media/target/usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /media/target/boot/grub/locale/en.mo 
-  chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+echo "60" ; sleep 1
+echo "\n---------------INSTALLING AND UPDATING GRUB 2 IN $grub---------------"
+chroot /media/target grub-install --target=i386-pc  $grub 
+cp /media/target/usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /media/target/boot/grub/locale/en.mo 
+chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
 
-  echo "70" ; sleep 1
-  echo "# Ganerating fstab..." ; sleep 1
-  echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /media/target/etc/fstab 
-  echo "$root  /  $fsystem  defaults,noatime    0  1" >> /media/target/etc/fstab
+echo "70" ; sleep 1
+echo "# Ganerating fstab..." ; sleep 1
+echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /media/target/etc/fstab 
+echo "$root  /  $fsystem  defaults,noatime    0  1" >> /media/target/etc/fstab
 
-  if [ -n "$swap" ]; then
-    echo "$swap    swap   swap    defaults    0  0" >> /media/target/etc/fstab
-  fi
-
-  if [ -n "$home" ]; then
-    echo "$home  /home  $homefsystem  defaults,noatime    0  2" >> /media/target/etc/fstab
-  fi
-
-  if [ -n "$boot" ]; then
-    echo "$boot  /boot  $bootfsystem  defaults    0  1" >> /media/target/etc/fstab
-  fi
-
-  sed -n 's|^/dev/\([sh]d[a-z][0-9]\).*|\1|p' </media/target/etc/fstab > /media/target/etc/fstab2
-
-  while read LINE; do   
-    UUID=`ls -l /dev/disk/by-uuid | grep "$LINE" | sed -n 's/^.* \([^ ]*\) -> .*$/\1/p'`
-    sed -i "s|^/dev/${LINE}|UUID=${UUID}|" /media/target/etc/fstab
-  done </media/target/etc/fstab2
-  
-  rm /media/target/etc/fstab2
-
-  echo -e "\n---------------READING GENERATED FSTAB---------------"
-  cat /media/target/etc/fstab
-
-  echo "80" ; sleep 1
-  echo "# Building initramfs image..." ; sleep 1
-  
-  echo -e "\n---------------BUILDING INITRAMFS IMAGE---------------"
-  chroot /media/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
-
-  echo "90" ; sleep 1
-  echo "# Ganerating locales..." ; sleep 1
-
-  echo -e "\n---------------GENERATING LOCALES---------------"
-  chroot /media/target  locale-gen   2>&1 && echo SUCCESS || echo FAILED
-
-  echo "100" ; sleep 1
-  echo "# Done." ; sleep 1 
-  
-  ) |  tee   >( zenity --width=500 --height=100 --progress --no-cancel --title="Restore"  --percentage=0 --auto-close )
-
-  zenity  --info --text="Completed.Press OK to unmount and clean, then reboot your system." --title=Completed
-  sleep 2
-
-else
-
-  (
-  echo "5" ; sleep 1
-  echo "# Starting up" ; sleep 1
-  echo "10" ; sleep 1
-  echo "# Extracting files in $root..." ; sleep 1
-
-  echo -e "\n---------------EXTRACTING---------------"
-  cd /media/target
-  tar xvpfz fullbackup.tgz -C /media/target   2>&1 && echo SUCCESS  || echo WARNING  
-  cd ~ 
-
-  echo "50" ; sleep 1
-  echo "# Mounting /dev /proc and /sys" ; sleep 1
-
-  echo -e "\n---------------MOUNTING /dev /proc /sys---------------"
-  mount --bind /dev /media/target/dev
-  mount -t proc /proc /media/target/proc
-  mount -t sysfs /sys /media/target/sys 2>&1 && echo SUCCESS  || echo FAILED
-
-  echo "60" ; sleep 1
-  echo "\n---------------INSTALLING AND UPDATING GRUB 2 IN $grub---------------"
-  chroot /media/target grub-install --target=i386-pc  $grub 
-  cp /media/target/usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /media/target/boot/grub/locale/en.mo 
-  chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
-
-  echo "70" ; sleep 1
-  echo "# Ganerating fstab..." ; sleep 1
-  echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /media/target/etc/fstab 
-  echo "$root  /  $fsystem  defaults,noatime    0  1" >> /media/target/etc/fstab
-
-  if [ -n "$swap" ]; then
-    echo "$swap    swap   swap    defaults    0  0" >> /media/target/etc/fstab
-  fi
-
-  if [ -n "$home" ]; then
-    echo "$home  /home  $homefsystem  defaults,noatime    0  2" >> /media/target/etc/fstab
-  fi
-
-  if [ -n "$boot" ]; then
-    echo "$boot  /boot  $bootfsystem  defaults    0  1" >> /media/target/etc/fstab
-  fi
-
-  sed -n 's|^/dev/\([sh]d[a-z][0-9]\).*|\1|p' </media/target/etc/fstab > /media/target/etc/fstab2
-
-  while read LINE; do   
-    UUID=`ls -l /dev/disk/by-uuid | grep "$LINE" | sed -n 's/^.* \([^ ]*\) -> .*$/\1/p'`
-    sed -i "s|^/dev/${LINE}|UUID=${UUID}|" /media/target/etc/fstab
-  done </media/target/etc/fstab2
-  
-  rm /media/target/etc/fstab2
-
-  echo -e "\n---------------READING GENERATED FSTAB---------------"
-  cat /media/target/etc/fstab
-
-  echo "80" ; sleep 1
-  echo "# Building initramfs image..." ; sleep 1
-
-  echo -e "\n---------------BUILDING INITRAMFS IMAGE---------------"
-  chroot /media/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
-
-  echo "90" ; sleep 1
-  echo "# Ganerating locales..." ; sleep 1
-
-  echo -e "\n---------------GENERATING LOCALES---------------"
-  chroot /media/target  locale-gen   2>&1 && echo SUCCESS || echo FAILED
-
-  echo "100" ; sleep 1
-  echo "# Done." ; sleep 1 
-  
-  )
-
-  echo -e "\nCompleted. Press ENTER to unmount and clean, then reboot your system." 
-  read -s a
-
-  sleep 2
-
+if [ -n "$swap" ]; then
+  echo "$swap    swap   swap    defaults    0  0" >> /media/target/etc/fstab
 fi
+
+if [ -n "$home" ]; then
+  echo "$home  /home  $homefsystem  defaults,noatime    0  2" >> /media/target/etc/fstab
+fi
+
+if [ -n "$boot" ]; then
+  echo "$boot  /boot  $bootfsystem  defaults    0  1" >> /media/target/etc/fstab
+fi
+
+sed -n 's|^/dev/\([sh]d[a-z][0-9]\).*|\1|p' </media/target/etc/fstab > /media/target/etc/fstab2
+
+while read LINE; do   
+  UUID=`ls -l /dev/disk/by-uuid | grep "$LINE" | sed -n 's/^.* \([^ ]*\) -> .*$/\1/p'`
+  sed -i "s|^/dev/${LINE}|UUID=${UUID}|" /media/target/etc/fstab
+done </media/target/etc/fstab2
+  
+rm /media/target/etc/fstab2
+
+echo -e "\n---------------READING GENERATED FSTAB---------------"
+cat /media/target/etc/fstab
+
+echo "80" ; sleep 1
+echo "# Building initramfs image..." ; sleep 1
+
+echo -e "\n---------------BUILDING INITRAMFS IMAGE---------------"
+chroot /media/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
+
+echo "90" ; sleep 1
+echo "# Ganerating locales..." ; sleep 1
+
+echo -e "\n---------------GENERATING LOCALES---------------"
+chroot /media/target  locale-gen   2>&1 && echo SUCCESS || echo FAILED
+
+echo "100" ; sleep 1
+echo "# Done." ; sleep 1 
+
+echo -e "\nCompleted. Press ENTER to unmount and clean, then reboot your system." 
+read -s a
+
+sleep 2
+
 
 echo -e "\n---------------CLEANING AND UNMOUNTING---------------"
 
@@ -581,6 +340,7 @@ cd ~
 if [ -n "$home" ]; then
   umount  $home
 fi
+
 if [ -n "$boot" ]; then
   umount  $boot
 fi

@@ -212,7 +212,7 @@ if [   -n "$boot" ]; then
   mount $boot /media/target/boot  2>&1 && echo SUCCESS  || echo WARNING
 fi
 
-echo -e "\n---------------GETTING TAR IMAGE---------------\n"
+echo -e "\n---------------GETTING TAR IMAGE---------------"
 
 while [  ! -f  /media/target/fullbackup.tgz ]; do
 
@@ -270,12 +270,41 @@ while [  ! -f  /media/target/fullbackup.tgz ]; do
     
   else
     while [ ! -f /media/target/fullbackup.tgz ]; do
-      read -p "Enter the path of the backup file: " file  
-      if [ ! -f $file ]; then
-	echo "File not found"
+    
+      echo -e "\nSelect an option or enter Q to quit"
+      select c in "File" "URL" "Protected URL"; do
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+	echo "Now quiting"
+	exit      
+      elif [ $REPLY = "1" ]; then
+	while [ ! -f /media/target/fullbackup.tgz ]; do
+	  read -p "Enter the path of the backup file: " file
+	  if [ ! -f $file ] || [ -z $file ]; then
+	    echo "File not found"
+	  else
+	    cp $file "/media/target/fullbackup.tgz" 2>&1
+	  fi
+	done
+	break
+      
+      elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
+	read -p "Enter the URL for the backup file: " url
+	echo " "
+	if [ $REPLY = "3" ]; then
+	  read -p "Enter the username: " USERNAME
+	  read -sp "Enter the password: " PASSWORD
+	  echo " "
+	  wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+	  break
+	fi
+	  wget  -O /media/target/fullbackup.tgz  $url  2>&1 |  \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+	  break
       else
-	cp $file "/media/target/fullbackup.tgz" 2>&1
+	echo "Please select a valid option from the list or enter Q to quit"
       fi
+      done
+    
+      
     done
   fi
 done

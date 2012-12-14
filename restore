@@ -44,7 +44,7 @@ while getopts "r:s:b:h:g:f:u:n:p:y" arg; do
       def="y"
     ;;
     \?)
-      echo "Usage: ./restore -r [root partition] -s [swap partition] -b [boot partition] -h [home partition]"
+      echo "Usage: $0 -r [root partition] -s [swap partition] -b [boot partition] -h [home partition]"
       echo -e "\t\t-g [disk for grub] -f [backup file path] -u [url] -n [username] -p [password]"
       exit
     ;;

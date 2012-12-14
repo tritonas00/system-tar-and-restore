@@ -2,6 +2,11 @@
 
 clear
 
+if [ $(id -u) -gt 0 ]; then
+  echo "Please run the script as root. Exit"
+  exit
+fi
+
 while getopts "r:s:b:h:f:u:n:p:y" arg; do
   case $arg in
     r) 
@@ -55,10 +60,6 @@ if [ -n $url ]; then
   fi
 fi
 
-if [ $(id -u) -gt 0 ]; then
-  echo "Please run the script as root. Exit"
-  exit
-fi
 
 IFS=$'\n'
 PS3="Choice: "
@@ -216,11 +217,11 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
 	read -p "Enter the username: " USERNAME
 	read -sp "Enter the password: " PASSWORD
 	echo " "
-	wget --user=$USERNAME --password=$PASSWORD $url --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+	wget --user=$USERNAME --password=$PASSWORD $url --tries=2
 	echo -e "\nDownloaded file: `pwd`/$file"
 	break
       fi
-      wget $url  2>&1 |  \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+      wget $url
       echo -e "\nDownloaded file: `pwd`/$file"
       break
     else

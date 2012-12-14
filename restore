@@ -48,11 +48,25 @@ while getopts "r:s:b:h:f:u:n:p:y" arg; do
   esac
 done
 
-if [ -n $file ]; then
-  cp $file "/media/target/fullbackup.tgz"
+if [ -n $root ]; then
+	if [ -z $swap ]; then
+		swap=-1
+	fi
+	if [ -z $boot ]; then
+		boot=-1
+	fi
+	if [ -z $home ]; then
+		home=-1
+	fi
+	if [ -z $file ] && [ -z $url ]; then
+		echo "Enter a file or a URL to get the backup. Aborting"
+		exit
+	fi
 fi
 
-if [ -n $url ]; then
+if [ -n $file ]; then
+  cp $file "/media/target/fullbackup.tgz"
+else
   if [ -n $USERNAME ]; then
     wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2
   else
@@ -106,8 +120,6 @@ if [ -z $swap ]; then
     fi
   done
 fi
-
-
 
 if [ -z $home ]; then
   echo -e "\n(Optional - Press C to skip) Select the number of your home partition (for fstab) or enter Q to quit"
@@ -168,6 +180,16 @@ while [ -z "$grub" ]; do
     fi
   done
 done
+
+if [ $swap -eq -1 ]; then
+	unset swap
+fi
+if [ $boot -eq -1 ]; then
+	unset boot
+fi
+if [ $home -eq -1 ]; then
+	unset home
+fi
 
 echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
 

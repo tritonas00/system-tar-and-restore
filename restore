@@ -7,7 +7,7 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
-while getopts "r:s:b:h:f:u:n:p:y" arg; do
+while getopts "r:s:b:h:g:f:u:n:p:y" arg; do
   case $arg in
     r) 
       root=$OPTARG
@@ -23,6 +23,9 @@ while getopts "r:s:b:h:f:u:n:p:y" arg; do
     h) 
       home=$OPTARG
       homefsystem=(`blkid -s TYPE -o value $home`)
+    ;;
+    g) 
+      grub=$OPTARG
     ;;
     f) 
       file=$OPTARG
@@ -41,8 +44,8 @@ while getopts "r:s:b:h:f:u:n:p:y" arg; do
       def="y"
     ;;
     \?)
-      echo "Usage: ./restore -r [root partition] -s [swap partition] -b [boot partition]"
-      echo -e "\t\t-h [home partition] -f [backup file path] -u [url] -n [username] -p [password]"
+      echo "Usage: ./restore -r [root partition] -s [swap partition] -b [boot partition] -h [home partition]"
+      echo -e "\t\t-g [disk for grub] -f [backup file path] -u [url] -n [username] -p [password]"
       exit
     ;;
   esac
@@ -58,8 +61,12 @@ if [ -n $root ]; then
 	if [ -z $home ]; then
 		home=-1
 	fi
+	if [ -z $grub ]; then
+		echo "You must enter a disk to install GRUB. Aborting"
+		exit
+	fi
 	if [ -z $file ] && [ -z $url ]; then
-		echo "Enter a file or a URL to get the backup. Aborting"
+		echo "You must enter a file or a URL to get the backup. Aborting"
 		exit
 	fi
 fi

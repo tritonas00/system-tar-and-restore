@@ -221,7 +221,7 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
 	echo -e "\nDownloaded file: `pwd`/$file"
 	break
       fi
-      wget $url
+      wget $url --tries=2
       echo -e "\nDownloaded file: `pwd`/$file"
       break
     else

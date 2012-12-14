@@ -8,7 +8,7 @@ while getopts "d:" arg; do
       FOLDER=$OPTARG
     ;;
     \?) 
-      echo "Usage: ./backup -d [path for backup folder]"
+      echo "Usage: $0 -d [path for backup folder]"
       exit
     ;;
   esac

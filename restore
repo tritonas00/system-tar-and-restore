@@ -44,14 +44,14 @@ while getopts "r:s:b:h:f:u:n:p:y" arg; do
 done
 
 if [ -n $file ]; then
-  cp $file "/media/target/fullbackup.tgz" 2>&1
+  cp $file "/media/target/fullbackup.tgz"
 fi
 
 if [ -n $url ]; then
   if [ -n $USERNAME ]; then
-    wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+    wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2
   else
-    wget -O /media/target/fullbackup.tgz  $url --tries=2 2>&1 |   \sed -u 's/^.* \+\([0-9]\+%\) \+\([0-9.]\+[GMKB]\) \+\([0-9hms.]\+\).*$/\1\n# Downloading... \2 (\3)/'
+    wget -O /media/target/fullbackup.tgz  $url --tries=2
   fi
 fi
 
@@ -106,7 +106,9 @@ if [ -z $swap ]; then
   done
 fi
 
-if [ -z $home ]
+
+
+if [ -z $home ]; then
   echo -e "\n(Optional - Press C to skip) Select the number of your home partition (for fstab) or enter Q to quit"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
@@ -127,7 +129,7 @@ if [ -z $home ]
   done
 fi
 
-if [ -z $boot ]
+if [ -z $boot ]; then
   echo -e "\n(Optional - Press C to skip) Select the number of your boot partition (for fstab) or enter Q to quit"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
@@ -232,7 +234,7 @@ echo "Swap Partition: $swap"
 echo "Boot Partition: $boot $bootfsystem"
 echo "Home Partition: $home $homefsystem"
 
-if [ $urlflag = false ]; then
+if [ $urlflag =:false ]; then
   echo -e "Backup File: $file\n"
 else
   echo -e "Backup File from URL: $url\n"

@@ -11,18 +11,18 @@ while getopts "r:s:b:h:g:f:u:n:p:y" arg; do
   case $arg in
     r) 
       root=$OPTARG
-      fsystem=(`blkid -s TYPE -o value $root`)
+      #fsystem=(`blkid -s TYPE -o value $root`)
     ;;
     s) 
       swap=$OPTARG
     ;;
     b) 
       boot=$OPTARG
-      bootfsystem=(`blkid -s TYPE -o value $boot`)
+      #bootfsystem=(`blkid -s TYPE -o value $boot`)
     ;;
     h) 
       home=$OPTARG
-      homefsystem=(`blkid -s TYPE -o value $home`)
+      #homefsystem=(`blkid -s TYPE -o value $home`)
     ;;
     g) 
       grub=$OPTARG
@@ -92,9 +92,9 @@ while [ -z "$root" ]; do
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
       root=(`echo $c | awk '{ print $1 }'`)
-      fsystem=(`echo $c | awk '{ print $2 }'`)
+      #fsystem=(`echo $c | awk '{ print $2 }'`)
       echo "You selected $root as your root partition" 
-      echo "The filesystem is $fsystem"
+      #echo "The filesystem is $fsystem"
       break
     else
       echo "Please select a valid option from the list or enter Q to quit"
@@ -129,9 +129,9 @@ if [ -z "$home" ]; then
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
       home=(`echo $c | awk '{ print $1 }'`)
-      homefsystem=(`echo $c | awk '{ print $2 }'`)
+      #homefsystem=(`echo $c | awk '{ print $2 }'`)
       echo "You selected $home as your home partition" 
-      echo "The filesystem is $homefsystem" 
+      #echo "The filesystem is $homefsystem" 
       break
     elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
       echo "No separate home"
@@ -150,9 +150,9 @@ if [ -z "$boot" ]; then
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
       boot=(`echo $c | awk '{ print $1 }'`)
-      bootfsystem=(`echo $c | awk '{ print $2 }'`)
+      #bootfsystem=(`echo $c | awk '{ print $2 }'`)
       echo "You selected $boot as your boot partition" 
-      echo "The filesystem is $bootfsystem" 
+      #echo "The filesystem is $bootfsystem" 
       break
     elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
       echo "No separate boot"
@@ -198,17 +198,22 @@ sleep 1
 echo -e "\n---------------MOUNTING $root (/)---------------"
 
 mount $root /media/target  2>&1 && echo SUCCESS  || echo WARNING
+fsystem=(`df -T | grep $root | awk '{ print $2}'`)
 
 if [   -n "$home" ]; then
   echo -e "\n---------------MOUNTING $home (/home)---------------"
   mkdir /media/target/home
   mount $home /media/target/home  2>&1 && echo SUCCESS  || echo WARNING
+  homefsystem=(`df -T | grep $home | awk '{ print $2}'`)
+
 fi
 
 if [   -n "$boot" ]; then
   echo -e "\n---------------MOUNTING $boot (/boot)---------------"
   mkdir /media/target/boot
   mount $boot /media/target/boot  2>&1 && echo SUCCESS  || echo WARNING
+  bootfsystem=(`df -T | grep $boot | awk '{ print $2}'`)
+
 fi
 
 echo -e "\n---------------GETTING TAR IMAGE---------------"

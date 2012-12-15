@@ -76,8 +76,9 @@ if [ -n "$root" ]; then
 fi
 
 if [ -n "$file" ]; then
+  echo "Copying file..."
   cp $file "/media/target/fullbackup.tgz"
-elif [ -n "$url" ]; then
+  elif [ -n "$url" ]; then
   if [ -n "$USERNAME" ]; then
     echo "got here"
     wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2
@@ -252,8 +253,9 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
 	if [ ! -f $file ] || [ -z $file ]; then
 	  echo "File not found"
 	else
-	  cp $file "/media/target/fullbackup.tgz" 2>&1
-	fi
+	   echo "Copying file..."
+           cp $file "/media/target/fullbackup.tgz"
+       	fi
       done
       break
       

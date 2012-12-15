@@ -223,8 +223,10 @@ if [ -n "$file" ]; then
   cp $file "/media/target/fullbackup.tgz"
 elif [ -n "$url" ]; then
   if [ -n "$USERNAME" ]; then
+    cd /media/target
     wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2
   else
+    cd /media/target
     wget -O /media/target/fullbackup.tgz  $url --tries=2
   fi
 fi
@@ -267,10 +269,12 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
 	read -p "Enter the username: " USERNAME
 	read -sp "Enter the password: " PASSWORD
 	echo " "
+        cd /media/target
 	wget --user=$USERNAME --password=$PASSWORD $url --tries=2
 	echo -e "\nDownloaded file: `pwd`/$file"
 	break
       fi
+      cd /media/target
       wget $url --tries=2
       echo -e "\nDownloaded file: `pwd`/$file"
       break

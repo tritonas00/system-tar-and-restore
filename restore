@@ -217,7 +217,7 @@ echo -e "\n---------------GETTING TAR IMAGE---------------"
 if [ -n "$file" ]; then
   echo "Copying file..."
   cp $file "/media/target/fullbackup.tgz"
-  elif [ -n "$url" ]; then
+elif [ -n "$url" ]; then
   if [ -n "$USERNAME" ]; then
     wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2
   else

@@ -75,20 +75,6 @@ if [ -n "$root" ]; then
   fi
 fi
 
-if [ -n "$file" ]; then
-  echo "Copying file..."
-  cp $file "/media/target/fullbackup.tgz"
-  elif [ -n "$url" ]; then
-  if [ -n "$USERNAME" ]; then
-    echo "got here"
-    wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2
-  else
-    echo "got here too"
-    wget -O /media/target/fullbackup.tgz  $url --tries=2
-  fi
-fi
-
-
 IFS=$'\n'
 PS3="Choice: "
 
@@ -195,13 +181,13 @@ while [ -z "$grub" ]; do
   done
 done
 
-if [ $swap -eq:-1 ]; then
+if [ "x$swap" = "x-1" ]; then
 	unset swap
 fi
-if [ $boot -eq:-1 ]; then
+if [ "x$boot" = "x-1" ]; then
 	unset boot
 fi
-if [ $home -eq:-1 ]; then
+if [ "x$home" = "x-1" ]; then
 	unset home
 fi
 
@@ -227,6 +213,17 @@ if [   -n "$boot" ]; then
 fi
 
 echo -e "\n---------------GETTING TAR IMAGE---------------"
+
+if [ -n "$file" ]; then
+  echo "Copying file..."
+  cp $file "/media/target/fullbackup.tgz"
+  elif [ -n "$url" ]; then
+  if [ -n "$USERNAME" ]; then
+    wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2
+  else
+    wget -O /media/target/fullbackup.tgz  $url --tries=2
+  fi
+fi
 
 while [ ! -f /media/target/fullbackup.tgz ]; do
     

@@ -34,10 +34,16 @@ read -s a
 echo -e "\nThe default folder for creating the backup file is / (root)" 
 fi
 
+def="y"
+
 while [ -z "$FOLDER" ]; do
 
-  read -p "Do you want to save in the default folder? (Y/n): " def
+  read -p "Do you want to save in the default folder? (Y/n): " an
 
+  if [ -n "$an" ]; then
+    def=$an
+  fi
+  
   if [ $def = "y" ] || [ $def = "Y" ]; then
     FOLDER="/"
   elif [ $def = "n" ] || [ $def = "N" ]; then

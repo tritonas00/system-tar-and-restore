@@ -2,10 +2,13 @@
 
 clear
 
-while getopts "d:" arg; do
+while getopts "d:h" arg; do
   case $arg in
     d) 
       FOLDER=$OPTARG
+    ;;
+    h)
+      home="n"
     ;;
     \?) 
       echo "Usage: $0 -d [path for backup folder]"
@@ -53,6 +56,25 @@ while [ -z "$FOLDER" ]; do
   fi
 done  
 
+def="y"
+
+while [ -z "$FOLDER" ]; do
+
+  read -p "Do you want to include home? (Y/n): " an
+
+  if [ -n "$an" ]; then
+    def=$an
+  fi
+  
+  if [ $def = "y" ] || [ $def = "Y" ]; then
+    home="y"
+  elif [ $def = "n" ] || [ $def = "N" ]; then
+    home="n"
+  else
+    echo -e "Please enter a valid option\n"
+  fi
+done  
+
 
 FOLDER=(`echo ${FOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
 
@@ -74,9 +96,11 @@ rotdash2(){
     echo -en . ; tput sgr0 ; sleep .2
   done
   }
-
-tar cvpzf  $FOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$FOLDER / 2>>$FOLDER/errors | tee $FOLDER/log 
-
+if [ $home = "n" ]; then
+  tar cvpzf  $FOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$FOLDER / 2>>$FOLDER/errors | tee $FOLDER/log 
+else
+  tar cvpzf  $FOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$FOLDER / 2>>$FOLDER/errors | tee $FOLDER/log 
+fi
 #rotdash2 $!
 
 echo "Setting permissions"

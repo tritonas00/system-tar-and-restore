@@ -280,7 +280,7 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
     echo "ERROR"
     rm /media/target/fullbackup.tgz
          fi
-	echo -e "\nDownloaded file: `pwd`/$file"
+#	echo -e "\nDownloaded file: `pwd`/$file"
 	break
       fi
       wget -O /media/target/fullbackup.tgz $url --tries=2
@@ -288,7 +288,7 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
     echo "ERROR"
     rm /media/target/fullbackup.tgz 
        fi
-      echo -e "\nDownloaded file: `pwd`/$file"
+#      echo -e "\nDownloaded file: `pwd`/$file"
       break
     else
       echo "Please select a valid option from the list or enter Q to quit"
@@ -300,10 +300,7 @@ echo -e "\nRoot Partition: $root $fsystem"
 echo "Swap Partition: $swap"
 echo "Boot Partition: $boot $bootfsystem"
 echo "Home Partition: $home $homefsystem"
-
-
-  echo -e "Backup File: $file $url\n"
-
+echo -e "Backup File: $file $url\n"
 
 
 if [ -z $def ]; then

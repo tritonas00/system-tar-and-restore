@@ -233,6 +233,18 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
   select c in "File" "URL" "Protected URL"; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
+        cd ~ 
+    if [ -n "$home" ]; then
+    umount  $home
+    rm -r /media/target/home
+    fi
+    if [ -n "$boot" ]; then
+    umount  $boot
+    rm -r /media/target/boot
+    fi
+  umount $root 
+  sleep 1
+  rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
       exit      
     elif [ $REPLY = "1" ]; then
       while [ ! -f /media/target/fullbackup.tgz ]; do

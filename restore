@@ -194,13 +194,13 @@ while [ -z "$grub" ]; do
   done
 done
 
-if [ $swap -eq -1 ]; then
+if [ $swap -eq:-1 ]; then
 	unset swap
 fi
-if [ $boot -eq -1 ]; then
+if [ $boot -eq:-1 ]; then
 	unset boot
 fi
-if [ $home -eq -1 ]; then
+if [ $home -eq:-1 ]; then
 	unset home
 fi
 

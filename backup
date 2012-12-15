@@ -60,7 +60,7 @@ def="y"
 
 while [ -z "$FOLDER" ]; do
 
-  read -p "Do you want to include home? (Y/n): " an
+  read -p "Do you want to include home? (Y/n) NOT WORKING YET: " an
 
   if [ -n "$an" ]; then
     def=$an
@@ -96,11 +96,12 @@ rotdash2(){
     echo -en . ; tput sgr0 ; sleep .2
   done
   }
-if [ $home = "n" ]; then
-  tar cvpzf  $FOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$FOLDER / 2>>$FOLDER/errors | tee $FOLDER/log 
-else
+  
+#if [ $home = "n" ]; then
+  #tar cvpzf  $FOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$FOLDER / 2>>$FOLDER/errors | tee $FOLDER/log 
+#else
   tar cvpzf  $FOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$FOLDER / 2>>$FOLDER/errors | tee $FOLDER/log 
-fi
+#fi
 #rotdash2 $!
 
 echo "Setting permissions"

@@ -31,7 +31,7 @@ while getopts "r:s:b:h:g:f:u:n:p:y" arg; do
       url=$OPTARG
     ;;
     n) 
-      USERNAME=$OPTARG
+      pusern=$OPTARG
     ;;
     p) 
       PASSWORD=$OPTARG
@@ -213,19 +213,21 @@ echo -e "\n---------------GETTING TAR IMAGE---------------"
 if [ -n "$file" ]; then
   echo "Copying file..."
   cp $file "/media/target/fullbackup.tgz"
-elif [ -n "$url" ]; then
-  if [ -n "$USERNAME" ]; then
-    wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz $url --tries=2
+fi
+
+if [ -n "$url" ]; then
+  if [ -n "$pusern" ]; then
+    wget --user=$pusern --password=$PASSWORD -O /media/target/fullbackup.tgz $url --tries=2
     if [ "$?" -ne "0" ]; then
-      echo "ERROR"
+    echo "Error downloading file"
+    rm /media/target/fullbackup.tgz
+    fi
+  else
+    wget -O /media/target/fullbackup.tgz $url --tries=2
+    if [ "$?" -ne "0" ]; then
+      echo "Error downloading file"
       rm /media/target/fullbackup.tgz
     fi
-  fi
-else
-  wget -O /media/target/fullbackup.tgz $url --tries=2
-  if [ "$?" -ne "0" ]; then
-    echo "ERROR"
-    rm /media/target/fullbackup.tgz
   fi
 fi
 
@@ -265,10 +267,10 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
       read -p "Enter the URL for the backup file: " url
       echo " "
       if [ $REPLY = "3" ]; then
-	read -p "Enter the username: " USERNAME
+	read -p "Enter the username: " pusern
 	read -sp "Enter the password: " PASSWORD
 	echo " "
-	wget --user=$USERNAME --password=$PASSWORD  -O /media/target/fullbackup.tgz $url --tries=2
+	wget --user=$pusern --password=$PASSWORD  -O /media/target/fullbackup.tgz $url --tries=2
         if [ "$?" -ne "0" ]; then
 	  echo "ERROR"
 	  rm /media/target/fullbackup.tgz

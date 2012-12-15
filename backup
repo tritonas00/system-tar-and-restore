@@ -58,8 +58,9 @@ done
 
 def="y"
 
-while [ -z "$FOLDER" ]; do
-
+while [ -z "$home" ]; do
+  
+  echo " "
   read -p "Do you want to include home? (Y/n) NOT WORKING YET: " an
 
   if [ -n "$an" ]; then

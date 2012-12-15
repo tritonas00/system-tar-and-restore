@@ -287,7 +287,9 @@ else
   echo -e "Backup File from URL: $url\n"
 fi  
 
-read -p "Do you want continue? (Y/n): " def
+if [ -z $def ]; then
+  read -p "Do you want continue? (Y/n): " def
+fi
 
 if [ $def = "n" ] || [ $def = "N" ]; then
 

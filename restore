@@ -164,10 +164,9 @@ if [ -z "$boot" ]; then
 fi
 
 while [ -z "$grub" ]; do
-  list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f $(blkid -s TYPE -o value $f) $(lsblk -d -n -o size $f)\r"; done`)
 
   echo -e "\nWhere to install GRUB? Enter Q to quit"
-  select c in ${list[@]}; do
+  select c in /dev/[hs]d[a-z]; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
       exit

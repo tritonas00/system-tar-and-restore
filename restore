@@ -224,10 +224,10 @@ if [ -n "$file" ]; then
 elif [ -n "$url" ]; then
   if [ -n "$USERNAME" ]; then
     cd /media/target
-    wget --user=$USERNAME --password=$PASSWORD -O /media/target/fullbackup.tgz  $url --tries=2
+    wget --user=$USERNAME --password=$PASSWORD  $url --tries=2
   else
     cd /media/target
-    wget -O /media/target/fullbackup.tgz  $url --tries=2
+    wget  $url --tries=2
   fi
 fi
 

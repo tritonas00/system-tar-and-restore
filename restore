@@ -32,7 +32,6 @@ while getopts "r:s:b:h:g:f:u:n:p:y" arg; do
     ;;
     u) 
       url=$OPTARG
-      urlflag=true
     ;;
     n) 
       USERNAME=$OPTARG
@@ -302,11 +301,10 @@ echo "Swap Partition: $swap"
 echo "Boot Partition: $boot $bootfsystem"
 echo "Home Partition: $home $homefsystem"
 
-if [ $urlflag =:false ]; then
-  echo -e "Backup File: $file\n"
-else
-  echo -e "Backup File from URL: $url\n"
-fi  
+
+  echo -e "Backup File: $file $url\n"
+
+
 
 if [ -z $def ]; then
   read -p "Do you want continue? (Y/n): " def

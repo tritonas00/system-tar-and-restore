@@ -10,31 +10,31 @@ fi
 while getopts "r:s:b:h:g:f:u:n:p:y" arg; do
   case $arg in
     r) 
-      root=$OPTARG
+      BRroot=$OPTARG
     ;;
     s) 
-      swap=$OPTARG
+      BRswap=$OPTARG
     ;;
     b) 
-      boot=$OPTARG
+      BRboot=$OPTARG
     ;;
     h) 
-      home=$OPTARG
+      BRhome=$OPTARG
     ;;
     g) 
-      grub=$OPTARG
+      BRgrub=$OPTARG
     ;;
     f) 
-      file=$OPTARG
+      BRfile=$OPTARG
     ;;
     u) 
-      url=$OPTARG
+      BRurl=$OPTARG
     ;;
     n) 
-      pusern=$OPTARG
+      BRusername=$OPTARG
     ;;
     p) 
-      PASSWORD=$OPTARG
+      BRpassword=$OPTARG
     ;;
     y) 
       def="y"
@@ -47,25 +47,25 @@ while getopts "r:s:b:h:g:f:u:n:p:y" arg; do
   esac
 done
 
-if [ -n "$root" ]; then
-  if [ -z "$swap" ]; then
-    swap=-1
+if [ -n "$BRroot" ]; then
+  if [ -z "$BRswap" ]; then
+    BRswap=-1
   fi
   
-  if [ -z "$boot" ]; then
-    boot=-1
+  if [ -z "$BRboot" ]; then
+    BRboot=-1
   fi
   
-  if [ -z "$home" ]; then
-    home=-1
+  if [ -z "$BRhome" ]; then
+    BRhome=-1
   fi
 
-  if [ -z "$grub" ]; then
+  if [ -z "$BRgrub" ]; then
     echo "You must enter a disk to install GRUB. Aborting"
     exit
   fi
   
-  if [ -z "$file" ] && [ -z "$url" ]; then
+  if [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     echo "You must enter a file or a URL to get the backup. Aborting"
     exit
   fi
@@ -80,17 +80,15 @@ echo -e "\n---------------READING INPUT VARIABLES---------------"
 
 list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(blkid -s TYPE -o value $f) $(lsblk -d -n -o size $f)\r"; done`)
 
-while [ -z "$root" ]; do
+while [ -z "$BRroot" ]; do
   echo -e "\nSelect the number of your root partition or enter Q to quit"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
-      root=(`echo $c | awk '{ print $1 }'`)
-      #fsystem=(`echo $c | awk '{ print $2 }'`)
-      echo "You selected $root as your root partition" 
-      #echo "The filesystem is $fsystem"
+      BRroot=(`echo $c | awk '{ print $1 }'`)
+      echo "You selected $BRroot as your root partition" 
       break
     else
       echo "Please select a valid option from the list or enter Q to quit"
@@ -98,15 +96,15 @@ while [ -z "$root" ]; do
   done  
 done
 
-if [ -z "$swap" ]; then
+if [ -z "$BRswap" ]; then
   echo -e "\n(Optional - Press C to skip) Select the number of your swap partition (for fstab) or enter Q to quit"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
-      swap=(`echo $c | awk '{ print $1 }'`)
-      echo "You selected $swap as your swap partition" 
+      BRswap=(`echo $c | awk '{ print $1 }'`)
+      echo "You selected $BRswap as your swap partition" 
       break
     elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
       echo "No swap"
@@ -117,15 +115,15 @@ if [ -z "$swap" ]; then
   done
 fi
 
-if [ -z "$home" ]; then
+if [ -z "$BRhome" ]; then
   echo -e "\n(Optional - Press C to skip) Select the number of your home partition (for fstab) or enter Q to quit"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
-      home=(`echo $c | awk '{ print $1 }'`)
-      echo "You selected $home as your home partition" 
+      BRhome=(`echo $c | awk '{ print $1 }'`)
+      echo "You selected $BRhome as your home partition" 
       break
     elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
       echo "No separate home"
@@ -136,15 +134,15 @@ if [ -z "$home" ]; then
   done
 fi
 
-if [ -z "$boot" ]; then
+if [ -z "$BRboot" ]; then
   echo -e "\n(Optional - Press C to skip) Select the number of your boot partition (for fstab) or enter Q to quit"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
-      boot=(`echo $c | awk '{ print $1 }'`)
-      echo "You selected $boot as your boot partition" 
+      BRboot=(`echo $c | awk '{ print $1 }'`)
+      echo "You selected $BRboot as your boot partition" 
       break
     elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
       echo "No separate boot"
@@ -155,7 +153,7 @@ if [ -z "$boot" ]; then
   done
 fi
 
-while [ -z "$grub" ]; do
+while [ -z "$BRgrub" ]; do
 
   echo -e "\nWhere to install GRUB? Enter Q to quit"
   select c in /dev/[hs]d[a-z]; do
@@ -163,8 +161,8 @@ while [ -z "$grub" ]; do
       echo "Now quiting"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
-      grub=(`echo $c | awk '{ print $1 }'`)
-      echo "You selected $grub to install GRUB"  
+      BRgrub=(`echo $c | awk '{ print $1 }'`)
+      echo "You selected $BRgrub to install GRUB"  
       break
     else
       echo "Please select a valid option from the list or enter Q to quit"
@@ -172,14 +170,14 @@ while [ -z "$grub" ]; do
   done
 done
 
-if [ "x$swap" = "x-1" ]; then
-	unset swap
+if [ "x$BRswap" = "x-1" ]; then
+	unset BRswap
 fi
-if [ "x$boot" = "x-1" ]; then
-	unset boot
+if [ "x$BRboot" = "x-1" ]; then
+	unset BRboot
 fi
-if [ "x$home" = "x-1" ]; then
-	unset home
+if [ "x$BRhome" = "x-1" ]; then
+	unset BRhome
 fi
 
 echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
@@ -187,43 +185,43 @@ echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
 mkdir /media/target  2>&1 && echo SUCCESS  || echo WARNING
 sleep 1
 
-echo -e "\n---------------MOUNTING $root (/)---------------"
+echo -e "\n---------------MOUNTING $BRroot (/)---------------"
 
-mount $root /media/target  2>&1 && echo SUCCESS  || echo WARNING
-fsystem=(`df -T | grep $root | awk '{ print $2}'`)
+mount $BRroot /media/target  2>&1 && echo SUCCESS  || echo WARNING
+BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
 
-if [   -n "$home" ]; then
-  echo -e "\n---------------MOUNTING $home (/home)---------------"
+if [   -n "$BRhome" ]; then
+  echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
   mkdir /media/target/home
-  mount $home /media/target/home  2>&1 && echo SUCCESS  || echo WARNING
-  homefsystem=(`df -T | grep $home | awk '{ print $2}'`)
+  mount $BRhome /media/target/home  2>&1 && echo SUCCESS  || echo WARNING
+  BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
 
 fi
 
-if [   -n "$boot" ]; then
-  echo -e "\n---------------MOUNTING $boot (/boot)---------------"
+if [   -n "$BRboot" ]; then
+  echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
   mkdir /media/target/boot
-  mount $boot /media/target/boot  2>&1 && echo SUCCESS  || echo WARNING
-  bootfsystem=(`df -T | grep $boot | awk '{ print $2}'`)
+  mount $BRboot /media/target/boot  2>&1 && echo SUCCESS  || echo WARNING
+  BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
 
 fi
 
 echo -e "\n---------------GETTING TAR IMAGE---------------"
 
-if [ -n "$file" ]; then
+if [ -n "$BRfile" ]; then
   echo "Copying file..."
-  cp $file "/media/target/fullbackup.tgz"
+  cp $BRfile "/media/target/fullbackup.tgz"
 fi
 
-if [ -n "$url" ]; then
-  if [ -n "$pusern" ]; then
-    wget --user=$pusern --password=$PASSWORD -O /media/target/fullbackup.tgz $url --tries=2
+if [ -n "$BRurl" ]; then
+  if [ -n "$BRusername" ]; then
+    wget --user=$BRusername --password=$BRpassword -O /media/target/fullbackup.tgz $BRurl --tries=2
     if [ "$?" -ne "0" ]; then
     echo "Error downloading file"
     rm /media/target/fullbackup.tgz
     fi
   else
-    wget -O /media/target/fullbackup.tgz $url --tries=2
+    wget -O /media/target/fullbackup.tgz $BRurl --tries=2
     if [ "$?" -ne "0" ]; then
       echo "Error downloading file"
       rm /media/target/fullbackup.tgz
@@ -239,45 +237,45 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
       cd ~ 
-      if [ -n "$home" ]; then
-	umount  $home
+      if [ -n "$BRhome" ]; then
+	umount  $BRhome
 	rm -r /media/target/home
       fi
-      if [ -n "$boot" ]; then
-	umount  $boot
+      if [ -n "$BRboot" ]; then
+	umount  $BRboot
 	rm -r /media/target/boot
       fi
-      umount $root 
+      umount $BRroot 
       sleep 1
       rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
       exit      
     elif [ $REPLY = "1" ]; then
       while [ ! -f /media/target/fullbackup.tgz ]; do
-	read -p "Enter the path of the backup file: " file
-	if [ ! -f $file ] || [ -z $file ]; then
+	read -p "Enter the path of the backup file: " BRfile
+	if [ ! -f $BRfile ] || [ -z $BRfile ]; then
 	  echo "File not found"
 	else
 	   echo "Copying file..."
-           cp $file "/media/target/fullbackup.tgz"
+           cp $BRfile "/media/target/fullbackup.tgz"
        	fi
       done
       break
       
     elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
-      read -p "Enter the URL for the backup file: " url
+      read -p "Enter the URL for the backup file: " BRurl
       echo " "
       if [ $REPLY = "3" ]; then
-	read -p "Enter the username: " pusern
-	read -sp "Enter the password: " PASSWORD
+	read -p "Enter the username: " BRusername
+	read -sp "Enter the password: " BRpassword
 	echo " "
-	wget --user=$pusern --password=$PASSWORD  -O /media/target/fullbackup.tgz $url --tries=2
+	wget --user=$BRusername --password=$BRpassword  -O /media/target/fullbackup.tgz $BRurl --tries=2
         if [ "$?" -ne "0" ]; then
 	  echo "Error downloading file"
 	  rm /media/target/fullbackup.tgz
         fi
 	break
       fi
-      wget -O /media/target/fullbackup.tgz $url --tries=2
+      wget -O /media/target/fullbackup.tgz $BRurl --tries=2
       if [ "$?" -ne "0" ]; then
 	echo "Error downloading file"
 	rm /media/target/fullbackup.tgz 
@@ -289,11 +287,11 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
   done
 done
 
-echo -e "\nRoot Partition: $root $fsystem"
-echo "Swap Partition: $swap"
-echo "Boot Partition: $boot $bootfsystem"
-echo "Home Partition: $home $homefsystem"
-echo -e "Backup File: $file $url\n"
+echo -e "\nRoot Partition: $BRroot $BRfsystem"
+echo "Swap Partition: $BRswap"
+echo "Boot Partition: $BRboot $BRbootfsystem"
+echo "Home Partition: $BRhome $BRhomefsystem"
+echo -e "Backup File: $BRfile $BRurl\n"
 
 
 if [ -z $def ]; then
@@ -304,16 +302,16 @@ if [ $def = "n" ] || [ $def = "N" ]; then
 
   echo -e "\n---------------CLEANING AND UNMOUNTING---------------"
   cd ~ 
-  if [ -n "$home" ]; then
-    umount  $home
+  if [ -n "$BRhome" ]; then
+    umount  $BRhome
     rm -r /media/target/home
   fi
-  if [ -n "$boot" ]; then
-    umount  $boot
+  if [ -n "$BRboot" ]; then
+    umount  $BRboot
     rm -r /media/target/boot
   fi
   rm /media/target/fullbackup.tgz
-  umount $root 
+  umount $BRroot 
   sleep 1
   rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
   exit
@@ -335,7 +333,7 @@ mount -t proc /proc /media/target/proc
 mount -t sysfs /sys /media/target/sys 2>&1 && echo SUCCESS  || echo FAILED
 sleep 1
 
-echo "\n---------------INSTALLING AND UPDATING GRUB 2 IN $grub---------------"
+echo "\n---------------INSTALLING AND UPDATING GRUB 2 IN $BRgrub---------------"
 chroot /media/target grub-install --target=i386-pc  $grub 
 cp /media/target/usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /media/target/boot/grub/locale/en.mo 
 chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
@@ -343,18 +341,18 @@ sleep 1
 
 echo -e "\n---------------GENERATING FSTAB---------------"
 echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /media/target/etc/fstab 
-echo "$root  /  $fsystem  defaults,noatime    0  1" >> /media/target/etc/fstab
+echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /media/target/etc/fstab
 
-if [ -n "$swap" ]; then
-  echo "$swap    swap   swap    defaults    0  0" >> /media/target/etc/fstab
+if [ -n "$BRswap" ]; then
+  echo "$BRswap    swap   swap    defaults    0  0" >> /media/target/etc/fstab
 fi
 
-if [ -n "$home" ]; then
-  echo "$home  /home  $homefsystem  defaults,noatime    0  2" >> /media/target/etc/fstab
+if [ -n "$BRhome" ]; then
+  echo "$BRhome  /home  $BRhomefsystem  defaults,noatime    0  2" >> /media/target/etc/fstab
 fi
 
-if [ -n "$boot" ]; then
-  echo "$boot  /boot  $bootfsystem  defaults    0  1" >> /media/target/etc/fstab
+if [ -n "$BRboot" ]; then
+  echo "$BRboot  /boot  $BRbootfsystem  defaults    0  1" >> /media/target/etc/fstab
 fi
 
 sed -n 's|^/dev/\([sh]d[a-z][0-9]\).*|\1|p' </media/target/etc/fstab > /media/target/etc/fstab2
@@ -388,19 +386,19 @@ echo -e "\n---------------CLEANING AND UNMOUNTING---------------"
 
 cd ~
 
-if [ -n "$home" ]; then
-  umount  $home
+if [ -n "$BRhome" ]; then
+  umount  $BRhome
 fi
 
-if [ -n "$boot" ]; then
-  umount  $boot
+if [ -n "$BRboot" ]; then
+  umount  $BRboot
 fi
 
 umount /media/target/dev
 umount /media/target/proc
 umount /media/target/sys
 rm /media/target/fullbackup.tgz 
-umount $root
+umount $BRroot
 sleep 1
 rm  -r /media/target  2>&1 && echo SUCCESS  || echo FAILED
 

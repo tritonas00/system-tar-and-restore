@@ -272,14 +272,14 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
 	echo " "
 	wget --user=$pusern --password=$PASSWORD  -O /media/target/fullbackup.tgz $url --tries=2
         if [ "$?" -ne "0" ]; then
-	  echo "ERROR"
+	  echo "Error downloading file"
 	  rm /media/target/fullbackup.tgz
         fi
 	break
       fi
       wget -O /media/target/fullbackup.tgz $url --tries=2
       if [ "$?" -ne "0" ]; then
-	echo "ERROR"
+	echo "Error downloading file"
 	rm /media/target/fullbackup.tgz 
       fi
       break

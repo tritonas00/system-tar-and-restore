@@ -335,7 +335,6 @@ sleep 1
 
 echo "\n---------------INSTALLING AND UPDATING GRUB 2 IN $BRgrub---------------"
 chroot /media/target grub-install --target=i386-pc  $grub 
-cp /media/target/usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /media/target/boot/grub/locale/en.mo 
 chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
 sleep 1
 

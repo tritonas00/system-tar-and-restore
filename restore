@@ -321,7 +321,9 @@ fi
 
 
 echo -e "\n---------------EXTRACTING---------------"
+cd /media/target
 tar xvpfz fullbackup.tgz -C /media/target   2>&1 && echo SUCCESS  || echo WARNING  
+cd ~
 sleep 1
 
 

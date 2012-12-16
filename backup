@@ -5,10 +5,10 @@ clear
 while getopts "d:h" arg; do
   case $arg in
     d) 
-      FOLDER=$OPTARG
+      BRFOLDER=$OPTARG
     ;;
     h)
-      home="n"
+      BRhome="n"
     ;;
     \?) 
       echo "Usage: $0 -d [path for backup folder]"
@@ -27,7 +27,7 @@ if [ ! -d "/boot/grub/" ]; then
   exit
 fi
 
-if [ -z "$FOLDER" ]; then
+if [ -z "$BRFOLDER" ]; then
 
 echo "This script will make a full tar backup image of your entire system"
 echo "Make sure you have enough free space"
@@ -37,7 +37,7 @@ read -s a
 echo -e "\nThe default folder for creating the backup file is / (root)" 
 fi
 
-while [ -z "$FOLDER" ]; do
+while [ -z "$BRFOLDER" ]; do
 
   read -p "Do you want to save in the default folder? (Y/n): " an
 
@@ -48,15 +48,15 @@ while [ -z "$FOLDER" ]; do
   fi
   
   if [ $def = "y" ] || [ $def = "Y" ]; then
-    FOLDER="/"
+    BRFOLDER="/"
   elif [ $def = "n" ] || [ $def = "N" ]; then
-    read -p "Insert the folder path where the backup will be created: " FOLDER
+    read -p "Insert the folder path where the backup will be created: " BRFOLDER
   else
     echo -e "Please enter a valid option\n"
   fi
 done  
 
-while [ -z "$home" ]; do
+while [ -z "$BRhome" ]; do
   
   echo " "
   read -p "Do you want to include home? (Y/n) NOT WORKING YET: " an
@@ -68,21 +68,21 @@ while [ -z "$home" ]; do
   fi
   
   if [ $def = "y" ] || [ $def = "Y" ]; then
-    home="y"
+    BRhome="y"
   elif [ $def = "n" ] || [ $def = "N" ]; then
-    home="n"
+    BRhome="n"
   else
     echo -e "Please enter a valid option\n"
   fi
 done  
 
 
-FOLDER=(`echo ${FOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
+BRFOLDER=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
 
 echo "Preparing"
-mkdir -p $FOLDER
-touch $FOLDER/log
-touch $FOLDER/errors
+mkdir -p $BRFOLDER
+touch $BRFOLDER/log
+touch $BRFOLDER/errors
 
 sleep 1
 echo "Creating backup image, please wait"
@@ -98,14 +98,14 @@ rotdash2(){
   done
   }
   
-#if [ $home = "n" ]; then
-  #tar cvpzf  $FOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$FOLDER / 2>>$FOLDER/errors | tee $FOLDER/log 
+#if [ $BRhome = "n" ]; then
+  #tar cvpzf  $BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
 #else
-  tar cvpzf  $FOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$FOLDER / 2>>$FOLDER/errors | tee $FOLDER/log 
+  tar cvpzf  $BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
 #fi
 #rotdash2 $!
 
 echo "Setting permissions"
-chmod ugo+rw -R "${FOLDER[@]}" 2>> $FOLDER/errors
+chmod ugo+rw -R "${BRFOLDER[@]}" 2>> $BRFOLDER/errors
 
-echo "Done. Tar image and logs saved in $FOLDER"
+echo "Done. Tar image and logs saved in $BRFOLDER"

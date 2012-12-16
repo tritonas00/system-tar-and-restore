@@ -334,7 +334,7 @@ mount -t sysfs /sys /media/target/sys 2>&1 && echo SUCCESS  || echo FAILED
 sleep 1
 
 echo "\n---------------INSTALLING AND UPDATING GRUB 2 IN $BRgrub---------------"
-chroot /media/target grub-install --target=i386-pc  $grub 
+chroot /media/target grub-install --target=i386-pc  $BRgrub 
 chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
 sleep 1
 

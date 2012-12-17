@@ -79,6 +79,23 @@ echo "`date +%A-%d-%m-%Y-%R`"
 echo -e "\n---------------READING INPUT VARIABLES---------------"
 
 list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(blkid -s TYPE -o value $f) $(lsblk -d -n -o size $f)\r"; done`)
+distrolist=(Arch Debian)
+
+while [ -z "$BRdistro" ]; do
+  echo -e "\nSelect target distribution or enter Q to quit"
+  select c in ${distrolist[@]}; do
+    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      echo "Now quiting"
+      exit
+    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#distrolist[@]} ]; then
+      BRdistro=(`echo $c | awk '{ print $1 }'`)
+      echo "You selected $BRdistro" 
+      break
+    else
+      echo "Please select a valid option from the list or enter Q to quit"
+    fi
+  done  
+done
 
 while [ -z "$BRroot" ]; do
   echo -e "\nSelect the number of your root partition or enter Q to quit"
@@ -334,8 +351,16 @@ mount -t sysfs /sys /media/target/sys 2>&1 && echo SUCCESS  || echo FAILED
 sleep 1
 
 echo "\n---------------INSTALLING AND UPDATING GRUB 2 IN $BRgrub---------------"
-chroot /media/target grub-install --target=i386-pc  $BRgrub 
+if [ $BRdistro = Arch ]; then
+  chroot /media/target grub-install --target=i386-pc  $BRgrub 
+fi
+
+if [ $BRdistro = Debian ]; then
+  chroot /media/target grub-install  $BRgrub
+fi
+
 chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+
 sleep 1
 
 echo -e "\n---------------GENERATING FSTAB---------------"
@@ -368,7 +393,14 @@ cat /media/target/etc/fstab
 sleep 1
 
 echo -e "\n---------------BUILDING INITRAMFS IMAGE---------------"
-chroot /media/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
+if [ $BRdistro = Arch ]; then
+  chroot /media/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
+fi
+
+if [ $BRdistro = Debian ]; then
+  chroot /media/target update-initramfs -u -k `uname -r`
+fi
+
 sleep 1
 
 echo -e "\n---------------GENERATING LOCALES---------------"

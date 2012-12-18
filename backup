@@ -59,7 +59,7 @@ done
 while [ -z "$BRhome" ]; do
   
   echo " "
-  read -p "Do you want to include home? (Y/n) NOT WORKING YET: " an
+  read -p "Do you want to include home? (Y/n): " an
 
   if [ -n "$an" ]; then
     def=$an
@@ -98,11 +98,11 @@ rotdash2(){
   done
   }
   
-#if [ $BRhome = "n" ]; then
-  #tar cvpzf  $BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
-#else
+if [ $BRhome = "n" ]; then
+  tar cvpzf  $BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/home/[a-zA-z0-9]/^.* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+else
   tar cvpzf  $BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
-#fi
+fi
 #rotdash2 $!
 
 echo "Setting permissions"

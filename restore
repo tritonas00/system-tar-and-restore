@@ -402,7 +402,8 @@ echo -e "\n---------------BUILDING INITRAMFS IMAGE---------------"
 if [ $BRdistro = Arch ]; then
   chroot /media/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
 elif [ $BRdistro = Debian ]; then
-  chroot /media/target update-initramfs -u -k `uname -r`
+  BRinitrd=(`ls /media/target/boot/vmlinuz* | sed 's_/media/target/boot/vmlinuz-__'`)
+  chroot /media/target update-initramfs -u -k $BRinitrd
 fi
 
 sleep 1

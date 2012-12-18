@@ -7,8 +7,11 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
-while getopts "r:s:b:h:g:f:u:n:p:y" arg; do
+while getopts "d:r:s:b:h:g:f:u:n:p:y" arg; do
   case $arg in
+    d)
+      BRdistro=$OPTARG
+    ;;
     r) 
       BRroot=$OPTARG
     ;;
@@ -40,7 +43,7 @@ while getopts "r:s:b:h:g:f:u:n:p:y" arg; do
       def="y"
     ;;
     \?)
-      echo "Usage: $0 -r [root partition] -s [swap partition] -b [boot partition] -h [home partition]"
+      echo "Usage: $0 -d [target distribution] -r [root partition] -s [swap partition] -b [boot partition] -h [home partition]"
       echo -e "\t\t-g [disk for grub] -f [backup file path] -u [url] -n [username] -p [password]"
       exit
     ;;
@@ -60,11 +63,16 @@ if [ -n "$BRroot" ]; then
     BRhome=-1
   fi
 
+  if [ -z "$BRdistro" ]; then
+    echo "You must specify your target distribution. Aborting"
+    exit
+  fi
+  
   if [ -z "$BRgrub" ]; then
     echo "You must enter a disk to install GRUB. Aborting"
     exit
   fi
-  
+   
   if [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     echo "You must enter a file or a URL to get the backup. Aborting"
     exit
@@ -88,7 +96,7 @@ while [ -z "$BRdistro" ]; do
       echo "Now quiting"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#distrolist[@]} ]; then
-      BRdistro=(`echo $c | awk '{ print $1 }'`)
+      BRdistro=$c
       echo "You selected $BRdistro" 
       break
     else
@@ -353,9 +361,7 @@ sleep 1
 echo "\n---------------INSTALLING AND UPDATING GRUB 2 IN $BRgrub---------------"
 if [ $BRdistro = Arch ]; then
   chroot /media/target grub-install --target=i386-pc  $BRgrub 
-fi
-
-if [ $BRdistro = Debian ]; then
+elif [ $BRdistro = Debian ]; then
   chroot /media/target grub-install  $BRgrub
 fi
 
@@ -395,9 +401,7 @@ sleep 1
 echo -e "\n---------------BUILDING INITRAMFS IMAGE---------------"
 if [ $BRdistro = Arch ]; then
   chroot /media/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
-fi
-
-if [ $BRdistro = Debian ]; then
+elif [ $BRdistro = Debian ]; then
   chroot /media/target update-initramfs -u -k `uname -r`
 fi
 

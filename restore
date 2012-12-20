@@ -13,7 +13,10 @@ cleanandunmount() {
     umount  $BRboot
     rm -r /media/target/boot
   fi
+  
+  if [ -f /media/target/fullbackup.tgz ]; then
   rm /media/target/fullbackup.tgz
+  fi
   umount $BRroot 
   sleep 1
   rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 

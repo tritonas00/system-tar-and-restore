@@ -466,6 +466,9 @@ read -s a
 
 sleep 2
 
+umount /media/target/dev
+umount /media/target/proc
+umount /media/target/sys
 cleanandunmount
 
 

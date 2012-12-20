@@ -352,7 +352,7 @@ echo -e "\nRoot Partition: $BRroot $BRfsystem"
 echo "Swap Partition: $BRswap"
 echo "Boot Partition: $BRboot $BRbootfsystem"
 echo "Home Partition: $BRhome $BRhomefsystem"
-echo "Grub Location:  $BRgrub"
+echo "Bootloader Location:  $BRgrub $BRsyslinux"
 echo -e "Backup File: $BRfile $BRurl\n"
 
 

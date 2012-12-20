@@ -393,21 +393,6 @@ mount -t proc /proc /media/target/proc
 mount -t sysfs /sys /media/target/sys 2>&1 && echo SUCCESS  || echo FAILED
 sleep 1
 
-echo "\n---------------INSTALLING AND UPDATING GRUB 2 IN $BRgrub---------------"
-if [ $BRdistro = Arch ]; then
-  chroot /media/target grub-install --target=i386-pc  $BRgrub 
-  chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
-elif [ $BRdistro = Debian ]; then
-  chroot /media/target grub-install  $BRgrub
-  chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
-elif [ $BRdistro = Fedora ]; then
-  chroot /media/target grub2-install $BRgrub
-  chroot /media/target grub2-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
-fi
-
-
-sleep 1
-
 echo -e "\n---------------GENERATING FSTAB---------------"
 echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /media/target/etc/fstab 
 echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /media/target/etc/fstab
@@ -447,6 +432,25 @@ elif [ $BRdistro = Fedora ]; then
 fi
 
 sleep 1
+
+if [ -n $BRgrub ]; then
+  echo -e "\n---------------INSTALLING AND UPDATING GRUB2 IN $BRgrub---------------"
+  if [ $BRdistro = Arch ]; then
+    chroot /media/target grub-install --target=i386-pc  $BRgrub 
+    chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+  elif [ $BRdistro = Debian ]; then
+    chroot /media/target grub-install  $BRgrub
+    chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+  elif [ $BRdistro = Fedora ]; then
+    chroot /media/target grub2-install $BRgrub
+    chroot /media/target grub2-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+  fi
+else
+  echo -e "\n---------------INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux---------------"
+  chroot cat /usr/lib/extlinux/mbr.bin > $BRsyslinux
+  chroot echo " " > /boot/syslinux/syslinux.cfg
+  
+fi  
 
 echo -e "\n---------------GENERATING LOCALES---------------"
 if [ $BRdistro = Fedora ]; then

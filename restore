@@ -111,7 +111,7 @@ echo "`date +%A-%d-%m-%Y-%R`"
 echo -e "\n---------------READING INPUT VARIABLES---------------"
 
 list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(blkid -s TYPE -o value $f) $(lsblk -d -n -o size $f)\r"; done`)
-distrolist=(Arch Debian Fedora)
+distrolist=(Arch Debian)
 
 while [ -z "$BRdistro" ]; do
   echo -e "\nSelect target distribution or enter Q to quit"
@@ -438,7 +438,7 @@ if [ -n $BRgrub ]; then
     chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
   elif [ $BRdistro = Fedora ]; then
     chroot /media/target grub2-install $BRgrub
-    chroot /media/target grub2-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+    chroot /media/target grub2-mkconfig -o /boot/grub2/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
   fi
 else
   echo -e "\n---------------INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux---------------"

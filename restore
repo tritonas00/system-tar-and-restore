@@ -224,6 +224,7 @@ if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
 	  fi
 	done
       done
+      break
 
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
       while [ -z "$BRsyslinux" ]; do
@@ -242,6 +243,7 @@ if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
 	  fi
 	done
       done
+      break
     else
     echo "Please select a valid option from the list or enter Q to quit"
     fi

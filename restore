@@ -87,7 +87,7 @@ echo "`date +%A-%d-%m-%Y-%R`"
 echo -e "\n---------------READING INPUT VARIABLES---------------"
 
 list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(blkid -s TYPE -o value $f) $(lsblk -d -n -o size $f)\r"; done`)
-distrolist=(Arch Debian)
+distrolist=(Arch Debian Fedora)
 
 while [ -z "$BRdistro" ]; do
   echo -e "\nSelect target distribution or enter Q to quit"
@@ -316,6 +316,7 @@ echo -e "\nRoot Partition: $BRroot $BRfsystem"
 echo "Swap Partition: $BRswap"
 echo "Boot Partition: $BRboot $BRbootfsystem"
 echo "Home Partition: $BRhome $BRhomefsystem"
+echo "Grub Location:  $BRgrub"
 echo -e "Backup File: $BRfile $BRurl\n"
 
 
@@ -346,9 +347,7 @@ fi
 
 
 echo -e "\n---------------EXTRACTING---------------"
-cd /media/target
-tar xvpfz fullbackup.tgz -C /media/target   2>&1 && echo SUCCESS  || echo WARNING  
-cd ~
+tar xvpfz /media/target/fullbackup.tgz -C /media/target   2>&1 && echo SUCCESS  || echo WARNING  
 sleep 1
 
 
@@ -363,9 +362,11 @@ if [ $BRdistro = Arch ]; then
   chroot /media/target grub-install --target=i386-pc  $BRgrub 
 elif [ $BRdistro = Debian ]; then
   chroot /media/target grub-install  $BRgrub
+elif [ $BRdistro = Fedora ]; then
+  chroot /media/target grub2-install $BRgrub
 fi
 
-chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+chroot /media/target grub2-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
 
 sleep 1
 
@@ -393,8 +394,6 @@ while read LINE; do
 done </media/target/etc/fstab2
   
 rm /media/target/etc/fstab2
-
-echo -e "\n---------------READING GENERATED FSTAB---------------"
 cat /media/target/etc/fstab
 sleep 1
 
@@ -403,13 +402,20 @@ if [ $BRdistro = Arch ]; then
   chroot /media/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
 elif [ $BRdistro = Debian ]; then
   BRinitrd=(`ls /media/target/boot/vmlinuz* | sed 's_/media/target/boot/vmlinuz-__'`)
-  chroot /media/target update-initramfs -u -k $BRinitrd
+  chroot /media/target update-initramfs -u -k $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
+elif [ $BRdistro = Fedora ]; then
+  BRinitrd=(`ls /media/target/boot/vmlinuz* | sed 's_/media/target/boot/vmlinuz-__'`)
+  chroot /media/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
 fi
 
 sleep 1
 
 echo -e "\n---------------GENERATING LOCALES---------------"
-chroot /media/target  locale-gen   2>&1 && echo SUCCESS || echo FAILED
+if [ $BRdistro = Fedora ]; then
+  chroot /media/target localedef -f UTF-8 -i en_US en_US.UTF-8 2>&1 && echo SUCCESS || echo WARNING
+else
+  chroot /media/target  locale-gen   2>&1 && echo SUCCESS || echo WARNING
+fi
 sleep 1
 
 echo -e "\nCompleted. Press ENTER to unmount and clean, then reboot your system." 

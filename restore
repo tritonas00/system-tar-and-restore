@@ -402,7 +402,7 @@ elif [ $BRdistro = Debian ]; then
   chroot /media/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
 elif [ $BRdistro = Fedora ]; then
   chroot /media/target grub2-install $BRgrub
-  chroot /media/target grub2-mkconfig -o /boot/grub2/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+  chroot /media/target grub2-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
 fi
 
 

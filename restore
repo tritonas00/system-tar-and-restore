@@ -2,6 +2,24 @@
 
 clear
 
+cleanandunmount() {
+  echo -e "\n---------------CLEANING AND UNMOUNTING---------------"
+  cd ~ 
+  if [ -n "$BRhome" ]; then
+    umount  $BRhome
+    rm -r /media/target/home
+  fi
+  if [ -n "$BRboot" ]; then
+    umount  $BRboot
+    rm -r /media/target/boot
+  fi
+  rm /media/target/fullbackup.tgz
+  umount $BRroot 
+  sleep 1
+  rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
+  exit
+}
+
 if [ $(id -u) -gt 0 ]; then
   echo "Please run the script as root. Exit"
   exit
@@ -297,19 +315,7 @@ while [ ! -f /media/target/fullbackup.tgz ]; do
   select c in "File" "URL" "Protected URL"; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
-      cd ~ 
-      if [ -n "$BRhome" ]; then
-	umount  $BRhome
-	rm -r /media/target/home
-      fi
-      if [ -n "$BRboot" ]; then
-	umount  $BRboot
-	rm -r /media/target/boot
-      fi
-      umount $BRroot 
-      sleep 1
-      rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
-      exit      
+      cleanandunmount
     elif [ $REPLY = "1" ]; then
       while [ ! -f /media/target/fullbackup.tgz ]; do
 	read -p "Enter the path of the backup file: " BRfile
@@ -361,23 +367,7 @@ if [ -z $def ]; then
 fi
 
 if [ $def = "n" ] || [ $def = "N" ]; then
-
-  echo -e "\n---------------CLEANING AND UNMOUNTING---------------"
-  cd ~ 
-  if [ -n "$BRhome" ]; then
-    umount  $BRhome
-    rm -r /media/target/home
-  fi
-  if [ -n "$BRboot" ]; then
-    umount  $BRboot
-    rm -r /media/target/boot
-  fi
-  rm /media/target/fullbackup.tgz
-  umount $BRroot 
-  sleep 1
-  rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
-  exit
-  
+  cleanandunmount
 fi  
 
 
@@ -466,25 +456,6 @@ read -s a
 
 sleep 2
 
-
-echo -e "\n---------------CLEANING AND UNMOUNTING---------------"
-
-cd ~
-
-if [ -n "$BRhome" ]; then
-  umount  $BRhome
-fi
-
-if [ -n "$BRboot" ]; then
-  umount  $BRboot
-fi
-
-umount /media/target/dev
-umount /media/target/proc
-umount /media/target/sys
-rm /media/target/fullbackup.tgz 
-umount $BRroot
-sleep 1
-rm  -r /media/target  2>&1 && echo SUCCESS  || echo FAILED
+cleanandunmount
 
 

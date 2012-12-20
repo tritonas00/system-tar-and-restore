@@ -447,8 +447,9 @@ if [ -n $BRgrub ]; then
   fi
 else
   echo -e "\n---------------INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux---------------"
-  chroot cat /usr/lib/extlinux/mbr.bin > $BRsyslinux
-  chroot echo " " > /boot/syslinux/syslinux.cfg
+  chroot /media/target cat /usr/lib/extlinux/mbr.bin > $BRsyslinux
+  chroot /media/target echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" > /boot/syslinux/syslinux.cfg
+  chroot /media/target echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro\n\tINITRD ../initrd.img-$BRinitrd" >> /boot/syslinux/syslinux.cfg
   
 fi  
 

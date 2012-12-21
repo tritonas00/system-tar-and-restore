@@ -371,7 +371,7 @@ if [ -z $def ]; then
   read -p "Do you want continue? (Y/n): " def
 fi
 
-if [ $def = "n" ] || [ $def = "N" ]; then
+if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
   cleanandunmount
 fi  
 

@@ -89,9 +89,9 @@ echo "Creating backup image, please wait"
 
 
 if [ $BRhome = "n" ]; then
-  tar cvpzf  $BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/home/[a-zA-z0-9]/^.* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+  tar cvpzf  $BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --acls  --selinux --xattrs --exclude=/home/[a-zA-z0-9]/^.* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
 else
-  tar cvpzf  $BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+  tar cvpzf  $BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`".tgz  --acls  --selinux --xattrs --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
 fi
 
 

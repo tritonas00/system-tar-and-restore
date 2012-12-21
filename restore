@@ -111,7 +111,7 @@ echo "`date +%A-%d-%m-%Y-%R`"
 echo -e "\n---------------READING INPUT VARIABLES---------------"
 
 list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(blkid -s TYPE -o value $f) $(lsblk -d -n -o size $f)\r"; done`)
-distrolist=(Arch Debian)
+distrolist=(Arch Debian Fedora)
 
 while [ -z "$BRdistro" ]; do
   echo -e "\nSelect target distribution or enter Q to quit"
@@ -456,6 +456,7 @@ fi
 echo -e "\n---------------GENERATING LOCALES---------------"
 if [ $BRdistro = Fedora ]; then
   chroot /media/target localedef -f UTF-8 -i en_US en_US.UTF-8 2>&1 && echo SUCCESS || echo WARNING
+  touch /media/target/.autorelabel
 else
   chroot /media/target  locale-gen   2>&1 && echo SUCCESS || echo WARNING
 fi

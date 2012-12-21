@@ -456,7 +456,6 @@ fi
 echo -e "\n---------------GENERATING LOCALES---------------"
 if [ $BRdistro = Fedora ]; then
   chroot /media/target localedef -f UTF-8 -i en_US en_US.UTF-8 2>&1 && echo SUCCESS || echo WARNING
-  touch /media/target/.autorelabel
 else
   chroot /media/target  locale-gen   2>&1 && echo SUCCESS || echo WARNING
 fi

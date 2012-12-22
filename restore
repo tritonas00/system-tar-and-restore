@@ -428,7 +428,7 @@ fi
 
 sleep 1
 
-if [ -n $BRgrub ]; then
+if [ -n "$BRgrub" ]; then
   echo -e "\n---------------INSTALLING AND UPDATING GRUB2 IN $BRgrub---------------"
   if [ $BRdistro = Arch ]; then
     chroot /media/target grub-install --target=i386-pc  $BRgrub 
@@ -440,7 +440,7 @@ if [ -n $BRgrub ]; then
     chroot /media/target grub2-install $BRgrub
     chroot /media/target grub2-mkconfig -o /boot/grub2/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
   fi
-else
+elif [ -n "$BRsyslinux" ]; then
   echo -e "\n---------------INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux---------------"
   if [ $BRdistro = Arch ]; then
     chroot /media/target cat /usr/lib/extlinux/mbr.bin > $BRsyslinux

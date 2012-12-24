@@ -448,8 +448,12 @@ elif [ -n "$BRsyslinux" ]; then
     echo -e "LABEL linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot ro\n\tINITRD ../initramfs-linux.img" >> /media/target/boot/syslinux/syslinux.cfg
   elif [ $BRdistro = Debian ]; then
   mkdir -p /media/target/boot/syslinux
-  cat /media/target/usr/lib/syslinux/mbr.bin > $BRsyslinux
-  echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" > /media/target/boot/syslinux/syslinux.cfg
+  chroot /media/target extlinux -i /boot/syslinux
+  sfdisk $(echo $boot | cut -c -8) -A $(echo $boot | cut -c 9-)
+  dd bs=440 count=1 conv=notrunc if=/media/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux
+  cp /media/target/usr/lib/syslinux/menu.c32 /media/target/boot/syslinux/
+  echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /media/target/boot/syslinux/syslinux.cfg
+  echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /media/target/boot/syslinux/syslinux.cfg
   echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro\n\tINITRD ../initrd.img-$BRinitrd" >> /media/target/boot/syslinux/syslinux.cfg
   fi
 fi  

@@ -449,7 +449,11 @@ elif [ -n "$BRsyslinux" ]; then
   elif [ $BRdistro = Debian ]; then
   mkdir -p /media/target/boot/syslinux
   chroot /media/target extlinux -i /boot/syslinux
-  sfdisk $(echo $boot | cut -c -8) -A $(echo $boot | cut -c 9-)
+  if [ -n $boot ]; then
+    sfdisk $(echo $boot | cut -c -8) -A $(echo $boot | cut -c 9-)
+  else
+    sfdisk $(echo $root | cut -c -8) -A $(echo $root | cut -c 9-)
+  fi  
   dd bs=440 count=1 conv=notrunc if=/media/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux
   cp /media/target/usr/lib/syslinux/menu.c32 /media/target/boot/syslinux/
   echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /media/target/boot/syslinux/syslinux.cfg

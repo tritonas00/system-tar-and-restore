@@ -451,9 +451,13 @@ elif [ -n "$BRsyslinux" ]; then
   mkdir -p /media/target/boot/syslinux
   chroot /media/target extlinux -i /boot/syslinux
   if [ -n $BRboot ]; then
-    sfdisk $(echo $BRboot | cut -c -8) -A $(echo $BRboot | cut -c 9-)
+    BRdev=`echo $BRboot | cut -c -8`
+    BRpart=`echo $BRboot | cut -c 9-`
+    sfdisk $BRdev -A $BRpart
   else
-    sfdisk $(echo $BRroot | cut -c -8) -A $(echo $BRroot | cut -c 9-)
+    BRdev=`echo $BRroot | cut -c -8`
+    BRpart=`echo $BRroot | cut -c 9-`
+    sfdisk $BRdev -A $BRpart
   fi  
   dd bs=440 count=1 conv=notrunc if=/media/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux
   cp /media/target/usr/lib/syslinux/menu.c32 /media/target/boot/syslinux/

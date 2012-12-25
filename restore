@@ -450,7 +450,7 @@ elif [ -n "$BRsyslinux" ]; then
   elif [ $BRdistro = Debian ]; then
   mkdir -p /media/target/boot/syslinux
   chroot /media/target extlinux -i /boot/syslinux
-  if [ -n $BRboot ]; then
+  if [ -n "$BRboot" ]; then
     BRdev=`echo $BRboot | cut -c -8`
     BRpart=`echo $BRboot | cut -c 9-`
     sfdisk $BRdev -A $BRpart

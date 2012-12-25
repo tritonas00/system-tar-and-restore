@@ -444,8 +444,9 @@ elif [ -n "$BRsyslinux" ]; then
   echo -e "\n---------------INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux---------------"
   if [ $BRdistro = Arch ]; then
     chroot /media/target syslinux-install_update -i -a -m
-    echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" > /media/target/boot/syslinux/syslinux.cfg
-    echo -e "LABEL linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot ro\n\tINITRD ../initramfs-linux.img" >> /media/target/boot/syslinux/syslinux.cfg
+    echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /media/target/boot/syslinux/syslinux.cfg
+    echo -e "LABEL arch\n    MENU LABEL Arch Linux\n    LINUX ../vmlinuz-linux\n    APPEND root=$BRroot  ro\n    INITRD ../initramfs-linux.img" >> /media/target/boot/syslinux/syslinux.cfg
+    echo -e "LABEL archfallback\n    MENU LABEL Arch Linux Fallback\n    LINUX ../vmlinuz-linux\n    APPEND root=$BRroot  ro\n    INITRD ../initramfs-fallback.img" >> /media/target/boot/syslinux/syslinux.cfg
   elif [ $BRdistro = Debian ]; then
   mkdir -p /media/target/boot/syslinux
   chroot /media/target extlinux -i /boot/syslinux

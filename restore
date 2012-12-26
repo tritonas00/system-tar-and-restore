@@ -13,30 +13,30 @@ cleanandunmount() {
   if [ -n "$BRhome" ]; then
     umount  $BRhome
     if [ "$?" -ne "0" ]; then
-    echo "Error unmounting volume"
-    else
-    rm -r /media/target/home
+      echo "Error unmounting volume"
+      else
+      rm -r /media/target/home
     fi
   fi
   if [ -n "$BRboot" ]; then
     umount  $BRboot
     if [ "$?" -ne "0" ]; then
-    echo "Error unmounting volume"
-    else
-    rm -r /media/target/boot
+      echo "Error unmounting volume"
+      else
+      rm -r /media/target/boot
     fi
   fi
   
   if [ -f /media/target/fullbackup.tgz ]; then
-  rm /media/target/fullbackup.tgz
+    rm /media/target/fullbackup.tgz
   fi
   umount $BRroot 
    if [ "$?" -ne "0" ]; then
-   echo "Error unmounting volume"
-   else
-   sleep 1
-   rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
-  fi
+     echo "Error unmounting volume"
+     else
+     sleep 1
+     rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
+   fi
   exit
 }
 

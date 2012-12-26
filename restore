@@ -2,6 +2,11 @@
 
 clear
 
+if [ $(id -u) -gt 0 ]; then
+  echo "Please run the script as root. Exit"
+  exit
+fi
+
 cleanandunmount() {
   echo -e "\n---------------CLEANING AND UNMOUNTING---------------"
   cd ~ 
@@ -15,7 +20,7 @@ cleanandunmount() {
   fi
   if [ -n "$BRboot" ]; then
     umount  $BRboot
-     if [ "$?" -ne "0" ]; then
+    if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
     else
     rm -r /media/target/boot
@@ -35,10 +40,6 @@ cleanandunmount() {
   exit
 }
 
-if [ $(id -u) -gt 0 ]; then
-  echo "Please run the script as root. Exit"
-  exit
-fi
 
 while getopts "d:r:s:b:h:g:l:f:u:n:p:y" arg; do
   case $arg in

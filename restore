@@ -80,8 +80,18 @@ while getopts "d:r:s:b:h:g:l:f:u:n:p:y" arg; do
       def="y"
     ;;
     \?)
-      echo "Usage: $0 -d [target distribution] -r [root partition] -s [swap partition] -b [boot partition] -h [home partition]"
-      echo -e "\t\t-g [disk for grub] -f [backup file path] -u [url] -n [username] -p [password]"
+      echo "Usage: $0 
+-d  [target distribution] 
+-r  [root partition] 
+-s  [swap partition] 
+-b  [boot partition] 
+-h  [home partition]
+-g  [disk for grub] 
+-l  [disk for syslinux] 
+-f  [backup file path]
+-u  [url] 
+-n  [username]
+-p  [password]"
       exit
     ;;
   esac

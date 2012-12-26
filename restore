@@ -7,19 +7,31 @@ cleanandunmount() {
   cd ~ 
   if [ -n "$BRhome" ]; then
     umount  $BRhome
+    if [ "$?" -ne "0" ]; then
+    echo "Error unmounting volume"
+    else
     rm -r /media/target/home
+    fi
   fi
   if [ -n "$BRboot" ]; then
     umount  $BRboot
+     if [ "$?" -ne "0" ]; then
+    echo "Error unmounting volume"
+    else
     rm -r /media/target/boot
+    fi
   fi
   
   if [ -f /media/target/fullbackup.tgz ]; then
   rm /media/target/fullbackup.tgz
   fi
   umount $BRroot 
-  sleep 1
-  rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
+   if [ "$?" -ne "0" ]; then
+   echo "Error unmounting volume"
+   else
+   sleep 1
+   rm  -r /media/target 2>&1 && echo SUCCESS  || echo FAILED 
+  fi
   exit
 }
 
@@ -481,7 +493,7 @@ elif [ -n "$BRsyslinux" ]; then
   echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /media/target/boot/syslinux/syslinux.cfg
   echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /media/target/boot/syslinux/syslinux.cfg
   echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /media/target/boot/syslinux/syslinux.cfg
-fi
+  fi
 fi
 
 echo -e "\n---------------GENERATING LOCALES---------------"

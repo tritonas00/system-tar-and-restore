@@ -415,7 +415,7 @@ rm /media/target/etc/fstab2
 cat /media/target/etc/fstab
 sleep 1
 
-echo -e "\n---------------BUILDING INITRAMFS IMAGE---------------"
+echo -e "\n---------------REBUILDING INITRAMFS IMAGE---------------"
 if [ $BRdistro = Arch ]; then
   chroot /media/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
 elif [ $BRdistro = Debian ]; then

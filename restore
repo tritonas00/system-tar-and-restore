@@ -464,8 +464,25 @@ elif [ -n "$BRsyslinux" ]; then
   echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /media/target/boot/syslinux/syslinux.cfg
   echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /media/target/boot/syslinux/syslinux.cfg
   echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro\n\tINITRD ../initrd.img-$BRinitrd" >> /media/target/boot/syslinux/syslinux.cfg
+  elif [ $BRdistro = Fedora ]; then
+  mkdir -p /media/target/boot/syslinux
+  chroot /media/target extlinux -i /boot/syslinux
+  if [ -n "$BRboot" ]; then
+    BRdev=`echo $BRboot | cut -c -8`
+    BRpart=`echo $BRboot | cut -c 9-`
+    sfdisk $BRdev -A $BRpart
+  else
+    BRdev=`echo $BRroot | cut -c -8`
+    BRpart=`echo $BRroot | cut -c 9-`
+    sfdisk $BRdev -A $BRpart
   fi
-fi  
+  dd bs=440 count=1 conv=notrunc if=/media/target/usr/share/syslinux/mbr.bin of=$BRsyslinux
+  cp /media/target/usr/share/syslinux/menu.c32 /media/target/boot/syslinux/
+  echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /media/target/boot/syslinux/syslinux.cfg
+  echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /media/target/boot/syslinux/syslinux.cfg
+  echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /media/target/boot/syslinux/syslinux.cfg
+fi
+fi
 
 echo -e "\n---------------GENERATING LOCALES---------------"
 if [ $BRdistro = Fedora ]; then

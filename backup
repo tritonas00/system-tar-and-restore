@@ -11,7 +11,8 @@ while getopts "d:h" arg; do
       BRhome="n"
     ;;
     \?) 
-      echo "Usage: $0 -d [path for backup folder]"
+      echo "Usage: $0 -d [path for backup folder]
+      -h (exclude home)"
       exit
     ;;
   esac

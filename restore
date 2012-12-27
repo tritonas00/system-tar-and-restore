@@ -488,7 +488,7 @@ echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /media/target
 
 if [ "x$BRsubvol" = "xy" ] || [ "x$BRsubvol" = "xY" ]; then
 echo "$BRroot   / btrfs subvol=$BRsubvolname,noatime 0 1" >> /media/target/etc/fstab 
-elif [ "x$BRsubvol" = "xn" ] || [ "x$BRsubvol" = "xN" ]; then
+else
 echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /media/target/etc/fstab
 fi
 

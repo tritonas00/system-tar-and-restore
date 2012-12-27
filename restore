@@ -7,6 +7,32 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
+unmount() {
+  cd ~ 
+  if [ -n "$BRhome" ]; then
+    umount  $BRhome
+    if [ "$?" -ne "0" ]; then
+      echo "Error unmounting volume"
+      else
+      rm -r /media/target/home
+    fi
+  fi
+  if [ -n "$BRboot" ]; then
+    umount  $BRboot
+    if [ "$?" -ne "0" ]; then
+      echo "Error unmounting volume"
+      else
+      rm -r /media/target/boot
+    fi
+  fi
+umount $BRroot 
+   if [ "$?" -ne "0" ]; then
+     echo "Error unmounting volume"
+     else
+    echo "SUCCESS"
+   fi
+}  
+
 cleanandunmount() {
   echo -e "\n---------------CLEANING AND UNMOUNTING---------------"
   cd ~ 
@@ -303,7 +329,6 @@ if [   -n "$BRhome" ]; then
   mkdir /media/target/home
   mount $BRhome /media/target/home  2>&1 && echo SUCCESS  || echo WARNING
   BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
-
 fi
 
 if [   -n "$BRboot" ]; then
@@ -311,8 +336,54 @@ if [   -n "$BRboot" ]; then
   mkdir /media/target/boot
   mount $BRboot /media/target/boot  2>&1 && echo SUCCESS  || echo WARNING
   BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
-
 fi
+
+if [ $BRfsystem = btrfs ]; then
+  while [ -z "$BRsubvol" ]; do
+  
+  echo " "
+  read -p "BTRFS root file system detected. Do you want to use a subvolume for root (/) ? (Y/n): " an
+
+  if [ -n "$an" ]; then
+    def=$an
+  else
+    def="y"
+  fi
+  
+  if [ $def = "y" ] || [ $def = "Y" ]; then
+    BRsubvol="y"
+  elif [ $def = "n" ] || [ $def = "N" ]; then
+    BRsubvol="n"
+  else
+    echo -e "Please enter a valid option\n"
+  fi
+done 
+fi
+
+if [ "x$BRsubvol" = "xy" ] || [ "x$BRsubvol" = "xY" ]; then
+  read -p "Enter subvolume name: " BRsubvolname
+  echo "Subvolume name: $BRsubvolname"
+  echo -e "\n---------------CREATING SUBVOLUME $BRsubvolname---------------"
+  btrfs subvolume create /media/target/$BRsubvolname 2>&1 && echo SUCCESS  || echo FAILED
+  echo -e "\n---------------UNMOUNTING ---------------"
+  unmount
+  echo -e "\n---------------MOUNTING SUBVOLUME $BRsubvolname---------------"
+  mount -t btrfs -o subvol=$BRsubvolname $BRroot /media/target 2>&1 && echo SUCCESS  || echo FAILED
+if [   -n "$BRhome" ]; then
+  echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
+  mkdir /media/target/home
+  mount $BRhome /media/target/home  2>&1 && echo SUCCESS  || echo WARNING
+  BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
+fi
+
+if [   -n "$BRboot" ]; then
+  echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
+  mkdir /media/target/boot
+  mount $BRboot /media/target/boot  2>&1 && echo SUCCESS  || echo WARNING
+  BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
+fi
+fi
+
 
 echo -e "\n---------------GETTING TAR IMAGE---------------"
 
@@ -391,11 +462,11 @@ echo "Bootloader Location:  $BRgrub $BRsyslinux"
 echo -e "Backup File: $BRfile $BRurl\n"
 
 
-if [ -z $def ]; then
-  read -p "Do you want continue? (Y/n): " def
+if [ -z $def1 ]; then
+  read -p "Do you want continue? (Y/n): " def1
 fi
 
-if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
+if [ "x$def1" = "xn" ] || [ "x$def1" = "xN" ]; then
   cleanandunmount
 fi  
 
@@ -414,7 +485,12 @@ sleep 1
 
 echo -e "\n---------------GENERATING FSTAB---------------"
 echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /media/target/etc/fstab 
+
+if [ "x$BRsubvol" = "xy" ] || [ "x$BRsubvol" = "xY" ]; then
+echo "$BRroot   / btrfs subvol=$BRsubvolname,noatime 0 1" >> /media/target/etc/fstab 
+elif [ "x$BRsubvol" = "xn" ] || [ "x$BRsubvol" = "xN" ]; then
 echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /media/target/etc/fstab
+fi
 
 if [ -n "$BRswap" ]; then
   echo "$BRswap    swap   swap    defaults    0  0" >> /media/target/etc/fstab

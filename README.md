@@ -40,6 +40,7 @@ User must create partitions using his favorite partition manager before running 
 At least one / (root) partition is required and optionally a seperate partition for /home, /boot and a swap partition.
 If you want the script to create and manage btrfs subvolumes, btrfs-progs must be installed before restoring.
 
+
 The script will ask for:
 
 - Target distibution's name. This is the name of the distribution which the tar backup contains.
@@ -66,17 +67,17 @@ The script will ask for:
 
 The script also supports all input as arguments:
 
-- -d  [target distribution]
--  -r   [root partition]
--  -s  [swap partition]
--  -b  [boot partition]
--  -h  [home partition]
--  -g  [disk for grub]
--  -l   [disk for syslinux]
--  -f   [backup file path]
--  -u  [url]
--  -n  [username]
--  -p  [password]
+- -d      [target distribution]
+-  -r      [root partition]
+-  -s     [swap partition]
+-  -b     [boot partition]
+-  -h     [home partition]
+-  -g     [disk for grub]
+-  -l      [disk for syslinux]
+-  -f      [backup file path]
+-  -u     [url]
+-  -n     [username]
+-  -p     [password]
 
 
 Examples:

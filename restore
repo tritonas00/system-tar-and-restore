@@ -362,7 +362,7 @@ if [   -n "$BRboot" ]; then
   BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
 fi
 
-if [ $BRfsystem = btrfs ]; then
+if [  "x$BRfsystem" = "xbtrfs" ]; then
   while [ -z "$BRrootsubvol" ]; do
   
   echo " "
@@ -597,9 +597,11 @@ echo -e "\n---------------GENERATING FSTAB---------------"
 echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /mnt/target/etc/fstab 
 
 if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
-echo "$BRroot   /  btrfs compress=lzo,subvol=$BRrootsubvolname,noatime 0 0" >> /mnt/target/etc/fstab 
+ echo "$BRroot   /  btrfs compress=lzo,subvol=$BRrootsubvolname,noatime 0 0" >> /mnt/target/etc/fstab
+elif [ "x$BRrootsubvol" = "xn" ] || [ "x$BRrootsubvol" = "xN" ] || [ "x$BRfsystem" = "xbtrfs" ]; then
+ echo "$BRroot  /  btrfs  defaults,noatime    0  0" >> /mnt/target/etc/fstab
 else
-echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /mnt/target/etc/fstab
+ echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /mnt/target/etc/fstab
 fi
 
 if [ -n "$BRswap" ]; then

@@ -25,9 +25,9 @@ and the -h argument, if you want to exclude /home directory.
 
 Examples:
 
-sudo ./backup -d /home/john/
+<code>sudo ./backup -d /home/john/</code>
 
-sudo ./backup -h -d /home/john/
+<code>sudo ./backup -h -d /home/john/</code>
 
 
 ###RESTORE###

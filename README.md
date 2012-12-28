@@ -81,30 +81,30 @@ The script also supports all input as arguments:
 
 Examples:
 
-Distro= Arch
-root = /dev/sdb1
-grub  
-local file
+- Distro= Arch
+- root = /dev/sdb1
+- grub  
+- local file
 
 <code>sudo ./restore -d Arch -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/Backup-Friday-21-12-2012-17:15:41.tgz</code>
 
-Distro= Debian
-root = /dev/sdb1
-home = /dev/sdb2
-swap = /dev/sdb3
-syslinux 
-remote file on ftp server
+- Distro= Debian
+- root = /dev/sdb1
+- home = /dev/sdb2
+- swap = /dev/sdb3
+- syslinux 
+- remote file on ftp server
 
-sudo ./restore -d Debian -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -l /dev/sdb -u ftp://server/data/Backup-Friday-21-12-2012-17:15:41.tgz
+<code>sudo ./restore -d Debian -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -l /dev/sdb -u ftp://server/data/Backup-Friday-21-12-2012-17:15:41.tgz</code>
 
-Distro= Fedora
-root = /dev/sdb2
-boot = /dev/sdb1
-home = /dev/sdb3
-syslinux 
-remote file in protected http server
+- Distro= Fedora
+- root = /dev/sdb2
+- boot = /dev/sdb1
+- home = /dev/sdb3
+- syslinux 
+- remote file in protected http server
 
-sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -l /dev/sdb -u http://server/data/Backup-Friday-21-12-2012-17:15:41.tgz -n user -p pass
+<code>sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -l /dev/sdb -u http://server/data/Backup-Friday-21-12-2012-17:15:41.tgz -n user -p pass</code>
 
 
 

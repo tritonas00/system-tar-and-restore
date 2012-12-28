@@ -86,7 +86,7 @@ Examples:
 - grub  
 - local file
 
-<code>sudo ./restore -d Arch -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/Backup-Friday-21-12-2012-17:15:41.tgz</code>
+<code>sudo ./restore -d Arch -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tgz</code>
 
 - Distro= Debian
 - root = /dev/sdb1
@@ -95,7 +95,7 @@ Examples:
 - syslinux 
 - remote file on ftp server
 
-<code>sudo ./restore -d Debian -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -l /dev/sdb -u ftp://server/data/Backup-Friday-21-12-2012-17:15:41.tgz</code>
+<code>sudo ./restore -d Debian -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -l /dev/sdb -u ftp://server/data/backup.tgz</code>
 
 - Distro= Fedora
 - root = /dev/sdb2
@@ -104,7 +104,7 @@ Examples:
 - syslinux 
 - remote file in protected http server
 
-<code>sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -l /dev/sdb -u http://server/data/Backup-Friday-21-12-2012-17:15:41.tgz -n user -p pass</code>
+<code>sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -l /dev/sdb -u http://server/data/backup.tgz -n user -p pass</code>
 
 
 

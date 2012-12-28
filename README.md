@@ -5,4 +5,107 @@ using tar.
 
 Supported distributions: Arch, Debian, Fedora
 
-Demo (Old version) : http://www.youtube.com/watch?v=a5woJYaWKlU
+###BACKUP###
+
+Backup script makes a tar backup of / in a given location. It will make a folder in that location which 
+contains the *.tgz file, the "errors" file (usefull for tracking tar errors/warnings) and the "log" file which contains the standard tar output.
+
+The script will ask:
+
+- If you want to save the backup in the default folder (/root), or enter your desired path
+
+- If you want to include your entire home directory. ( If selected no, only hidden files and folders 
+   will be included in the backup, just to save user's configurations)
+
+- If fedora's patched tar will be used  (Necessary if the host and the target system is Fedora)
+
+
+The script also reads -d argument, which can be used to define where the backup will be saved 
+and the -h argument, if you want to exclude /home directory.
+
+Examples:
+
+sudo ./backup -d /home/john/
+
+sudo ./backup -h -d /home/john/
+
+
+###RESTORE###
+
+Restore script uses the above created  *.tgz file to extract it in user defined partitions, generates fstab using uuids,
+rebuilds initramfs image, installs and auto-configures grub or syslinux in MBR of given device,
+re-generate locales and finally unmounts and cleans everything.
+
+User must create partitions using his favorite partition manager before running the script.
+At least one / (root) partition is required and optionally a seperate partition for /home, /boot and a swap partition.
+If you want the script to create and manage btrfs subvolumes, btrfs-progs must be installed before restoring.
+
+The script will ask for:
+
+- Target distibution's name. This is the name of the distribution which the tar backup contains.
+
+- Root partition ( / )
+
+- Swap partition ( Optional )
+
+- Home partition ( Optional )
+
+- Boot partition   ( Optional )
+
+- Bootloader. Grub(2) and syslinux/extlinux are both supported.
+
+- Bootloader install location. (MBR of the given device)
+
+- If the root filesystem is btrfs, the script will ask if you want to create a subvolume for it.
+   If yes, it will ask for the subvolume's name and also if you want to create seperate
+   subvolumes for /home, /usr and /var inside root subvolume.
+
+- The *.tgz image file. This can be obtained localy (by entering the full path of the file), or remotelly (by entering full url of the file).
+   Also protected url is supported, which will ask for server's username and password.
+
+
+The script also supports all input as arguments:
+
+-d  [target distribution]
+-r   [root partition]
+-s  [swap partition]
+-b  [boot partition]
+-h  [home partition]
+-g  [disk for grub]
+-l   [disk for syslinux]
+-f   [backup file path]
+-u  [url]
+-n  [username]
+-p  [password]"
+
+
+Examples:
+
+Distro= Arch
+root = /dev/sdb1
+grub  
+local file
+
+sudo ./restore -d Arch -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/Backup-Friday-21-12-2012-17:15:41.tgz
+
+Distro= Debian
+root = /dev/sdb1
+home = /dev/sdb2
+swap = /dev/sdb3
+syslinux 
+remote file on ftp server
+
+sudo ./restore -d Debian -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -l /dev/sdb -u ftp://server/data/Backup-Friday-21-12-2012-17:15:41.tgz
+
+Distro= Fedora
+root = /dev/sdb2
+boot = /dev/sdb1
+home = /dev/sdb3
+syslinux 
+remote file in protected http server
+
+sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -l /dev/sdb -u http://server/data/Backup-Friday-21-12-2012-17:15:41.tgz -n user -p pass
+
+
+
+Demo (Old version) : http://www.youtube.com/watch?v=a5woJYaWKlU _f

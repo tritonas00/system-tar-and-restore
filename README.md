@@ -66,17 +66,17 @@ The script will ask for:
 
 The script also supports all input as arguments:
 
--d  [target distribution]
--r   [root partition]
--s  [swap partition]
--b  [boot partition]
--h  [home partition]
--g  [disk for grub]
--l   [disk for syslinux]
--f   [backup file path]
--u  [url]
--n  [username]
--p  [password]"
+- -d  [target distribution]
+-  -r   [root partition]
+-  -s  [swap partition]
+-  -b  [boot partition]
+-  -h  [home partition]
+-  -g  [disk for grub]
+-  -l   [disk for syslinux]
+-  -f   [backup file path]
+-  -u  [url]
+-  -n  [username]
+-  -p  [password]
 
 
 Examples:
@@ -108,4 +108,4 @@ sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -l /dev/sdb -u h
 
 
 
-Demo (Old version) : http://www.youtube.com/watch?v=a5woJYaWKlU _f
+Demo (Old version) : http://www.youtube.com/watch?v=a5woJYaWKlU

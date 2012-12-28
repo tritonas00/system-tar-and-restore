@@ -469,16 +469,19 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
 
       if [   -n "$BRhome" ]; then
          echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
+         if [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
+             mkdir /media/target/home
+         fi
          mount $BRhome /media/target/home  2>&1 && echo SUCCESS  || echo WARNING
          BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
        fi
 
-       if [   -n "$BRboot" ]; then
+      if [   -n "$BRboot" ]; then
          echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
          mkdir /media/target/boot
          mount $BRboot /media/target/boot  2>&1 && echo SUCCESS  || echo WARNING
          BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
-       fi
+      fi
 
 fi
 

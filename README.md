@@ -86,7 +86,7 @@ root = /dev/sdb1
 grub  
 local file
 
-sudo ./restore -d Arch -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/Backup-Friday-21-12-2012-17:15:41.tgz
+<code>sudo ./restore -d Arch -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/Backup-Friday-21-12-2012-17:15:41.tgz</code>
 
 Distro= Debian
 root = /dev/sdb1

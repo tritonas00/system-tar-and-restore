@@ -111,11 +111,15 @@ echo "Creating backup image, please wait"
 BRFile=$BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`"
 
 if [ $BRhome = "n" ] &&  [ $BRtar = "n" ]; then
-  tar cvpzf  $BRFile.tgz  --sparse --exclude=/home/[a-zA-z0-9]/^.* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+  tar cvpzf  $BRFile.tar  --sparse --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+  find /home -maxdepth 2 -name ".*" -print | xargs tar rf $BRFile.tar
+  gzip $BRFile.tar
 elif [ $BRhome = "y" ] &&  [ $BRtar = "n" ]; then
   tar cvpzf  $BRFile.tgz  --sparse --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
 elif [ $BRhome = "n" ] &&  [ $BRtar = "y" ]; then
-  tar cvpzf  $BRFile.tgz  --sparse  --acls  --selinux --xattrs --exclude=/home/[a-zA-z0-9]/^.* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+  tar cvpzf  $BRFile.tar  --sparse  --acls  --selinux --xattrs --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+  find /home -maxdepth 2 -name ".*" -print | xargs tar rf $BRFile.tar
+  gzip $BRFile.tar
 elif [ $BRhome = "y" ] &&  [ $BRtar = "y" ]; then
   tar cvpzf  $BRFile.tgz  --sparse --acls  --selinux --xattrs --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
 fi

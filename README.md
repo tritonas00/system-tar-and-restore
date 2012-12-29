@@ -20,14 +20,25 @@ The script will ask:
 - If fedora's patched tar will be used  (Necessary if the host and the target system is Fedora)
 
 
-The script also reads -d argument, which can be used to define where the backup will be saved 
-and the -h argument, if you want to exclude /home directory.
+The script also supports all input as arguments:
+
+- -d  [path for backup folder]
+- -h  [exclude /home]
+- -f   [use Fedora's patched tar]
 
 Examples:
 
+- Backup directory=/home/john/
+- Include /home
+- No fedora's patched tar
+
 <code>sudo ./backup -d /home/john/</code>
 
-<code>sudo ./backup -h -d /home/john/</code>
+- Backup directory=/home/john/
+- Exclude /home ( Only include hidden folders and files)
+- Fedora's tar in use
+
+<code>sudo ./backup -f -h -d /home/john/</code>
 
 
 ###RESTORE###

@@ -631,10 +631,27 @@ echo -e "\n---------------REBUILDING INITRAMFS IMAGE---------------"
 if [ $BRdistro = Arch ]; then
   chroot /mnt/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
 elif [ $BRdistro = Debian ]; then
-  BRinitrd=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-__'`)
+
+  list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
+  BRmax=${list[0]}
+  for f in ${list[@]}; do
+    if [[ "$f" > "$BRmax" ]]; then
+      BRmax=$f
+    fi
+  done
+  BRinitrd=$BRmax
   chroot /mnt/target update-initramfs -u -k $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
+
 elif [ $BRdistro = Fedora ]; then
-  BRinitrd=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-__'`)
+
+  list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
+  BRmax=${list[0]}
+  for f in ${list[@]}; do
+    if [[ "$f" > "$BRmax" ]]; then
+      BRmax=$f
+    fi
+  done
+  BRinitrd=$BRmax  
   chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
 fi
 

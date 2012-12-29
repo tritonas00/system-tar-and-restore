@@ -112,12 +112,14 @@ BRFile=$BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`"
 
 if [ $BRhome = "n" ] &&  [ $BRtar = "n" ]; then
   tar cvpf  $BRFile.tar  --sparse --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+  find /home -maxdepth 1 -print | xargs tar rpvf $BRFile.tar --no-recursion 2>>$BRFOLDER/errors | tee $BRFOLDER/log
   find /home -maxdepth 2 -name ".*" -print | xargs tar rpvf $BRFile.tar 2>>$BRFOLDER/errors | tee $BRFOLDER/log
   gzip $BRFile.tar
 elif [ $BRhome = "y" ] &&  [ $BRtar = "n" ]; then
   tar cvpzf  $BRFile.tgz  --sparse --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
 elif [ $BRhome = "n" ] &&  [ $BRtar = "y" ]; then
   tar cvpf  $BRFile.tar  --sparse  --acls  --selinux --xattrs --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+  find /home -maxdepth 1 -print | xargs tar rpvf $BRFile.tar --no-recursion 2>>$BRFOLDER/errors | tee $BRFOLDER/log
   find /home -maxdepth 2 -name ".*" -print | xargs tar rpvf $BRFile.tar 2>>$BRFOLDER/errors | tee $BRFOLDER/log
   gzip $BRFile.tar
 elif [ $BRhome = "y" ] &&  [ $BRtar = "y" ]; then

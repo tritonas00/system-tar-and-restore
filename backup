@@ -2,7 +2,7 @@
 
 clear
 
-while getopts "d:h" arg; do
+while getopts "d:hf" arg; do
   case $arg in
     d) 
       BRFOLDER=$OPTARG
@@ -10,9 +10,13 @@ while getopts "d:h" arg; do
     h)
       BRhome="n"
     ;;
+    f)
+      BRtar="y"
+    ;;
     \?) 
       echo "Usage: $0 -d [path for backup folder]
-      -h (exclude home)"
+      -h (exclude home)
+      -f (use Fedora's patched tar)"
       exit
     ;;
   esac
@@ -80,12 +84,12 @@ done
 while [ -z "$BRtar" ]; do
   
   echo " "
-  read -p "Are you going to use fedora's patched tar? (Y/n): " an
+  read -p "Are you going to use fedora's patched tar? (y/N): " an
 
   if [ -n "$an" ]; then
     def=$an
   else
-    def="y"
+    def="n"
   fi
   
   if [ $def = "y" ] || [ $def = "Y" ]; then

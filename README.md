@@ -43,7 +43,7 @@ Examples:
 
 ###RESTORE###
 
-Restore script uses the above created  *.tgz file to extract it in user defined partitions, generates fstab using uuids,
+Restore script uses the above created archive to extract it in user defined partitions, generates fstab using uuids,
 rebuilds initramfs image, installs and auto-configures grub or syslinux in MBR of given device,
 re-generate locales and finally unmounts and cleans everything.
 

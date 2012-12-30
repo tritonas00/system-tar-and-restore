@@ -705,11 +705,11 @@ elif [ -n "$BRsyslinux" ]; then
     chroot /mnt/target syslinux-install_update -i -a -m
     echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /mnt/target/boot/syslinux/syslinux.cfg
     if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
-     echo -e "LABEL arch\n    MENU LABEL Arch Linux\n    LINUX ../vmlinuz-linux\n    APPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n    INITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-     echo -e "LABEL archfallback\n    MENU LABEL Arch Linux Fallback\n    LINUX ../vmlinuz-linux\n    APPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n    INITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+     echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+     echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
     else
-     echo -e "LABEL arch\n    MENU LABEL Arch Linux\n    LINUX ../vmlinuz-linux\n    APPEND root=$BRroot  ro\n    INITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-     echo -e "LABEL archfallback\n    MENU LABEL Arch Linux Fallback\n    LINUX ../vmlinuz-linux\n    APPEND root=$BRroot  ro\n    INITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+     echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+     echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
     fi
   elif [ $BRdistro = Debian ]; then
   mkdir -p /mnt/target/boot/syslinux

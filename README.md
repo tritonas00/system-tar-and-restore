@@ -83,6 +83,8 @@ The script will ask for:
 
 The script also supports all input as arguments:
 
+'''''bold & italic'''''
+
 -   -d
              target distribution
 

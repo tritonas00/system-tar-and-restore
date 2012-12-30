@@ -90,6 +90,29 @@ cleanandunmount() {
   exit
 }
 
+cleanandunmount2() {
+  echo -e "\n---------------CLEANING AND UNMOUNTING-------------- "
+  cd ~ 
+  rm /mnt/target/fullbackup.tgz
+  umount /mnt/target/dev
+  umount /mnt/target/proc
+  umount /mnt/target/sys
+  if [ -n "$BRhome" ]; then
+    umount  $BRhome
+  fi
+  if [ -n "$BRboot" ]; then
+    umount  $BRboot
+  fi
+  umount $BRroot 
+   if [ "$?" -ne "0" ]; then
+     echo "Error unmounting volume"
+     else
+     sleep 1
+     rm  -r /mnt/target 2>&1 && echo SUCCESS  || echo FAILED 
+   fi
+  exit
+}
+
 
 while getopts "d:r:s:b:h:g:l:f:u:n:p:y" arg; do
   case $arg in
@@ -725,10 +748,6 @@ echo -e "\nCompleted. Press ENTER to unmount and clean, then reboot your system.
 read -s a
 
 sleep 2
-
-umount /mnt/target/dev
-umount /mnt/target/proc
-umount /mnt/target/sys
-cleanandunmount
+cleanandunmount2
 
 

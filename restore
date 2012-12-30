@@ -10,8 +10,6 @@ fi
 
 remountdeletesubvolumes() {
  cd ~ 
-umount $BRroot 
-sleep 1
 mount  $BRroot /mnt/target
  if [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
    btrfs subvolume delete /mnt/target/$BRrootsubvolname/home
@@ -543,6 +541,9 @@ while [ ! -f /mnt/target/fullbackup.tgz ]; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
       if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+      unmount
+      unset BRhome
+      unset BRboot
       remountdeletesubvolumes
       fi
       cleanandunmount
@@ -591,13 +592,17 @@ echo "Home Partition: $BRhome $BRhomefsystem"
 echo "Bootloader Location:  $BRgrub $BRsyslinux"
 echo -e "Backup File: $BRfile $BRurl\n"
 
+unset def
 
-if [ -z $def1 ]; then
-  read -p "Do you want continue? (Y/n): " def1
+if [ -z $def ]; then
+  read -p "Do you want continue? (Y/n): " def
 fi
 
-if [ "x$def1" = "xn" ] || [ "x$def1" = "xN" ]; then
+if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
  if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+ unmount
+ unset BRhome
+ unset BRboot
  remountdeletesubvolumes 
  fi
  cleanandunmount

@@ -51,8 +51,8 @@ User must create partitions using his favorite partition manager before running 
 At least one / (root) partition is required and optionally a seperate partition for /home, /boot and a swap partition.
 If you want the script to create and manage btrfs subvolumes, btrfs-progs must be installed before restoring.
 
-If you want to restore in a btrfs subvolumed root and use syslinux, 
-you need a seperate /boot partition and also the subvolume's name must be __active
+If you want to use syslinux for booting a btrfs subvolumed root, you need 
+a seperate /boot partition and also the subvolume's name must be __active
 
 
 The script will ask for:

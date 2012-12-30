@@ -35,7 +35,9 @@ unmount() {
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
       else
-      rm -r /mnt/target/home
+       if [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
+          rm -r /mnt/target/home
+       fi
     fi
   fi
   if [ -n "$BRboot" ]; then

@@ -54,6 +54,8 @@ If you want the script to create and manage btrfs subvolumes, btrfs-progs must b
 If you want to use syslinux for booting a btrfs subvolumed root, you need 
 a seperate /boot partition and also the subvolume's name must be __active
 
+Also for Debian and Fedora a seperate /boot partition is required for booting a btrfs subvolumed root successfully.
+
 
 The script will ask for:
 

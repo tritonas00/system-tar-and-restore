@@ -83,40 +83,40 @@ The script will ask for:
 
 The script also supports all input as arguments:
 
--   '''bold'''-d'''bold'''
+-   -d
              target distribution
 
--  '''-r'''      
+-   -r  
              root partition
 
--  '''-s'''     
+-  -s  
              swap partition
 
--  '''-b'''     
+-  -b
              boot partition
 
--  '''-h'''     
+-  -h
              home partition
 
--  '''-g'''     
+-  -g
              disk for grub
 
--  '''-l'''      
+-  -l
              disk for syslinux
 
--  '''-f'''      
+-  -f
              backup file path
 
--  '''-u'''     
+-  -u
              url
 
--  '''-n'''     
+-  -n
              username
 
--  '''-p'''     
+-  -p
              password
 
--  '''-y'''
+-  -y
              yes to all
 
 

@@ -124,5 +124,4 @@ Examples:
 <code>sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -l /dev/sdb -u http://server/data/backup.tgz -n user -p pass</code>
 
 
-
-Demo (Old version) : http://www.youtube.com/watch?v=a5woJYaWKlU
+Demo : http://www.youtube.com/watch?v=eoGKI1Ls1ng

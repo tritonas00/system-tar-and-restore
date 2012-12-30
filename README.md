@@ -83,7 +83,7 @@ The script will ask for:
 
 The script also supports all input as arguments:
 
-"-d"
+-   '''bold'''-d'''bold'''
              target distribution
 
 -  '''-r'''      

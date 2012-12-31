@@ -22,9 +22,14 @@ The script will ask:
 
 The script also supports all input as arguments:
 
-- -d  [path for backup folder]
-- -h  [exclude /home]
-- -f   [use Fedora's patched tar]
+**-d**  
+path for backup folder
+
+**-h**  
+exclude /home, keep only hidden files and folders
+
+**-f**   
+use Fedora's patched tar
 
 Examples:
 
@@ -84,19 +89,40 @@ The script will ask for:
 The script also supports all input as arguments:
 
 **-d**   
-   target distribution
+target distribution
 
--  -r      [root partition]
--  -s     [swap partition]
--  -b     [boot partition]
--  -h     [home partition]
--  -g     [disk for grub]
--  -l      [disk for syslinux]
--  -f      [backup file path]
--  -u     [url]
--  -n     [username]
--  -p     [password]
--  -y     [yes to all]
+**-r**    
+root partition
+
+**-s**     
+swap partition
+
+**-b**     
+boot partition
+
+**-h**     
+home partition
+
+**-g**    
+disk for grub
+
+**-l**      
+disk for syslinux
+
+**-f**      
+backup file path
+
+**-u**     
+url
+
+**-n**     
+username
+
+**-p**     
+password
+
+**-y**     
+yes to all
 
 
 Examples:

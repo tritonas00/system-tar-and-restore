@@ -113,60 +113,74 @@ cleanandunmount2() {
   exit
 }
 
+BRargs=`getopt -o "d:r:s:b:h:g:S:f:u:n:p:y" -l "distro:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes" -n "$1" -- "$@"`
 
-while getopts "d:r:s:b:h:g:l:f:u:n:p:y" arg; do
-  case $arg in
-    d)
-      BRdistro=$OPTARG
+if [ $? -ne 0 ];
+then
+  echo "See $0 --help"
+  exit 
+fi
+
+eval set -- "$BRargs";
+
+while true; do
+  case "$1" in
+    -d|--distro)
+      BRdistro=$2
+      shift 2
     ;;
-    r) 
-      BRroot=$OPTARG
+    -r|--root) 
+      BRroot=$2
+      shift 2
     ;;
-    s) 
-      BRswap=$OPTARG
+    -s|--swap) 
+      BRswap=$2
+      shift 2
     ;;
-    b) 
-      BRboot=$OPTARG
+    -b|--boot) 
+      BRboot=$2
+      shift 2
     ;;
-    h) 
-      BRhome=$OPTARG
+    -h|--home) 
+      BRhome=$2
+      shift 2
     ;;
-    g) 
-      BRgrub=$OPTARG
+    -g|--grub) 
+      BRgrub=$2
+      shift 2
     ;;
-    l)
-      BRsyslinux=$OPTARG
+    -S|--syslinux)
+      BRsyslinux=$2
+      shift 2
     ;;
-    f) 
-      BRfile=$OPTARG
+    -f|--file) 
+      BRfile=$2
+      shift 2
     ;;
-    u) 
-      BRurl=$OPTARG
+    -u|--url) 
+      BRurl=$2
+      shift 2
     ;;
-    n) 
-      BRusername=$OPTARG
+    -n|--username) 
+      BRusername=$2
+      shift 2
     ;;
-    p) 
-      BRpassword=$OPTARG
+    -p|--password) 
+      BRpassword=$2
+      shift 2
     ;;
-    y) 
+    -y|--yes) 
       def="y"
+      shift
     ;;
-    \?)
-      echo "Usage: $0 
--d  [target distribution] 
--r  [root partition] 
--s  [swap partition] 
--b  [boot partition] 
--h  [home partition]
--g  [disk for grub] 
--l  [disk for syslinux] 
--f  [backup file path]
--u  [url] 
--n  [username]
--p  [password]
--y  (yes to all)"
+    --help)
+      echo "Here we will print the usage"
       exit
+      shift
+    ;;  
+    --)
+      shift
+      break
     ;;
   esac
 done
@@ -413,98 +427,98 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
   read -p "Enter subvolume name: " BRrootsubvolname
   echo "Subvolume name: $BRrootsubvolname"
  
- while [ -z "$BRhomesubvol" ]; do
-  echo " "
-  read -p "Create seperate subvolume for /home inside $BRrootsubvolname ? (Y/n): " an
+  while [ -z "$BRhomesubvol" ]; do
+    echo " "
+    read -p "Create seperate subvolume for /home inside $BRrootsubvolname ? (Y/n): " an
 
-  if [ -n "$an" ]; then
-    def=$an
-  else
-    def="y"
-  fi
+    if [ -n "$an" ]; then
+      def=$an
+    else
+      def="y"
+    fi
   
-  if [ $def = "y" ] || [ $def = "Y" ]; then
-    BRhomesubvol="y"
-  elif [ $def = "n" ] || [ $def = "N" ]; then
-    BRhomesubvol="n"
-  else
-    echo -e "Please enter a valid option\n"
-  fi
-done 
+    if [ $def = "y" ] || [ $def = "Y" ]; then
+      BRhomesubvol="y"
+    elif [ $def = "n" ] || [ $def = "N" ]; then
+      BRhomesubvol="n"
+    else
+      echo -e "Please enter a valid option\n"
+    fi
+  done 
 
-while [ -z "$BRvarsubvol" ]; do
-  echo " "
-  read -p "Create seperate subvolume for /var inside $BRrootsubvolname ? (Y/n): " an
+  while [ -z "$BRvarsubvol" ]; do
+    echo " "
+    read -p "Create seperate subvolume for /var inside $BRrootsubvolname ? (Y/n): " an
 
-  if [ -n "$an" ]; then
-    def=$an
-  else
-    def="y"
-  fi
+    if [ -n "$an" ]; then
+      def=$an
+    else
+      def="y"
+    fi
   
-  if [ $def = "y" ] || [ $def = "Y" ]; then
-    BRvarsubvol="y"
-  elif [ $def = "n" ] || [ $def = "N" ]; then
-    BRvarsubvol="n"
-  else
-    echo -e "Please enter a valid option\n"
-  fi
-done
+    if [ $def = "y" ] || [ $def = "Y" ]; then
+      BRvarsubvol="y"
+    elif [ $def = "n" ] || [ $def = "N" ]; then
+      BRvarsubvol="n"
+    else
+      echo -e "Please enter a valid option\n"
+    fi
+  done
 
-while [ -z "$BRusrsubvol" ]; do
-  echo " "
-  read -p "Create seperate subvolume for /usr inside $BRrootsubvolname ? (Y/n): " an
+  while [ -z "$BRusrsubvol" ]; do
+    echo " "
+    read -p "Create seperate subvolume for /usr inside $BRrootsubvolname ? (Y/n): " an
 
-  if [ -n "$an" ]; then
-    def=$an
-  else
-    def="y"
-  fi
+    if [ -n "$an" ]; then
+      def=$an
+    else
+      def="y"
+    fi
   
-  if [ $def = "y" ] || [ $def = "Y" ]; then
-    BRusrsubvol="y"
-  elif [ $def = "n" ] || [ $def = "N" ]; then
-    BRusrsubvol="n"
-  else
-    echo -e "Please enter a valid option\n"
-  fi
-done 
-fi
+    if [ $def = "y" ] || [ $def = "Y" ]; then
+      BRusrsubvol="y"
+    elif [ $def = "n" ] || [ $def = "N" ]; then
+      BRusrsubvol="n"
+    else
+      echo -e "Please enter a valid option\n"
+    fi
+  done 
 
-if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
   echo -e "\n---------------CREATING SUBVOLUMES---------------"
   btrfs subvolume create /mnt/target/$BRrootsubvolname
-      if [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
-         btrfs subvolume create /mnt/target/$BRrootsubvolname/home 
-      fi
+  if [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/home 
+  fi
  
-      if [ "x$BRvarsubvol" = "xy" ] || [ "x$BRvarsubvol" = "xY" ]; then
-         btrfs subvolume create /mnt/target/$BRrootsubvolname/var 
-      fi
+  if [ "x$BRvarsubvol" = "xy" ] || [ "x$BRvarsubvol" = "xY" ]; then
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/var 
+  fi
 
-      if [ "x$BRusrsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xY" ]; then
-         btrfs subvolume create /mnt/target/$BRrootsubvolname/usr
-      fi
-        echo -e "\n---------------UNMOUNTING ---------------"
-        unmount
-        echo -e "\n---------------MOUNTING SUBVOLUME $BRrootsubvolname---------------"
-        mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1 && echo SUCCESS  || echo WARNING
+  if [ "x$BRusrsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xY" ]; then
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/usr
+  fi
+  
+  echo -e "\n---------------UNMOUNTING ---------------"
+  unmount
+  
+  echo -e "\n---------------MOUNTING SUBVOLUME $BRrootsubvolname---------------"
+  mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1 && echo SUCCESS  || echo WARNING
 
-      if [   -n "$BRhome" ]; then
-         echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
-         if [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
-             mkdir /mnt/target/home
-         fi
-         mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
-         BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
-       fi
+  if [   -n "$BRhome" ]; then
+    echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
+    if [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
+      mkdir /mnt/target/home
+    fi
+    mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
+    BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
+  fi
 
-      if [   -n "$BRboot" ]; then
-         echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
-         mkdir /mnt/target/boot
-         mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
-         BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
-      fi
+  if [   -n "$BRboot" ]; then
+    echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
+    mkdir /mnt/target/boot
+    mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
+    BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
+  fi
 
 fi
 

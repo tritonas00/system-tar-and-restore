@@ -113,7 +113,7 @@ cleanandunmount2() {
   exit
 }
 
-BRargs=`getopt -o "d:r:s:b:h:g:S:f:u:n:p:y" -l "distro:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes" -n "$1" -- "$@"`
+BRargs=`getopt -o "d:r:s:b:h:g:S:f:u:n:p:R:HVUy" -l "distro:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes,rootsubvolname:,homesubvol,varsubvol,usrsubvol" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -171,6 +171,23 @@ while true; do
     ;;
     -y|--yes) 
       def="y"
+      shift
+    ;;
+    -R|--rootsubvolname) 
+      BRrootsubvol="y"
+      BRrootsubvolname=$2
+      shift 2
+    ;;
+    -H|--homesubvol) 
+      BRhomesubvol="y"
+      shift
+    ;;
+    -V|--varsubvol) 
+      BRvarsubvol="y"
+      shift
+    ;;
+    -U|--usrsubvol) 
+      BRusrsubvol="y"
       shift
     ;;
     --help)
@@ -406,14 +423,14 @@ if [  "x$BRfsystem" = "xbtrfs" ]; then
   read -p "BTRFS root file system detected. Do you want to use a subvolume for root (/) ? (Y/n): " an
 
   if [ -n "$an" ]; then
-    def=$an
+    btrfsdef=$an
   else
-    def="y"
+    btrfsdef="y"
   fi
   
-  if [ $def = "y" ] || [ $def = "Y" ]; then
+  if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
     BRrootsubvol="y"
-  elif [ $def = "n" ] || [ $def = "N" ]; then
+  elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
     BRrootsubvol="n"
   else
     echo -e "Please enter a valid option\n"
@@ -424,22 +441,24 @@ fi
 
 if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
 
-  read -p "Enter subvolume name: " BRrootsubvolname
-  echo "Subvolume name: $BRrootsubvolname"
+  if [ -z "$BRrootsubvolname" ]; then   
+    read -p "Enter subvolume name: " BRrootsubvolname
+    echo "Subvolume name: $BRrootsubvolname"
+  fi  
  
   while [ -z "$BRhomesubvol" ]; do
     echo " "
     read -p "Create seperate subvolume for /home inside $BRrootsubvolname ? (Y/n): " an
 
     if [ -n "$an" ]; then
-      def=$an
+      btrfsdef=$an
     else
-      def="y"
+      btrfsdef="y"
     fi
   
-    if [ $def = "y" ] || [ $def = "Y" ]; then
+    if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
       BRhomesubvol="y"
-    elif [ $def = "n" ] || [ $def = "N" ]; then
+    elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
       BRhomesubvol="n"
     else
       echo -e "Please enter a valid option\n"
@@ -451,14 +470,14 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
     read -p "Create seperate subvolume for /var inside $BRrootsubvolname ? (Y/n): " an
 
     if [ -n "$an" ]; then
-      def=$an
+      btrfsdef=$an
     else
-      def="y"
+      btrfsdef="y"
     fi
   
-    if [ $def = "y" ] || [ $def = "Y" ]; then
+    if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
       BRvarsubvol="y"
-    elif [ $def = "n" ] || [ $def = "N" ]; then
+    elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
       BRvarsubvol="n"
     else
       echo -e "Please enter a valid option\n"
@@ -470,14 +489,14 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
     read -p "Create seperate subvolume for /usr inside $BRrootsubvolname ? (Y/n): " an
 
     if [ -n "$an" ]; then
-      def=$an
+      btrfsdef=$an
     else
-      def="y"
+      btrfsdef="y"
     fi
   
-    if [ $def = "y" ] || [ $def = "Y" ]; then
+    if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
       BRusrsubvol="y"
-    elif [ $def = "n" ] || [ $def = "N" ]; then
+    elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
       BRusrsubvol="n"
     else
       echo -e "Please enter a valid option\n"
@@ -521,10 +540,6 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
   fi
 
 fi
-
-
-
-
 
 echo -e "\n---------------GETTING TAR IMAGE---------------"
 
@@ -607,8 +622,6 @@ echo "Boot Partition: $BRboot $BRbootfsystem"
 echo "Home Partition: $BRhome $BRhomefsystem"
 echo "Bootloader Location:  $BRgrub $BRsyslinux"
 echo -e "Backup File: $BRfile $BRurl\n"
-
-unset def
 
 if [ -z $def ]; then
   read -p "Do you want continue? (Y/n): " def

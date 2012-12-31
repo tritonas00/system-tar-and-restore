@@ -728,9 +728,9 @@ elif [ -n "$BRsyslinux" ]; then
   echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
   echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
   if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
-   echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+   echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
   else
-   echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+   echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
   fi
   elif [ $BRdistro = Fedora ]; then
   mkdir -p /mnt/target/boot/syslinux
@@ -749,9 +749,9 @@ elif [ -n "$BRsyslinux" ]; then
   echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
   echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
      if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
-        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
       else
-        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
      fi
   fi
 fi

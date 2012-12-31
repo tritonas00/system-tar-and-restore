@@ -83,7 +83,9 @@ The script will ask for:
 
 The script also supports all input as arguments:
 
-- -d      [target distribution]
+;-d      
+: target distribution
+
 -  -r      [root partition]
 -  -s     [swap partition]
 -  -b     [boot partition]

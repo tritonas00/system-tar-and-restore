@@ -124,19 +124,16 @@ password
 **-y, --yes**     
 yes to all
 
-**-R, rootsubvolname**
+**-R, --rootsubvolname**   
 subvolume name for root
 
-**-R, --rootsubvolname**
-subvolume name for root
-
-**-H, --homesubvol**
+**-H, --homesubvol**   
  make subvolume for /home
 
-**-V, --varsubvol**
+**-V, --varsubvol**   
 make subvolume for /var
 
-**-U, --usrsubvol**
+**-U, --usrsubvol**   
 make subvolume for /usr
 
 Examples:

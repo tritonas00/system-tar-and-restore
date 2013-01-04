@@ -65,23 +65,31 @@ The script will ask for:
 
 - Target distibution's name. This is the name of the distribution which the tar backup contains.
 
+
 - Root partition ( / )
+
 
 - Swap partition ( Optional )
 
+
 - Home partition ( Optional )
+
 
 - Boot partition   ( Optional )
 
+
 - Bootloader. Grub(2) and syslinux/extlinux are both supported.
 
+
 - Bootloader install location. (MBR of the given device)
+
 
 - If the root filesystem is btrfs, the script will ask if you want to create a subvolume for it.
    If yes, it will ask for the subvolume's name and also if you want to create seperate
    subvolumes for /home, /usr and /var inside root subvolume.
 
-- The *.tgz image file. This can be obtained localy (by entering the full path of the file), or remotelly (by entering full url of the file).
+
+- The *.tgz image file. This can be obtained locally (by entering the full path of the file), or remotelly (by entering full url of the file).
    Also protected url is supported, which will ask for server's username and password.
 
 

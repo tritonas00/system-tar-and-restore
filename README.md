@@ -17,7 +17,7 @@ The script will ask:
 - If you want to include your entire home directory. ( If selected no, only hidden files and folders 
    will be included in the backup, just to save user's configurations)
 
-- If fedora's patched tar will be used  (Necessary if the host and the target system is Fedora)
+- If you want to activate --acls  --selinux --xattrs  (Necessary if the host and the target system is Fedora)
 
 
 The script also supports all input as arguments:
@@ -29,19 +29,18 @@ path for backup folder
 exclude /home, keep only hidden files and folders
 
 **-f**   
-use Fedora's patched tar
+Activate --acls  --selinux --xattrs (Required for Fedora)
 
 Examples:
 
 - Backup directory=/home/john/
-- Include /home
-- No fedora's patched tar
+- Include /home  
 
 <code>sudo ./backup -d /home/john/</code>
 
 - Backup directory=/home/john/
 - Exclude /home ( Only include hidden folders and files)
-- Fedora's tar in use
+- --acls  --selinux --xattrs activated
 
 <code>sudo ./backup -f -h -d /home/john/</code>
 

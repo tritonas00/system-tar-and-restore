@@ -63,34 +63,26 @@ Also for Debian and Fedora a seperate /boot partition is required for booting a 
 
 The script will ask for:
 
-- Target distibution's name. This is the name of the distribution which the tar backup contains.
+- Target distibution's name. This is the name of the distribution which the tar backup contains.  
 
+- Root partition ( / )  
 
-- Root partition ( / )
+- Swap partition ( Optional )  
 
+- Home partition ( Optional )  
 
-- Swap partition ( Optional )
+- Boot partition   ( Optional )  
 
+- Bootloader. Grub(2) and syslinux/extlinux are both supported.  
 
-- Home partition ( Optional )
-
-
-- Boot partition   ( Optional )
-
-
-- Bootloader. Grub(2) and syslinux/extlinux are both supported.
-
-
-- Bootloader install location. (MBR of the given device)
-
+- Bootloader install location. (MBR of the given device)  
 
 - If the root filesystem is btrfs, the script will ask if you want to create a subvolume for it.
    If yes, it will ask for the subvolume's name and also if you want to create seperate
-   subvolumes for /home, /usr and /var inside root subvolume.
-
+   subvolumes for /home, /usr and /var inside root subvolume.  
 
 - The *.tgz image file. This can be obtained locally (by entering the full path of the file), or remotelly (by entering full url of the file).
-   Also protected url is supported, which will ask for server's username and password.
+   Also protected url is supported, which will ask for server's username and password.  
 
 
 The script also supports all input as arguments:

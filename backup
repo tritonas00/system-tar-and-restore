@@ -16,7 +16,7 @@ while getopts "d:hf" arg; do
     \?) 
       echo "Usage: $0 -d [path for backup folder]
       -h (exclude home)
-      -f (use Fedora's patched tar)"
+      -f (Activate --acls  --selinux --xattrs)"
       exit
     ;;
   esac
@@ -84,7 +84,7 @@ done
 while [ -z "$BRtar" ]; do
   
   echo " "
-  read -p "Are you going to use fedora's patched tar? (y/N): " an
+  read -p "Activate --acls  --selinux --xattrs? (Required for Fedora) (y/N): " an
 
   if [ -n "$an" ]; then
     def=$an

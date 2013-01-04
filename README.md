@@ -91,38 +91,50 @@ The script also supports all input as arguments:
 **-d, --distro**   
 target distribution
 
-**-r, root**    
+**-r, --root**    
 root partition
 
-**-s**     
+**-s, --swap**     
 swap partition
 
-**-b**     
+**-b, --boot**     
 boot partition
 
-**-h**     
+**-h, --home**     
 home partition
 
-**-g**    
+**-g, --grub**    
 disk for grub
 
-**-l**      
+**-S, --syslinux**      
 disk for syslinux
 
-**-f**      
+**-f, --file**      
 backup file path
 
-**-u**     
+**-u, --url**     
 url
 
-**-n**     
+**-n, --username**     
 username
 
-**-p**     
+**-p, --password**     
 password
 
-**-y**     
+**-y, --yes**     
 yes to all
+
+**-R, --rootsubvolname**
+subvolume name for root
+
+**-H, --homesubvol**
+make subvolume for /home
+
+**-V, --varsubvol**
+make subvolume for /var
+
+**-U, --usrsubvol**
+make subvolume for /usr
 
 
 Examples:

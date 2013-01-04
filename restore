@@ -191,7 +191,41 @@ while true; do
       shift
     ;;
     --help)
-      echo "Here we will print the usage"
+      echo "
+-d,  --distro          target distribution
+
+-r,  --root            root partition
+
+-s,  --swap            swap partition
+ 
+-b,  --boot            boot partition
+
+-h,  --home            home partition
+
+-g,  --grub            disk for grub
+
+-S,  --syslinux        disk for syslinux
+
+-f,  --file            backup file path
+
+-u,  --url             url
+
+-n,  --username        username
+
+-p,  --password        password
+
+-y,  --yes             yes to all
+
+-R,  --rootsubvolname  subvolume name for root
+
+-H,  --homesubvol      make subvolume for /home
+
+-V,  --varsubvol       make subvolume for /var
+
+-U,  --usrsubvol       make subvolume for /usr
+
+--help  print this page
+"
       exit
       shift
     ;;  

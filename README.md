@@ -125,15 +125,18 @@ password
 yes to all
 
 **-R, --rootsubvolname**
+
 subvolume name for root
 
 **-H, --homesubvol**
 make subvolume for /home
 
 **-V, --varsubvol**
+
 make subvolume for /var
 
 **-U, --usrsubvol**
+
 make subvolume for /usr
 
 

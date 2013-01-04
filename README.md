@@ -124,11 +124,14 @@ password
 **-y, --yes**     
 yes to all
 
+**-R, rootsubvolname**
+subvolume name for root
+
 **-R, --rootsubvolname**
 subvolume name for root
 
 **-H, --homesubvol**
-make subvolume for /home
+ make subvolume for /home
 
 **-V, --varsubvol**
 make subvolume for /var

@@ -15,7 +15,7 @@ while getopts "d:hf" arg; do
     ;;
     \?) 
       echo "Usage: $0 -d [path for backup folder]
-      -h (exclude home)
+      -h (exclude home, include only hidden files and folders)
       -f (Activate --acls  --selinux --xattrs)"
       exit
     ;;
@@ -69,7 +69,8 @@ done
 while [ -z "$BRhome" ]; do
   
   echo " "
-  read -p "Do you want to include home? (Y/n): " an
+  read -p "Do you want to include home? 
+If no, only hidden files and folders will be included (Y/n): " an
 
   if [ -n "$an" ]; then
     def=$an
@@ -89,7 +90,7 @@ done
 while [ -z "$BRtar" ]; do
   
   echo " "
-  read -p "Activate --acls  --selinux --xattrs? (Required for Fedora) (y/N): " an
+  read -p "Activate --acls  --selinux --xattrs options? (Required / Available only in Fedora) (y/N): " an
 
   if [ -n "$an" ]; then
     def=$an

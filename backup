@@ -27,14 +27,19 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
-if [ ! -d "/boot/grub/" ]; then
-  echo "Cannot find grub, aborting."
-  exit
-fi
 
 if [ -z "$BRFOLDER" ]; then
 
 echo "This script will make a full tar backup image of your entire system"
+echo "Make sure you have GRUB or SYSLINUX packages installed
+GRUB Packages
+-->Arch: grub-bios
+-->Debian: grub-pc
+-->Fedora: grub2
+SYSLINUX Packages
+-->Arch: syslinux
+-->Debian: syslinux extlinux
+-->Fedora: syslinux-extlinux"
 echo "Make sure you have enough free space"
 echo "Press ENTER and select the location where the backup file will be created" 
 read -s a

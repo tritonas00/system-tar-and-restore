@@ -39,7 +39,7 @@ GRUB Packages
 SYSLINUX Packages
 -->Arch: syslinux
 -->Debian: syslinux extlinux
--->Fedora: syslinux-extlinux"
+-->Fedora: syslinux syslinux-extlinux"
 echo "Make sure you have enough free space"
 echo "Press ENTER and select the location where the backup file will be created" 
 read -s a

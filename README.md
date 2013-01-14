@@ -17,18 +17,18 @@ The script will ask:
 - If you want to include your entire home directory. ( If selected no, only hidden files and folders 
    will be included in the backup, just to save user's configurations)
 
-- If you want to activate --acls  --selinux --xattrs  (Necessary if the host and the target system is Fedora)
+- If you want to activate --acls  --selinux --xattrs options (Necessary if the host and the target system is Fedora)
 
 
 The script also supports all input as arguments:
 
-**-d**  
+**-d, --directory**  
 path for backup folder
 
-**-h**  
+**-h, --exclude-home**  
 exclude /home, keep only hidden files and folders
 
-**-f**   
+**-f, --fedora-tar**   
 Activate --acls  --selinux --xattrs (Required / Available only in Fedora)
 
 Examples:

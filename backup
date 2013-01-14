@@ -2,22 +2,44 @@
 
 clear
 
-while getopts "d:hf" arg; do
-  case $arg in
-    d) 
-      BRFOLDER=$OPTARG
+BRargs=`getopt -o "d:hf" -l "directory:,exclude-home,fedora-tar,help" -n "$1" -- "$@"`
+
+if [ $? -ne 0 ];
+then
+  echo "See $0 --help"
+  exit 
+fi
+
+eval set -- "$BRargs";
+
+while true; do
+  case "$1" in
+    -d|--directory)
+      BRFOLDER=$2
+      shift 2
     ;;
-    h)
+    -h|--exclude-home) 
       BRhome="n"
+      shift
     ;;
-    f)
+    -f|--fedora-tar) 
       BRtar="y"
+      shift
     ;;
-    \?) 
-      echo "Usage: $0 -d [path for backup folder]
-      -h (exclude home, include only hidden files and folders)
-      -f (Activate --acls  --selinux --xattrs)"
+    --help)
+      echo "
+-d, --directory		path for backup folder
+-h, --exclude-home	exclude home, include only hidden files and folders
+-f, --fedora-tar	Activate --acls  --selinux --xattrs
+
+--help	print this page
+"
       exit
+      shift
+    ;;  
+    --)
+      shift
+      break
     ;;
   esac
 done

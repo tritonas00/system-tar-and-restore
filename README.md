@@ -29,7 +29,7 @@ path for backup folder
 exclude /home, keep only hidden files and folders
 
 **-f**   
-Activate --acls  --selinux --xattrs (Required for Fedora)
+Activate --acls  --selinux --xattrs (Required / Available only in Fedora)
 
 Examples:
 
@@ -39,7 +39,7 @@ Examples:
 <code>sudo ./backup -d /home/john/</code>
 
 - Backup directory=/home/john/
-- Exclude /home ( Only include hidden folders and files)
+- Exclude /home (Only include hidden folders and files)
 - --acls  --selinux --xattrs activated
 
 <code>sudo ./backup -f -h -d /home/john/</code>

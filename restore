@@ -2,11 +2,6 @@
 
 clear
 
-if [ $(id -u) -gt 0 ]; then
-  echo "Please run the script as root. Exit"
-  exit
-fi
-
 
 remountdeletesubvolumes() {
  cd ~ 
@@ -267,6 +262,11 @@ fi
 
 IFS=$'\n'
 PS3="Choice: "
+
+if [ $(id -u) -gt 0 ]; then
+  echo "Please run the script as root. Exit"
+  exit
+fi
 
 echo "`date +%A-%d-%m-%Y-%R`"
 

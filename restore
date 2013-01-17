@@ -475,10 +475,10 @@ fi
 
 if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
 
-  if [ -z "$BRrootsubvolname" ]; then   
+  while [ -z "$BRrootsubvolname" ]; do   
     read -p "Enter subvolume name: " BRrootsubvolname
     echo "Subvolume name: $BRrootsubvolname"
-  fi  
+  done
  
   while [ -z "$BRhomesubvol" ]; do
     echo " "

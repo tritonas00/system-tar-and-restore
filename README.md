@@ -151,7 +151,7 @@ Examples:
 - syslinux 
 - remote file on ftp server
 
-<code>sudo ./restore -d Debian -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -l /dev/sdb -u ftp://server/data/backup.tgz</code>
+<code>sudo ./restore -d Debian -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/data/backup.tgz</code>
 
 - Distro= Fedora
 - root = /dev/sdb2
@@ -160,7 +160,7 @@ Examples:
 - syslinux 
 - remote file in protected http server
 
-<code>sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -l /dev/sdb -u http://server/data/backup.tgz -n user -p pass</code>
+<code>sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -S /dev/sdb -u http://server/data/backup.tgz -n user -p pass</code>
 
 
 Demo : http://www.youtube.com/watch?v=eoGKI1Ls1ng

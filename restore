@@ -478,6 +478,9 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
   while [ -z "$BRrootsubvolname" ]; do   
     read -p "Enter subvolume name: " BRrootsubvolname
     echo "Subvolume name: $BRrootsubvolname"
+    if [ -z "$BRrootsubvolname" ]; then
+         echo "Please enter a name for the subvolume."
+    fi
   done
  
   while [ -z "$BRhomesubvol" ]; do

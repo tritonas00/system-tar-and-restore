@@ -653,11 +653,17 @@ while [ ! -f /mnt/target/fullbackup.tgz ]; do
   done
 done
 
+if [ -n "$BRgrub" ]; then
+  BRbootloader=Grub
+elif [ -n "$BRsyslinux" ]; then
+  BRbootloader=Syslinux
+fi
+
 echo -e "\nRoot Partition: $BRroot $BRfsystem"
 echo "Swap Partition: $BRswap"
 echo "Boot Partition: $BRboot $BRbootfsystem"
 echo "Home Partition: $BRhome $BRhomefsystem"
-echo "Bootloader Location:  $BRgrub $BRsyslinux"
+echo "$BRbootloader Location:  $BRgrub $BRsyslinux"
 echo -e "Backup File: $BRfile $BRurl\n"
 
 if [ -z $def ]; then

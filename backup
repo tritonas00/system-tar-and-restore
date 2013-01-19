@@ -155,16 +155,20 @@ while [ -z "$BRtar" ]; do
   fi
 done  
 
+echo " "
+
 echo "SYMMARY  
 Backup Folder = $BRFOLDER
 Include Home Directory = $BRhome
 Activated Fedora's tar options = $BRtar"
 
+echo " "
+
 if [ -z $defcon ]; then
-read -p "Do you want continue? (Y/n): " def
+read -p "Do you want continue? (Y/n): " defcon
 fi
 
-if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
+if [ "x$defcon" = "xn" ] || [ "x$defcon" = "xN" ]; then
 exit
 fi
 

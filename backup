@@ -69,22 +69,46 @@ read -s a
 echo -e "\nThe default folder for creating the backup file is / (root)" 
 fi
 
-while [ -z "$BRFOLDER" ]; do
-
-  read -p "Do you want to save in the default folder? (Y/n): " an
-
-  if [ -n "$an" ]; then
-    def=$an
-  else
-    def="y"
+if [ -n "$BRFOLDER" ]; then
+  if [ ! -d "$BRFOLDER" ] ||  [ -z $BRFOLDER ]; then
+    echo "Directory does not exist."
+    read -p "Do you want to save in the default folder? (Y/n): " an
+      if [ -n "$an" ]; then
+        def=$an
+      else
+        def="y"
+      fi
+        if [ $def = "y" ] || [ $def = "Y" ]; then
+           BRFOLDER="/"
+        elif [ $def = "n" ] || [ $def = "N" ]; then
+          while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
+            read -p "Insert the folder path where the backup will be created: " BRFOLDER
+              if [ ! -d "$BRFOLDER" ]; then
+                echo "Directory does not exist."
+              fi
+          done 
+        fi
   fi
+fi
+
+
+while [ -z "$BRFOLDER" ]; do
+  read -p "Do you want to save in the default folder? (Y/n): " an
+    if [ -n "$an" ]; then
+      def=$an
+    else
+      def="y"
+    fi
   
   if [ $def = "y" ] || [ $def = "Y" ]; then
     BRFOLDER="/"
   elif [ $def = "n" ] || [ $def = "N" ]; then
-    read -p "Insert the folder path where the backup will be created: " BRFOLDER
-  else
-    echo -e "Please enter a valid option\n"
+    while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
+      read -p "Insert the folder path where the backup will be created: " BRFOLDER
+        if [ ! -d "$BRFOLDER" ]; then
+          echo "Directory does not exist."
+        fi
+     done 
   fi
 done  
 
@@ -129,6 +153,18 @@ while [ -z "$BRtar" ]; do
   fi
 done  
 
+echo "SYMMARY  
+Backup Folder = $BRFOLDER
+Include Home Directory = $BRhome
+Activated Fedora's tar options = $BRtar"
+
+if [ -z $defcon ]; then
+read -p "Do you want continue? (Y/n): " def
+fi
+
+if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
+exit
+fi
 
 BRFOLDER=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
 

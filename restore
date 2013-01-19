@@ -485,7 +485,7 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
  
   while [ -z "$BRhomesubvol" ]; do
     echo " "
-    read -p "Create seperate subvolume for /home inside $BRrootsubvolname ? (Y/n): " an
+    read -p "Create subvolume for /home inside $BRrootsubvolname ? (Y/n): " an
 
     if [ -n "$an" ]; then
       btrfsdef=$an
@@ -504,7 +504,7 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
 
   while [ -z "$BRvarsubvol" ]; do
     echo " "
-    read -p "Create seperate subvolume for /var inside $BRrootsubvolname ? (Y/n): " an
+    read -p "Create subvolume for /var inside $BRrootsubvolname ? (Y/n): " an
 
     if [ -n "$an" ]; then
       btrfsdef=$an
@@ -523,7 +523,7 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
 
   while [ -z "$BRusrsubvol" ]; do
     echo " "
-    read -p "Create seperate subvolume for /usr inside $BRrootsubvolname ? (Y/n): " an
+    read -p "Create subvolume for /usr inside $BRrootsubvolname ? (Y/n): " an
 
     if [ -n "$an" ]; then
       btrfsdef=$an

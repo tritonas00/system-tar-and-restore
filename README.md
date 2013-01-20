@@ -53,13 +53,12 @@ re-generate locales and finally unmounts and cleans everything.
 
 User must create partitions using his favorite partition manager before running the script.
 At least one / (root) partition is required and optionally a seperate partition for /home, /boot and a swap partition.
-If you want the script to create and manage btrfs subvolumes, btrfs-progs must be installed before restoring.
 
-If you want to use syslinux for booting a btrfs subvolumed root, you need 
-a seperate /boot partition and also the subvolume's name must be __active
+For booting a btrfs subvolumed root successfully, it is recommended to have a seperate /boot partition.
 
-Also for Debian and Fedora a seperate /boot partition is required for booting a btrfs subvolumed root successfully.
+Also recommended subvolume name is: __active.
 
+The system that runs the script and the target system (the one we want to restore), must have the same architecture (for chroot to work).
 
 The script will ask for:
 

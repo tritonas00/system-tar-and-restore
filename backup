@@ -49,6 +49,22 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
+interfaces=(CLI Dialog)
+
+  echo -e "\nSelect interface or enter Q to quit"
+  select c in ${interfaces[@]}; do
+    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      echo "Now quiting"
+      exit
+    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#interfaces[@]} ]; then
+      BRinterface=$c
+      break
+    else
+      echo "Please select a valid option from the list or enter Q to quit"
+    fi
+  done
+
+if [ $BRinterface = "CLI" ]; then
 
 if [ -z "$BRFOLDER" ]; then
 
@@ -204,3 +220,125 @@ echo "Setting permissions"
 chmod ugo+rw -R "${BRFOLDER[@]}" 2>> $BRFOLDER/errors
 
 echo "Done. Tar image and logs saved in $BRFOLDER"
+
+elif [ $BRinterface = "Dialog" ]; then
+
+if [ -z $(which dialog 2> /dev/null) ];then
+ echo "Package dialog is not installed. Install the package and re-run the script."
+ exit
+fi
+
+if [ -z "$BRFOLDER" ]; then
+
+dialog --no-ok --title "Info" --msgbox  "This script will make a full tar backup image of your entire system.
+Make sure you have GRUB or SYSLINUX packages installed.
+GRUB Packages:
+-->Arch: grub-bios
+-->Debian: grub-pc
+-->Fedora: grub2
+SYSLINUX Packages:
+-->Arch: syslinux
+-->Debian: syslinux extlinux
+-->Fedora: syslinux syslinux-extlinux
+Make sure you have enough free space.
+Press OK and select the location where the backup file will be created." 18 100
+
+fi
+
+if [ -n "$BRFOLDER" ]; then
+  if [ ! -d "$BRFOLDER" ] ||  [ -z $BRFOLDER ]; then
+    echo "Directory does not exist." | dialog --progressbox "ERROR" 30 70
+    sleep 2
+    dialog --default-button Yes --title "Message"  --yesno "The default folder for creating the backup file is / (root)
+Do you want to save in the default folder?" 8 50
+    if [ $? = "0" ]; then
+      BRFOLDER="/"
+    else
+    while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
+      exec 3>&1 
+      BRFOLDER=$(dialog  --no-cancel --inputbox "Insert the folder path where the backup will be created" 8 50 2>&1 1>&3)  
+      if [ ! -d "$BRFOLDER" ]; then
+        echo "Directory does not exist." | dialog --progressbox "ERROR" 30 70
+        sleep 2
+      fi
+    done 
+    fi
+  fi
+fi
+
+while [ -z "$BRFOLDER" ]; do
+  dialog --default-button Yes --title "Message" --yesno "The default folder for creating the backup file is / (root)
+Do you want to save in the default folder?" 8 50
+  if [ $? = "0" ]; then
+    BRFOLDER="/"
+  else
+  while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
+    exec 3>&1 
+    BRFOLDER=$(dialog  --no-cancel --inputbox "Insert the folder path where the backup will be created" 8 50 2>&1 1>&3)  
+    if [ ! -d "$BRFOLDER" ]; then
+      echo "Directory does not exist." | dialog --progressbox "ERROR" 30 70
+      sleep 2
+    fi
+  done 
+   fi
+done 
+
+while [ -z "$BRhome" ]; do
+  dialog --default-button Yes --title "Message"  --yesno "Do you want to include home? If no, only hidden files and folders will be included." 8 50
+  if [ $? = "0" ]; then
+    BRhome="y"
+  else
+    BRhome="n"
+  fi
+done  
+
+while [ -z "$BRtar" ]; do
+  dialog --default-button No --title "Message"  --yesno "Activate --acls  --selinux --xattrs options? (Required / Available only in Fedora)" 8 50
+  if [ $? = 0 ]; then
+    BRtar="y"
+  else
+    BRtar="n"
+  fi
+done  
+
+dialog --title "Symmary"  --yesno "Backup Folder = $BRFOLDER
+Include Home Directory = $BRhome
+Activated Fedora's tar options = $BRtar
+------------------------------------
+Press Yes to continue or No to abort." 10 50
+
+if [ $? = "1" ]; then
+  exit
+fi
+
+BRFOLDER=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
+
+mkdir -p $BRFOLDER
+touch $BRFOLDER/log
+touch $BRFOLDER/errors
+
+sleep 1
+
+BRFile=$BRFOLDER/Backup-"`date +%A-%d-%m-%Y-%T`"
+
+(if [ $BRhome = "n" ] &&  [ $BRtar = "n" ]; then
+  tar cvpf  $BRFile.tar  --sparse --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+  find /home -maxdepth 1 -print | xargs tar rpvf $BRFile.tar --no-recursion 2>>$BRFOLDER/errors | tee $BRFOLDER/log
+  find /home -maxdepth 2 -name ".*" -print | xargs tar rpvf $BRFile.tar 2>>$BRFOLDER/errors | tee $BRFOLDER/log
+  gzip $BRFile.tar
+elif [ $BRhome = "y" ] &&  [ $BRtar = "n" ]; then
+  tar cvpzf  $BRFile.tgz  --sparse --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+elif [ $BRhome = "n" ] &&  [ $BRtar = "y" ]; then
+  tar cvpf  $BRFile.tar  --sparse  --acls  --selinux --xattrs --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+  find /home -maxdepth 1 -print | xargs tar rpvf $BRFile.tar --no-recursion 2>>$BRFOLDER/errors | tee $BRFOLDER/log
+  find /home -maxdepth 2 -name ".*" -print | xargs tar rpvf $BRFile.tar 2>>$BRFOLDER/errors | tee $BRFOLDER/log
+  gzip $BRFile.tar
+elif [ $BRhome = "y" ] &&  [ $BRtar = "y" ]; then
+  tar cvpzf  $BRFile.tgz  --sparse --acls  --selinux --xattrs --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude=$BRFOLDER / 2>>$BRFOLDER/errors | tee $BRFOLDER/log 
+fi) | dialog --progressbox "Creating backup image..." 30 70
+
+chmod ugo+rw -R "${BRFOLDER[@]}" 2>> $BRFOLDER/errors
+
+dialog --title "Info" --msgbox  "Done. Tar image and logs saved in $BRFOLDER" 8 50
+
+fi

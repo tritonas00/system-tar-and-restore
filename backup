@@ -30,7 +30,7 @@ while true; do
       echo "
 -d, --directory		path for backup folder
 -h, --exclude-home	exclude home, include only hidden files and folders
--f, --fedora-tar	Activate --acls  --selinux --xattrs
+-f, --fedora-tar	activate --acls  --selinux --xattrs options
 
 --help	print this page
 "

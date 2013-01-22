@@ -2,7 +2,6 @@
 
 clear
 
-
 remountdeletesubvolumes() {
  cd ~ 
 mount  $BRroot /mnt/target
@@ -188,35 +187,20 @@ while true; do
     --help)
       echo "
 -d,  --distro          target distribution
-
 -r,  --root            root partition
-
 -s,  --swap            swap partition
- 
 -b,  --boot            boot partition
-
 -h,  --home            home partition
-
 -g,  --grub            disk for grub
-
 -S,  --syslinux        disk for syslinux
-
 -f,  --file            backup file path
-
 -u,  --url             url
-
 -n,  --username        username
-
 -p,  --password        password
-
 -y,  --yes             yes to all
-
 -R,  --rootsubvolname  subvolume name for root
-
 -H,  --homesubvol      make subvolume for /home
-
 -V,  --varsubvol       make subvolume for /var
-
 -U,  --usrsubvol       make subvolume for /usr
 
 --help  print this page
@@ -260,13 +244,30 @@ if [ -n "$BRroot" ]; then
   fi
 fi
 
-IFS=$'\n'
-PS3="Choice: "
-
 if [ $(id -u) -gt 0 ]; then
   echo "Please run the script as root. Exit"
   exit
 fi
+
+interfaces=(CLI Dialog)
+
+  echo -e "\nSelect interface or enter Q to quit"
+  select c in ${interfaces[@]}; do
+    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      echo "Now quiting"
+      exit
+    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#interfaces[@]} ]; then
+      BRinterface=$c
+      break
+    else
+      echo "Please select a valid option from the list or enter Q to quit"
+    fi
+  done
+
+if [ $BRinterface = "CLI" ]; then
+
+IFS=$'\n'
+PS3="Choice: "
 
 echo "`date +%A-%d-%m-%Y-%R`"
 
@@ -840,4 +841,506 @@ read -s a
 sleep 2
 cleanandunmount2
 
+elif [ $BRinterface = "Dialog" ]; then
 
+if [ -z $(which dialog 2> /dev/null) ];then
+ echo "Package dialog is not installed. Install the package and re-run the script."
+ exit
+fi
+
+exec 3>&1
+
+while [ -z "$BRdistro" ]; do
+  BRdistro=$(dialog --cancel-label Quit --menu "Select target distribution." 12 35 12   Arch Linux  Debian Linux  Fedora Linux 2>&1 1>&3)  
+  if [ $? = "1" ]; then
+    BRdistro=" "
+    exit
+  fi 
+done
+
+while [ -z "$BRroot" ]; do
+  BRroot=$(dialog --cancel-label Quit --menu "Select root partition." 14 40 14 `for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+  if [ $? = "1" ]; then
+    BRroot=" "
+    exit
+  fi 
+done
+
+if [ -z "$BRswap" ]; then
+  BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select swap partition." 14 40 14 `for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+  if [ $? = "3" ]; then
+    BRswap=" "
+    exit
+  fi 
+fi
+
+if [ -z "$BRhome" ]; then
+  BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select home partition." 14 40 14 `for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+  if [ $? = "3" ]; then
+    BRhome=" "
+    exit
+  fi 
+fi
+
+if [ -z "$BRboot" ]; then
+  BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select boot partition." 14 40 14 `for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+  if [ $? = "3" ]; then
+    BRboot=" "
+    exit
+  fi 
+fi
+
+
+if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
+  REPLY=$(dialog  --cancel-label Quit  --menu "Select bootloader." 12 35 12  Grub Bootloader Syslinux Bootloader 2>&1 1>&3)
+    if [ $? = "1" ]; then
+      exit
+    fi 
+  if [ $REPLY = "Grub" ]; then
+     while [ -z "$BRgrub" ]; do
+       BRgrub=$(dialog --cancel-label Quit  --menu "Select disk for Grub. " 12 40 12 `for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+       if [ $? = "1" ]; then
+       BRgrub=" "
+        exit
+       fi 
+     done
+  elif [ $REPLY = "Syslinux" ]; then
+     while [ -z "$BRsyslinux" ]; do
+       BRsyslinux=$(dialog --cancel-label Quit  --menu "Select disk for Syslinux." 12 40 12 `for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+       if [ $? = "1" ]; then
+       BRsyslinux=" "
+        exit
+       fi 
+     done
+  fi
+fi 
+ 
+
+if [ "x$BRswap" = "x-1" ]; then
+	unset BRswap
+fi
+if [ "x$BRboot" = "x-1" ]; then
+	unset BRboot
+fi
+if [ "x$BRhome" = "x-1" ]; then
+	unset BRhome
+fi
+
+( echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
+
+mkdir /mnt/target  2>&1 && echo SUCCESS  || echo WARNING
+sleep 1
+
+echo -e "\n---------------MOUNTING $BRroot (/)---------------"
+
+mount $BRroot /mnt/target  2>&1 && echo SUCCESS  || echo WARNING
+
+if [   -n "$BRhome" ]; then
+  echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
+  mkdir /mnt/target/home 2>&1
+  mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
+fi
+
+if [   -n "$BRboot" ]; then
+  echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
+  mkdir /mnt/target/boot 2>&1
+  mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
+fi ) | dialog --progressbox "Working..." 30 70
+
+BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
+
+if [   -n "$BRhome" ]; then
+  BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
+fi
+
+if [   -n "$BRboot" ]; then
+  BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
+fi
+
+sleep 2
+
+if [  "x$BRfsystem" = "xbtrfs" ]; then
+  while [ -z "$BRrootsubvol" ]; do
+    dialog --title "Message"  --yesno "BTRFS root file system detected. Do you want to create a subvolume for root (/) ?" 8 50
+
+  if [ "$?" = "0" ]; then
+    btrfsdef="y"
+  elif [ "$?" = "1" ]; then
+    btrfsdef="n"
+  fi
+  
+  if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+    BRrootsubvol="y"
+  elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+    BRrootsubvol="n"
+  fi
+done 
+fi
+
+
+if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+
+  while [ -z "$BRrootsubvolname" ]; do   
+    BRrootsubvolname=$(dialog  --no-cancel --inputbox "Enter subvolume name" 8 50 2>&1 1>&3)
+    if [ -z "$BRrootsubvolname" ]; then
+           echo "Please enter a name for the subvolume." | dialog --progressbox "ERROR" 30 70
+           sleep 2
+     fi
+  done
+ 
+  while [ -z "$BRhomesubvol" ]; do
+    dialog --title "Message"  --yesno "Create subvolume for /home inside $BRrootsubvolname ?" 8 50
+
+    if [ "$?" = "0" ]; then
+      btrfsdef="y"
+    elif [ "$?" = "1" ]; then
+      btrfsdef="n"
+    fi
+  
+    if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+      BRhomesubvol="y"
+    elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+      BRhomesubvol="n"
+    fi
+  done 
+
+  while [ -z "$BRvarsubvol" ]; do
+    dialog --title "Message"  --yesno "Create subvolume for /var inside $BRrootsubvolname ?" 8 50
+
+    if [ "$?" = "0" ]; then
+      btrfsdef="y"
+    elif [ "$?" = "1" ]; then
+      btrfsdef="n"
+    fi
+  
+    if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+      BRvarsubvol="y"
+    elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+      BRvarsubvol="n"
+    fi
+  done
+
+  while [ -z "$BRusrsubvol" ]; do
+    dialog --title "Message"  --yesno "Create subvolume for /usr inside $BRrootsubvolname ?" 8 50
+
+    if [ "$?" = "0" ]; then
+      btrfsdef="y"
+    elif [ "$?" = "1" ]; then
+      btrfsdef="n"
+    fi
+  
+    if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+      BRusrsubvol="y"
+    elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+      BRusrsubvol="n"
+    fi
+  done 
+
+(  echo -e "\n---------------CREATING SUBVOLUMES---------------"
+  btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1
+  if [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/home 2>&1
+  fi
+ 
+  if [ "x$BRvarsubvol" = "xy" ] || [ "x$BRvarsubvol" = "xY" ]; then
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/var 2>&1
+  fi
+
+  if [ "x$BRusrsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xY" ]; then
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/usr 2>&1
+  fi
+  
+  echo -e "\n---------------UNMOUNTING ---------------"
+  unmount 2>&1
+  
+  echo -e "\n---------------MOUNTING SUBVOLUME $BRrootsubvolname---------------"
+  mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1 && echo SUCCESS  || echo WARNING
+
+  if [   -n "$BRhome" ]; then
+    echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
+    if [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
+      mkdir /mnt/target/home 2>&1
+    fi
+    mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
+  fi
+
+  if [   -n "$BRboot" ]; then
+    echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
+    mkdir /mnt/target/boot 2>&1
+    mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
+  fi ) | dialog --progressbox "Working..." 30 70
+
+  if [   -n "$BRhome" ]; then
+    BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
+  fi
+
+  if [   -n "$BRboot" ]; then
+    BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
+  fi
+sleep 2
+fi
+
+echo -e "\n---------------GETTING TAR IMAGE---------------"
+
+if [ -n "$BRfile" ]; then
+  if [ ! -f $BRfile ] || [ -z $BRfile ]; then
+    echo "File not found." | dialog --progressbox "ERROR" 30 70
+    sleep 2
+  else
+(   echo "Copying file please wait..." 
+    cp $BRfile "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
+  fi
+fi
+
+if [ -n "$BRurl" ]; then
+  if [ -n "$BRusername" ]; then
+ (  wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
+    if [ "$?" -ne "0" ]; then
+      echo ERROR
+      sleep 2
+      rm /mnt/target/fullbackup.tgz
+    fi ) | dialog --progressbox "Downloading file..." 30 70
+  else
+  ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
+    if [ "$?" -ne "0" ]; then
+      echo ERROR
+      sleep 2
+      rm /mnt/target/fullbackup.tgz
+    fi ) | dialog --progressbox "Downloading file..." 30 70
+  fi
+fi
+
+while [ ! -f /mnt/target/fullbackup.tgz ]; do
+
+REPLY=$(dialog  --cancel-label Quit --menu "Select backup file. Choose an option." 13 50 13  File "local file" URL "remote file" Protected "protected server" 2>&1 1>&3)
+
+if [ $? = "1" ]; then
+  if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+    unmount
+    unset BRhome
+    unset BRboot
+    remountdeletesubvolumes
+   fi
+     cleanandunmount
+elif [ $REPLY = "File" ]; then
+  BRfile=$(dialog  --no-cancel --inputbox "Enter the path of the backup file" 8 50 2>&1 1>&3)
+  if [ ! -f $BRfile ] || [ -z $BRfile ]; then
+    echo "File not found" | dialog --progressbox "ERROR" 30 70
+    sleep 2
+  else
+(   echo "Copying file please wait..."
+    cp $BRfile "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
+  fi
+  
+elif [ $REPLY = "URL" ] || [ $REPLY = "Protected" ]; then
+  BRurl=$(dialog  --no-cancel --inputbox "Enter the URL for the backup file" 8 50 2>&1 1>&3)
+  if [  $REPLY = "Protected" ]; then
+    BRusername=$(dialog --no-cancel --inputbox "Enter the username" 8 50 2>&1 1>&3)
+    BRpassword=$(dialog --no-cancel --inputbox "Enter the password" 8 50 2>&1 1>&3)
+ (  wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
+      if [ "$?" -ne "0" ]; then
+        echo  ERROR
+	sleep 2
+        rm /mnt/target/fullbackup.tgz
+      fi ) | dialog --progressbox "Downloading file..." 30 70
+
+  elif [ $REPLY = "URL" ]; then
+  ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
+     if [ "$?" -ne "0" ]; then
+       echo  ERROR
+       sleep 2
+       rm /mnt/target/fullbackup.tgz 
+     fi ) | dialog --progressbox "Downloading file..." 30 70
+  fi 
+fi
+
+done
+
+if [ -n "$BRgrub" ]; then
+  BRbootloader=Grub
+elif [ -n "$BRsyslinux" ]; then
+  BRbootloader=Syslinux
+fi
+
+dialog --title "Symmary"  --yesno "Root Partition: $BRroot $BRfsystem
+Swap Partition: $BRswap
+Boot Partition: $BRboot $BRbootfsystem
+Home Partition: $BRhome $BRhomefsystem
+$BRbootloader Location:  $BRgrub $BRsyslinux
+Backup File: $BRfile $BRurl
+------------------------------------------
+Press Yes to continue, or No to abort." 18 60
+
+if [ $? = "0" ]; then
+  def="y"
+elif [ $? = "1" ]; then
+  def="n"
+fi
+
+if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
+ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+ unmount
+ unset BRhome
+ unset BRboot
+ remountdeletesubvolumes 
+ fi
+ cleanandunmount
+fi  
+
+( tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING ) | dialog --progressbox "EXTRACTING" 30 70
+sleep 2
+
+( mount --bind /dev /mnt/target/dev
+mount -t proc /proc /mnt/target/proc
+mount -t sysfs /sys /mnt/target/sys 2>&1 && echo SUCCESS  || echo FAILED  ) | dialog --progressbox "MOUNTING /dev /proc /sys" 30 70
+sleep 2
+
+echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /mnt/target/etc/fstab
+
+if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+ echo "$BRroot   /  btrfs compress=lzo,subvol=$BRrootsubvolname,noatime 0 0" >> /mnt/target/etc/fstab
+elif [ "x$BRrootsubvol" = "xn" ] || [ "x$BRrootsubvol" = "xN" ] || [ "x$BRfsystem" = "xbtrfs" ]; then
+ echo "$BRroot  /  btrfs  defaults,noatime    0  0" >> /mnt/target/etc/fstab
+else
+ echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /mnt/target/etc/fstab
+fi
+
+if [ -n "$BRswap" ]; then
+  echo "$BRswap    swap   swap    defaults    0  0" >> /mnt/target/etc/fstab
+fi
+
+if [ -n "$BRhome" ]; then
+  echo "$BRhome  /home  $BRhomefsystem  defaults,noatime    0  2" >> /mnt/target/etc/fstab
+fi
+
+if [ -n "$BRboot" ]; then
+  echo "$BRboot  /boot  $BRbootfsystem  defaults    0  1" >> /mnt/target/etc/fstab
+fi
+
+sed -n 's|^/dev/\([sh]d[a-z][0-9]\).*|\1|p' </mnt/target/etc/fstab > /mnt/target/etc/fstab2
+
+while read LINE; do   
+  UUID=`ls -l /dev/disk/by-uuid | grep "$LINE" | sed -n 's/^.* \([^ ]*\) -> .*$/\1/p'`
+  sed -i "s|^/dev/${LINE}|UUID=${UUID}|" /mnt/target/etc/fstab
+done </mnt/target/etc/fstab2
+  
+rm /mnt/target/etc/fstab2
+( cat /mnt/target/etc/fstab ) | dialog --progressbox "GENERATING FSTAB" 30 70
+sleep 2
+
+
+if [ $BRdistro = Arch ]; then
+
+( chroot /mnt/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING ) | dialog --progressbox "REBUILDING INITRAMFS IMAGE" 30 70
+elif [ $BRdistro = Debian ]; then
+
+  list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
+  BRmax=${list[0]}
+  for f in ${list[@]}; do
+    if [[ "$f" > "$BRmax" ]]; then
+      BRmax=$f
+    fi
+  done
+  BRinitrd=$BRmax
+( chroot /mnt/target update-initramfs -u -k $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING ) | dialog --progressbox "REBUILDING INITRAMFS IMAGE" 30 70
+
+elif [ $BRdistro = Fedora ]; then
+
+  list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
+  BRmax=${list[0]}
+  for f in ${list[@]}; do
+    if [[ "$f" > "$BRmax" ]]; then
+      BRmax=$f
+    fi
+  done
+  BRinitrd=$BRmax  
+ ( echo Working...
+  chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING ) | dialog --progressbox "REBUILDING INITRAMFS IMAGE" 30 70
+fi
+
+sleep 2
+
+ if [ -n "$BRgrub" ]; then
+( if [ $BRdistro = Arch ]; then
+    chroot /mnt/target grub-install --target=i386-pc  $BRgrub 2>&1
+    chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+  elif [ $BRdistro = Debian ]; then
+    chroot /mnt/target grub-install  $BRgrub 2>&1
+    chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+  elif [ $BRdistro = Fedora ]; then
+    chroot /mnt/target grub2-install $BRgrub 2>&1
+    chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+  fi ) | dialog --progressbox "INSTALLING AND UPDATING GRUB2 IN $BRgrub" 30 70
+
+elif [ -n "$BRsyslinux" ]; then
+  
+  if [ $BRdistro = Arch ]; then
+(   chroot /mnt/target syslinux-install_update -i -a -m 2>&1 ) | dialog --progressbox "INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux" 30 70
+    echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /mnt/target/boot/syslinux/syslinux.cfg
+    if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+     echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+     echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+    else
+     echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+     echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+    fi
+  elif [ $BRdistro = Debian ]; then
+( mkdir -p /mnt/target/boot/syslinux 2>&1
+  chroot /mnt/target extlinux -i /boot/syslinux 2>&1
+  if [ -n "$BRboot" ]; then
+    BRdev=`echo $BRboot | cut -c -8`
+    BRpart=`echo $BRboot | cut -c 9-`
+    sfdisk $BRdev -A $BRpart 2>&1
+  else
+    BRdev=`echo $BRroot | cut -c -8`
+    BRpart=`echo $BRroot | cut -c 9-`
+    sfdisk $BRdev -A $BRpart 2>&1
+  fi  
+  dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux 2>&1
+  cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/ 2>&1 ) | dialog --progressbox "INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux" 30 70
+  echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
+  echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
+  if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+   echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+  else
+   echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+  fi
+  elif [ $BRdistro = Fedora ]; then
+( mkdir -p /mnt/target/boot/syslinux 2>&1
+  chroot /mnt/target extlinux -i /boot/syslinux 2>&1
+  if [ -n "$BRboot" ]; then
+    BRdev=`echo $BRboot | cut -c -8`
+    BRpart=`echo $BRboot | cut -c 9-`
+    sfdisk $BRdev -A $BRpart 2>&1
+  else
+    BRdev=`echo $BRroot | cut -c -8`
+    BRpart=`echo $BRroot | cut -c 9-`
+    sfdisk $BRdev -A $BRpart 2>&1
+  fi
+  dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRsyslinux 2>&1 
+  cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/ 2>&1 ) | dialog --progressbox "INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux" 30 70
+  echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
+  echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
+     if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      else
+        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+     fi
+  fi
+fi
+
+sleep 2
+
+( if [ $BRdistro = Fedora ]; then
+  chroot /mnt/target localedef -f UTF-8 -i en_US en_US.UTF-8 2>&1 && echo SUCCESS || echo WARNING
+else
+  chroot /mnt/target  locale-gen   2>&1 && echo SUCCESS || echo WARNING
+fi ) | dialog --progressbox "GENERATING LOCALES" 30 70
+sleep 2
+
+dialog --title "Info" --msgbox  "Completed. Press OK to unmount and clean, then reboot your system." 8 50
+
+sleep 2
+cleanandunmount2
+
+fi

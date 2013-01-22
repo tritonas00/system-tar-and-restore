@@ -5,6 +5,11 @@ using tar.
 
 Supported distributions: Arch, Debian, Fedora
 
+###REQUIREMENTS###
+
+- dialog (for ncurses interface)
+- wget   (for downloading backup images)
+
 ###BACKUP###
 
 Backup script makes a tar backup of / in a given location. It will make a folder in that location which 

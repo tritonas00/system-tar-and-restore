@@ -115,26 +115,6 @@ if [ -n "$BRFOLDER" ]; then
   fi
 fi
 
-while [ -z "$BRFOLDER" ]; do
-  read -p "Do you want to save in the default folder? (Y/n): " an
-
-  if [ -n "$an" ]; then
-    def=$an
-  else
-    def="y"
-  fi
-  
-  if [ $def = "y" ] || [ $def = "Y" ]; then
-    BRFOLDER="/"
-  elif [ $def = "n" ] || [ $def = "N" ]; then
-    while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-      read -p "Insert the folder path where the backup will be created: " BRFOLDER
-      if [ ! -d "$BRFOLDER" ]; then
-        echo "Directory does not exist."
-      fi
-    done 
-  fi
-done  
 
 while [ -z "$BRhome" ] ; do
   

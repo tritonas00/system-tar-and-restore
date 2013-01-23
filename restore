@@ -190,6 +190,7 @@ while true; do
     ;;
     --help)
       echo "
+-i,  --interface       interface to use
 -d,  --distro          target distribution
 -r,  --root            root partition
 -s,  --swap            swap partition

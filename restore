@@ -264,9 +264,10 @@ interfaces=(CLI Dialog)
     fi
   done
 
+IFS=$'\n'
+
 if [ $BRinterface = "CLI" ]; then
 
-IFS=$'\n'
 PS3="Choice: "
 
 echo "`date +%A-%d-%m-%Y-%R`"
@@ -1162,6 +1163,8 @@ elif [ -n "$BRsyslinux" ]; then
   BRbootloader=Syslinux
 fi
 
+if [ -z $def ]; then
+
 dialog --title "Symmary"  --yesno "Root Partition: $BRroot $BRfsystem
 Swap Partition: $BRswap
 Boot Partition: $BRboot $BRbootfsystem
@@ -1171,10 +1174,11 @@ Backup File: $BRfile $BRurl
 ------------------------------------------
 Press Yes to continue, or No to abort." 18 60
 
-if [ $? = "0" ]; then
-  def="y"
-elif [ $? = "1" ]; then
-  def="n"
+ if [ $? = "0" ]; then
+   def="y"
+ elif [ $? = "1" ]; then
+   def="n"
+ fi
 fi
 
 if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then

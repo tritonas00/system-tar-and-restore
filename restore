@@ -1095,7 +1095,7 @@ if [ -n "$BRfile" ]; then
     sleep 2
   else
 (   echo "Copying file please wait..." 
-    cp $BRfile "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
+    cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
   fi
 fi
 
@@ -1136,7 +1136,7 @@ elif [ $REPLY = "File" ]; then
     sleep 2
   else
 (   echo "Copying file please wait..."
-    cp $BRfile "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
+    cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
   fi
   
 elif [ $REPLY = "URL" ] || [ $REPLY = "Protected" ]; then

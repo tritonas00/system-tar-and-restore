@@ -107,7 +107,7 @@ cleanandunmount2() {
   exit
 }
 
-BRargs=`getopt -o "d:r:s:b:h:g:S:f:u:n:p:R:HVUy" -l "distro:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes,rootsubvolname:,homesubvol,varsubvol,usrsubvol" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:r:s:b:h:g:S:f:u:n:p:R:HVUy" -l "interface:,distro:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes,rootsubvolname:,homesubvol,varsubvol,usrsubvol" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -119,6 +119,10 @@ eval set -- "$BRargs";
 
 while true; do
   case "$1" in
+    -i|--interface)
+      BRinterface=$2
+      shift 2
+    ;;
     -d|--distro)
       BRdistro=$2
       shift 2
@@ -1349,4 +1353,6 @@ dialog --title "Info" --msgbox  "Completed. Press OK to unmount and clean, then 
 sleep 2
 cleanandunmount2
 
+else
+	echo "Wrong interface name. Use CLI or Dialog. Exit"
 fi

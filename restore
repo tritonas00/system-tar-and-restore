@@ -271,10 +271,9 @@ while [ -z "$BRinterface" ]; do
   done
 done
 
-IFS=$'\n'
-
 if [ $BRinterface = "CLI" ]; then
 
+IFS=$'\n'
 PS3="Choice: "
 
 echo "`date +%A-%d-%m-%Y-%R`"

@@ -152,7 +152,13 @@ while [ -z "$BRhome" ] ; do
     BRhome="y"
   elif [ $def = "n" ] || [ $def = "N" ]; then
     BRhome="n"
-  while [ -z "$BRhidden" ] ; do
+  else
+    echo -e "Please enter a valid option\n"
+  fi
+done  
+
+if [ $BRhome = "n" ]; then
+while [ -z "$BRhidden" ] ; do
     read -p "Do you want to keep hidden files and folders inside /home?  (Y/n): " an
 
   if [ -n "$an" ]; then
@@ -169,10 +175,7 @@ while [ -z "$BRhome" ] ; do
       echo -e "Please enter a valid option\n"
     fi 
   done
-  else
-    echo -e "Please enter a valid option\n"
-  fi
-done  
+fi
 
 while [ -z "$BRtar" ]; do
   
@@ -317,7 +320,11 @@ while [ -z "$BRhome" ]; do
     BRhome="y"
   else
     BRhome="n"
-   while [ -z "$BRhidden" ] ; do
+  fi
+done  
+
+if [ $BRhome = "n" ]; then
+  while [ -z "$BRhidden" ] ; do
        dialog --default-button Yes --title "Message"  --yesno "Do you want to keep hidden files and folders inside /home?" 8 50
        if [ $? = "0" ]; then
          BRhidden="y"
@@ -325,8 +332,7 @@ while [ -z "$BRhome" ]; do
          BRhidden="n"
         fi
    done
-  fi
-done  
+fi
 
 while [ -z "$BRtar" ]; do
   dialog --default-button No --title "Message"  --yesno "Activate --acls  --selinux --xattrs options? (Required / Available only in Fedora)" 8 50

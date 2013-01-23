@@ -2,7 +2,7 @@
 
 clear
 
-BRargs=`getopt -o "d:hf" -l "directory:,exclude-home,fedora-tar,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:hf" -l "interface:,directory:,exclude-home,fedora-tar,help" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -14,6 +14,10 @@ eval set -- "$BRargs";
 
 while true; do
   case "$1" in
+    -i|--interface)
+      BRinterface=$2
+      shift 2
+    ;;
     -d|--directory)
       BRFOLDER=$2
       shift 2
@@ -343,4 +347,6 @@ chmod ugo+rw -R "${BRFOLDER[@]}" 2>> $BRFOLDER/errors
 
 dialog --title "Info" --msgbox  "Done. Tar image and logs saved in $BRFOLDER" 8 50
 
+else
+  echo "Wrong interface name. Use CLI or Dialog. Exit"
 fi

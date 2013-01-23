@@ -166,5 +166,7 @@ Examples:
 
 <code>sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -S /dev/sdb -u http://server/data/backup.tgz -n user -p pass</code>
 
+Demos 
 
-Demo : http://www.youtube.com/watch?v=eoGKI1Ls1ng
+http://www.youtube.com/watch?v=eoGKI1Ls1ng
+http://www.youtube.com/watch?v=-ot5G4dB3DM

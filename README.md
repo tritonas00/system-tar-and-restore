@@ -27,6 +27,9 @@ The script will ask:
 
 The script also supports all input as arguments:
 
+**-i, --interface**   
+interface to use
+
 **-d, --directory**  
 path for backup folder
 
@@ -90,6 +93,9 @@ The script will ask for:
 
 
 The script also supports all input as arguments:
+
+**-i, --interface**   
+interface to use
 
 **-d, --distro**   
 target distribution

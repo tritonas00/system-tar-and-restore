@@ -51,6 +51,7 @@ fi
 
 interfaces=(CLI Dialog)
 
+while [ -z "$BRinterface" ]; do
   echo -e "\nSelect interface or enter Q to quit"
   select c in ${interfaces[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
@@ -63,6 +64,7 @@ interfaces=(CLI Dialog)
       echo "Please select a valid option from the list or enter Q to quit"
     fi
   done
+done
 
 if [ $BRinterface = "CLI" ]; then
 

@@ -67,7 +67,7 @@ The system that runs the script and the target system (the one we want to restor
 
 The script will ask for:
 
-- Target distibution's name. This is the name of the distribution which the tar backup contains.  
+- Target distribution's name. This is the name of the distribution which the tar backup contains.  
 
 - Root partition ( / )  
 

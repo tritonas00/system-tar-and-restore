@@ -1185,7 +1185,7 @@ fi
 
 if [ -z $def ]; then
 
-dialog --title "Symmary"  --yesno "Root Partition: $BRroot $BRfsystem
+dialog --title "Summary"  --yesno "Root Partition: $BRroot $BRfsystem
 Swap Partition: $BRswap
 Boot Partition: $BRboot $BRbootfsystem
 Home Partition: $BRhome $BRhomefsystem

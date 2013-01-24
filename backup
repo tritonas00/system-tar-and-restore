@@ -207,7 +207,7 @@ done
 
 echo " "
 
-echo "SYMMARY  
+echo "SUMMARY  
 Backup Folder = $BRFOLDER
 Include Home Directory = $BRhome
 Keep hidden files and folders inside /home = $BRhidden
@@ -318,7 +318,7 @@ while [ -z "$BRtar" ]; do
   fi
 done  
 
-dialog --title "Symmary"  --yesno "Backup Folder = $BRFOLDER
+dialog --title "Summary"  --yesno "Backup Folder = $BRFOLDER
 Include Home Directory = $BRhome
 Keep hidden files and folders inside /home = $BRhidden
 Activated Fedora's tar options = $BRtar

@@ -39,7 +39,7 @@ path for backup folder
 **-h, --exclude-home**  
 exclude /home directory
 
-**-n  --no-hidden**       
+**-n, --no-hidden**       
 dont keep home's hidden files and folders
 
 **-f, --fedora-tar**   

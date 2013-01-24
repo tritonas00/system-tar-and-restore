@@ -2,7 +2,7 @@
 
 clear
 
-BRargs=`getopt -o "i:d:hf" -l "interface:,directory:,exclude-home,fedora-tar,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:hfn" -l "interface:,directory:,exclude-home,fedora-tar,no-hidden,help" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -28,6 +28,10 @@ while true; do
     ;;
     -f|--fedora-tar) 
       BRtar="y"
+      shift
+    ;;
+    -n|--no-hidden)
+      BRhidden="n"
       shift
     ;;
     --help)

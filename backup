@@ -60,7 +60,8 @@ while true; do
       echo "
 -i, --interface         interface to use
 -d, --directory		path for backup folder
--h, --exclude-home	exclude home, include only hidden files and folders
+-h, --exclude-home	exclude /home
+-n  --no-hidden         dont keep home's hidden files and folders
 -f, --fedora-tar	activate --acls  --selinux --xattrs options
 
 --help	print this page

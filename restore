@@ -1097,10 +1097,9 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
     if [ "x$BRhome" = "x-1" ]; then
 	unset BRvarsubvol
     fi
+  create_subvols 2>&1 | dialog --progressbox "Working..." 30 70
+  sleep 2
 fi
-
-create_subvols 2>&1 | dialog --progressbox "Working..." 30 70
-sleep 2
 
 echo -e "\n---------------GETTING TAR IMAGE---------------"
 

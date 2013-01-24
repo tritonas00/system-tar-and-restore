@@ -37,7 +37,10 @@ interface to use
 path for backup folder
 
 **-h, --exclude-home**  
-exclude /home, keep only hidden files and folders
+exclude /home directory
+
+**-n  --no-hidden**       
+dont keep home's hidden files and folders
 
 **-f, --fedora-tar**   
 Activate --acls  --selinux --xattrs (Required / Available only in Fedora)

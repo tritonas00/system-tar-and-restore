@@ -259,6 +259,7 @@ fi
 
 if [ ! -d "$BRFOLDER" ] &&  [ -n "$BRFOLDER" ]; then
     echo "Directory does not exist." | dialog --progressbox "ERROR" 30 70
+    sleep 2
     unset BRFOLDER
 fi
 

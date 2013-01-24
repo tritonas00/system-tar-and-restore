@@ -96,6 +96,14 @@ elif [ -n "$BRsyslinux" ]; then
      echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
     fi
   elif [ $BRdistro = Debian ]; then
+    list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
+    BRmax=${list[0]}
+    for f in ${list[@]}; do
+    if [[ "$f" > "$BRmax" ]]; then
+      BRmax=$f
+    fi
+  done
+  BRinitrd=$BRmax  
   mkdir -p /mnt/target/boot/syslinux
   chroot /mnt/target extlinux -i /boot/syslinux
   if [ -n "$BRboot" ]; then
@@ -117,6 +125,14 @@ elif [ -n "$BRsyslinux" ]; then
    echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
   fi
   elif [ $BRdistro = Fedora ]; then
+    list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
+    BRmax=${list[0]}
+    for f in ${list[@]}; do
+    if [[ "$f" > "$BRmax" ]]; then
+      BRmax=$f
+    fi
+  done
+  BRinitrd=$BRmax  
   mkdir -p /mnt/target/boot/syslinux
   chroot /mnt/target extlinux -i /boot/syslinux
   if [ -n "$BRboot" ]; then

@@ -66,6 +66,7 @@ elif [ $BRdistro = Fedora ]; then
     fi
   done
   BRinitrd=$BRmax  
+  echo working...
   chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
 fi
 }
@@ -102,8 +103,8 @@ elif [ -n "$BRsyslinux" ]; then
     if [[ "$f" > "$BRmax" ]]; then
       BRmax=$f
     fi
-  done
-  BRinitrd=$BRmax  
+    done
+    BRinitrd=$BRmax  
   mkdir -p /mnt/target/boot/syslinux
   chroot /mnt/target extlinux -i /boot/syslinux
   if [ -n "$BRboot" ]; then
@@ -131,8 +132,8 @@ elif [ -n "$BRsyslinux" ]; then
     if [[ "$f" > "$BRmax" ]]; then
       BRmax=$f
     fi
-  done
-  BRinitrd=$BRmax  
+    done
+    BRinitrd=$BRmax  
   mkdir -p /mnt/target/boot/syslinux
   chroot /mnt/target extlinux -i /boot/syslinux
   if [ -n "$BRboot" ]; then

@@ -254,6 +254,44 @@ clean_unmount_out() {
   exit
 }
 
+create_subvols () {
+  echo -e "\n---------------CREATING SUBVOLUMES---------------"
+  btrfs subvolume create /mnt/target/$BRrootsubvolname
+  if [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/home 
+  fi
+ 
+  if [ "x$BRvarsubvol" = "xy" ] || [ "x$BRvarsubvol" = "xY" ]; then
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/var 
+  fi
+
+  if [ "x$BRusrsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xY" ]; then
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/usr
+  fi
+  
+  echo -e "\n---------------UNMOUNTING ---------------"
+  unmount_only
+  
+  echo -e "\n---------------MOUNTING SUBVOLUME $BRrootsubvolname---------------"
+  mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1 && echo SUCCESS  || echo WARNING
+
+  if [   -n "$BRhome" ]; then
+    echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
+    if [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
+      mkdir /mnt/target/home
+    fi
+    mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
+    BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
+  fi
+
+  if [   -n "$BRboot" ]; then
+    echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
+    mkdir /mnt/target/boot
+    mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
+    BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
+  fi
+}
+
 BRargs=`getopt -o "i:d:r:s:b:h:g:S:f:u:n:p:R:HVUy" -l "interface:,distro:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes,rootsubvolname:,homesubvol,varsubvol,usrsubvol" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
@@ -709,52 +747,16 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
     fi
   done 
 
-if [ "x$BRhomesubvol" = "x-1" ]; then
+    if [ "x$BRhomesubvol" = "x-1" ]; then
 	unset BRhomesubvol
-fi
-if [ "x$BRusrsubvol" = "x-1" ]; then
-	unset BRusrsubvol
-fi
-if [ "x$BRhome" = "x-1" ]; then
-	unset BRvarsubvol
-fi
-
-  echo -e "\n---------------CREATING SUBVOLUMES---------------"
-  btrfs subvolume create /mnt/target/$BRrootsubvolname
-  if [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/home 
-  fi
- 
-  if [ "x$BRvarsubvol" = "xy" ] || [ "x$BRvarsubvol" = "xY" ]; then
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/var 
-  fi
-
-  if [ "x$BRusrsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xY" ]; then
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/usr
-  fi
-  
-  echo -e "\n---------------UNMOUNTING ---------------"
-  unmount_only
-  
-  echo -e "\n---------------MOUNTING SUBVOLUME $BRrootsubvolname---------------"
-  mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1 && echo SUCCESS  || echo WARNING
-
-  if [   -n "$BRhome" ]; then
-    echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
-    if [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
-      mkdir /mnt/target/home
     fi
-    mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
-    BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
-  fi
-
-  if [   -n "$BRboot" ]; then
-    echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
-    mkdir /mnt/target/boot
-    mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
-    BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
-  fi
-
+    if [ "x$BRusrsubvol" = "x-1" ]; then
+	unset BRusrsubvol
+    fi
+    if [ "x$BRhome" = "x-1" ]; then
+	unset BRvarsubvol
+    fi
+  create_subvols
 fi
 
 echo -e "\n---------------GETTING TAR IMAGE---------------"
@@ -1086,59 +1088,19 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
     fi
   done 
 
-if [ "x$BRhomesubvol" = "x-1" ]; then
+    if [ "x$BRhomesubvol" = "x-1" ]; then
 	unset BRhomesubvol
-fi
-if [ "x$BRusrsubvol" = "x-1" ]; then
-	unset BRusrsubvol
-fi
-if [ "x$BRhome" = "x-1" ]; then
-	unset BRvarsubvol
-fi
-
-(  echo -e "\n---------------CREATING SUBVOLUMES---------------"
-  btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1
-  if [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/home 2>&1
-  fi
- 
-  if [ "x$BRvarsubvol" = "xy" ] || [ "x$BRvarsubvol" = "xY" ]; then
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/var 2>&1
-  fi
-
-  if [ "x$BRusrsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xY" ]; then
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/usr 2>&1
-  fi
-  
-  echo -e "\n---------------UNMOUNTING ---------------"
-  unmount_only 2>&1
-  
-  echo -e "\n---------------MOUNTING SUBVOLUME $BRrootsubvolname---------------"
-  mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1 && echo SUCCESS  || echo WARNING
-
-  if [   -n "$BRhome" ]; then
-    echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
-    if [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
-      mkdir /mnt/target/home 2>&1
     fi
-    mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
-  fi
-
-  if [   -n "$BRboot" ]; then
-    echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
-    mkdir /mnt/target/boot 2>&1
-    mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
-  fi ) | dialog --progressbox "Working..." 30 70
-
-  if [   -n "$BRhome" ]; then
-    BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
-  fi
-
-  if [   -n "$BRboot" ]; then
-    BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
-  fi
-sleep 2
+    if [ "x$BRusrsubvol" = "x-1" ]; then
+	unset BRusrsubvol
+    fi
+    if [ "x$BRhome" = "x-1" ]; then
+	unset BRvarsubvol
+    fi
 fi
+
+create_subvols 2>&1 | dialog --progressbox "Working..." 30 70
+sleep 2
 
 echo -e "\n---------------GETTING TAR IMAGE---------------"
 

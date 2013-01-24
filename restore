@@ -396,6 +396,20 @@ if [ -n "$BRroot" ]; then
   fi
 fi
 
+if [ -n "$BRrootsubvol" ]; then
+  if [ -z "$BRvarsubvol" ]; then
+    BRvarsubvol=-1
+  fi
+  
+  if [ -z "$BRusrsubvol" ]; then
+    BRusrsubvol=-1
+  fi
+  
+  if [ -z "$BRhomesubvol" ]; then
+    BRhomesubvol=-1
+  fi
+fi
+
 if [ $(id -u) -gt 0 ]; then
   echo "Please run the script as root. Exit"
   exit
@@ -694,6 +708,16 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
       echo -e "Please enter a valid option\n"
     fi
   done 
+
+if [ "x$BRhomesubvol" = "x-1" ]; then
+	unset BRhomesubvol
+fi
+if [ "x$BRusrsubvol" = "x-1" ]; then
+	unset BRusrsubvol
+fi
+if [ "x$BRhome" = "x-1" ]; then
+	unset BRvarsubvol
+fi
 
   echo -e "\n---------------CREATING SUBVOLUMES---------------"
   btrfs subvolume create /mnt/target/$BRrootsubvolname
@@ -1061,6 +1085,16 @@ if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
       BRusrsubvol="n"
     fi
   done 
+
+if [ "x$BRhomesubvol" = "x-1" ]; then
+	unset BRhomesubvol
+fi
+if [ "x$BRusrsubvol" = "x-1" ]; then
+	unset BRusrsubvol
+fi
+if [ "x$BRhome" = "x-1" ]; then
+	unset BRvarsubvol
+fi
 
 (  echo -e "\n---------------CREATING SUBVOLUMES---------------"
   btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1

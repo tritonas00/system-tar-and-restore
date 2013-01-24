@@ -17,10 +17,13 @@ contains the *.tgz file, the "errors" file (usefull for tracking tar errors/warn
 
 The script will ask:
 
+- Interface to use 
+
 - If you want to save the backup in the default folder (/root), or enter your desired path
 
-- If you want to include your entire home directory. ( If selected no, only hidden files and folders 
-   will be included in the backup, just to save user's configurations)
+- If you want to include your /home directory
+
+- If /home directory is excluded, it will ask if you want to keep hidden files and folders inside it
 
 - If you want to activate --acls  --selinux --xattrs options (Necessary if the host and the target system is Fedora)
 
@@ -69,6 +72,8 @@ Also recommended subvolume name is: __active.
 The system that runs the script and the target system (the one we want to restore), must have the same architecture (for chroot to work).
 
 The script will ask for:
+
+- Interface to use 
 
 - Target distribution's name. This is the name of the distribution which the tar backup contains.  
 

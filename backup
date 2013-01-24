@@ -273,7 +273,7 @@ if [ ! -d "$BRFOLDER" ] &&  [ -n "$BRFOLDER" ]; then
 fi
 
 while [ -z "$BRFOLDER" ]; do
-  dialog --default-button Yes --title "Message" --yesno "The default folder for creating the backup file is / (root)
+  dialog --title "Message" --yesno "The default folder for creating the backup file is / (root)
 Do you want to save in the default folder?" 8 50
   if [ $? = "0" ]; then
     BRFOLDER="/"
@@ -290,7 +290,7 @@ Do you want to save in the default folder?" 8 50
 done 
 
 while [ -z "$BRhome" ]; do
-  dialog --default-button Yes --title "Message"  --yesno "Do you want to include home?" 8 50
+  dialog --title "Message"  --yesno "Do you want to include home?" 8 50
   if [ $? = "0" ]; then
     BRhome="y"
   else
@@ -300,7 +300,7 @@ done
 
 if [ $BRhome = "n" ]; then
   while [ -z "$BRhidden" ] ; do
-    dialog --default-button Yes --title "Message"  --yesno "Do you want to keep hidden files and folders inside /home?" 8 50
+    dialog --title "Message"  --yesno "Do you want to keep hidden files and folders inside /home?" 8 50
     if [ $? = "0" ]; then
       BRhidden="y"
     else
@@ -310,7 +310,7 @@ if [ $BRhome = "n" ]; then
 fi
 
 while [ -z "$BRtar" ]; do
-  dialog --default-button No --title "Message"  --yesno "Activate --acls  --selinux --xattrs options? (Required / Available only in Fedora)" 8 50
+  dialog --title "Message"  --yesno "Activate --acls  --selinux --xattrs options? (Required / Available only in Fedora)" 8 50
   if [ $? = 0 ]; then
     BRtar="y"
   else

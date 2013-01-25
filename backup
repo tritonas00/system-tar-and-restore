@@ -5,8 +5,10 @@ clear
 run_tar () {
 if [ $BRhome = "n" ] &&  [ $BRhidden = "y" ] &&  [ $BRtar = "n" ]; then
   tar cvpf  "$BRFile".tar  --sparse --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
+  echo "Locating hidden files and folders inside /home, please wait..." 
   find /home -maxdepth 1 -print | xargs tar rpvf "$BRFile".tar --no-recursion 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
   find /home -maxdepth 2 -name ".*" -print | xargs tar rpvf "$BRFile".tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+  echo "Creating archive..."
   gzip "$BRFile".tar
 elif [ $BRhome = "n" ] &&  [ $BRhidden = "n" ] &&  [ $BRtar = "n" ]; then
   tar cvpzf  "$BRFile".tgz  --sparse --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
@@ -14,8 +16,10 @@ elif [ $BRhome = "y" ] &&  [ $BRtar = "n" ]; then
   tar cvpzf  "$BRFile".tgz  --sparse --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
 elif [ $BRhome = "n" ] &&  [ $BRhidden = "y" ] &&  [ $BRtar = "y" ]; then
   tar cvpf  "$BRFile".tar  --sparse  --acls  --selinux --xattrs --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
+  echo "Locating hidden files and folders inside /home, please wait..." 
   find /home -maxdepth 1 -print | xargs tar rpvf "$BRFile".tar --no-recursion 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
   find /home -maxdepth 2 -name ".*" -print | xargs tar rpvf "$BRFile".tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+   echo "Creating archive..."
   gzip "$BRFile".tar
 elif [ $BRhome = "n" ] &&  [ $BRhidden = "n" ] &&  [ $BRtar = "y" ]; then
     tar cvpzf  "$BRFile".tgz  --sparse --acls  --selinux --xattrs --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 

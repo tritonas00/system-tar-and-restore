@@ -1286,23 +1286,18 @@ mount_dev_proc_sys 2>&1 | dialog --progressbox "MOUNTING /dev /proc /sys" 30 70
 sleep 2
 
 generate_fstab
-cat /mnt/target/etc/fstab | dialog --progressbox "GENERATING FSTAB" 30 70
-sleep 2
+dialog --yesno   "
+GENERATING FSTAB
+`cat /etc/fstab`
+__________________________________________________________________
 
-while [ -z "$BRedit" ]; do
-  dialog --title "Message"  --yesno "Do you want edit fstab ?" 8 50
-  if [ $? = "0" ]; then
-    BRedit="y"
-  else
-    BRedit="n"
-  fi
-done  
+Edit fstab ?"  30 70
 
-if [ $BRedit = "y" ]; then
-while [ -z "$BRdeditor" ]; do
-  BRdeditor=$(dialog --no-cancel  --menu "Select editor." 12 35 12   nano editor vi editor 2>&1 1>&3)  
-  $BRdeditor /mnt/target/etc/fstab
-done
+if [ $? = "0" ]; then
+ while [ -z "$BRdeditor" ]; do
+   BRdeditor=$(dialog --no-cancel  --menu "Select editor." 12 35 12   nano editor vi editor 2>&1 1>&3)  
+   $BRdeditor /mnt/target/etc/fstab
+ done
 fi
 
 build_initramfs 2>&1 | dialog --progressbox "REBUILDING INITRAMFS IMAGE" 30 70

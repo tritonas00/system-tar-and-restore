@@ -2,6 +2,39 @@
 
 clear
 
+show_summary() {
+if [ -n "$BRgrub" ]; then
+  BRbootloader=Grub
+elif [ -n "$BRsyslinux" ]; then
+  BRbootloader=Syslinux
+fi
+
+echo "Distro to restore: $BRdistro
+Root Partition: $BRroot $BRfsystem"
+
+if [ $BRrootsubvol = "y" ]; then
+  echo "Root Subvolume: $BRrootsubvolname
+Home Subvolume: $BRhomesubvol
+Var Subvolume: $BRvarsubvol
+Usr Subvolume: $BRusrsubvol"
+fi
+
+if [ -n "$BRswap" ]; then
+  echo "Swap Partition: $BRswap"
+fi
+
+if [ -n "$BRboot" ]; then
+  echo "Boot Partition: $BRboot $BRbootfsystem"
+fi
+
+if [ -n "$BRhome" ]; then
+  echo "Home Partition: $BRhome $BRhomefsystem"
+fi
+
+echo "$BRbootloader Location:  $BRgrub $BRsyslinux"
+echo "Backup File: $BRfile $BRurl"
+}
+
 mount_dev_proc_sys () {
 mount --bind /dev /mnt/target/dev
 mount -t proc /proc /mnt/target/proc
@@ -852,18 +885,10 @@ while [ ! -f /mnt/target/fullbackup.tgz ]; do
   done
 done
 
-if [ -n "$BRgrub" ]; then
-  BRbootloader=Grub
-elif [ -n "$BRsyslinux" ]; then
-  BRbootloader=Syslinux
-fi
-
-echo -e "\nRoot Partition: $BRroot $BRfsystem"
-echo "Swap Partition: $BRswap"
-echo "Boot Partition: $BRboot $BRbootfsystem"
-echo "Home Partition: $BRhome $BRhomefsystem"
-echo "$BRbootloader Location:  $BRgrub $BRsyslinux"
-echo -e "Backup File: $BRfile $BRurl\n"
+echo " "
+echo SUMMARY
+show_summary
+echo " "
 
 if [ -z $def ]; then
   read -p "Do you want continue? (Y/n): " def
@@ -1230,22 +1255,12 @@ fi
 
 done
 
-if [ -n "$BRgrub" ]; then
-  BRbootloader=Grub
-elif [ -n "$BRsyslinux" ]; then
-  BRbootloader=Syslinux
-fi
-
 if [ -z $def ]; then
 
-dialog --title "Summary"  --yesno "Root Partition: $BRroot $BRfsystem
-Swap Partition: $BRswap
-Boot Partition: $BRboot $BRbootfsystem
-Home Partition: $BRhome $BRhomefsystem
-$BRbootloader Location:  $BRgrub $BRsyslinux
-Backup File: $BRfile $BRurl
+dialog --title "Summary"  --yesno "
+`show_summary`
 ------------------------------------------
-Press Yes to continue, or No to abort." 18 60
+Press Yes to continue, or No to abort." 19 60
 
  if [ $? = "0" ]; then
    def="y"

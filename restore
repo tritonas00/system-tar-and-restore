@@ -1288,7 +1288,7 @@ sleep 2
 generate_fstab
 dialog --yesno   "
 GENERATING FSTAB
-`cat /etc/fstab`
+`cat /mnt/target/etc/fstab`
 __________________________________________________________________
 
 Edit fstab ?"  30 70

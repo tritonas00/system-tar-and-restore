@@ -2,6 +2,17 @@
 
 clear
 
+show_summary() {
+echo "Backup Folder = $BRFOLDER
+Include Home Directory = $BRhome"
+
+if [ $BRhome = "n" ]; then
+  echo "Keep home's hidden files and folders = $BRhidden"
+fi
+
+echo "Activated Fedora's tar options = $BRtar"
+}
+
 run_tar () {
 if [ $BRhome = "n" ] &&  [ $BRhidden = "y" ] &&  [ $BRtar = "n" ]; then
   tar cvpf  "$BRFile".tar  --sparse --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/boot/grub/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
@@ -210,13 +221,8 @@ while [ -z "$BRtar" ]; do
 done  
 
 echo " "
-
-echo "SUMMARY  
-Backup Folder = $BRFOLDER
-Include Home Directory = $BRhome
-Keep hidden files and folders inside /home = $BRhidden
-Activated Fedora's tar options = $BRtar"
-
+echo SUMMARY
+show_summary
 echo " "
 
 if [ -z $defcon ]; then
@@ -323,12 +329,10 @@ while [ -z "$BRtar" ]; do
   fi
 done  
 
-dialog --title "Summary"  --yesno "Backup Folder = $BRFOLDER
-Include Home Directory = $BRhome
-Keep hidden files and folders inside /home = $BRhidden
-Activated Fedora's tar options = $BRtar
+dialog --title "Summary"  --yesno " 
+`show_summary`
 ------------------------------------
-Press Yes to continue or No to abort." 10 50
+Press Yes to continue or No to abort." 13 50
 
 if [ $? = "1" ]; then
   exit

@@ -14,18 +14,18 @@ Root Partition: $BRroot $BRfsystem"
 
 if [ "x$BRrootsubvol" = "xy" ]; then
   echo "Root Subvolume: $BRrootsubvolname"
-fi
 
-if [ "x$BRhomesubvol" = "xy" ]; then
-  echo "Home Subvolume: Yes"
-fi
+  if [ "x$BRhomesubvol" = "xy" ]; then
+    echo "Home Subvolume: Yes"
+  fi
 
-if [ "x$BRvarsubvol" = "xy" ]; then
-  echo "Var Subvolume: Yes"
-fi
+  if [ "x$BRvarsubvol" = "xy" ]; then
+    echo "Var Subvolume: Yes"
+  fi
 
-if [ "x$BRusrsubvol" = "xy" ]; then
-  echo "Usr Subvolume: Yes"
+  if [ "x$BRusrsubvol" = "xy" ]; then
+    echo "Usr Subvolume: Yes"
+  fi
 fi
 
 if [ -n "$BRswap" ]; then

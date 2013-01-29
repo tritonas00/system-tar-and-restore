@@ -447,10 +447,10 @@ while true; do
 -n,  --username        username
 -p,  --password        password
 -y,  --yes             yes to all
--R,  --rootsubvolname  subvolume name for root
--H,  --homesubvol      make subvolume for /home
--V,  --varsubvol       make subvolume for /var
--U,  --usrsubvol       make subvolume for /usr
+-R,  --rootsubvolname  subvolume name for /     (btrfs only)
+-H,  --homesubvol      make subvolume for /home (btrfs only)
+-V,  --varsubvol       make subvolume for /var  (btrfs only)
+-U,  --usrsubvol       make subvolume for /usr  (btrfs only)
 
 --help  print this page
 "

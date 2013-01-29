@@ -12,11 +12,20 @@ fi
 echo "Distro to restore: $BRdistro
 Root Partition: $BRroot $BRfsystem"
 
-if [ $BRrootsubvol = "y" ]; then
-  echo "Root Subvolume: $BRrootsubvolname
-Home Subvolume: $BRhomesubvol
-Var Subvolume: $BRvarsubvol
-Usr Subvolume: $BRusrsubvol"
+if [ "x$BRrootsubvol" = "xy" ]; then
+  echo "Root Subvolume: $BRrootsubvolname"
+fi
+
+if [ "x$BRhomesubvol" = "xy" ]; then
+  echo "Home Subvolume: Yes"
+fi
+
+if [ "x$BRvarsubvol" = "xy" ]; then
+  echo "Var Subvolume: Yes"
+fi
+
+if [ "x$BRusrsubvol" = "xy" ]; then
+  echo "Usr Subvolume: Yes"
 fi
 
 if [ -n "$BRswap" ]; then
@@ -454,6 +463,8 @@ while true; do
     ;;
   esac
 done
+
+
 
 if [ -n "$BRroot" ]; then
   if [ -z "$BRswap" ]; then

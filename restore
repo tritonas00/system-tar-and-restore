@@ -12,8 +12,8 @@ fi
 echo "Distro to restore: $BRdistro
 Root Partition: $BRroot $BRfsystem"
 
-if [ "x$BRfsystem" = "xbtrfs" ]; then
-  if [ "x$BRrootsubvol" = "xy" ]; then
+
+  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo "Root Subvolume: $BRrootsubvolname"
 
     if [ "x$BRhomesubvol" = "xy" ]; then
@@ -28,7 +28,7 @@ if [ "x$BRfsystem" = "xbtrfs" ]; then
       echo "Usr Subvolume: Yes"
     fi
   fi
-fi
+
 
 if [ -n "$BRswap" ]; then
   echo "Swap Partition: $BRswap"
@@ -55,9 +55,9 @@ mount -t sysfs /sys /mnt/target/sys 2>&1 && echo SUCCESS  || echo FAILED
 generate_fstab () {
 echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /mnt/target/etc/fstab 
 
-if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
  echo "$BRroot   /  btrfs compress=lzo,subvol=$BRrootsubvolname,noatime 0 0" >> /mnt/target/etc/fstab
-elif [ "x$BRrootsubvol" = "xn" ] || [ "x$BRrootsubvol" = "xN" ] || [ "x$BRfsystem" = "xbtrfs" ]; then
+elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ] || [ "x$BRrootsubvol" = "xN" ]; then
  echo "$BRroot  /  btrfs  defaults,noatime    0  0" >> /mnt/target/etc/fstab
 else
  echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /mnt/target/etc/fstab
@@ -133,7 +133,7 @@ elif [ -n "$BRsyslinux" ]; then
   if [ $BRdistro = Arch ]; then
     chroot /mnt/target syslinux-install_update -i -a -m
     echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /mnt/target/boot/syslinux/syslinux.cfg
-    if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+    if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
      echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
      echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
     else
@@ -164,7 +164,7 @@ elif [ -n "$BRsyslinux" ]; then
   cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/
   echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
   echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
-  if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
    echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
   else
    echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
@@ -193,7 +193,7 @@ elif [ -n "$BRsyslinux" ]; then
   cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/
   echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
   echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
-     if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+     if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
         echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
       else
         echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
@@ -214,23 +214,22 @@ remount_delete_subvols() {
 echo -e "\n---------------RE-MOUNTING AND DELETING SUBVOLUMES ---------------"
  cd ~ 
 mount  $BRroot /mnt/target
-if [  "x$BRfsystem" = "xbtrfs" ]; then
-  if [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
+
+  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname/home
   fi
   
-  if [ "x$BRvarsubvol" = "xy" ] || [ "x$BRvarsubvol" = "xY" ]; then
+  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRvarsubvol" = "xy" ] || [ "x$BRvarsubvol" = "xY" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname/var
   fi
 
-  if [ "x$BRusrsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xY" ]; then
+  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRusrsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xY" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname/usr
   fi  
 
-  if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname
-  fi  
-fi
+  fi
 }  
 
 unmount_only() {
@@ -856,14 +855,12 @@ while [ ! -f /mnt/target/fullbackup.tgz ]; do
   select c in "File" "URL" "Protected URL"; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
-      if [  "x$BRfsystem" = "xbtrfs" ]; then
-        if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+        if [  "x$BRfsystem" = "xbtrfs" ] $$ [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
         unmount_only
         unset BRhome
         unset BRboot
         remount_delete_subvols
         fi
-      fi   
       clean_unmount_in
     elif [ $REPLY = "1" ]; then
       while [ ! -f /mnt/target/fullbackup.tgz ]; do
@@ -913,14 +910,12 @@ if [ -z $def ]; then
 fi
 
 if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
- if [  "x$BRfsystem" = "xbtrfs" ]; then 
-   if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+   if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
    unmount_only
    unset BRhome
    unset BRboot
    remount_delete_subvols 
    fi
- fi
  clean_unmount_in
 fi  
 
@@ -1236,14 +1231,12 @@ while [ ! -f /mnt/target/fullbackup.tgz ]; do
 REPLY=$(dialog  --cancel-label Quit --menu "Select backup file. Choose an option." 13 50 13  File "local file" URL "remote file" Protected "protected server" 2>&1 1>&3)
 
 if [ $? = "1" ]; then
-  if [  "x$BRfsystem" = "xbtrfs" ]; then
-    if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+    if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
       unmount_only
       unset BRhome
       unset BRboot
       remount_delete_subvols
      fi
-  fi
      clean_unmount_in
 elif [ $REPLY = "File" ]; then
   BRfile=$(dialog  --no-cancel --inputbox "Enter the path of the backup file" 8 50 2>&1 1>&3)
@@ -1294,14 +1287,12 @@ Press Yes to continue, or No to abort." 19 60
 fi
 
 if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
- if [  "x$BRfsystem" = "xbtrfs" ]; then
-   if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+   if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
    unmount_only
    unset BRhome
    unset BRboot
    remount_delete_subvols 
    fi
- fi
  clean_unmount_in
 fi  
 

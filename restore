@@ -340,7 +340,7 @@ create_subvols () {
 
   if [   -n "$BRhome" ]; then
     echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
-    if [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
+    if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
       mkdir /mnt/target/home
     fi
     mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING

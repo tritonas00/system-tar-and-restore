@@ -2,6 +2,27 @@
 
 clear
 
+mount_all() {
+echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
+mkdir /mnt/target 2>&1 && echo SUCCESS || echo WARNING
+sleep 1
+
+echo -e "\n---------------MOUNTING $BRroot (/)---------------"
+mount $BRroot /mnt/target 2>&1 && echo SUCCESS || echo WARNING
+
+if [ -n "$BRhome" ]; then
+echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
+  mkdir /mnt/target/home 2>&1
+  mount $BRhome /mnt/target/home 2>&1 && echo SUCCESS || echo WARNING
+fi
+
+if [ -n "$BRboot" ]; then
+echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
+  mkdir /mnt/target/boot 2>&1
+  mount $BRboot /mnt/target/boot 2>&1 && echo SUCCESS || echo WARNING
+fi 
+}
+
 show_summary() {
 if [ -n "$BRgrub" ]; then
   BRbootloader=Grub
@@ -699,26 +720,15 @@ if [ "x$BRhome" = "x-1" ]; then
 	unset BRhome
 fi
 
-echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
-mkdir /mnt/target  2>&1 && echo SUCCESS  || echo WARNING
-sleep 1
+mount_all
 
-echo -e "\n---------------MOUNTING $BRroot (/)---------------"
-
-mount $BRroot /mnt/target  2>&1 && echo SUCCESS  || echo WARNING
 BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
 
-if [   -n "$BRhome" ]; then
-  echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
-  mkdir /mnt/target/home
-  mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
+if [ -n "$BRhome" ]; then
   BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
 fi
 
-if [   -n "$BRboot" ]; then
-  echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
-  mkdir /mnt/target/boot
-  mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
+if [ -n "$BRboot" ]; then
   BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
 fi
 
@@ -1071,26 +1081,7 @@ if [ "x$BRhome" = "x-1" ]; then
 	unset BRhome
 fi
 
-( echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
-
-mkdir /mnt/target  2>&1 && echo SUCCESS  || echo WARNING
-sleep 1
-
-echo -e "\n---------------MOUNTING $BRroot (/)---------------"
-
-mount $BRroot /mnt/target  2>&1 && echo SUCCESS  || echo WARNING
-
-if [   -n "$BRhome" ]; then
-  echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
-  mkdir /mnt/target/home 2>&1
-  mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
-fi
-
-if [   -n "$BRboot" ]; then
-  echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
-  mkdir /mnt/target/boot 2>&1
-  mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
-fi ) | dialog --progressbox "Working..." 30 70
+mount_all | dialog --progressbox "Working..." 30 70
 
 BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
 

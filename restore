@@ -74,9 +74,9 @@ mount_dev_proc_sys () {
 generate_fstab () {
   echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /mnt/target/etc/fstab 
 
-  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo "$BRroot   /  btrfs compress=lzo,subvol=$BRrootsubvolname,noatime 0 0" >> /mnt/target/etc/fstab
-  elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ] || [ "x$BRrootsubvol" = "xN" ]; then
+  elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ]; then
     echo "$BRroot  /  btrfs  defaults,noatime    0  0" >> /mnt/target/etc/fstab
   else
     echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /mnt/target/etc/fstab
@@ -152,7 +152,7 @@ install_bootloader () {
     if [ $BRdistro = Arch ]; then
       chroot /mnt/target syslinux-install_update -i -a -m
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /mnt/target/boot/syslinux/syslinux.cfg
-      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
         echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
         echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
       else
@@ -184,7 +184,7 @@ install_bootloader () {
       cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
       echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
-      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
         echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
       else
         echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
@@ -214,7 +214,7 @@ install_bootloader () {
       cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
       echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
-      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
         echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
       else
         echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
@@ -236,19 +236,19 @@ remount_delete_subvols() {
   cd ~ 
   mount  $BRroot /mnt/target
 
-  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
+  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRhomesubvol" = "xy" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname/home
   fi
   
-  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRvarsubvol" = "xy" ] || [ "x$BRvarsubvol" = "xY" ]; then
+  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRvarsubvol" = "xy" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname/var
   fi
 
-  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRusrsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xY" ]; then
+  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRusrsubvol" = "xy" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname/usr
   fi  
 
-  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname
   fi
 }  
@@ -260,10 +260,8 @@ unmount_only() {
     umount  $BRhome
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
-    else
-      if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
-        rm -r /mnt/target/home
-      fi
+    elif [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
+      rm -r /mnt/target/home
     fi
   fi
   if [ -n "$BRboot" ]; then
@@ -342,15 +340,15 @@ clean_unmount_out() {
 create_subvols () {
   echo -e "\n---------------CREATING SUBVOLUMES---------------"
   btrfs subvolume create /mnt/target/$BRrootsubvolname
-  if [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
+  if [ "x$BRhomesubvol" = "xy" ]; then
     btrfs subvolume create /mnt/target/$BRrootsubvolname/home 
   fi
  
-  if [ "x$BRvarsubvol" = "xy" ] || [ "x$BRvarsubvol" = "xY" ]; then
+  if [ "x$BRvarsubvol" = "xy" ]; then
     btrfs subvolume create /mnt/target/$BRrootsubvolname/var 
   fi
 
-  if [ "x$BRusrsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xY" ]; then
+  if [ "x$BRusrsubvol" = "xy" ]; then
     btrfs subvolume create /mnt/target/$BRrootsubvolname/usr
   fi
   
@@ -361,7 +359,7 @@ create_subvols () {
 
   if [   -n "$BRhome" ]; then
     echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
-    if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
+    if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
       mkdir /mnt/target/home
     fi
     mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
@@ -750,7 +748,7 @@ if [  "x$BRfsystem" = "xbtrfs" ]; then
     fi
   done 
 
-  if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+  if [ "x$BRrootsubvol" = "xy" ]; then
 
     while [ -z "$BRrootsubvolname" ]; do   
       read -p "Enter subvolume name: " BRrootsubvolname
@@ -863,7 +861,7 @@ while [ ! -f /mnt/target/fullbackup.tgz ]; do
   select c in "File" "URL" "Protected URL"; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
-        if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+        if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
         unmount_only
         unset BRhome
         unset BRboot
@@ -918,7 +916,7 @@ if [ -z $def ]; then
 fi
 
 if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
-   if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+   if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
    unmount_only
    unset BRhome
    unset BRboot
@@ -1110,7 +1108,7 @@ if [  "x$BRfsystem" = "xbtrfs" ]; then
     fi
   done 
 
-  if [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+  if [ "x$BRrootsubvol" = "xy" ]; then
 
     while [ -z "$BRrootsubvolname" ]; do   
       BRrootsubvolname=$(dialog  --no-cancel --inputbox "Enter subvolume name" 8 50 2>&1 1>&3)
@@ -1220,7 +1218,7 @@ while [ ! -f /mnt/target/fullbackup.tgz ]; do
 REPLY=$(dialog  --cancel-label Quit --menu "Select backup file. Choose an option." 13 50 13  File "local file" URL "remote file" Protected "protected server" 2>&1 1>&3)
 
 if [ $? = "1" ]; then
-    if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+    if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
       unmount_only
       unset BRhome
       unset BRboot
@@ -1276,7 +1274,7 @@ Press Yes to continue, or No to abort." 19 60
 fi
 
 if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
-   if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+   if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
    unmount_only
    unset BRhome
    unset BRboot

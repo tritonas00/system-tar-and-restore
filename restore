@@ -3,36 +3,35 @@
 clear
 
 mount_all() {
-echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
-mkdir /mnt/target 2>&1 && echo SUCCESS || echo WARNING
-sleep 1
+  echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
+  mkdir /mnt/target 2>&1 && echo SUCCESS || echo WARNING
+  sleep 1
 
-echo -e "\n---------------MOUNTING $BRroot (/)---------------"
-mount $BRroot /mnt/target 2>&1 && echo SUCCESS || echo WARNING
+  echo -e "\n---------------MOUNTING $BRroot (/)---------------"
+  mount $BRroot /mnt/target 2>&1 && echo SUCCESS || echo WARNING
 
-if [ -n "$BRhome" ]; then
-echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
-  mkdir /mnt/target/home 2>&1
-  mount $BRhome /mnt/target/home 2>&1 && echo SUCCESS || echo WARNING
-fi
+  if [ -n "$BRhome" ]; then
+    echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
+    mkdir /mnt/target/home 2>&1
+    mount $BRhome /mnt/target/home 2>&1 && echo SUCCESS || echo WARNING
+  fi
 
-if [ -n "$BRboot" ]; then
-echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
-  mkdir /mnt/target/boot 2>&1
-  mount $BRboot /mnt/target/boot 2>&1 && echo SUCCESS || echo WARNING
-fi 
+  if [ -n "$BRboot" ]; then
+    echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
+    mkdir /mnt/target/boot 2>&1
+    mount $BRboot /mnt/target/boot 2>&1 && echo SUCCESS || echo WARNING
+  fi 
 }
 
 show_summary() {
-if [ -n "$BRgrub" ]; then
-  BRbootloader=Grub
-elif [ -n "$BRsyslinux" ]; then
-  BRbootloader=Syslinux
-fi
+  if [ -n "$BRgrub" ]; then
+    BRbootloader=Grub
+  elif [ -n "$BRsyslinux" ]; then
+    BRbootloader=Syslinux
+  fi
 
-echo "Distro to restore: $BRdistro
-Root Partition: $BRroot $BRfsystem"
-
+  echo "Distro to restore: $BRdistro
+  Root Partition: $BRroot $BRfsystem"
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo "Root Subvolume: $BRrootsubvolname"
@@ -50,191 +49,192 @@ Root Partition: $BRroot $BRfsystem"
     fi
   fi
 
+  if [ -n "$BRswap" ]; then
+    echo "Swap Partition: $BRswap"
+  fi
 
-if [ -n "$BRswap" ]; then
-  echo "Swap Partition: $BRswap"
-fi
+  if [ -n "$BRboot" ]; then
+    echo "Boot Partition: $BRboot $BRbootfsystem"
+  fi
 
-if [ -n "$BRboot" ]; then
-  echo "Boot Partition: $BRboot $BRbootfsystem"
-fi
+  if [ -n "$BRhome" ]; then
+    echo "Home Partition: $BRhome $BRhomefsystem"
+  fi
 
-if [ -n "$BRhome" ]; then
-  echo "Home Partition: $BRhome $BRhomefsystem"
-fi
-
-echo "$BRbootloader Location:  $BRgrub $BRsyslinux"
-echo "Backup File: $BRfile $BRurl"
+  echo "$BRbootloader Location:  $BRgrub $BRsyslinux"
+  echo "Backup File: $BRfile $BRurl"
 }
 
 mount_dev_proc_sys () {
-mount --bind /dev /mnt/target/dev
-mount -t proc /proc /mnt/target/proc
-mount -t sysfs /sys /mnt/target/sys 2>&1 && echo SUCCESS  || echo FAILED
+  mount --bind /dev /mnt/target/dev
+  mount -t proc /proc /mnt/target/proc
+  mount -t sysfs /sys /mnt/target/sys 2>&1 && echo SUCCESS  || echo FAILED
 }
 
 generate_fstab () {
-echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /mnt/target/etc/fstab 
+  echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /mnt/target/etc/fstab 
 
-if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
- echo "$BRroot   /  btrfs compress=lzo,subvol=$BRrootsubvolname,noatime 0 0" >> /mnt/target/etc/fstab
-elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ] || [ "x$BRrootsubvol" = "xN" ]; then
- echo "$BRroot  /  btrfs  defaults,noatime    0  0" >> /mnt/target/etc/fstab
-else
- echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /mnt/target/etc/fstab
-fi
+  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+    echo "$BRroot   /  btrfs compress=lzo,subvol=$BRrootsubvolname,noatime 0 0" >> /mnt/target/etc/fstab
+  elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ] || [ "x$BRrootsubvol" = "xN" ]; then
+    echo "$BRroot  /  btrfs  defaults,noatime    0  0" >> /mnt/target/etc/fstab
+  else
+    echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /mnt/target/etc/fstab
+  fi
 
-if [ -n "$BRswap" ]; then
-  echo "$BRswap    swap   swap    defaults    0  0" >> /mnt/target/etc/fstab
-fi
+  if [ -n "$BRswap" ]; then
+    echo "$BRswap    swap   swap    defaults    0  0" >> /mnt/target/etc/fstab
+  fi
 
-if [ -n "$BRhome" ]; then
-  echo "$BRhome  /home  $BRhomefsystem  defaults,noatime    0  2" >> /mnt/target/etc/fstab
-fi
+  if [ -n "$BRhome" ]; then
+    echo "$BRhome  /home  $BRhomefsystem  defaults,noatime    0  2" >> /mnt/target/etc/fstab
+  fi
 
-if [ -n "$BRboot" ]; then
-  echo "$BRboot  /boot  $BRbootfsystem  defaults    0  1" >> /mnt/target/etc/fstab
-fi
+  if [ -n "$BRboot" ]; then
+    echo "$BRboot  /boot  $BRbootfsystem  defaults    0  1" >> /mnt/target/etc/fstab
+  fi
 
-sed -n 's|^/dev/\([sh]d[a-z][0-9]\).*|\1|p' </mnt/target/etc/fstab > /mnt/target/etc/fstab2
+  sed -n 's|^/dev/\([sh]d[a-z][0-9]\).*|\1|p' </mnt/target/etc/fstab > /mnt/target/etc/fstab2
 
-while read LINE; do   
-  UUID=`ls -l /dev/disk/by-uuid | grep "$LINE" | sed -n 's/^.* \([^ ]*\) -> .*$/\1/p'`
-  sed -i "s|^/dev/${LINE}|UUID=${UUID}|" /mnt/target/etc/fstab
-done </mnt/target/etc/fstab2
+  while read LINE; do   
+    UUID=`ls -l /dev/disk/by-uuid | grep "$LINE" | sed -n 's/^.* \([^ ]*\) -> .*$/\1/p'`
+    sed -i "s|^/dev/${LINE}|UUID=${UUID}|" /mnt/target/etc/fstab
+  done </mnt/target/etc/fstab2
   
-rm /mnt/target/etc/fstab2
+  rm /mnt/target/etc/fstab2
 }
 
 build_initramfs () {
-if [ $BRdistro = Arch ]; then
-  chroot /mnt/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
-elif [ $BRdistro = Debian ]; then
+  if [ $BRdistro = Arch ]; then
+    chroot /mnt/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
 
-  list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
-  BRmax=${list[0]}
-  for f in ${list[@]}; do
-    if [[ "$f" > "$BRmax" ]]; then
-      BRmax=$f
-    fi
-  done
-  BRinitrd=$BRmax
-  chroot /mnt/target update-initramfs -u -k $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
+  elif [ $BRdistro = Debian ]; then
+    list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
+    BRmax=${list[0]}
+    for f in ${list[@]}; do
+      if [[ "$f" > "$BRmax" ]]; then
+        BRmax=$f
+      fi
+    done
+    BRinitrd=$BRmax
+    chroot /mnt/target update-initramfs -u -k $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
 
-elif [ $BRdistro = Fedora ]; then
-
-  list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
-  BRmax=${list[0]}
-  for f in ${list[@]}; do
-    if [[ "$f" > "$BRmax" ]]; then
-      BRmax=$f
-    fi
-  done
-  BRinitrd=$BRmax  
-  echo working...
-  chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
-fi
+  elif [ $BRdistro = Fedora ]; then
+    list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
+    BRmax=${list[0]}
+    for f in ${list[@]}; do
+      if [[ "$f" > "$BRmax" ]]; then
+        BRmax=$f
+      fi
+    done
+    BRinitrd=$BRmax  
+    echo working...
+    chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
+  fi
 }
 
 install_bootloader () {
-if [ -n "$BRgrub" ]; then
-  echo -e "\n---------------INSTALLING AND UPDATING GRUB2 IN $BRgrub---------------"
-  if [ $BRdistro = Arch ]; then
-    chroot /mnt/target grub-install --target=i386-pc  $BRgrub 
-    chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
-  elif [ $BRdistro = Debian ]; then
-    chroot /mnt/target grub-install  $BRgrub
-    chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
-  elif [ $BRdistro = Fedora ]; then
-    chroot /mnt/target grub2-install $BRgrub
-    chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
-  fi
-elif [ -n "$BRsyslinux" ]; then
-  echo -e "\n---------------INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux---------------"
-  if [ $BRdistro = Arch ]; then
-    chroot /mnt/target syslinux-install_update -i -a -m
-    echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /mnt/target/boot/syslinux/syslinux.cfg
-    if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
-     echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-     echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-    else
-     echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-     echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+  if [ -n "$BRgrub" ]; then
+    echo -e "\n---------------INSTALLING AND UPDATING GRUB2 IN $BRgrub---------------"
+    if [ $BRdistro = Arch ]; then
+      chroot /mnt/target grub-install --target=i386-pc  $BRgrub 
+      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+    elif [ $BRdistro = Debian ]; then
+      chroot /mnt/target grub-install  $BRgrub
+      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
+    elif [ $BRdistro = Fedora ]; then
+      chroot /mnt/target grub2-install $BRgrub
+      chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
     fi
-  elif [ $BRdistro = Debian ]; then
-    list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
-    BRmax=${list[0]}
-    for f in ${list[@]}; do
-    if [[ "$f" > "$BRmax" ]]; then
-      BRmax=$f
-    fi
-    done
-    BRinitrd=$BRmax  
-  mkdir -p /mnt/target/boot/syslinux
-  chroot /mnt/target extlinux -i /boot/syslinux
-  if [ -n "$BRboot" ]; then
-    BRdev=`echo $BRboot | cut -c -8`
-    BRpart=`echo $BRboot | cut -c 9-`
-    sfdisk $BRdev -A $BRpart
-  else
-    BRdev=`echo $BRroot | cut -c -8`
-    BRpart=`echo $BRroot | cut -c 9-`
-    sfdisk $BRdev -A $BRpart
-  fi  
-  dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux
-  cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/
-  echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
-  echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
-  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
-   echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
-  else
-   echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
-  fi
-  elif [ $BRdistro = Fedora ]; then
-    list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
-    BRmax=${list[0]}
-    for f in ${list[@]}; do
-    if [[ "$f" > "$BRmax" ]]; then
-      BRmax=$f
-    fi
-    done
-    BRinitrd=$BRmax  
-  mkdir -p /mnt/target/boot/syslinux
-  chroot /mnt/target extlinux -i /boot/syslinux
-  if [ -n "$BRboot" ]; then
-    BRdev=`echo $BRboot | cut -c -8`
-    BRpart=`echo $BRboot | cut -c 9-`
-    sfdisk $BRdev -A $BRpart
-  else
-    BRdev=`echo $BRroot | cut -c -8`
-    BRpart=`echo $BRroot | cut -c 9-`
-    sfdisk $BRdev -A $BRpart
-  fi
-  dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRsyslinux
-  cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/
-  echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
-  echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
-     if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+
+  elif [ -n "$BRsyslinux" ]; then
+    echo -e "\n---------------INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux---------------"
+    if [ $BRdistro = Arch ]; then
+      chroot /mnt/target syslinux-install_update -i -a -m
+      echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /mnt/target/boot/syslinux/syslinux.cfg
+      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+        echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      else
+        echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      fi
+
+    elif [ $BRdistro = Debian ]; then
+      list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
+      BRmax=${list[0]}
+      for f in ${list[@]}; do
+        if [[ "$f" > "$BRmax" ]]; then
+        BRmax=$f
+        fi
+      done
+      BRinitrd=$BRmax  
+      mkdir -p /mnt/target/boot/syslinux
+      chroot /mnt/target extlinux -i /boot/syslinux
+      if [ -n "$BRboot" ]; then
+        BRdev=`echo $BRboot | cut -c -8`
+        BRpart=`echo $BRboot | cut -c 9-`
+        sfdisk $BRdev -A $BRpart
+      else
+        BRdev=`echo $BRroot | cut -c -8`
+        BRpart=`echo $BRroot | cut -c 9-`
+        sfdisk $BRdev -A $BRpart
+      fi  
+      dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux
+      cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/
+      echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
+      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
+      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+      else
+        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+      fi
+
+    elif [ $BRdistro = Fedora ]; then
+      list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
+      BRmax=${list[0]}
+      for f in ${list[@]}; do
+        if [[ "$f" > "$BRmax" ]]; then
+          BRmax=$f
+        fi
+      done
+      BRinitrd=$BRmax  
+      mkdir -p /mnt/target/boot/syslinux
+      chroot /mnt/target extlinux -i /boot/syslinux
+      if [ -n "$BRboot" ]; then
+        BRdev=`echo $BRboot | cut -c -8`
+        BRpart=`echo $BRboot | cut -c 9-`
+        sfdisk $BRdev -A $BRpart
+      else
+        BRdev=`echo $BRroot | cut -c -8`
+        BRpart=`echo $BRroot | cut -c 9-`
+        sfdisk $BRdev -A $BRpart
+      fi
+      dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRsyslinux
+      cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/
+      echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
+      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
+      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
         echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
       else
         echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-     fi
+      fi
+    fi
   fi
-fi
 }
 
 generate_locales () {
-if [ $BRdistro = Fedora ]; then
-  chroot /mnt/target localedef -f UTF-8 -i en_US en_US.UTF-8 2>&1 && echo SUCCESS || echo WARNING
-else
-  chroot /mnt/target  locale-gen   2>&1 && echo SUCCESS || echo WARNING
-fi
+  if [ $BRdistro = Fedora ]; then
+    chroot /mnt/target localedef -f UTF-8 -i en_US en_US.UTF-8 2>&1 && echo SUCCESS || echo WARNING
+  else
+    chroot /mnt/target  locale-gen   2>&1 && echo SUCCESS || echo WARNING
+  fi
 }
 
 remount_delete_subvols() {
-echo -e "\n---------------RE-MOUNTING AND DELETING SUBVOLUMES ---------------"
- cd ~ 
-mount  $BRroot /mnt/target
+  echo -e "\n---------------RE-MOUNTING AND DELETING SUBVOLUMES ---------------"
+  cd ~ 
+  mount  $BRroot /mnt/target
 
   if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRhomesubvol" = "xy" ] || [ "x$BRhomesubvol" = "xY" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname/home
@@ -254,32 +254,32 @@ mount  $BRroot /mnt/target
 }  
 
 unmount_only() {
-echo -e "\n---------------UNMOUNTING ---------------"
+  echo -e "\n---------------UNMOUNTING ---------------"
   cd ~ 
   if [ -n "$BRhome" ]; then
     umount  $BRhome
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
-      else
-       if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
-          rm -r /mnt/target/home
-       fi
+    else
+      if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
+        rm -r /mnt/target/home
+      fi
     fi
   fi
   if [ -n "$BRboot" ]; then
     umount  $BRboot
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
-      else
+    else
       rm -r /mnt/target/boot
     fi
   fi
-umount $BRroot 
-   if [ "$?" -ne "0" ]; then
-     echo "Error unmounting volume"
-     else
-    echo "SUCCESS"
-   fi
+  umount $BRroot 
+    if [ "$?" -ne "0" ]; then
+      echo "Error unmounting volume"
+    else
+      echo "SUCCESS"
+    fi
 }  
 
 clean_unmount_in() {
@@ -297,7 +297,7 @@ clean_unmount_in() {
     umount  $BRboot
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
-      else
+    else
       rm -r /mnt/target/boot
     fi
   fi
@@ -307,12 +307,12 @@ clean_unmount_in() {
   fi
 
   umount $BRroot 
-   if [ "$?" -ne "0" ]; then
-     echo "Error unmounting volume"
-     else
-     sleep 1
-     rm  -r /mnt/target 2>&1 && echo SUCCESS  || echo FAILED 
-   fi
+  if [ "$?" -ne "0" ]; then
+    echo "Error unmounting volume"
+  else
+    sleep 1
+    rm  -r /mnt/target 2>&1 && echo SUCCESS  || echo FAILED 
+  fi
   exit
 }
 
@@ -330,12 +330,12 @@ clean_unmount_out() {
     umount  $BRboot
   fi
   umount $BRroot 
-   if [ "$?" -ne "0" ]; then
-     echo "Error unmounting volume"
-     else
-     sleep 1
-     rm  -r /mnt/target 2>&1 && echo SUCCESS  || echo FAILED 
-   fi
+  if [ "$?" -ne "0" ]; then
+    echo "Error unmounting volume"
+  else
+    sleep 1
+    rm  -r /mnt/target 2>&1 && echo SUCCESS  || echo FAILED 
+  fi
   exit
 }
 

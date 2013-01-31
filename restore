@@ -855,7 +855,7 @@ while [ ! -f /mnt/target/fullbackup.tgz ]; do
   select c in "File" "URL" "Protected URL"; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
-        if [  "x$BRfsystem" = "xbtrfs" ] $$ [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
+        if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ] || [ "x$BRrootsubvol" = "xY" ]; then
         unmount_only
         unset BRhome
         unset BRboot

@@ -365,14 +365,12 @@ create_subvols () {
       mkdir /mnt/target/home
     fi
     mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
-    BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
   fi
 
   if [   -n "$BRboot" ]; then
     echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
     mkdir /mnt/target/boot
     mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
-    BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
   fi
 }
 

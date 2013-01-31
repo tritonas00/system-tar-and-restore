@@ -10,7 +10,7 @@ if [ $BRhome = "n" ]; then
   echo "Keep home's hidden files and folders = $BRhidden"
 fi
 
-echo "Activated Fedora's tar options = $BRtar"
+echo "Fedora's tar extra options = $BRtar"
 }
 
 run_tar () {

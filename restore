@@ -31,7 +31,7 @@ show_summary() {
   fi
 
   echo "Distro to restore: $BRdistro
-  Root Partition: $BRroot $BRfsystem"
+Root Partition: $BRroot $BRfsystem"
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo "Root Subvolume: $BRrootsubvolname"

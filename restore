@@ -240,7 +240,7 @@ echo -e "\n---------------UNMOUNTING ---------------"
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
       else
-       if [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
+       if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ] || [ "x$BRhomesubvol" = "xN" ]; then
           rm -r /mnt/target/home
        fi
     fi

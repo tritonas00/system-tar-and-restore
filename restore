@@ -2,6 +2,60 @@
 
 clear
 
+check_input() {
+  for i in ${distrolist[@]}; do if [[ $i == ${BRdistro} ]] ; then BRdistrocheck="true" ; fi; done
+  if [ ! "$BRdistrocheck" = "true" ]; then
+    echo "Wrong distribution name. Available options: Arch Debian Fedora"
+    exit
+  fi
+
+  for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
+  if [ ! "$BRrootcheck" = "true" ]; then
+    echo "Wrong root partition"
+    exit
+  fi
+
+  if [ -n "$BRswap" ]; then
+    for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
+    if [ ! "$BRswapcheck" = "true" ]; then
+      echo "Wrong swap partition"
+      exit
+    fi
+  fi
+
+  if [ -n "$BRhome" ]; then
+    for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
+     if [ ! "$BRhomecheck" = "true" ]; then
+       echo "Wrong home partition"
+       exit
+     fi
+  fi
+
+  if [ -n "$BRboot" ]; then
+    for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
+    if [ ! "$BRbootcheck" = "true" ]; then
+      echo "Wrong boot partition"
+      exit
+    fi
+  fi
+
+  if [ -n "$BRgrub" ]; then
+    for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
+    if [ ! "$BRgrubcheck" = "true" ]; then
+      echo "Wrong disk for grub"
+      exit
+    fi
+  fi
+
+  if [ -n "$BRsyslinux" ]; then
+    for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
+    if [ ! "$BRsyslinuxcheck" = "true" ]; then
+      echo "Wrong disk for syslinux"
+      exit
+    fi
+fi
+}
+
 mount_all() {
   echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
   mkdir /mnt/target 2>&1 && echo SUCCESS || echo WARNING
@@ -616,6 +670,7 @@ if [ -z "$BRswap" ]; then
   done
 fi
 
+
 if [ -z "$BRhome" ]; then
   echo -e "\n(Optional - Press C to skip) Select the number of your home partition (for fstab) or enter Q to quit"
   select c in ${list[@]}; do
@@ -704,7 +759,7 @@ if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
     fi
   done
 fi 
- 
+
 
 if [ "x$BRswap" = "x-1" ]; then
 	unset BRswap
@@ -715,6 +770,8 @@ fi
 if [ "x$BRhome" = "x-1" ]; then
 	unset BRhome
 fi
+
+check_input
 
 mount_all
 
@@ -1077,6 +1134,10 @@ if [ "x$BRhome" = "x-1" ]; then
 	unset BRhome
 fi
 
+list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)
+distrolist=(Arch Debian Fedora)
+
+check_input
 mount_all | dialog --progressbox "Working..." 30 70
 
 BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)

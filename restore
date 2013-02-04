@@ -2,6 +2,14 @@
 
 clear
 
+part_list() {
+  for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
+}
+
+update_list() {
+  list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}") ` )
+}
+
 check_input() {
   for i in ${distrolist[@]}; do if [[ $i == ${BRdistro} ]] ; then BRdistrocheck="true" ; fi; done
   if [ ! "$BRdistrocheck" = "true" ]; then
@@ -96,8 +104,7 @@ show_summary() {
     BRbootloader=Syslinux
   fi
 
-  echo "Distro to restore: $BRdistro
-Root Partition: $BRroot $BRfsystem"
+  echo -e "Distro to restore: $BRdistro\nRoot Partition: $BRroot $BRfsystem"
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo "Root Subvolume: $BRrootsubvolname"
@@ -627,7 +634,9 @@ echo "`date +%A-%d-%m-%Y-%R`"
 
 echo -e "\n---------------READING INPUT VARIABLES---------------"
 
-list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)
+
+
+rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)
 distrolist=(Arch Debian Fedora)
 editorlist=(nano vi)
 
@@ -649,11 +658,11 @@ done
 
 while [ -z "$BRroot" ]; do
   echo -e "\nSelect the number of your root partition or enter Q to quit"
-  select c in ${list[@]}; do
+  select c in ${rootlist[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
       exit
-    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
       BRroot=(`echo $c | awk '{ print $1 }'`)
       echo "You selected $BRroot as your root partition" 
       break
@@ -663,8 +672,10 @@ while [ -z "$BRroot" ]; do
   done  
 done
 
+update_list
+
 if [ -z "$BRswap" ]; then
-  echo -e "\n(Optional - Press C to skip) Select the number of your swap partition (for fstab) or enter Q to quit"
+  echo -e "\nSelect the number of your swap partition or enter Q to quit \n(Optional - Press C to skip)"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
@@ -682,9 +693,10 @@ if [ -z "$BRswap" ]; then
   done
 fi
 
+update_list
 
 if [ -z "$BRhome" ]; then
-  echo -e "\n(Optional - Press C to skip) Select the number of your home partition (for fstab) or enter Q to quit"
+  echo -e "\nSelect the number of your home partition or enter Q to quit \n(Optional - Press C to skip"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
@@ -702,8 +714,10 @@ if [ -z "$BRhome" ]; then
   done
 fi
 
+update_list
+
 if [ -z "$BRboot" ]; then
-  echo -e "\n(Optional - Press C to skip) Select the number of your boot partition (for fstab) or enter Q to quit"
+  echo -e "\nSelect the number of your boot partition or enter Q to quit \n(Optional - Press C to skip"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
@@ -737,7 +751,7 @@ if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
 	  if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
 	    echo "Now quiting"
 	    exit
-	  elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+	  elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
 	    BRgrub=(`echo $c | awk '{ print $1 }'`)
 	    echo "You selected $BRgrub to install GRUB"  
 	    break
@@ -756,7 +770,7 @@ if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
 	  if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
 	    echo "Now quiting"
 	    exit
-	  elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+	  elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
 	    BRsyslinux=(`echo $c | awk '{ print $1 }'`)
 	    echo "You selected $BRsyslinux to install Syslinux"  
 	    break
@@ -1087,7 +1101,7 @@ while [ -z "$BRroot" ]; do
 done
 
 if [ -z "$BRswap" ]; then
-  BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select swap partition." 14 40 14 `for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+  BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select swap partition." 14 40 14 `part_list ` 2>&1 1>&3)
   if [ $? = "3" ]; then
     BRswap=" "
     exit
@@ -1095,7 +1109,7 @@ if [ -z "$BRswap" ]; then
 fi
 
 if [ -z "$BRhome" ]; then
-  BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select home partition." 14 40 14 `for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+  BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select home partition." 14 40 14 `part_list` 2>&1 1>&3)
   if [ $? = "3" ]; then
     BRhome=" "
     exit
@@ -1103,7 +1117,7 @@ if [ -z "$BRhome" ]; then
 fi
 
 if [ -z "$BRboot" ]; then
-  BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select boot partition." 14 40 14 `for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+  BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select boot partition." 14 40 14 `part_list` 2>&1 1>&3)
   if [ $? = "3" ]; then
     BRboot=" "
     exit
@@ -1136,20 +1150,20 @@ if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
 fi 
  
 
-if [ "x$BRswap" = "x-1" ]; then
+if [ "x$BRswap" = "x-1" ] || [[ "x$BRswap" == *"Error"* ]]; then
 	unset BRswap
 fi
-if [ "x$BRboot" = "x-1" ]; then
+if [ "x$BRboot" = "x-1" ] || [[ "x$BRboot" == *"Error"* ]]; then
 	unset BRboot
 fi
-if [ "x$BRhome" = "x-1" ]; then
+if [ "x$BRhome" = "x-1" ] || [[ "x$BRhome" == *"Error"* ]]; then
 	unset BRhome
 fi
 
-list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)
 distrolist=(Arch Debian Fedora)
 
 check_input
+
 mount_all | dialog --progressbox "Working..." 30 70
 
 BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)

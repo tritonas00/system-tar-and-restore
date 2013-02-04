@@ -22,6 +22,10 @@ check_input() {
     echo "Wrong root partition"
     exit
   fi
+  if grep -q $BRroot /proc/mounts; then
+    echo "$BRroot is already mounted, refusing to use it."
+    exit
+  fi
 
   if [ -n "$BRswap" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
@@ -31,6 +35,10 @@ check_input() {
     fi
     if [ "$BRswap" == "$BRroot" ]; then
       echo "$BRswap already used!"
+      exit
+    fi
+    if grep -q $BRswap /proc/mounts; then
+      echo "$BRswap is already mounted, refusing to use it."
       exit
     fi
   fi
@@ -45,6 +53,10 @@ check_input() {
        echo "$BRhome already used!"
        exit
      fi
+    if grep -q $BRhome /proc/mounts; then
+      echo "$BRhome is already mounted, refusing to use it."
+      exit
+    fi
   fi
 
   if [ -n "$BRboot" ]; then
@@ -55,6 +67,10 @@ check_input() {
     fi
     if [ "$BRboot" == "$BRroot" ] || [ "$BRboot" == "$BRswap" ] || [ "$BRboot" == "$BRhome" ]; then
       echo "$BRboot already used!"
+      exit
+    fi
+    if grep -q $BRboot /proc/mounts; then
+      echo "$BRboot is already mounted, refusing to use it."
       exit
     fi
   fi

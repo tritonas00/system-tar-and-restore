@@ -23,7 +23,7 @@ check_input() {
     exit
   fi
   if grep -q $BRroot /proc/mounts; then
-    echo "$BRroot is already mounted, refusing to use it."
+    echo "$BRroot is already mounted as $(df -m | grep "$BRroot" | awk '{ print $6 }'), refusing to use it."
     exit
   fi
 
@@ -35,10 +35,6 @@ check_input() {
     fi
     if [ "$BRswap" == "$BRroot" ]; then
       echo "$BRswap already used!"
-      exit
-    fi
-    if grep -q $BRswap /proc/mounts; then
-      echo "$BRswap is already mounted, refusing to use it."
       exit
     fi
   fi
@@ -54,7 +50,7 @@ check_input() {
        exit
      fi
     if grep -q $BRhome /proc/mounts; then
-      echo "$BRhome is already mounted, refusing to use it."
+      echo "$BRhome is already mounted as $(df -m | grep "$BRhome" | awk '{ print $6 }'), refusing to use it."
       exit
     fi
   fi
@@ -70,7 +66,7 @@ check_input() {
       exit
     fi
     if grep -q $BRboot /proc/mounts; then
-      echo "$BRboot is already mounted, refusing to use it."
+      echo "$BRboot is already mounted as $(df -m | grep "$BRboot" | awk '{ print $6 }'), refusing to use it."
       exit
     fi
   fi

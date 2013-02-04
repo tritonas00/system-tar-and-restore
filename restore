@@ -21,6 +21,10 @@ check_input() {
       echo "Wrong swap partition"
       exit
     fi
+    if [ "$BRswap" == "$BRroot" ]; then
+      echo "$BRswap already used!"
+      exit
+    fi
   fi
 
   if [ -n "$BRhome" ]; then
@@ -29,12 +33,20 @@ check_input() {
        echo "Wrong home partition"
        exit
      fi
+     if [ "$BRhome" == "$BRroot" ] || [ "$BRhome" == "$BRswap" ]; then
+       echo "$BRhome already used!"
+       exit
+     fi
   fi
 
   if [ -n "$BRboot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     if [ ! "$BRbootcheck" = "true" ]; then
       echo "Wrong boot partition"
+      exit
+    fi
+    if [ "$BRboot" == "$BRroot" ] || [ "$BRboot" == "$BRswap" ] || [ "$BRboot" == "$BRhome" ]; then
+      echo "$BRboot already used!"
       exit
     fi
   fi

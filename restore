@@ -98,7 +98,7 @@ mount_all() {
 
   if [ -n "$BRhome" ]; then
     echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
-    mkdir /mnt/target/home 2>&1
+    mkdir /mnt/target/home 2>&1 
     mount $BRhome /mnt/target/home 2>&1 && echo SUCCESS || echo WARNING
   fi
 
@@ -336,10 +336,25 @@ remount_delete_subvols() {
   if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname
   fi
+  if [ -f /mnt/target/fullbackup.tgz ]; then
+    rm /mnt/target/fullbackup.tgz
+  fi
+
+  echo -e "\n---------------CLEANING AND UNMOUNTING-------------- "
+  umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED 
+  if [ "$?" -ne "0" ]; then
+    echo "Error unmounting volume"
+  elif [ "$(ls -A /mnt/target)" ]; then
+      echo "/mnt/target is not empty"
+  else
+    sleep 1
+    rm  -r /mnt/target 
+  fi
+  exit
 }  
 
-unmount_only() {
-  echo -e "\n---------------UNMOUNTING ---------------"
+unmount_only_in_subvol() {
+  echo -e "\n---------------UNMOUNTING SUBVOLUME $BRrootsubvolname---------------"
   cd ~ 
   if [ -n "$BRhome" ]; then
     umount  $BRhome
@@ -450,10 +465,37 @@ create_subvols () {
   if [ "x$BRusrsubvol" = "xy" ]; then
     btrfs subvolume create /mnt/target/$BRrootsubvolname/usr
   fi
+
+echo -e "\n---------------CLEANING AND UNMOUNTING-------------- "  
+  cd ~ 
+  if [ -n "$BRhome" ]; then
+    umount  $BRhome
+    if [ "$?" -ne "0" ]; then
+      echo "Error unmounting volume"
+    elif [ "$(ls -A /mnt/target/home)" ]; then
+      echo "/mnt/target/home is not empty"
+    else
+      rm -r /mnt/target/home
+    fi
+  fi
+  if [ -n "$BRboot" ]; then
+    umount  $BRboot
+    if [ "$?" -ne "0" ]; then
+      echo "Error unmounting volume"
+    elif [ "$(ls -A /mnt/target/boot)" ]; then
+      echo "/mnt/target/boot is not empty"
+    else
+      rm -r /mnt/target/boot
+    fi
+  fi
+  umount $BRroot 
+  if [ "$?" -ne "0" ]; then
+    echo "Error unmounting volume"
+  else
+    echo "SUCCESS"
+  fi
   
-  unmount_only
-  
-  echo -e "\n---------------MOUNTING SUBVOLUME $BRrootsubvolname---------------"
+  echo -e "\n---------------MOUNTING SUBVOLUME $BRrootsubvolname AS ROOT (/)---------------"
   mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1 && echo SUCCESS  || echo WARNING
 
   if [   -n "$BRhome" ]; then
@@ -972,9 +1014,7 @@ while [ ! -f /mnt/target/fullbackup.tgz ]; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
         if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-        unmount_only
-        unset BRhome
-        unset BRboot
+        unmount_only_in_subvol
         remount_delete_subvols
         fi
       clean_unmount_in
@@ -1027,9 +1067,7 @@ fi
 
 if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
    if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-   unmount_only
-   unset BRhome
-   unset BRboot
+   unmount_only_in_subvol
    remount_delete_subvols 
    fi
  clean_unmount_in
@@ -1333,9 +1371,7 @@ REPLY=$(dialog  --cancel-label Quit --menu "Select backup file. Choose an option
 
 if [ $? = "1" ]; then
     if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-      unmount_only
-      unset BRhome
-      unset BRboot
+      unmount_only_in_subvol
       remount_delete_subvols
      fi
      clean_unmount_in
@@ -1389,9 +1425,7 @@ fi
 
 if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
    if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-   unmount_only
-   unset BRhome
-   unset BRboot
+   unmount_only_in_subvol
    remount_delete_subvols 
    fi
  clean_unmount_in

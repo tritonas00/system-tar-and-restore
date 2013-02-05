@@ -701,29 +701,18 @@ PS3="Choice: "
 clear
 if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
 
-echo "This script will make a tar backup image of your entire system."
-echo "Make sure you have GRUB or SYSLINUX packages installed.
-GRUB Packages:
--->Arch: grub-bios
--->Debian: grub-pc
--->Fedora: grub2
-SYSLINUX Packages:
--->Arch: syslinux
--->Debian: syslinux extlinux
--->Fedora: syslinux syslinux-extlinux"
-echo "Make sure you have enough free space."
-echo "Press ENTER to continue" 
+echo -e "This script will restore a backup image of your system 
+in user defined partitions.\n
+--> Make sure you have created and formatted at least one partition 
+    for root (/) and optionally partitions for /home and /boot.\n
+--> Also make sure that this system and the system that backup
+    contains have the same architecture (for chroot to work)."
+echo -e "\nPress ENTER to continue" 
 read -s a
 
 fi
 
-
-
-
-
 echo -e "\n---------------READING INPUT VARIABLES---------------"
-
-
 
 rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)
 distrolist=(Arch Debian Fedora)
@@ -1166,6 +1155,20 @@ elif [ $BRinterface = "Dialog" ]; then
 if [ -z $(which dialog 2> /dev/null) ];then
  echo "Package dialog is not installed. Install the package and re-run the script."
  exit
+fi
+
+if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
+
+dialog --no-ok --title "Info" --msgbox "This script will restore a backup image of your system in user defined partitions.
+
+--> Make sure you have created and formatted at least one partition 
+    for root (/) and optionally partitions for /home and /boot.
+
+--> Also make sure that this system and the system that backup
+    contains have the same architecture (for chroot to work).
+
+Press OK to continue."  17 100
+
 fi
 
 exec 3>&1

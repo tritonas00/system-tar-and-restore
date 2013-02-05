@@ -707,7 +707,7 @@ in user defined partitions.\n
     for root (/) and optionally partitions for /home and /boot.\n
 --> Also make sure that this system and the system that backup
     contains have the same architecture (for chroot to work)."
-echo -e "\nPress ENTER to continue" 
+echo -e "\nPress ENTER to continue." 
 read -s a
 
 fi

@@ -705,8 +705,8 @@ echo -e "This script will restore a backup image of your system
 in user defined partitions.\n
 --> Make sure you have created and formatted at least one partition 
     for root (/) and optionally partitions for /home and /boot.\n
---> Also make sure that this system and the system that backup
-    contains have the same architecture (for chroot to work)."
+--> Also make sure that this system and the system you want
+    to restore have the same architecture (for chroot to work)."
 echo -e "\nPress ENTER to continue." 
 read -s a
 
@@ -1164,8 +1164,8 @@ dialog --no-ok --title "Info" --msgbox "This script will restore a backup image 
 --> Make sure you have created and formatted at least one partition 
     for root (/) and optionally partitions for /home and /boot.
 
---> Also make sure that this system and the system that backup
-    contains have the same architecture (for chroot to work).
+--> Also make sure that this system and the system you want
+    to restore have the same architecture (for chroot to work).
 
 Press OK to continue."  17 100
 

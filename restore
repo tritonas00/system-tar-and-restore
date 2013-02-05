@@ -86,6 +86,11 @@ check_input() {
       exit
     fi
 fi
+
+if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
+  echo "File not found"
+  exit
+fi
 }
 
 mount_all() {

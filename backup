@@ -115,6 +115,8 @@ done
 
 if [ $BRinterface = "CLI" ]; then
 
+clear
+
 if [ -z "$BRFOLDER" ]; then
 
 echo "This script will make a tar backup image of your entire system."

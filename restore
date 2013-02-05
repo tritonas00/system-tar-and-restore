@@ -146,7 +146,11 @@ show_summary() {
     echo "Home Partition: $BRhome $BRhomefsystem"
   fi
 
-  echo "$BRbootloader Location:  $BRgrub $BRsyslinux"
+  if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+    echo "$BRbootloader Location:  $BRgrub $BRsyslinux"
+  else 
+    echo "Bootloader: None (WARNING)"
+  fi
   echo "Backup File: $BRfile $BRurl"
 }
 
@@ -647,8 +651,8 @@ if [ -n "$BRroot" ]; then
   fi
   
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    echo "You must choose a bootloader. Aborting"
-    exit
+    BRgrub=-1
+    BRsyslinux=-1
   fi  
    
   if [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
@@ -774,7 +778,7 @@ fi
 update_list
 
 if [ -z "$BRhome" ]; then
-  echo -e "\nSelect the number of your home partition or enter Q to quit \n(Optional - Press C to skip"
+  echo -e "\nSelect the number of your home partition or enter Q to quit \n(Optional - Press C to skip)"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
@@ -795,7 +799,7 @@ fi
 update_list
 
 if [ -z "$BRboot" ]; then
-  echo -e "\nSelect the number of your boot partition or enter Q to quit \n(Optional - Press C to skip"
+  echo -e "\nSelect the number of your boot partition or enter Q to quit \n(Optional - Press C to skip)"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo "Now quiting"
@@ -815,11 +819,14 @@ fi
 
 if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
 
-  echo -e "\nSelect the number of your bootloader or enter Q to quit"
+  echo -e "\nSelect the number of your bootloader or enter Q to quit\n(Optional - Press C to skip)"
   select c in Grub Syslinux; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
 	echo "Now quiting"
 	exit
+elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
+      echo -e "\n--->WARNING! NO BOOTLOADER SELECTED<---\n"
+      break 
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
 
       while [ -z "$BRgrub" ]; do
@@ -874,6 +881,13 @@ fi
 if [ "x$BRhome" = "x-1" ]; then
 	unset BRhome
 fi
+if [ "x$BRgrub" = "x-1" ]; then
+	unset BRgrub
+fi
+if [ "x$BRsyslinux" = "x-1" ]; then
+	unset BRsyslinux
+fi
+
 
 check_input
 
@@ -1144,7 +1158,18 @@ echo -e "\n---------------GENERATING LOCALES---------------"
 generate_locales
 sleep 1
 
-echo -e "\nCompleted. Press ENTER to unmount and clean, then reboot your system." 
+echo -e "\nCompleted. 
+
+If you selected a bootloader, Press ENTER to unmount and clean, then reboot your system.
+
+If you didnt choose a bootloader, this is the right time to install or update an existing one:
+
+-->Open a new terminal and as root type: chroot /mnt/target
+
+-->Install or update your bootloader. 
+
+-->Once you're done, type: exit , to leave chroot, 
+   come back here and press ENTER to finish." 
 read -s a
 
 sleep 2
@@ -1215,8 +1240,8 @@ fi
 
 
 if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
-  REPLY=$(dialog  --cancel-label Quit  --menu "Select bootloader." 12 35 12  Grub Bootloader Syslinux Bootloader 2>&1 1>&3)
-    if [ $? = "1" ]; then
+  REPLY=$(dialog  --cancel-label Skip --extra-button --extra-label Quit  --menu "Select bootloader." 12 35 12  Grub Bootloader Syslinux Bootloader 2>&1 1>&3)
+    if [ $? = "3" ]; then
       exit
     fi 
   if [ $REPLY = "Grub" ]; then
@@ -1237,8 +1262,12 @@ if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
      done
   fi
 fi 
- 
 
+if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
+  echo "NO BOOTLOADER SELECTED" | dialog --progressbox "WARNING" 30 70
+  sleep 2
+fi
+   
 if [ "x$BRswap" = "x-1" ] || [[ "x$BRswap" == *"Error"* ]]; then
 	unset BRswap
 fi
@@ -1247,6 +1276,12 @@ if [ "x$BRboot" = "x-1" ] || [[ "x$BRboot" == *"Error"* ]]; then
 fi
 if [ "x$BRhome" = "x-1" ] || [[ "x$BRhome" == *"Error"* ]]; then
 	unset BRhome
+fi
+if [ "x$BRgrub" = "x-1" ]; then
+	unset BRgrub
+fi
+if [ "x$BRsyslinux" = "x-1" ]; then
+	unset BRsyslinux
 fi
 
 distrolist=(Arch Debian Fedora)
@@ -1485,7 +1520,18 @@ sleep 2
 generate_locales 2>&1 | dialog --progressbox "GENERATING LOCALES" 30 70
 sleep 2
 
-dialog --title "Info" --msgbox  "Completed. Press OK to unmount and clean, then reboot your system." 8 50
+dialog --title "Info" --msgbox  "Completed. 
+
+If you selected a bootloader, Press OK to unmount and clean, then reboot your system.
+
+If you didnt choose a bootloader, this is the right time to install or update an existing one:
+
+-->Open a new terminal and as root type: chroot /mnt/target
+
+-->Install or update your bootloader. 
+
+-->Once you're done, type: exit , to leave chroot, 
+   come back here and press OK to finish."  20 100
 
 sleep 2
 clean_unmount_out

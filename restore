@@ -346,13 +346,19 @@ unmount_only() {
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
     elif [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
-      rm -r /mnt/target/home
+      if [ "$(ls -A /mnt/target/home)" ]; then
+        echo "/mnt/target/home is not empty"
+      else
+        rm -r /mnt/target/home
+      fi
     fi
   fi
   if [ -n "$BRboot" ]; then
     umount  $BRboot
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
+    elif [ "$(ls -A /mnt/target/boot)" ]; then
+      echo "/mnt/target/boot is not empty"
     else
       rm -r /mnt/target/boot
     fi
@@ -372,7 +378,9 @@ clean_unmount_in() {
     umount  $BRhome
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
-      else
+    elif [ "$(ls -A /mnt/target/home)" ]; then
+      echo "/mnt/target/home is not empty"
+    else
       rm -r /mnt/target/home
     fi
   fi
@@ -380,6 +388,8 @@ clean_unmount_in() {
     umount  $BRboot
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
+    elif [ "$(ls -A /mnt/target/boot)" ]; then
+      echo "/mnt/target/boot is not empty"
     else
       rm -r /mnt/target/boot
     fi
@@ -389,12 +399,14 @@ clean_unmount_in() {
     rm /mnt/target/fullbackup.tgz
   fi
 
-  umount $BRroot 
+  umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED 
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
+  elif [ "$(ls -A /mnt/target)" ]; then
+      echo "/mnt/target is not empty"
   else
     sleep 1
-    rm  -r /mnt/target 2>&1 && echo SUCCESS  || echo FAILED 
+    rm  -r /mnt/target 
   fi
   exit
 }
@@ -412,12 +424,14 @@ clean_unmount_out() {
   if [ -n "$BRboot" ]; then
     umount  $BRboot
   fi
-  umount $BRroot 
+  umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED 
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
+  elif [ "$(ls -A /mnt/target)" ]; then
+      echo "/mnt/target is not empty"
   else
     sleep 1
-    rm  -r /mnt/target 2>&1 && echo SUCCESS  || echo FAILED 
+    rm  -r /mnt/target
   fi
   exit
 }

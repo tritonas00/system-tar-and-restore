@@ -1163,18 +1163,19 @@ echo -e "\n---------------GENERATING LOCALES---------------"
 generate_locales
 sleep 1
 
-echo -e "\nCompleted. 
-
-If you selected a bootloader, Press ENTER to unmount and clean, then reboot your system.
-
-If you didnt choose a bootloader, this is the right time to install or update an existing one:
+if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+  echo -e "\nCompleted. Press OK to unmount and clean, then reboot your system."
+else
+  echo -e "\nYou didnt choose a bootloader. This is the right time to install or update an existing one:
 
 -->Open a new terminal and as root type: chroot /mnt/target
 
 -->Install or update your bootloader. 
 
--->Once you're done, type: exit , to leave chroot, 
-   come back here and press ENTER to finish." 
+-->Once you're done leave chroot by typing: exit
+   
+-->Come back here and press ENTER to unmount everything." 
+fi
 read -s a
 
 sleep 2
@@ -1521,24 +1522,25 @@ sleep 2
 
 if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
   install_bootloader 2>&1 | dialog --progressbox "INSTALLING AND CONFIGURING BOOTLOADER" 30 70
+  sleep 2
 fi
-sleep 2
 
 generate_locales 2>&1 | dialog --progressbox "GENERATING LOCALES" 30 70
 sleep 2
 
-dialog --title "Info" --msgbox  "Completed. 
-
-If you selected a bootloader, Press OK to unmount and clean, then reboot your system.
-
-If you didnt choose a bootloader, this is the right time to install or update an existing one:
+if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+  dialog --title "Info" --msgbox  "Completed. Press OK to unmount and clean, then reboot your system."  10 50
+else
+  dialog --title "Info" --msgbox  "You didnt choose a bootloader. This is the right time to install or update an existing one:
 
 -->Open a new terminal and as root type: chroot /mnt/target
 
 -->Install or update your bootloader. 
 
--->Once you're done, type: exit , to leave chroot, 
-   come back here and press OK to finish."  20 100
+-->Once you're done leave chroot by typing: exit
+   
+-->Come back here and press OK to unmount everything."  17 100
+fi
 
 sleep 2
 clean_unmount_out

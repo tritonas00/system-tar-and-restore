@@ -92,23 +92,24 @@ while true; do
 done
 
 if [ $(id -u) -gt 0 ]; then
-  echo "Please run the script as root. Exit"
+  echo -e "\e[00;31mScript must run as root.\e[00m"
   exit
 fi
 
+PS3="Choice: "
 interfaces=(CLI Dialog)
 
 while [ -z "$BRinterface" ]; do
-  echo -e "\nSelect interface or enter Q to quit"
+  echo -e "\n\e[00;36mSelect interface or enter Q to quit\e[00m"
   select c in ${interfaces[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo "Now quiting"
+      echo -e "\e[00;33mAborted by User\e[00m"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#interfaces[@]} ]; then
       BRinterface=$c
       break
     else
-      echo "Please select a valid option from the list or enter Q to quit"
+      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
     fi
   done
 done
@@ -120,29 +121,30 @@ clear
 if [ -z "$BRFOLDER" ]; then
 
 echo "This script will make a tar backup image of your entire system."
-echo "Make sure you have GRUB or SYSLINUX packages installed.
-GRUB Packages:
+echo "-->Make sure you have enough free space."
+echo -e "-->Also make sure you have GRUB or SYSLINUX packages installed.
+\e[00;33mGRUB Packages:\e[00m
 -->Arch: grub-bios
 -->Debian: grub-pc
 -->Fedora: grub2
-SYSLINUX Packages:
+\e[00;33mSYSLINUX Packages:\e[00m
 -->Arch: syslinux
 -->Debian: syslinux extlinux
 -->Fedora: syslinux syslinux-extlinux"
-echo "Make sure you have enough free space."
-echo "Press ENTER and select the location where the backup file will be created." 
+echo -e "\n\e[00;36mPress ENTER and select the location where the backup file will be created.\e[00m" 
 read -s a
 
-echo -e "\nThe default folder for creating the backup file is / (root)" 
 fi
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
-    echo "Directory does not exist."
+    echo -e "\e[00;31mDirectory does not exist.\e[00m"
     unset BRFOLDER
 fi
 
 while [ -z "$BRFOLDER" ]; do
-  read -p "Do you want to save in the default folder? (Y/n): " an
+echo -e "\n\e[00;36mThe default folder for creating the backup file is / (root)
+Do you want to save in the default folder?\e[00m" 
+  read -p "(Y/n): " an
 
   if [ -n "$an" ]; then
     def=$an
@@ -154,18 +156,21 @@ while [ -z "$BRFOLDER" ]; do
     BRFOLDER="/"
   elif [ $def = "n" ] || [ $def = "N" ]; then
     while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-      read -p "Insert the folder path where the backup will be created: " BRFOLDER
+      echo -e "\n\e[00;36mInsert the folder path where the backup will be created\e[00m"
+      read -p "Path: " BRFOLDER
       if [ ! -d "$BRFOLDER" ]; then
-        echo "Directory does not exist."
+        echo -e "\e[00;31mDirectory does not exist.\e[00m"
       fi
     done 
+  else
+    echo -e "\e[00;31mPlease enter a valid option\e[00m"
   fi
 done 
 
 while [ -z "$BRhome" ] ; do
   
-  echo " "
-  read -p "Do you want to include home?  (Y/n): " an
+echo -e "\n\e[00;36mDo you want to include home?\e[00m"
+  read -p "(Y/n):" an
 
   if [ -n "$an" ]; then
     def=$an
@@ -178,13 +183,14 @@ while [ -z "$BRhome" ] ; do
   elif [ $def = "n" ] || [ $def = "N" ]; then
     BRhome="n"
   else
-    echo -e "Please enter a valid option\n"
+    echo -e "\e[00;31mPlease enter a valid option\e[00m"
   fi
 done  
 
 if [ $BRhome = "n" ]; then
   while [ -z "$BRhidden" ] ; do
-    read -p "Do you want to keep hidden files and folders inside /home?  (Y/n): " an
+    echo -e "\n\e[00;36mDo you want to keep hidden files and folders inside /home?\e[00m"
+    read -p "(Y/n):" an
 
     if [ -n "$an" ]; then
       def=$an
@@ -197,15 +203,15 @@ if [ $BRhome = "n" ]; then
     elif [ $def = "n" ] || [ $def = "N" ]; then
       BRhidden="n"
     else
-      echo -e "Please enter a valid option\n"
+      echo -e "\e[00;31mPlease enter a valid option\e[00m"
     fi 
   done
 fi
 
 while [ -z "$BRtar" ]; do
   
-  echo " "
-  read -p "Activate --acls  --selinux --xattrs options? (Required / Available only in Fedora) (y/N): " an
+  echo -e "\n\e[00;36mActivate --acls  --selinux --xattrs options? (Required / Available only in Fedora)\e[00m"
+  read -p "(y/N):" an
 
   if [ -n "$an" ]; then
     def=$an
@@ -218,22 +224,36 @@ while [ -z "$BRtar" ]; do
   elif [ $def = "n" ] || [ $def = "N" ]; then
     BRtar="n"
   else
-    echo -e "Please enter a valid option\n"
+    echo -e "\e[00;31mPlease enter a valid option\e[00m"
   fi
 done  
 
-echo " "
-echo SUMMARY
+echo -e "\n\e[00;32mSUMMARY\e[00m"
 show_summary
-echo " "
 
-if [ -z $defcon ]; then
-  read -p "Do you want continue? (Y/n): " defcon
-fi
+while [ -z "$BRcontinue" ]; do
+  
+  echo -e "\n\e[00;36mDo you want continue?\e[00m"
+  read -p "(Y/n):" an
 
-if [ "x$defcon" = "xn" ] || [ "x$defcon" = "xN" ]; then
-  exit
-fi
+  if [ -n "$an" ]; then
+    def=$an
+  else
+    def="n"
+  fi
+  
+  if [ $def = "y" ] || [ $def = "Y" ]; then
+    BRcontinue="y"
+  elif [ $def = "n" ] || [ $def = "N" ]; then
+    BRcontinue="n"
+    echo -e "\e[00;33mAborted by User\e[00m"
+    exit
+  else
+    echo -e "\e[00;31mPlease enter a valid option\e[00m"
+  fi
+done  
+
+if [  "x$BRcontinue" = "xy" ]; then
 
 BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
 BRFOLDER="${BRFOLDER_IN[@]}"
@@ -255,6 +275,8 @@ chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
 
 echo "Done. Tar image and logs saved in $BRFOLDER"
 
+fi  
+
 elif [ $BRinterface = "Dialog" ]; then
 
 if [ -z $(which dialog 2> /dev/null) ];then
@@ -265,7 +287,8 @@ fi
 if [ -z "$BRFOLDER" ]; then
 
 dialog --no-ok --title "Info" --msgbox  "This script will make a tar backup image of your entire system.
-Make sure you have GRUB or SYSLINUX packages installed.
+-->Make sure you have enough free space.
+-->Make sure you have GRUB or SYSLINUX packages installed.
 GRUB Packages:
 -->Arch: grub-bios
 -->Debian: grub-pc
@@ -274,7 +297,7 @@ SYSLINUX Packages:
 -->Arch: syslinux
 -->Debian: syslinux extlinux
 -->Fedora: syslinux syslinux-extlinux
-Make sure you have enough free space.
+
 Press OK and select the location where the backup file will be created." 18 100
 
 fi

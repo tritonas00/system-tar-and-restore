@@ -380,5 +380,5 @@ chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
 dialog --title "Info" --msgbox  "Done. Tar image and logs saved in $BRFOLDER" 8 50
 
 else
-  echo "Wrong interface name. Use CLI or Dialog. Exit"
+  echo -e "\e[00;31mWrong interface name.\n\e[00;36mAvailable options: CLI Dialog\e[00m"
 fi

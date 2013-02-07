@@ -273,7 +273,7 @@ run_tar
 echo "Setting permissions"
 chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
 
-echo "Done. Tar image and logs saved in $BRFOLDER"
+echo -e "\n\e[00;32mDone. Tar image and logs saved in $BRFOLDER\e[00m"
 
 fi  
 

@@ -16,10 +16,10 @@ echo "Fedora's tar extra options = $BRtar"
 run_tar () {
 if [ $BRhome = "n" ] &&  [ $BRhidden = "y" ] &&  [ $BRtar = "n" ]; then
   tar cvpf  "$BRFile".tar  --sparse --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/*  --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
-  echo "Locating hidden files and folders inside /home, please wait..." 
+  echo "==>Locating hidden files and folders inside /home, please wait..." 
   find /home -maxdepth 1 -print | xargs tar rpvf "$BRFile".tar --no-recursion 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
   find /home -maxdepth 2 -name ".*" -print | xargs tar rpvf "$BRFile".tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
-  echo "Creating archive..."
+  echo "==>Creating archive..."
   gzip "$BRFile".tar
 elif [ $BRhome = "n" ] &&  [ $BRhidden = "n" ] &&  [ $BRtar = "n" ]; then
   tar cvpzf  "$BRFile".tgz  --sparse --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/*  --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
@@ -27,10 +27,10 @@ elif [ $BRhome = "y" ] &&  [ $BRtar = "n" ]; then
   tar cvpzf  "$BRFile".tgz  --sparse --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/*  --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
 elif [ $BRhome = "n" ] &&  [ $BRhidden = "y" ] &&  [ $BRtar = "y" ]; then
   tar cvpf  "$BRFile".tar  --sparse  --acls  --selinux --xattrs --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/*  --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
-  echo "Locating hidden files and folders inside /home, please wait..." 
+  echo "==>Locating hidden files and folders inside /home, please wait..." 
   find /home -maxdepth 1 -print | xargs tar rpvf "$BRFile".tar --no-recursion 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
   find /home -maxdepth 2 -name ".*" -print | xargs tar rpvf "$BRFile".tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
-   echo "Creating archive..."
+   echo "==>Creating archive..."
   gzip "$BRFile".tar
 elif [ $BRhome = "n" ] &&  [ $BRhidden = "n" ] &&  [ $BRtar = "y" ]; then
     tar cvpzf  "$BRFile".tgz  --sparse --acls  --selinux --xattrs --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/*  --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
@@ -255,22 +255,22 @@ if [  "x$BRcontinue" = "xy" ]; then
 BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
 BRFOLDER="${BRFOLDER_IN[@]}"
 
-echo -e "\e[00;32m==>\e[00mPreparing..."
+echo "==>Preparing..."
 mkdir -p "$BRFOLDER"
 touch "$BRFOLDER"/log
 touch "$BRFOLDER"/errors
 sleep 1
 
-echo -e "\e[00;32m==>\e[00mCreating backup image, please wait"
+echo "==>Creating backup image, please wait..."
 BRFile="$BRFOLDER"/Backup-"`date +%A-%d-%m-%Y-%T`"
 
 sleep 1
 run_tar
 
-echo -e "\e[00;32mSetting permissions\e[00m"
+echo "==>Setting permissions"
 chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
 
-echo -e "\e[00;32m==>\e[00mDone. Tar image and logs saved in $BRFOLDER"
+echo "==>Done. Backup image and logs saved in $BRFOLDER"
 
 fi  
 
@@ -374,7 +374,7 @@ run_tar | dialog --progressbox "Creating backup image..." 30 70
 
 chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
 
-dialog --title "Info" --msgbox  "Done. Tar image and logs saved in $BRFOLDER" 8 50
+dialog --title "Info" --msgbox  "Done. Backup image and logs saved in $BRFOLDER" 8 50
 
 else
   echo -e "\e[00;31mWrong interface name!\n\e[00;36mAvailable options: CLI Dialog\e[00m"

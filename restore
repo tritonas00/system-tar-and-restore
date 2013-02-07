@@ -13,28 +13,28 @@ update_list() {
 check_input() {
   for i in ${distrolist[@]}; do if [[ $i == ${BRdistro} ]] ; then BRdistrocheck="true" ; fi; done
   if [ ! "$BRdistrocheck" = "true" ]; then
-    echo "Wrong distribution name. Available options: Arch Debian Fedora"
+    echo -e "\e[00;31mWrong distribution name\n\e[00;36mAvailable options: Arch Debian Fedora\e[00m"
     exit
   fi
 
   for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
   if [ ! "$BRrootcheck" = "true" ]; then
-    echo "Wrong root partition"
+    echo -e "\e[00;31mWrong root partition\e[00m"
     exit
   fi
   if grep -q $BRroot /proc/mounts; then
-    echo "$BRroot is already mounted as $(df -m | grep "$BRroot" | awk '{ print $6 }'), refusing to use it."
+    echo -e "\e[00;33m$BRroot is already mounted as $(df -m | grep "$BRroot" | awk '{ print $6 }'), refusing to use it\e[00m"
     exit
   fi
 
   if [ -n "$BRswap" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
-      echo "Wrong swap partition"
+      echo -e "\e[00;31mWrong swap partition\e[00m"
       exit
     fi
     if [ "$BRswap" == "$BRroot" ]; then
-      echo "$BRswap already used!"
+      echo -e "\e[00;33m$BRswap already used\e[00m"
       exit
     fi
   fi
@@ -42,15 +42,15 @@ check_input() {
   if [ -n "$BRhome" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
      if [ ! "$BRhomecheck" = "true" ]; then
-       echo "Wrong home partition"
+    echo -e "\e[00;31mWrong home partition\e[00m"
        exit
      fi
      if [ "$BRhome" == "$BRroot" ] || [ "$BRhome" == "$BRswap" ]; then
-       echo "$BRhome already used!"
+      echo -e "\e[00;33m$BRhome already used\e[00m"
        exit
      fi
     if grep -q $BRhome /proc/mounts; then
-      echo "$BRhome is already mounted as $(df -m | grep "$BRhome" | awk '{ print $6 }'), refusing to use it."
+      echo -e "\e[00;33m$BRhome is already mounted as $(df -m | grep "$BRhome" | awk '{ print $6 }'), refusing to use it\e[00m"
       exit
     fi
   fi
@@ -58,15 +58,15 @@ check_input() {
   if [ -n "$BRboot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     if [ ! "$BRbootcheck" = "true" ]; then
-      echo "Wrong boot partition"
+    echo -e "\e[00;31mWrong boot partition\e[00m"
       exit
     fi
     if [ "$BRboot" == "$BRroot" ] || [ "$BRboot" == "$BRswap" ] || [ "$BRboot" == "$BRhome" ]; then
-      echo "$BRboot already used!"
+      echo -e "\e[00;33m$BRboot already used\e[00m"
       exit
     fi
     if grep -q $BRboot /proc/mounts; then
-      echo "$BRboot is already mounted as $(df -m | grep "$BRboot" | awk '{ print $6 }'), refusing to use it."
+      echo -e "\e[00;33m$BRboot is already mounted as $(df -m | grep "$BRhome" | awk '{ print $6 }'), refusing to use it\e[00m"
       exit
     fi
   fi
@@ -74,7 +74,7 @@ check_input() {
   if [ -n "$BRgrub" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
-      echo "Wrong disk for grub"
+      echo -e "\e[00;31mWrong disk for grub\e[00m"
       exit
     fi
   fi
@@ -82,33 +82,33 @@ check_input() {
   if [ -n "$BRsyslinux" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
     if [ ! "$BRsyslinuxcheck" = "true" ]; then
-      echo "Wrong disk for syslinux"
+      echo -e "\e[00;31mWrong disk for syslinux\e[00m"
       exit
     fi
 fi
 
 if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
-  echo "File not found"
+  echo -e "\e[00;31mFile not found\e[00m"
   exit
 fi
 }
 
 mount_all() {
-  echo -e "\n---------------MAKING WORKING DIRECTORY---------------"
+  echo -e "\n==>MAKING WORKING DIRECTORY"
   mkdir /mnt/target 2>&1 && echo SUCCESS || echo WARNING
   sleep 1
 
-  echo -e "\n---------------MOUNTING $BRroot (/)---------------"
+  echo -e "\n==>MOUNTING $BRroot (/)"
   mount $BRroot /mnt/target 2>&1 && echo SUCCESS || echo WARNING
 
   if [ -n "$BRhome" ]; then
-    echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
+    echo -e "\n==>MOUNTING $BRhome (/home)"
     mkdir /mnt/target/home 2>&1 
     mount $BRhome /mnt/target/home 2>&1 && echo SUCCESS || echo WARNING
   fi
 
   if [ -n "$BRboot" ]; then
-    echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
+    echo -e "\n==>MOUNTING $BRboot (/boot)"
     mkdir /mnt/target/boot 2>&1
     mount $BRboot /mnt/target/boot 2>&1 && echo SUCCESS || echo WARNING
   fi 
@@ -229,7 +229,7 @@ build_initramfs () {
 
 install_bootloader () {
   if [ -n "$BRgrub" ]; then
-    echo -e "\n---------------INSTALLING AND UPDATING GRUB2 IN $BRgrub---------------"
+    echo -e "\n==>INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [ $BRdistro = Arch ]; then
       chroot /mnt/target grub-install --target=i386-pc  $BRgrub 
       chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED 
@@ -242,7 +242,7 @@ install_bootloader () {
     fi
 
   elif [ -n "$BRsyslinux" ]; then
-    echo -e "\n---------------INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux---------------"
+    echo -e "\n==>INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
     if [ $BRdistro = Arch ]; then
       chroot /mnt/target syslinux-install_update -i -a -m
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /mnt/target/boot/syslinux/syslinux.cfg
@@ -326,7 +326,7 @@ generate_locales () {
 }
 
 remount_delete_subvols() {
-  echo -e "\n---------------RE-MOUNTING AND DELETING SUBVOLUMES ---------------"
+  echo -e "\n==>RE-MOUNTING AND DELETING SUBVOLUMES"
   cd ~ 
   mount  $BRroot /mnt/target
 
@@ -349,7 +349,7 @@ remount_delete_subvols() {
     rm /mnt/target/fullbackup.tgz
   fi
 
-  echo -e "\n---------------CLEANING AND UNMOUNTING-------------- "
+  echo -e "\n==>CLEANING AND UNMOUNTING"
   umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED 
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
@@ -363,7 +363,7 @@ remount_delete_subvols() {
 }  
 
 unmount_only_in_subvol() {
-  echo -e "\n---------------UNMOUNTING SUBVOLUME $BRrootsubvolname---------------"
+  echo -e "\n==>UNMOUNTING SUBVOLUME $BRrootsubvolname"
   cd ~ 
   if [ -n "$BRhome" ]; then
     umount  $BRhome
@@ -396,7 +396,7 @@ unmount_only_in_subvol() {
 }  
 
 clean_unmount_in() {
-  echo -e "\n---------------CLEANING AND UNMOUNTING-------------- "
+  echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~ 
   if [ -n "$BRhome" ]; then
     umount  $BRhome
@@ -436,7 +436,7 @@ clean_unmount_in() {
 }
 
 clean_unmount_out() {
-  echo -e "\n---------------CLEANING AND UNMOUNTING-------------- "
+  echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~ 
   rm /mnt/target/fullbackup.tgz
   umount /mnt/target/dev
@@ -461,7 +461,7 @@ clean_unmount_out() {
 }
 
 create_subvols () {
-  echo -e "\n---------------CREATING SUBVOLUMES---------------"
+  echo -e "\n==>CREATING SUBVOLUMES"
   btrfs subvolume create /mnt/target/$BRrootsubvolname
   if [ "x$BRhomesubvol" = "xy" ]; then
     btrfs subvolume create /mnt/target/$BRrootsubvolname/home 
@@ -475,7 +475,7 @@ create_subvols () {
     btrfs subvolume create /mnt/target/$BRrootsubvolname/usr
   fi
 
-echo -e "\n---------------CLEANING AND UNMOUNTING-------------- "  
+echo -e "\n==>CLEANING AND UNMOUNTING"  
   cd ~ 
   if [ -n "$BRhome" ]; then
     umount  $BRhome
@@ -504,11 +504,11 @@ echo -e "\n---------------CLEANING AND UNMOUNTING-------------- "
     echo "SUCCESS"
   fi
   
-  echo -e "\n---------------MOUNTING SUBVOLUME $BRrootsubvolname AS ROOT (/)---------------"
+  echo -e "\n==>MOUNTING SUBVOLUME $BRrootsubvolname AS ROOT (/)"
   mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1 && echo SUCCESS  || echo WARNING
 
   if [   -n "$BRhome" ]; then
-    echo -e "\n---------------MOUNTING $BRhome (/home)---------------"
+    echo -e "\n==>MOUNTING $BRhome (/home)"
     if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
       mkdir /mnt/target/home
     fi
@@ -516,7 +516,7 @@ echo -e "\n---------------CLEANING AND UNMOUNTING-------------- "
   fi
 
   if [   -n "$BRboot" ]; then
-    echo -e "\n---------------MOUNTING $BRboot (/boot)---------------"
+    echo -e "\n==>MOUNTING $BRboot (/boot)"
     mkdir /mnt/target/boot
     mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
   fi
@@ -651,7 +651,7 @@ if [ -n "$BRroot" ]; then
   fi
 
   if [ -z "$BRdistro" ]; then
-    echo "You must specify your target distribution. Aborting"
+    echo -e "\e[00;33mYou must specify your target distribution\e[00m"
     exit
   fi
   
@@ -661,7 +661,7 @@ if [ -n "$BRroot" ]; then
   fi  
    
   if [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
-    echo "You must enter a file or a URL to get the backup. Aborting"
+    echo -e "\e[00;33mYou must enter a file or a URL to get the backup\e[00m"
     exit
   fi
 fi
@@ -681,23 +681,25 @@ if [ -n "$BRrootsubvol" ]; then
 fi
 
 if [ $(id -u) -gt 0 ]; then
-  echo "Please run the script as root. Exit"
+  echo -e "\e[00;31mScript must run as root.\e[00m"
   exit
 fi
+
+PS3="Choice: "
 
 interfaces=(CLI Dialog)
 
 while [ -z "$BRinterface" ]; do
-  echo -e "\nSelect interface or enter Q to quit"
+  echo -e "\n\e[00;36mSelect interface or enter Q to quit\e[00m"
   select c in ${interfaces[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo "Now quiting"
+      echo -e "\e[00;33mAborted by User\e[00m"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#interfaces[@]} ]; then
       BRinterface=$c
       break
     else
-      echo "Please select a valid option from the list or enter Q to quit"
+      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
     fi
   done
 done
@@ -705,56 +707,55 @@ done
 if [ $BRinterface = "CLI" ]; then
 
 IFS=$'\n'
-PS3="Choice: "
 
 clear
 if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
 
 echo -e "This script will restore a backup image of your system 
 in user defined partitions.\n
---> Make sure you have created and formatted at least one partition 
+==> Make sure you have created and formatted at least one partition 
     for root (/) and optionally partitions for /home and /boot.\n
---> Also make sure that this system and the system you want
+==> Also make sure that this system and the system you want
     to restore have the same architecture (for chroot to work)."
-echo -e "\nPress ENTER to continue." 
+echo -e "\n\e[00;36mPress ENTER to continue.\e[00m"
 read -s a
 clear
 fi
 
-echo -e "\n---------------READING INPUT VARIABLES---------------"
+echo -e "\n==>READING USER INPUT"
 
 rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)
 distrolist=(Arch Debian Fedora)
 editorlist=(nano vi)
 
 while [ -z "$BRdistro" ]; do
-  echo -e "\nSelect distribution to restore or enter Q to quit"
+  echo -e "\n\e[00;36mSelect distribution to restore or enter Q to quit\e[00m"
   select c in ${distrolist[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo "Now quiting"
+      echo -e "\e[00;33mAborted by User\e[00m"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#distrolist[@]} ]; then
       BRdistro=$c
-      echo "You selected $BRdistro" 
+      echo -e "\e[00;32mYou selected $BRdistro\e[00m" 
       break
     else
-      echo "Please select a valid option from the list or enter Q to quit"
+      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
     fi
   done  
 done
 
 while [ -z "$BRroot" ]; do
-  echo -e "\nSelect the number of your root partition or enter Q to quit"
+  echo -e "\n\e[00;36mSelect the number of your root partition or enter Q to quit\e[00m"
   select c in ${rootlist[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo "Now quiting"
+      echo -e "\e[00;33mAborted by User\e[00m"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
       BRroot=(`echo $c | awk '{ print $1 }'`)
-      echo "You selected $BRroot as your root partition" 
+      echo -e "\e[00;32mYou selected $BRroot as your root partition\e[00m" 
       break
     else
-      echo "Please select a valid option from the list or enter Q to quit"
+      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
     fi
   done  
 done
@@ -762,20 +763,20 @@ done
 update_list
 
 if [ -z "$BRswap" ]; then
-  echo -e "\nSelect the number of your swap partition or enter Q to quit \n(Optional - Press C to skip)"
+  echo -e "\n\e[00;36mSelect the number of your swap partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo "Now quiting"
+      echo -e "\e[00;33mAborted by User\e[00m"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
       BRswap=(`echo $c | awk '{ print $1 }'`)
-      echo "You selected $BRswap as your swap partition" 
+      echo -e "\e[00;32mYou selected $BRswap as your swap partition\e[00m" 
       break
     elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-      echo "No swap"
+      echo  -e "\e[00;32mNo swap\e[00m"
       break
     else
-      echo "Please select a valid option from the list or enter Q to quit"
+      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
     fi
   done
 fi
@@ -783,20 +784,20 @@ fi
 update_list
 
 if [ -z "$BRhome" ]; then
-  echo -e "\nSelect the number of your home partition or enter Q to quit \n(Optional - Press C to skip)"
+  echo -e "\n\e[00;36mSelect the number of your home partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo "Now quiting"
+      echo -e "\e[00;33mAborted by User\e[00m"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
       BRhome=(`echo $c | awk '{ print $1 }'`)
-      echo "You selected $BRhome as your home partition" 
+      echo -e "\e[00;32mYou selected $BRhome as your home partition\e[00m" 
       break
     elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-      echo "No separate home"
+      echo  -e "\e[00;32mNo seperate home\e[00m"
       break
     else
-      echo "Please select a valid option from the list or enter Q to quit"
+      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
     fi
   done
 fi
@@ -804,49 +805,47 @@ fi
 update_list
 
 if [ -z "$BRboot" ]; then
-  echo -e "\nSelect the number of your boot partition or enter Q to quit \n(Optional - Press C to skip)"
+  echo -e "\n\e[00;36mSelect the number of your boot partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
   select c in ${list[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo "Now quiting"
+      echo -e "\e[00;33mAborted by User\e[00m"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
       BRboot=(`echo $c | awk '{ print $1 }'`)
-      echo "You selected $BRboot as your boot partition" 
+      echo -e "\e[00;32mYou selected $BRboot as your boot partition\e[00m" 
       break
     elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-      echo "No separate boot"
+      echo  -e "\e[00;32mNo seperate boot\e[00m"
       break
     else
-      echo "Please select a valid option from the list or enter Q to quit"
+      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
     fi
   done
 fi
 
 if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
-
-  echo -e "\nSelect the number of your bootloader or enter Q to quit\n(Optional - Press C to skip)"
+  echo -e "\n\e[00;36mSelect the number of your bootloader or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
   select c in Grub Syslinux; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-	echo "Now quiting"
+      echo -e "\e[00;33mAborted by User\e[00m"
 	exit
 elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-      echo -e "\n--->WARNING! NO BOOTLOADER SELECTED<---\n"
+      echo -e "\n\e[00;33m--->WARNING! NO BOOTLOADER SELECTED<---\n\e[00m"
       break 
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
 
       while [ -z "$BRgrub" ]; do
-
-	echo -e "\nWhere to install GRUB? Enter Q to quit"
+        echo -e "\n\e[00;36mWhere to install GRUB? Enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
 	select c in /dev/[hs]d[a-z]; do
 	  if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-	    echo "Now quiting"
+      echo -e "\e[00;33mAborted by User\e[00m"
 	    exit
 	  elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
 	    BRgrub=(`echo $c | awk '{ print $1 }'`)
-	    echo "You selected $BRgrub to install GRUB"  
+            echo -e "\e[00;32mYou selected $BRgrub to install GRUB\e[00m" 
 	    break
 	  else
-	    echo "Please select a valid option from the list or enter Q to quit"
+      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
 	  fi
 	done
       done
@@ -854,24 +853,23 @@ elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
 
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
       while [ -z "$BRsyslinux" ]; do
-
-	echo -e "\nWhere to install Syslinux? Enter Q to quit"
+        echo -e "\n\e[00;36mWhere to install Syslinux? Enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
 	select c in /dev/[hs]d[a-z]; do
 	  if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-	    echo "Now quiting"
+      echo -e "\e[00;33mAborted by User\e[00m"
 	    exit
 	  elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
 	    BRsyslinux=(`echo $c | awk '{ print $1 }'`)
-	    echo "You selected $BRsyslinux to install Syslinux"  
+            echo -e "\e[00;32mYou selected $BRgrub to install Syslinux\e[00m" 
 	    break
 	  else
-	    echo "Please select a valid option from the list or enter Q to quit"
+      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
 	  fi
 	done
       done
       break
     else
-    echo "Please select a valid option from the list or enter Q to quit"
+      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
     fi
   done
 fi 
@@ -893,7 +891,6 @@ if [ "x$BRsyslinux" = "x-1" ]; then
 	unset BRsyslinux
 fi
 
-
 check_input
 
 mount_all
@@ -910,9 +907,8 @@ fi
 
 if [  "x$BRfsystem" = "xbtrfs" ]; then
   while [ -z "$BRrootsubvol" ]; do
-    echo " "
-    read -p "BTRFS root file system detected. 
-Do you want to create a subvolume for root (/) ? (Y/n): " an
+    echo -e "\n\e[00;36mBTRFS root file system detected\nDo you want to create a subvolume for root (/) ?\e[00m"
+    read -p "(Y/n):" an
 
     if [ -n "$an" ]; then
       btrfsdef=$an
@@ -925,7 +921,7 @@ Do you want to create a subvolume for root (/) ? (Y/n): " an
     elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
       BRrootsubvol="n"
     else
-      echo -e "Please enter a valid option\n"
+      echo -e "\e[00;31mPlease select a valid option\e[00m"
     fi
   done 
 
@@ -935,13 +931,13 @@ Do you want to create a subvolume for root (/) ? (Y/n): " an
       read -p "Enter subvolume name: " BRrootsubvolname
       echo "Subvolume name: $BRrootsubvolname"
       if [ -z "$BRrootsubvolname" ]; then
-        echo "Please enter a name for the subvolume."
+        echo -e "\n\e[00;36mPlease enter a name for the subvolume.\e[00m"
       fi
     done
  
     while [ -z "$BRhomesubvol" ]; do
-      echo " "
-      read -p "Create subvolume for /home inside $BRrootsubvolname ? (Y/n): " an
+      echo -e "\n\e[00;36mCreate subvolume for /home inside $BRrootsubvolname ?\e[00m"
+      read -p "(Y/n) " an
 
       if [ -n "$an" ]; then
         btrfsdef=$an
@@ -954,13 +950,13 @@ Do you want to create a subvolume for root (/) ? (Y/n): " an
       elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
         BRhomesubvol="n"
       else
-        echo -e "Please enter a valid option\n"
+      echo -e "\e[00;31mPlease select a valid option\e[00m"
       fi
     done 
 
     while [ -z "$BRvarsubvol" ]; do
-      echo " "
-      read -p "Create subvolume for /var inside $BRrootsubvolname ? (Y/n): " an
+      echo -e "\n\e[00;36mCreate subvolume for /var inside $BRrootsubvolname ?\e[00m"
+      read -p " (Y/n):" an
 
       if [ -n "$an" ]; then
         btrfsdef=$an
@@ -973,13 +969,13 @@ Do you want to create a subvolume for root (/) ? (Y/n): " an
       elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
         BRvarsubvol="n"
       else
-        echo -e "Please enter a valid option\n"
+      echo -e "\e[00;31mPlease select a valid option\e[00m"
       fi
     done
 
     while [ -z "$BRusrsubvol" ]; do
-      echo " "
-      read -p "Create subvolume for /usr inside $BRrootsubvolname ? (Y/n): " an
+      echo -e "\n\e[00;36mCreate subvolume for /usr inside $BRrootsubvolname ?\e[00m"
+      read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
         btrfsdef=$an
@@ -992,7 +988,7 @@ Do you want to create a subvolume for root (/) ? (Y/n): " an
       elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
         BRusrsubvol="n"
       else
-        echo -e "Please enter a valid option\n"
+      echo -e "\e[00;31mPlease select a valid option\e[00m"
       fi
     done 
 
@@ -1008,11 +1004,11 @@ Do you want to create a subvolume for root (/) ? (Y/n): " an
     create_subvols
     fi
 elif [  "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
-  echo "Not a btrfs root filesystem, proceeding without subvolumes..."
+  echo -e "\e[00;33mNot a btrfs root filesystem, proceeding without subvolumes...\e[00m"
   sleep 1
 fi
 
-echo -e "\n---------------GETTING TAR IMAGE---------------"
+echo -e "\n==>GETTING TAR IMAGE"
 
 if [ -n "$BRfile" ]; then
   echo "Copying file..."
@@ -1104,15 +1100,15 @@ fi
 
 
 
-echo -e "\n---------------EXTRACTING---------------"
+echo -e "\n==>EXTRACTING"
 tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING  
 sleep 1
 
-echo -e "\n---------------MOUNTING /dev /proc /sys---------------"
+echo -e "\n==>MOUNTING /dev /proc /sys"
 mount_dev_proc_sys
 sleep 1 
 
-echo -e "\n---------------GENERATING FSTAB---------------"
+echo -e "\n==>GENERATING FSTAB"
 generate_fstab
 cat /mnt/target/etc/fstab
 sleep 1
@@ -1152,14 +1148,14 @@ while [ -z "$BReditor" ]; do
 done
 fi
 
-echo -e "\n---------------REBUILDING INITRAMFS IMAGE---------------"
+echo -e "\n==>REBUILDING INITRAMFS IMAGE"
 build_initramfs
 sleep 1
 
 install_bootloader
 sleep 1
 
-echo -e "\n---------------GENERATING LOCALES---------------"
+echo -e "\nGENERATING LOCALES"
 generate_locales
 sleep 1
 
@@ -1400,7 +1396,7 @@ elif [  "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsu
   sleep 3
 fi
 
-echo -e "\n---------------GETTING TAR IMAGE---------------"
+echo -e "\n==>GETTING TAR IMAGE"
 
 if [ -n "$BRfile" ]; then
   if [ ! -f $BRfile ] || [ -z $BRfile ]; then
@@ -1546,5 +1542,5 @@ sleep 2
 clean_unmount_out
 
 else
-  echo "Wrong interface name. Use CLI or Dialog. Exit"
+  echo -e "\e[00;31mWrong interface name\n\e[00;36mAvailable options: CLI Dialog\e[00m"
 fi

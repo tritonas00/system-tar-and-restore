@@ -131,8 +131,9 @@ echo -e "-->Also make sure you have GRUB or SYSLINUX packages installed.
 -->Arch: syslinux
 -->Debian: syslinux extlinux
 -->Fedora: syslinux syslinux-extlinux"
-echo -e "\n\e[00;36mPress ENTER and select the location where the backup file will be created.\e[00m" 
+echo -e "\n\e[00;36mPress ENTER to continue.\e[00m" 
 read -s a
+clear
 
 fi
 
@@ -142,8 +143,7 @@ if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
 fi
 
 while [ -z "$BRFOLDER" ]; do
-echo -e "\n\e[00;36mThe default folder for creating the backup file is / (root)
-Do you want to save in the default folder?\e[00m" 
+  echo -e "\n\e[00;36mThe default folder for creating the backup file is / (root)\nDo you want to save in the default folder?\e[00m" 
   read -p "(Y/n): " an
 
   if [ -n "$an" ]; then
@@ -168,8 +168,7 @@ Do you want to save in the default folder?\e[00m"
 done 
 
 while [ -z "$BRhome" ] ; do
-  
-echo -e "\n\e[00;36mDo you want to include home?\e[00m"
+  echo -e "\n\e[00;36mDo you want to include /home?\e[00m"
   read -p "(Y/n):" an
 
   if [ -n "$an" ]; then
@@ -209,8 +208,7 @@ if [ $BRhome = "n" ]; then
 fi
 
 while [ -z "$BRtar" ]; do
-  
-  echo -e "\n\e[00;36mActivate --acls  --selinux --xattrs options? (Required / Available only in Fedora)\e[00m"
+  echo -e "\n\e[00;36mActivate --acls --selinux --xattrs options? (Required / Available only in Fedora)\e[00m"
   read -p "(y/N):" an
 
   if [ -n "$an" ]; then
@@ -232,14 +230,13 @@ echo -e "\n\e[00;32mSUMMARY\e[00m"
 show_summary
 
 while [ -z "$BRcontinue" ]; do
-  
   echo -e "\n\e[00;36mDo you want continue?\e[00m"
   read -p "(Y/n):" an
 
   if [ -n "$an" ]; then
     def=$an
   else
-    def="n"
+    def="y"
   fi
   
   if [ $def = "y" ] || [ $def = "Y" ]; then
@@ -258,19 +255,18 @@ if [  "x$BRcontinue" = "xy" ]; then
 BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
 BRFOLDER="${BRFOLDER_IN[@]}"
 
-echo "Preparing"
+echo -e "\e[00;32mPreparing\e[00m"
 mkdir -p "$BRFOLDER"
 touch "$BRFOLDER"/log
 touch "$BRFOLDER"/errors
 
-sleep 1
-echo "Creating backup image, please wait"
-
+echo -e "\e[00;32mCreating backup image, please wait\e[00m"
 BRFile="$BRFOLDER"/Backup-"`date +%A-%d-%m-%Y-%T`"
 
+sleep 1
 run_tar
 
-echo "Setting permissions"
+echo -e "\e[00;32mSetting permissions\e[00m"
 chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
 
 echo -e "\n\e[00;32mDone. Tar image and logs saved in $BRFOLDER\e[00m"
@@ -298,7 +294,7 @@ SYSLINUX Packages:
 -->Debian: syslinux extlinux
 -->Fedora: syslinux syslinux-extlinux
 
-Press OK and select the location where the backup file will be created." 18 100
+Press OK to continue." 18 100
 
 fi
 
@@ -326,7 +322,7 @@ Do you want to save in the default folder?" 8 50
 done 
 
 while [ -z "$BRhome" ]; do
-  dialog --title "Message"  --yesno "Do you want to include home?" 8 50
+  dialog --title "Message"  --yesno "Do you want to include /home?" 8 50
   if [ $? = "0" ]; then
     BRhome="y"
   else
@@ -380,5 +376,5 @@ chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
 dialog --title "Info" --msgbox  "Done. Tar image and logs saved in $BRFOLDER" 8 50
 
 else
-  echo -e "\e[00;31mWrong interface name.\n\e[00;36mAvailable options: CLI Dialog\e[00m"
+  echo -e "\e[00;31mWrong interface name!\n\e[00;36mAvailable options: CLI Dialog\e[00m"
 fi

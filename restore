@@ -718,7 +718,7 @@ in user defined partitions.\n
     to restore have the same architecture (for chroot to work)."
 echo -e "\nPress ENTER to continue." 
 read -s a
-
+clear
 fi
 
 echo -e "\n---------------READING INPUT VARIABLES---------------"

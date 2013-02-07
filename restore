@@ -835,7 +835,7 @@ elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
 
       while [ -z "$BRgrub" ]; do
-        echo -e "\n\e[00;36mWhere to install GRUB? Enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
+        echo -e "\n\e[00;36mWhere to install GRUB? Enter Q to quit\e[00m"
 	select c in /dev/[hs]d[a-z]; do
 	  if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo -e "\e[00;33mAborted by User\e[00m"
@@ -853,7 +853,7 @@ elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
 
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
       while [ -z "$BRsyslinux" ]; do
-        echo -e "\n\e[00;36mWhere to install Syslinux? Enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
+        echo -e "\n\e[00;36mWhere to install Syslinux? Enter Q to quit \n\e[00m"
 	select c in /dev/[hs]d[a-z]; do
 	  if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo -e "\e[00;33mAborted by User\e[00m"
@@ -907,7 +907,7 @@ fi
 
 if [  "x$BRfsystem" = "xbtrfs" ]; then
   while [ -z "$BRrootsubvol" ]; do
-    echo -e "\n\e[00;36mBTRFS root file system detected\nDo you want to create a subvolume for root (/) ?\e[00m"
+    echo -e "\n==>BTRFS root file system detected\n\e[00;36mDo you want to create a subvolume for root (/) ?\e[00m"
     read -p "(Y/n):" an
 
     if [ -n "$an" ]; then
@@ -1011,7 +1011,7 @@ fi
 echo -e "\n==>GETTING TAR IMAGE"
 
 if [ -n "$BRfile" ]; then
-  echo "Copying file..."
+  echo "==>Copying file..."
   cp $BRfile "/mnt/target/fullbackup.tgz"
 fi
 
@@ -1019,13 +1019,13 @@ if [ -n "$BRurl" ]; then
   if [ -n "$BRusername" ]; then
     wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2
     if [ "$?" -ne "0" ]; then
-    echo "Error downloading file"
+    echo -e "\e[00;31mError downloading file\e[00m"
     rm /mnt/target/fullbackup.tgz
     fi
   else
     wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
     if [ "$?" -ne "0" ]; then
-      echo "Error downloading file"
+      echo -e "\e[00;31mError downloading file\e[00m"
       rm /mnt/target/fullbackup.tgz
     fi
   fi
@@ -1033,11 +1033,10 @@ fi
 
 
 while [ ! -f /mnt/target/fullbackup.tgz ]; do
-    
-  echo -e "\nSelect an option or enter Q to quit"
+  echo -e "\n\e[00;36mSelect an option or enter Q to quit\e[00m"
   select c in "File" "URL" "Protected URL"; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo "Now quiting"
+        echo -e "\e[00;33mAborted by User\e[00m"
         if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
         unmount_only_in_subvol
         remount_delete_subvols
@@ -1045,60 +1044,74 @@ while [ ! -f /mnt/target/fullbackup.tgz ]; do
       clean_unmount_in
     elif [ $REPLY = "1" ]; then
       while [ ! -f /mnt/target/fullbackup.tgz ]; do
-	read -p "Enter the path of the backup file: " BRfile
+        echo -e "\n\e[00;36mEnter the path of the backup file\e[00m"
+	read -p "Path:" BRfile
 	if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-	  echo "File not found"
+        echo -e "\e[00;31mFile not found\e[00m"
 	else
-	   echo "Copying file..."
+           echo "==>Copying file..."
            cp $BRfile "/mnt/target/fullbackup.tgz"
        	fi
       done
       break
       
     elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
-      read -p "Enter the URL for the backup file: " BRurl
+      echo -e "\n\e[00;36mEnter the URL for the backup file\e[00m"
+      read -p "URL:" BRurl
       echo " "
       if [ $REPLY = "3" ]; then
-	read -p "Enter the username: " BRusername
-	read -sp "Enter the password: " BRpassword
+	read -p "USERNAME: " BRusername
+	read -sp "PASSWORD: " BRpassword
 	echo " "
 	wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2
         if [ "$?" -ne "0" ]; then
-	  echo "Error downloading file"
+          echo -e "\e[00;31mError downloading file\e[00m"
 	  rm /mnt/target/fullbackup.tgz
         fi
 	break
       fi
       wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
       if [ "$?" -ne "0" ]; then
-	echo "Error downloading file"
+        echo -e "\e[00;31mError downloading file\e[00m"
 	rm /mnt/target/fullbackup.tgz 
       fi
       break
     else
-      echo "Please select a valid option from the list or enter Q to quit"
+      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
     fi
   done
 done
 
-echo " "
-echo SUMMARY
+echo -e "\n\e[00;32mSUMMARY\e[00m"
 show_summary
 echo " "
 
-if [ -z $def ]; then
-  read -p "Do you want continue? (Y/n): " def
-fi
+while [ -z "$BRcontinue" ]; do
+  echo -e "\n\e[00;36mDo you want continue?\e[00m"
+  read -p "(Y/n):" an
 
-if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
+  if [ -n "$an" ]; then
+    def=$an
+  else
+    def="y"
+  fi
+  
+  if [ $def = "y" ] || [ $def = "Y" ]; then
+    BRcontinue="y"
+  elif [ $def = "n" ] || [ $def = "N" ]; then
+    BRcontinue="n"
+  else
+    echo -e "\e[00;31mPlease enter a valid option\e[00m"
+  fi
+done  
+
+if [  "x$BRcontinue" = "xn" ]; then
    if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
    unmount_only_in_subvol
    remount_delete_subvols 
    fi
  clean_unmount_in
-fi  
-
-
+elif [  "x$BRcontinue" = "xy" ]; then
 
 echo -e "\n==>EXTRACTING"
 tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING  
@@ -1176,6 +1189,7 @@ read -s a
 
 sleep 2
 clean_unmount_out
+fi
 
 elif [ $BRinterface = "Dialog" ]; then
 

@@ -1099,6 +1099,7 @@ while [ -z "$BRcontinue" ]; do
   if [ $def = "y" ] || [ $def = "Y" ]; then
     BRcontinue="y"
   elif [ $def = "n" ] || [ $def = "N" ]; then
+    echo -e "\e[00;33mAborted by User\e[00m"
     BRcontinue="n"
   else
     echo -e "\e[00;31mPlease enter a valid option\e[00m"

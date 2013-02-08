@@ -120,16 +120,16 @@ if [ $BRinterface = "CLI" ]; then
   clear
   if [ -z "$BRFOLDER" ]; then
     echo "This script will make a tar backup image of your entire system."
-    echo "-->Make sure you have enough free space."
-    echo -e "-->Also make sure you have GRUB or SYSLINUX packages installed."
-    echo -e "\e[00;33mGRUB Packages:\e[00m"
-    echo "-->Arch: grub-bios"
-    echo "-->Debian: grub-pc"
-    echo "-->Fedora: grub2"
-    echo -e "\e[00;33mSYSLINUX Packages:\e[00m"
-    echo "-->Arch: syslinux"
-    echo "-->Debian: syslinux extlinux"
-    echo "-->Fedora: syslinux syslinux-extlinux"
+    echo -e "\n==>Make sure you have enough free space."
+    echo -e "\n==>Also make sure you have GRUB or SYSLINUX packages installed."
+    echo -e "\n\e[00;33mGRUB Packages:\e[00m"
+    echo "Arch: grub-bios"
+    echo "Debian: grub-pc"
+    echo "Fedora: grub2"
+    echo -e "\n\e[00;33mSYSLINUX Packages:\e[00m"
+    echo "Arch: syslinux"
+    echo "Debian: syslinux extlinux"
+    echo "Fedora: syslinux syslinux-extlinux"
     echo -e "\n\e[00;36mPress ENTER to continue.\e[00m" 
     read -s a
     clear
@@ -258,18 +258,22 @@ elif [ $BRinterface = "Dialog" ]; then
 
   if [ -z "$BRFOLDER" ]; then
     dialog --no-ok --title "Info" --msgbox  "This script will make a tar backup image of your entire system.
--->Make sure you have enough free space.
--->Make sure you have GRUB or SYSLINUX packages installed.
+
+==>Make sure you have enough free space.
+
+==>Make sure you have GRUB or SYSLINUX packages installed.
+
 GRUB Packages:
 -->Arch: grub-bios
 -->Debian: grub-pc
 -->Fedora: grub2
+
 SYSLINUX Packages:
 -->Arch: syslinux
 -->Debian: syslinux extlinux
 -->Fedora: syslinux syslinux-extlinux
 
-Press OK to continue." 18 100
+Press OK to continue." 20 100
   fi
 
   if [ ! -d "$BRFOLDER" ] &&  [ -n "$BRFOLDER" ]; then

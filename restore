@@ -584,6 +584,7 @@ while true; do
     ;;
     -y|--yes) 
       def="y"
+      BRcontinue="y"
       shift
     ;;
     -R|--rootsubvolname) 

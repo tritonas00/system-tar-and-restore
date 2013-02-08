@@ -41,8 +41,7 @@ fi
 
 BRargs=`getopt -o "i:d:hfn" -l "interface:,directory:,exclude-home,fedora-tar,no-hidden,help" -n "$1" -- "$@"`
 
-if [ $? -ne 0 ];
-then
+if [ $? -ne 0 ]; then
   echo "See $0 --help"
   exit 
 fi
@@ -115,80 +114,56 @@ while [ -z "$BRinterface" ]; do
 done
 
 if [ $BRinterface = "CLI" ]; then
+  clear
+  if [ -z "$BRFOLDER" ]; then
+    echo "This script will make a tar backup image of your entire system."
+    echo "-->Make sure you have enough free space."
+    echo -e "-->Also make sure you have GRUB or SYSLINUX packages installed."
+    echo -e "\e[00;33mGRUB Packages:\e[00m"
+    echo "-->Arch: grub-bios"
+    echo "-->Debian: grub-pc"
+    echo "-->Fedora: grub2"
+    echo -e "\e[00;33mSYSLINUX Packages:\e[00m"
+    echo "-->Arch: syslinux"
+    echo "-->Debian: syslinux extlinux"
+    echo "-->Fedora: syslinux syslinux-extlinux"
+    echo -e "\n\e[00;36mPress ENTER to continue.\e[00m" 
+    read -s a
+    clear
+  fi
 
-clear
-
-if [ -z "$BRFOLDER" ]; then
-
-echo "This script will make a tar backup image of your entire system."
-echo "-->Make sure you have enough free space."
-echo -e "-->Also make sure you have GRUB or SYSLINUX packages installed.
-\e[00;33mGRUB Packages:\e[00m
--->Arch: grub-bios
--->Debian: grub-pc
--->Fedora: grub2
-\e[00;33mSYSLINUX Packages:\e[00m
--->Arch: syslinux
--->Debian: syslinux extlinux
--->Fedora: syslinux syslinux-extlinux"
-echo -e "\n\e[00;36mPress ENTER to continue.\e[00m" 
-read -s a
-clear
-
-fi
-
-if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
+  if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
     echo -e "\e[00;31mDirectory does not exist.\e[00m"
     unset BRFOLDER
-fi
-
-while [ -z "$BRFOLDER" ]; do
-  echo -e "\n\e[00;36mThe default folder for creating the backup file is / (root)\nDo you want to save in the default folder?\e[00m" 
-  read -p "(Y/n): " an
-
-  if [ -n "$an" ]; then
-    def=$an
-  else
-    def="y"
   fi
+
+  while [ -z "$BRFOLDER" ]; do
+    echo -e "\n\e[00;36mThe default folder for creating the backup file is / (root)\nDo you want to save in the default folder?\e[00m" 
+    read -p "(Y/n): " an
+
+    if [ -n "$an" ]; then
+      def=$an
+    else
+      def="y"
+    fi
   
-  if [ $def = "y" ] || [ $def = "Y" ]; then
-    BRFOLDER="/"
-  elif [ $def = "n" ] || [ $def = "N" ]; then
-    while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-      echo -e "\n\e[00;36mInsert the folder path where the backup will be created\e[00m"
-      read -p "Path: " BRFOLDER
-      if [ ! -d "$BRFOLDER" ]; then
-        echo -e "\e[00;31mDirectory does not exist.\e[00m"
-      fi
-    done 
-  else
-    echo -e "\e[00;31mPlease enter a valid option\e[00m"
-  fi
-done 
+    if [ $def = "y" ] || [ $def = "Y" ]; then
+      BRFOLDER="/"
+    elif [ $def = "n" ] || [ $def = "N" ]; then
+      while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
+        echo -e "\n\e[00;36mInsert the folder path where the backup will be created\e[00m"
+        read -p "Path: " BRFOLDER
+        if [ ! -d "$BRFOLDER" ]; then
+          echo -e "\e[00;31mDirectory does not exist.\e[00m"
+        fi
+      done 
+    else
+      echo -e "\e[00;31mPlease enter a valid option\e[00m"
+    fi
+  done 
 
-while [ -z "$BRhome" ] ; do
-  echo -e "\n\e[00;36mDo you want to include /home?\e[00m"
-  read -p "(Y/n):" an
-
-  if [ -n "$an" ]; then
-    def=$an
-  else
-    def="y"
-  fi
-  
-  if [ $def = "y" ] || [ $def = "Y" ]; then
-    BRhome="y"
-  elif [ $def = "n" ] || [ $def = "N" ]; then
-    BRhome="n"
-  else
-    echo -e "\e[00;31mPlease enter a valid option\e[00m"
-  fi
-done  
-
-if [ $BRhome = "n" ]; then
-  while [ -z "$BRhidden" ] ; do
-    echo -e "\n\e[00;36mDo you want to keep hidden files and folders inside /home?\e[00m"
+  while [ -z "$BRhome" ] ; do
+    echo -e "\n\e[00;36mDo you want to include /home?\e[00m"
     read -p "(Y/n):" an
 
     if [ -n "$an" ]; then
@@ -196,94 +171,109 @@ if [ $BRhome = "n" ]; then
     else
       def="y"
     fi
-
+  
     if [ $def = "y" ] || [ $def = "Y" ]; then
-      BRhidden="y"
+      BRhome="y"
     elif [ $def = "n" ] || [ $def = "N" ]; then
-      BRhidden="n"
+      BRhome="n"
     else
       echo -e "\e[00;31mPlease enter a valid option\e[00m"
-    fi 
-  done
-fi
+    fi
+  done  
 
-while [ -z "$BRtar" ]; do
-  echo -e "\n\e[00;36mActivate --acls --selinux --xattrs options? (Required / Available only in Fedora)\e[00m"
-  read -p "(y/N):" an
+  if [ $BRhome = "n" ]; then
+    while [ -z "$BRhidden" ] ; do
+      echo -e "\n\e[00;36mDo you want to keep hidden files and folders inside /home?\e[00m"
+      read -p "(Y/n):" an
 
-  if [ -n "$an" ]; then
-    def=$an
-  else
-    def="n"
+      if [ -n "$an" ]; then
+        def=$an
+      else
+        def="y"
+      fi
+
+      if [ $def = "y" ] || [ $def = "Y" ]; then
+        BRhidden="y"
+      elif [ $def = "n" ] || [ $def = "N" ]; then
+        BRhidden="n"
+      else
+        echo -e "\e[00;31mPlease enter a valid option\e[00m"
+      fi 
+    done
   fi
+
+  while [ -z "$BRtar" ]; do
+    echo -e "\n\e[00;36mActivate --acls --selinux --xattrs options? (Required / Available only in Fedora)\e[00m"
+    read -p "(y/N):" an
+
+    if [ -n "$an" ]; then
+      def=$an
+    else
+      def="n"
+    fi
   
-  if [ $def = "y" ] || [ $def = "Y" ]; then
-    BRtar="y"
-  elif [ $def = "n" ] || [ $def = "N" ]; then
-    BRtar="n"
-  else
-    echo -e "\e[00;31mPlease enter a valid option\e[00m"
-  fi
-done  
+    if [ $def = "y" ] || [ $def = "Y" ]; then
+      BRtar="y"
+    elif [ $def = "n" ] || [ $def = "N" ]; then
+      BRtar="n"
+    else
+      echo -e "\e[00;31mPlease enter a valid option\e[00m"
+    fi
+  done  
 
-echo -e "\n\e[00;32mSUMMARY\e[00m"
-show_summary
+  echo -e "\n\e[00;32mSUMMARY\e[00m"
+  show_summary
 
-while [ -z "$BRcontinue" ]; do
-  echo -e "\n\e[00;36mDo you want continue?\e[00m"
-  read -p "(Y/n):" an
+  while [ -z "$BRcontinue" ]; do
+    echo -e "\n\e[00;36mDo you want continue?\e[00m"
+    read -p "(Y/n):" an
 
-  if [ -n "$an" ]; then
-    def=$an
-  else
-    def="y"
-  fi
+    if [ -n "$an" ]; then
+      def=$an
+    else
+      def="y"
+    fi
   
-  if [ $def = "y" ] || [ $def = "Y" ]; then
-    BRcontinue="y"
-  elif [ $def = "n" ] || [ $def = "N" ]; then
-    BRcontinue="n"
-    echo -e "\e[00;33mAborted by User\e[00m"
-    exit
-  else
-    echo -e "\e[00;31mPlease enter a valid option\e[00m"
-  fi
-done  
+    if [ $def = "y" ] || [ $def = "Y" ]; then
+      BRcontinue="y"
+    elif [ $def = "n" ] || [ $def = "N" ]; then
+      BRcontinue="n"
+      echo -e "\e[00;33mAborted by User\e[00m"
+      exit
+    else
+      echo -e "\e[00;31mPlease enter a valid option\e[00m"
+    fi
+  done  
 
-if [  "x$BRcontinue" = "xy" ]; then
+  if [  "x$BRcontinue" = "xy" ]; then
+    BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
+    BRFOLDER="${BRFOLDER_IN[@]}"
 
-BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
-BRFOLDER="${BRFOLDER_IN[@]}"
+    echo "==>Preparing..."
+    mkdir -p "$BRFOLDER"
+    touch "$BRFOLDER"/log
+    touch "$BRFOLDER"/errors
+    sleep 1
 
-echo "==>Preparing..."
-mkdir -p "$BRFOLDER"
-touch "$BRFOLDER"/log
-touch "$BRFOLDER"/errors
-sleep 1
+    echo "==>Creating backup image, please wait..."
+    BRFile="$BRFOLDER"/Backup-"`date +%A-%d-%m-%Y-%T`"
+    sleep 1
 
-echo "==>Creating backup image, please wait..."
-BRFile="$BRFOLDER"/Backup-"`date +%A-%d-%m-%Y-%T`"
+    run_tar
 
-sleep 1
-run_tar
-
-echo "==>Setting permissions"
-chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
-
-echo "==>Done. Backup image and logs saved in $BRFOLDER"
-
-fi  
+    echo "==>Setting permissions"
+    chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
+    echo "==>Done. Backup image and logs saved in $BRFOLDER"
+  fi  
 
 elif [ $BRinterface = "Dialog" ]; then
+  if [ -z $(which dialog 2> /dev/null) ];then
+    echo -e "\e[00;31mPackage dialog is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"
+    exit
+  fi
 
-if [ -z $(which dialog 2> /dev/null) ];then
-  echo -e "\e[00;31mPackage dialog is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"
- exit
-fi
-
-if [ -z "$BRFOLDER" ]; then
-
-dialog --no-ok --title "Info" --msgbox  "This script will make a tar backup image of your entire system.
+  if [ -z "$BRFOLDER" ]; then
+    dialog --no-ok --title "Info" --msgbox  "This script will make a tar backup image of your entire system.
 -->Make sure you have enough free space.
 -->Make sure you have GRUB or SYSLINUX packages installed.
 GRUB Packages:
@@ -296,86 +286,81 @@ SYSLINUX Packages:
 -->Fedora: syslinux syslinux-extlinux
 
 Press OK to continue." 18 100
+  fi
 
-fi
-
-if [ ! -d "$BRFOLDER" ] &&  [ -n "$BRFOLDER" ]; then
+  if [ ! -d "$BRFOLDER" ] &&  [ -n "$BRFOLDER" ]; then
     echo "Directory does not exist." | dialog --progressbox "ERROR" 30 70
     sleep 2
     unset BRFOLDER
-fi
+  fi
 
-while [ -z "$BRFOLDER" ]; do
-  dialog --title "Message" --yesno "The default folder for creating the backup file is / (root)
-Do you want to save in the default folder?" 8 50
-  if [ $? = "0" ]; then
-    BRFOLDER="/"
-  else
-  while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-    exec 3>&1 
-    BRFOLDER=$(dialog  --no-cancel --inputbox "Insert the folder path where the backup will be created" 8 50 2>&1 1>&3)  
-    if [ ! -d "$BRFOLDER" ]; then
-      echo "Directory does not exist." | dialog --progressbox "ERROR" 30 70
-      sleep 2
+  while [ -z "$BRFOLDER" ]; do
+    dialog --title "Message" --yesno "The default folder for creating the backup file is / (root). Do you want to save in the default folder?" 8 50
+    if [ $? = "0" ]; then
+      BRFOLDER="/"
+    else
+      while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
+        exec 3>&1 
+        BRFOLDER=$(dialog  --no-cancel --inputbox "Insert the folder path where the backup will be created" 8 50 2>&1 1>&3)  
+        if [ ! -d "$BRFOLDER" ]; then
+          echo "Directory does not exist." | dialog --progressbox "ERROR" 30 70
+          sleep 2
+        fi
+      done 
     fi
   done 
-   fi
-done 
 
-while [ -z "$BRhome" ]; do
-  dialog --title "Message"  --yesno "Do you want to include /home?" 8 50
-  if [ $? = "0" ]; then
-    BRhome="y"
-  else
-    BRhome="n"
-  fi
-done  
-
-if [ $BRhome = "n" ]; then
-  while [ -z "$BRhidden" ] ; do
-    dialog --title "Message"  --yesno "Do you want to keep hidden files and folders inside /home?" 8 50
+  while [ -z "$BRhome" ]; do
+    dialog --title "Message"  --yesno "Do you want to include /home?" 8 50
     if [ $? = "0" ]; then
-      BRhidden="y"
+      BRhome="y"
     else
-      BRhidden="n"
+      BRhome="n"
     fi
-  done
-fi
+  done  
 
-while [ -z "$BRtar" ]; do
-  dialog --title "Message"  --yesno "Activate --acls  --selinux --xattrs options? (Required / Available only in Fedora)" 8 50
-  if [ $? = 0 ]; then
-    BRtar="y"
-  else
-    BRtar="n"
+  if [ $BRhome = "n" ]; then
+    while [ -z "$BRhidden" ] ; do
+      dialog --title "Message"  --yesno "Do you want to keep hidden files and folders inside /home?" 8 50
+      if [ $? = "0" ]; then
+        BRhidden="y"
+      else
+        BRhidden="n"
+      fi
+    done
   fi
-done  
 
-dialog --title "Summary"  --yesno " 
-`show_summary`
+  while [ -z "$BRtar" ]; do
+    dialog --title "Message"  --yesno "Activate --acls  --selinux --xattrs options? (Required / Available only in Fedora)" 8 50
+    if [ $? = 0 ]; then
+      BRtar="y"
+    else
+      BRtar="n"
+    fi
+  done  
+
+  dialog --title "Summary"  --yesno "`show_summary`
 ------------------------------------
 Press Yes to continue or No to abort." 13 50
 
-if [ $? = "1" ]; then
-  exit
-fi
+  if [ $? = "1" ]; then
+    exit
+  fi
 
-BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
-BRFOLDER="${BRFOLDER_IN[@]}"
+  BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
+  BRFOLDER="${BRFOLDER_IN[@]}"
 
-mkdir -p "$BRFOLDER"
-touch "$BRFOLDER"/log
-touch "$BRFOLDER"/errors
+  mkdir -p "$BRFOLDER"
+  touch "$BRFOLDER"/log
+  touch "$BRFOLDER"/errors
+  sleep 1
 
-sleep 1
-BRFile="$BRFOLDER"/Backup-"`date +%A-%d-%m-%Y-%T`"
+  BRFile="$BRFOLDER"/Backup-"`date +%A-%d-%m-%Y-%T`"
 
-run_tar | dialog --progressbox "Creating backup image..." 30 70
+  run_tar | dialog --progressbox "Creating backup image..." 30 70
 
-chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
-
-dialog --title "Info" --msgbox  "Done. Backup image and logs saved in $BRFOLDER" 8 50
-
+  chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
+  dialog --title "Info" --msgbox  "Done. Backup image and logs saved in $BRFOLDER" 8 50
 else
   echo -e "\e[00;31mWrong interface name\n\e[00;36mAvailable options: CLI Dialog\e[00m"
 fi

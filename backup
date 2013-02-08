@@ -10,7 +10,9 @@ if [ $BRhome = "n" ]; then
   echo "Keep home's hidden files and folders = $BRhidden"
 fi
 
-echo "Fedora's tar extra options = $BRtar"
+if [ $BRtar = "y" ]; then
+  echo "Fefora detected: --acls --selinux --xattrs options activated"
+fi
 }
 
 run_tar () {
@@ -39,7 +41,7 @@ elif [ $BRhome = "y" ] &&  [ $BRtar = "y" ]; then
 fi
 }
 
-BRargs=`getopt -o "i:d:hfn" -l "interface:,directory:,exclude-home,fedora-tar,no-hidden,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:hn" -l "interface:,directory:,exclude-home,no-hidden,help" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ]; then
   echo "See $0 --help"
@@ -62,10 +64,6 @@ while true; do
       BRhome="n"
       shift
     ;;
-    -f|--fedora-tar) 
-      BRtar="y"
-      shift
-    ;;
     -n|--no-hidden)
       BRhidden="n"
       shift
@@ -76,7 +74,6 @@ while true; do
 -d, --directory		path for backup folder
 -h, --exclude-home	exclude /home
 -n  --no-hidden         dont keep home's hidden files and folders
--f, --fedora-tar	activate --acls  --selinux --xattrs options
 
 --help	print this page
 "
@@ -93,6 +90,12 @@ done
 if [ $(id -u) -gt 0 ]; then
   echo -e "\e[00;31mScript must run as root.\e[00m"
   exit
+fi
+
+if [ -f /etc/fedora-release ]; then
+  BRtar="y"
+else
+  BRtar="n"
 fi
 
 PS3="Choice: "
@@ -202,25 +205,6 @@ if [ $BRinterface = "CLI" ]; then
     done
   fi
 
-  while [ -z "$BRtar" ]; do
-    echo -e "\n\e[00;36mActivate --acls --selinux --xattrs options? (Required / Available only in Fedora)\e[00m"
-    read -p "(y/N):" an
-
-    if [ -n "$an" ]; then
-      def=$an
-    else
-      def="n"
-    fi
-  
-    if [ $def = "y" ] || [ $def = "Y" ]; then
-      BRtar="y"
-    elif [ $def = "n" ] || [ $def = "N" ]; then
-      BRtar="n"
-    else
-      echo -e "\e[00;31mPlease enter a valid option\e[00m"
-    fi
-  done  
-
   echo -e "\n\e[00;32mSUMMARY\e[00m"
   show_summary
 
@@ -329,15 +313,6 @@ Press OK to continue." 18 100
       fi
     done
   fi
-
-  while [ -z "$BRtar" ]; do
-    dialog --title "Message"  --yesno "Activate --acls  --selinux --xattrs options? (Required / Available only in Fedora)" 8 50
-    if [ $? = 0 ]; then
-      BRtar="y"
-    else
-      BRtar="n"
-    fi
-  done  
 
   dialog --title "Summary"  --yesno "`show_summary`
 ------------------------------------

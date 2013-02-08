@@ -1172,10 +1172,10 @@ if [ $BRinterface = "CLI" ]; then
       echo -e "\e[00;36mCompleted. Press OK to unmount and clean, then reboot your system.\e[00m"
     else
       echo -e "\nYou didnt choose a bootloader. This is the right time\nto install or update an existing one:"
-      echo  -e "\n-->Open a new terminal and as root type: chroot /mnt/target"
-      echo  -e "\n-->Install or update your bootloader"
-      echo  -e "\n-->Once you're done leave chroot by typing: exit"
-      echo  -e "\n-->Come back here and press ENTER to unmount everything." 
+      echo  -e "\n==>Open a new terminal and as root type: chroot /mnt/target"
+      echo  -e "\n==>Install or update your bootloader"
+      echo  -e "\n==>Once you're done leave chroot by typing: exit"
+      echo  -e "\n==>Come back here and press ENTER to unmount everything." 
     fi
     read -s a
 
@@ -1532,13 +1532,13 @@ Edit fstab ?"  30 70
   else
     dialog --title "Info" --msgbox  "You didnt choose a bootloader. This is the right time to install or update an existing one:
 
--->Open a new terminal and as root type: chroot /mnt/target
+==>Open a new terminal and as root type: chroot /mnt/target
 
--->Install or update your bootloader. 
+==>Install or update your bootloader. 
 
--->Once you're done leave chroot by typing: exit
+==>Once you're done leave chroot by typing: exit
    
--->Come back here and press OK to unmount everything."  17 100
+==>Come back here and press OK to unmount everything."  17 100
   fi
 
   sleep 2

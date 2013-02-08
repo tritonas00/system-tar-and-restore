@@ -277,7 +277,7 @@ fi
 elif [ $BRinterface = "Dialog" ]; then
 
 if [ -z $(which dialog 2> /dev/null) ];then
- echo "Package dialog is not installed. Install the package and re-run the script."
+  echo -e "\e[00;31mPackage dialog is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"
  exit
 fi
 

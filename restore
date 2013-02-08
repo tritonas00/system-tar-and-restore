@@ -850,7 +850,7 @@ if [ $BRinterface = "CLI" ]; then
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
 
         while [ -z "$BRsyslinux" ]; do
-          echo -e "\n\e[00;36mWhere to install Syslinux? Enter Q to quit \n\e[00m"
+          echo -e "\n\e[00;36mWhere to install Syslinux? Enter Q to quit\e[00m"
 	  select c in /dev/[hs]d[a-z]; do
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
               echo -e "\e[00;33mAborted by User\e[00m"

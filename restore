@@ -277,7 +277,7 @@ install_bootloader () {
       dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux
       cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
-      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
+      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT Debian" >> /mnt/target/boot/syslinux/syslinux.cfg
       if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
         echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
       else
@@ -307,7 +307,7 @@ install_bootloader () {
       dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRsyslinux
       cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
-      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT linux" >> /mnt/target/boot/syslinux/syslinux.cfg
+      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT Fedora" >> /mnt/target/boot/syslinux/syslinux.cfg
       if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
         echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
       else
@@ -1411,14 +1411,14 @@ Press OK to continue."  17 100
     if [ -n "$BRusername" ]; then
       ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
       if [ "$?" -ne "0" ]; then
-        echo ERROR
+        echo "Error downloading file"
         sleep 2
         rm /mnt/target/fullbackup.tgz
       fi ) | dialog --progressbox "Downloading file..." 30 70
     else
       ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
       if [ "$?" -ne "0" ]; then
-        echo ERROR
+        echo "Error downloading file"
         sleep 2
         rm /mnt/target/fullbackup.tgz
       fi ) | dialog --progressbox "Downloading file..." 30 70
@@ -1450,7 +1450,7 @@ Press OK to continue."  17 100
         BRpassword=$(dialog --no-cancel --passwordbox "Enter the password" 8 50 2>&1 1>&3)
         ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
         if [ "$?" -ne "0" ]; then
-          echo  ERROR
+          echo  "Error downloading file"
 	  sleep 2
           rm /mnt/target/fullbackup.tgz
         fi ) | dialog --progressbox "Downloading file..." 30 70
@@ -1458,7 +1458,7 @@ Press OK to continue."  17 100
       elif [ $REPLY = "URL" ]; then
         ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
         if [ "$?" -ne "0" ]; then
-          echo  ERROR
+          echo  "Error downloading file"
           sleep 2
           rm /mnt/target/fullbackup.tgz 
         fi ) | dialog --progressbox "Downloading file..." 30 70

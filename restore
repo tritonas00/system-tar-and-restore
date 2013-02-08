@@ -707,275 +707,203 @@ done
 
 if [ $BRinterface = "CLI" ]; then
 
-IFS=$'\n'
+  IFS=$'\n'
+  clear
 
-clear
-if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
+  if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
+    echo -e "This script will restore a backup image of your system\nin user defined partitions."
+    echo -e "\n==> Make sure you have created and formatted at least one partition\n    for root (/) and optionally partitions for /home and /boot."
+    echo -e "\n==> Also make sure that this system and the system you want\n    to restore have the same architecture (for chroot to work)."
+    echo -e "\n\e[00;36mPress ENTER to continue.\e[00m"
+    read -s a
+    clear
+  fi
 
-echo -e "This script will restore a backup image of your system 
-in user defined partitions.\n
-==> Make sure you have created and formatted at least one partition 
-    for root (/) and optionally partitions for /home and /boot.\n
-==> Also make sure that this system and the system you want
-    to restore have the same architecture (for chroot to work)."
-echo -e "\n\e[00;36mPress ENTER to continue.\e[00m"
-read -s a
-clear
-fi
+  echo -e "\n==>READING USER INPUT"
 
-echo -e "\n==>READING USER INPUT"
+  rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)
+  distrolist=(Arch Debian Fedora)
+  editorlist=(nano vi)
 
-rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)
-distrolist=(Arch Debian Fedora)
-editorlist=(nano vi)
-
-while [ -z "$BRdistro" ]; do
-  echo -e "\n\e[00;36mSelect distribution to restore or enter Q to quit\e[00m"
-  select c in ${distrolist[@]}; do
-    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo -e "\e[00;33mAborted by User\e[00m"
-      exit
-    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#distrolist[@]} ]; then
-      BRdistro=$c
-      echo -e "\e[00;32mYou selected $BRdistro\e[00m" 
-      break
-    else
-      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
-    fi
-  done  
-done
-
-while [ -z "$BRroot" ]; do
-  echo -e "\n\e[00;36mSelect the number of your root partition or enter Q to quit\e[00m"
-  select c in ${rootlist[@]}; do
-    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo -e "\e[00;33mAborted by User\e[00m"
-      exit
-    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
-      BRroot=(`echo $c | awk '{ print $1 }'`)
-      echo -e "\e[00;32mYou selected $BRroot as your root partition\e[00m" 
-      break
-    else
-      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
-    fi
-  done  
-done
-
-update_list
-
-if [ -z "$BRswap" ]; then
-  echo -e "\n\e[00;36mSelect the number of your swap partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
-  select c in ${list[@]}; do
-    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo -e "\e[00;33mAborted by User\e[00m"
-      exit
-    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
-      BRswap=(`echo $c | awk '{ print $1 }'`)
-      echo -e "\e[00;32mYou selected $BRswap as your swap partition\e[00m" 
-      break
-    elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-      echo  -e "\e[00;32mNo swap\e[00m"
-      break
-    else
-      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
-    fi
+  while [ -z "$BRdistro" ]; do
+    echo -e "\n\e[00;36mSelect distribution to restore or enter Q to quit\e[00m"
+    select c in ${distrolist[@]}; do
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "\e[00;33mAborted by User\e[00m"
+        exit
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#distrolist[@]} ]; then
+        BRdistro=$c
+        echo -e "\e[00;32mYou selected $BRdistro\e[00m" 
+        break
+      else
+        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+      fi
+    done  
   done
-fi
 
-update_list
-
-if [ -z "$BRhome" ]; then
-  echo -e "\n\e[00;36mSelect the number of your home partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
-  select c in ${list[@]}; do
-    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo -e "\e[00;33mAborted by User\e[00m"
-      exit
-    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
-      BRhome=(`echo $c | awk '{ print $1 }'`)
-      echo -e "\e[00;32mYou selected $BRhome as your home partition\e[00m" 
-      break
-    elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-      echo  -e "\e[00;32mNo seperate home\e[00m"
-      break
-    else
-      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
-    fi
+  while [ -z "$BRroot" ]; do
+    echo -e "\n\e[00;36mSelect the number of your root partition or enter Q to quit\e[00m"
+    select c in ${rootlist[@]}; do
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "\e[00;33mAborted by User\e[00m"
+        exit
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
+        BRroot=(`echo $c | awk '{ print $1 }'`)
+        echo -e "\e[00;32mYou selected $BRroot as your root partition\e[00m" 
+        break
+      else
+        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+      fi
+    done  
   done
-fi
 
-update_list
+  update_list
 
-if [ -z "$BRboot" ]; then
-  echo -e "\n\e[00;36mSelect the number of your boot partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
-  select c in ${list[@]}; do
-    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo -e "\e[00;33mAborted by User\e[00m"
-      exit
-    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
-      BRboot=(`echo $c | awk '{ print $1 }'`)
-      echo -e "\e[00;32mYou selected $BRboot as your boot partition\e[00m" 
-      break
-    elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-      echo  -e "\e[00;32mNo seperate boot\e[00m"
-      break
-    else
-      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
-    fi
-  done
-fi
-
-if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
-  echo -e "\n\e[00;36mSelect the number of your bootloader or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
-  select c in Grub Syslinux; do
-    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo -e "\e[00;33mAborted by User\e[00m"
-	exit
-elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-      echo -e "\n\e[00;33m--->WARNING! NO BOOTLOADER SELECTED<---\n\e[00m"
-      break 
-    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
-
-      while [ -z "$BRgrub" ]; do
-        echo -e "\n\e[00;36mWhere to install GRUB? Enter Q to quit\e[00m"
-	select c in /dev/[hs]d[a-z]; do
-	  if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo -e "\e[00;33mAborted by User\e[00m"
-	    exit
-	  elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
-	    BRgrub=(`echo $c | awk '{ print $1 }'`)
-            echo -e "\e[00;32mYou selected $BRgrub to install GRUB\e[00m" 
-	    break
-	  else
-      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
-	  fi
-	done
-      done
-      break
-
-    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
-      while [ -z "$BRsyslinux" ]; do
-        echo -e "\n\e[00;36mWhere to install Syslinux? Enter Q to quit \n\e[00m"
-	select c in /dev/[hs]d[a-z]; do
-	  if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo -e "\e[00;33mAborted by User\e[00m"
-	    exit
-	  elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
-	    BRsyslinux=(`echo $c | awk '{ print $1 }'`)
-            echo -e "\e[00;32mYou selected $BRgrub to install Syslinux\e[00m" 
-	    break
-	  else
-      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
-	  fi
-	done
-      done
-      break
-    else
-      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
-    fi
-  done
-fi 
-
-
-if [ "x$BRswap" = "x-1" ]; then
-	unset BRswap
-fi
-if [ "x$BRboot" = "x-1" ]; then
-	unset BRboot
-fi
-if [ "x$BRhome" = "x-1" ]; then
-	unset BRhome
-fi
-if [ "x$BRgrub" = "x-1" ]; then
-	unset BRgrub
-fi
-if [ "x$BRsyslinux" = "x-1" ]; then
-	unset BRsyslinux
-fi
-
-check_input
-
-mount_all
-
-BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
-
-if [ -n "$BRhome" ]; then
-  BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
-fi
-
-if [ -n "$BRboot" ]; then
-  BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
-fi
-
-if [  "x$BRfsystem" = "xbtrfs" ]; then
-  while [ -z "$BRrootsubvol" ]; do
-    echo -e "\n==>BTRFS root file system detected\n\e[00;36mDo you want to create a subvolume for root (/) ?\e[00m"
-    read -p "(Y/n):" an
-
-    if [ -n "$an" ]; then
-      btrfsdef=$an
-    else
-      btrfsdef="y"
-    fi
-  
-    if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
-      BRrootsubvol="y"
-    elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
-      BRrootsubvol="n"
-    else
-      echo -e "\e[00;31mPlease select a valid option\e[00m"
-    fi
-  done 
-
-  if [ "x$BRrootsubvol" = "xy" ]; then
-
-    while [ -z "$BRrootsubvolname" ]; do   
-      read -p "Enter subvolume name: " BRrootsubvolname
-      echo "Subvolume name: $BRrootsubvolname"
-      if [ -z "$BRrootsubvolname" ]; then
-        echo -e "\n\e[00;36mPlease enter a name for the subvolume.\e[00m"
+  if [ -z "$BRswap" ]; then
+    echo -e "\n\e[00;36mSelect the number of your swap partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
+    select c in ${list[@]}; do
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "\e[00;33mAborted by User\e[00m"
+        exit
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+        BRswap=(`echo $c | awk '{ print $1 }'`)
+        echo -e "\e[00;32mYou selected $BRswap as your swap partition\e[00m" 
+        break
+      elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
+        echo  -e "\e[00;32mNo swap\e[00m"
+        break
+      else
+        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
       fi
     done
- 
-    while [ -z "$BRhomesubvol" ]; do
-      echo -e "\n\e[00;36mCreate subvolume for /home inside $BRrootsubvolname ?\e[00m"
-      read -p "(Y/n) " an
+  fi
 
-      if [ -n "$an" ]; then
-        btrfsdef=$an
-      else
-        btrfsdef="y"
-      fi
-  
-      if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
-        BRhomesubvol="y"
-      elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
-        BRhomesubvol="n"
-      else
-      echo -e "\e[00;31mPlease select a valid option\e[00m"
-      fi
-    done 
+  update_list
 
-    while [ -z "$BRvarsubvol" ]; do
-      echo -e "\n\e[00;36mCreate subvolume for /var inside $BRrootsubvolname ?\e[00m"
-      read -p " (Y/n):" an
-
-      if [ -n "$an" ]; then
-        btrfsdef=$an
+  if [ -z "$BRhome" ]; then
+    echo -e "\n\e[00;36mSelect the number of your home partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
+    select c in ${list[@]}; do
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "\e[00;33mAborted by User\e[00m"
+        exit
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+        BRhome=(`echo $c | awk '{ print $1 }'`)
+        echo -e "\e[00;32mYou selected $BRhome as your home partition\e[00m" 
+        break
+      elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
+        echo  -e "\e[00;32mNo seperate home\e[00m"
+        break
       else
-        btrfsdef="y"
-      fi
-  
-      if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
-        BRvarsubvol="y"
-      elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
-        BRvarsubvol="n"
-      else
-      echo -e "\e[00;31mPlease select a valid option\e[00m"
+        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
       fi
     done
+  fi
 
-    while [ -z "$BRusrsubvol" ]; do
-      echo -e "\n\e[00;36mCreate subvolume for /usr inside $BRrootsubvolname ?\e[00m"
+  update_list
+
+  if [ -z "$BRboot" ]; then
+    echo -e "\n\e[00;36mSelect the number of your boot partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
+    select c in ${list[@]}; do
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "\e[00;33mAborted by User\e[00m"
+        exit
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+        BRboot=(`echo $c | awk '{ print $1 }'`)
+        echo -e "\e[00;32mYou selected $BRboot as your boot partition\e[00m" 
+        break
+      elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
+        echo  -e "\e[00;32mNo seperate boot\e[00m"
+        break
+      else
+        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+      fi
+    done
+  fi
+
+  if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
+    echo -e "\n\e[00;36mSelect the number of your bootloader or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
+    select c in Grub Syslinux; do
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "\e[00;33mAborted by User\e[00m"
+       	exit
+      elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
+        echo -e "\n\e[00;33m--->WARNING! NO BOOTLOADER SELECTED<---\n\e[00m"
+        break 
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
+
+        while [ -z "$BRgrub" ]; do
+          echo -e "\n\e[00;36mWhere to install GRUB? Enter Q to quit\e[00m"
+	  select c in /dev/[hs]d[a-z]; do
+	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+              echo -e "\e[00;33mAborted by User\e[00m"
+	      exit
+	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
+	      BRgrub=(`echo $c | awk '{ print $1 }'`)
+              echo -e "\e[00;32mYou selected $BRgrub to install GRUB\e[00m" 
+	      break
+	    else
+              echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+	    fi
+	  done
+        done
+        break
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
+
+        while [ -z "$BRsyslinux" ]; do
+          echo -e "\n\e[00;36mWhere to install Syslinux? Enter Q to quit \n\e[00m"
+	  select c in /dev/[hs]d[a-z]; do
+	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+              echo -e "\e[00;33mAborted by User\e[00m"
+	      exit
+	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
+	      BRsyslinux=(`echo $c | awk '{ print $1 }'`)
+              echo -e "\e[00;32mYou selected $BRgrub to install Syslinux\e[00m" 
+	      break
+	    else
+              echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+	    fi
+	  done
+        done
+        break
+      else
+        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+      fi
+    done
+  fi 
+
+
+  if [ "x$BRswap" = "x-1" ]; then
+    unset BRswap
+  fi
+  if [ "x$BRboot" = "x-1" ]; then
+    unset BRboot
+  fi
+  if [ "x$BRhome" = "x-1" ]; then
+    unset BRhome
+  fi
+  if [ "x$BRgrub" = "x-1" ]; then
+    unset BRgrub
+  fi
+  if [ "x$BRsyslinux" = "x-1" ]; then
+    unset BRsyslinux
+  fi
+
+  check_input
+  mount_all
+
+  BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
+
+  if [ -n "$BRhome" ]; then
+    BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
+  fi
+
+  if [ -n "$BRboot" ]; then
+    BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
+  fi
+
+  if [  "x$BRfsystem" = "xbtrfs" ]; then
+    while [ -z "$BRrootsubvol" ]; do
+      echo -e "\n==>BTRFS root file system detected\n\e[00;36mDo you want to create a subvolume for root (/) ?\e[00m"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -985,565 +913,615 @@ if [  "x$BRfsystem" = "xbtrfs" ]; then
       fi
   
       if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
-        BRusrsubvol="y"
+        BRrootsubvol="y"
       elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
-        BRusrsubvol="n"
+        BRrootsubvol="n"
       else
-      echo -e "\e[00;31mPlease select a valid option\e[00m"
+        echo -e "\e[00;31mPlease select a valid option\e[00m"
       fi
     done 
 
-    if [ "x$BRhomesubvol" = "x-1" ]; then
-	unset BRhomesubvol
-    fi
-    if [ "x$BRusrsubvol" = "x-1" ]; then
-	unset BRusrsubvol
-    fi
-    if [ "x$BRhome" = "x-1" ]; then
-	unset BRvarsubvol
-    fi
-    create_subvols
-    fi
-elif [  "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
-  echo -e "\e[00;33mNot a btrfs root filesystem, proceeding without subvolumes...\e[00m"
-  sleep 1
-fi
-
-echo -e "\n==>GETTING TAR IMAGE"
-
-if [ -n "$BRfile" ]; then
-  echo "==>Copying file..."
-  cp $BRfile "/mnt/target/fullbackup.tgz"
-fi
-
-if [ -n "$BRurl" ]; then
-  if [ -n "$BRusername" ]; then
-    wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2
-    if [ "$?" -ne "0" ]; then
-    echo -e "\e[00;31mError downloading file\e[00m"
-    rm /mnt/target/fullbackup.tgz
-    fi
-  else
-    wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
-    if [ "$?" -ne "0" ]; then
-      echo -e "\e[00;31mError downloading file\e[00m"
-      rm /mnt/target/fullbackup.tgz
-    fi
-  fi
-fi
-
-
-while [ ! -f /mnt/target/fullbackup.tgz ]; do
-  echo -e "\n\e[00;36mSelect an option or enter Q to quit\e[00m"
-  select c in "File" "URL" "Protected URL"; do
-    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-        echo -e "\e[00;33mAborted by User\e[00m"
-        if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-        unmount_only_in_subvol
-        remount_delete_subvols
+    if [ "x$BRrootsubvol" = "xy" ]; then
+      while [ -z "$BRrootsubvolname" ]; do   
+        read -p "Enter subvolume name: " BRrootsubvolname
+        echo "Subvolume name: $BRrootsubvolname"
+        if [ -z "$BRrootsubvolname" ]; then
+          echo -e "\n\e[00;36mPlease enter a name for the subvolume.\e[00m"
         fi
-      clean_unmount_in
-    elif [ $REPLY = "1" ]; then
-      while [ ! -f /mnt/target/fullbackup.tgz ]; do
-        echo -e "\n\e[00;36mEnter the path of the backup file\e[00m"
-	read -p "Path:" BRfile
-	if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-        echo -e "\e[00;31mFile not found\e[00m"
-	else
-           echo "==>Copying file..."
-           cp $BRfile "/mnt/target/fullbackup.tgz"
-       	fi
       done
-      break
-      
-    elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
-      echo -e "\n\e[00;36mEnter the URL for the backup file\e[00m"
-      read -p "URL:" BRurl
-      echo " "
-      if [ $REPLY = "3" ]; then
-	read -p "USERNAME: " BRusername
-	read -sp "PASSWORD: " BRpassword
-	echo " "
-	wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2
-        if [ "$?" -ne "0" ]; then
-          echo -e "\e[00;31mError downloading file\e[00m"
-	  rm /mnt/target/fullbackup.tgz
+ 
+      while [ -z "$BRhomesubvol" ]; do
+        echo -e "\n\e[00;36mCreate subvolume for /home inside $BRrootsubvolname ?\e[00m"
+        read -p "(Y/n) " an
+
+        if [ -n "$an" ]; then
+          btrfsdef=$an
+        else
+          btrfsdef="y"
         fi
-	break
+  
+        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+          BRhomesubvol="y"
+        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+          BRhomesubvol="n"
+        else
+          echo -e "\e[00;31mPlease select a valid option\e[00m"
+        fi
+      done 
+
+      while [ -z "$BRvarsubvol" ]; do
+        echo -e "\n\e[00;36mCreate subvolume for /var inside $BRrootsubvolname ?\e[00m"
+        read -p " (Y/n):" an
+
+        if [ -n "$an" ]; then
+          btrfsdef=$an
+        else
+          btrfsdef="y"
+        fi
+  
+        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+          BRvarsubvol="y"
+        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+          BRvarsubvol="n"
+        else
+          echo -e "\e[00;31mPlease select a valid option\e[00m"
+        fi
+      done
+
+      while [ -z "$BRusrsubvol" ]; do
+        echo -e "\n\e[00;36mCreate subvolume for /usr inside $BRrootsubvolname ?\e[00m"
+        read -p "(Y/n):" an
+
+        if [ -n "$an" ]; then
+          btrfsdef=$an
+        else
+          btrfsdef="y"
+        fi
+  
+        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+          BRusrsubvol="y"
+        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+          BRusrsubvol="n"
+        else
+          echo -e "\e[00;31mPlease select a valid option\e[00m"
+        fi
+      done 
+
+      if [ "x$BRhomesubvol" = "x-1" ]; then
+        unset BRhomesubvol
       fi
+      if [ "x$BRusrsubvol" = "x-1" ]; then
+        unset BRusrsubvol
+      fi
+      if [ "x$BRhome" = "x-1" ]; then
+        unset BRvarsubvol
+      fi
+      create_subvols
+    fi
+  elif [  "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
+    echo -e "\e[00;33mNot a btrfs root filesystem, proceeding without subvolumes...\e[00m"
+    sleep 1
+  fi
+
+  echo -e "\n==>GETTING TAR IMAGE"
+
+  if [ -n "$BRfile" ]; then
+    echo "==>Copying file..."
+    cp $BRfile "/mnt/target/fullbackup.tgz"
+  fi
+
+  if [ -n "$BRurl" ]; then
+    if [ -n "$BRusername" ]; then
+      wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2
+      if [ "$?" -ne "0" ]; then
+        echo -e "\e[00;31mError downloading file\e[00m"
+        rm /mnt/target/fullbackup.tgz
+      fi
+    else
       wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
       if [ "$?" -ne "0" ]; then
         echo -e "\e[00;31mError downloading file\e[00m"
-	rm /mnt/target/fullbackup.tgz 
+        rm /mnt/target/fullbackup.tgz
       fi
-      break
-    else
-      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
     fi
+  fi
+
+
+  while [ ! -f /mnt/target/fullbackup.tgz ]; do
+    echo -e "\n\e[00;36mSelect an option or enter Q to quit\e[00m"
+    select c in "File" "URL" "Protected URL"; do
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "\e[00;33mAborted by User\e[00m"
+        if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+          unmount_only_in_subvol
+          remount_delete_subvols
+        fi
+        clean_unmount_in
+      elif [ $REPLY = "1" ]; then
+        while [ ! -f /mnt/target/fullbackup.tgz ]; do
+          echo -e "\n\e[00;36mEnter the path of the backup file\e[00m"
+	  read -p "Path:" BRfile
+	  if [ ! -f $BRfile ] || [ -z $BRfile ]; then
+            echo -e "\e[00;31mFile not found\e[00m"
+	  else
+            echo "==>Copying file..."
+            cp $BRfile "/mnt/target/fullbackup.tgz"
+       	  fi
+        done
+        break
+      
+      elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
+        echo -e "\n\e[00;36mEnter the URL for the backup file\e[00m"
+        read -p "URL:" BRurl
+        echo " "
+        if [ $REPLY = "3" ]; then
+	  read -p "USERNAME: " BRusername
+	  read -sp "PASSWORD: " BRpassword
+	  echo " "
+	  wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2
+          if [ "$?" -ne "0" ]; then
+            echo -e "\e[00;31mError downloading file\e[00m"
+	    rm /mnt/target/fullbackup.tgz
+          fi
+	  break
+        fi
+        wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
+        if [ "$?" -ne "0" ]; then
+          echo -e "\e[00;31mError downloading file\e[00m"
+	  rm /mnt/target/fullbackup.tgz 
+        fi
+        break
+      else
+        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+      fi
+    done
   done
-done
 
-echo -e "\n\e[00;32mSUMMARY\e[00m"
-show_summary
-echo " "
+  echo -e "\n\e[00;32mSUMMARY\e[00m"
+  show_summary
+  echo " "
 
-while [ -z "$BRcontinue" ]; do
-  echo -e "\n\e[00;36mDo you want continue?\e[00m"
-  read -p "(Y/n):" an
+  while [ -z "$BRcontinue" ]; do
+    echo -e "\n\e[00;36mDo you want continue?\e[00m"
+    read -p "(Y/n):" an
 
-  if [ -n "$an" ]; then
-    def=$an
-  else
-    def="y"
-  fi
-  
-  if [ $def = "y" ] || [ $def = "Y" ]; then
-    BRcontinue="y"
-  elif [ $def = "n" ] || [ $def = "N" ]; then
-    echo -e "\e[00;33mAborted by User\e[00m"
-    BRcontinue="n"
-  else
-    echo -e "\e[00;31mPlease enter a valid option\e[00m"
-  fi
-done  
-
-if [  "x$BRcontinue" = "xn" ]; then
-   if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-   unmount_only_in_subvol
-   remount_delete_subvols 
-   fi
- clean_unmount_in
-elif [  "x$BRcontinue" = "xy" ]; then
-
-echo -e "\n==>EXTRACTING"
-tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING  
-sleep 1
-
-echo -e "\n==>MOUNTING /dev /proc /sys"
-mount_dev_proc_sys
-sleep 1 
-
-echo -e "\n==>GENERATING FSTAB"
-generate_fstab
-cat /mnt/target/etc/fstab
-sleep 1
-
-while [ -z "$BRedit" ] ; do
-echo " "
-read -p "Do you want to edit fstab ?  (Y/n): " an
-
-  if [ -n "$an" ]; then
-    def=$an
-  else
-    def="y"
-  fi
-  
-  if [ $def = "y" ] || [ $def = "Y" ]; then
-    BRedit="y"
-  elif [ $def = "n" ] || [ $def = "N" ]; then
-    BRedit="n"
-  else
-    echo -e "Please enter a valid option\n"
-  fi
-done
-
-if [ $BRedit = "y" ]; then
-
-while [ -z "$BReditor" ]; do
-  echo -e "\nSelect editor"
-  select c in ${editorlist[@]}; do
-       if [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#editorlist[@]} ]; then
-      BReditor=$c
-      $BReditor /mnt/target/etc/fstab
-     break
+    if [ -n "$an" ]; then
+      def=$an
     else
-      echo "Please select an editor"
+      def="y"
+    fi
+  
+    if [ $def = "y" ] || [ $def = "Y" ]; then
+      BRcontinue="y"
+    elif [ $def = "n" ] || [ $def = "N" ]; then
+      echo -e "\e[00;33mAborted by User\e[00m"
+      BRcontinue="n"
+    else
+      echo -e "\e[00;31mPlease enter a valid option\e[00m"
     fi
   done  
-done
-fi
 
-echo -e "\n==>REBUILDING INITRAMFS IMAGE"
-build_initramfs
-sleep 1
+  if [  "x$BRcontinue" = "xn" ]; then
+    if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+      unmount_only_in_subvol
+      remount_delete_subvols 
+    fi
+    clean_unmount_in
+  elif [  "x$BRcontinue" = "xy" ]; then
+    echo -e "\n==>EXTRACTING"
+    tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING  
+    sleep 1
 
-install_bootloader
-sleep 1
+    echo -e "\n==>MOUNTING /dev /proc /sys"
+    mount_dev_proc_sys
+    sleep 1 
 
-echo -e "\nGENERATING LOCALES"
-generate_locales
-sleep 1
+    echo -e "\n==>GENERATING FSTAB"
+    generate_fstab
+    cat /mnt/target/etc/fstab
+    sleep 1
 
-if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-  echo -e "\nCompleted. Press OK to unmount and clean, then reboot your system."
-else
-  echo -e "\nYou didnt choose a bootloader. This is the right time to install or update an existing one:
+    while [ -z "$BRedit" ] ; do
+      echo -e "\n\e[00;36mDo you want to edit fstab ?\e[00m"
+      read -p "(Y/n):" an
 
--->Open a new terminal and as root type: chroot /mnt/target
+      if [ -n "$an" ]; then
+        def=$an
+      else
+        def="y"
+      fi
+  
+      if [ $def = "y" ] || [ $def = "Y" ]; then
+        BRedit="y"
+      elif [ $def = "n" ] || [ $def = "N" ]; then
+        BRedit="n"
+      else
+        echo -e "\e[00;31mPlease select a valid option\e[00m"
+      fi
+    done
 
--->Install or update your bootloader. 
+    if [ $BRedit = "y" ]; then
+      while [ -z "$BReditor" ]; do
+        echo -e "\n\e[00;36mSelect editor\e[00m"
+        select c in ${editorlist[@]}; do
+          if [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#editorlist[@]} ]; then
+            BReditor=$c
+            $BReditor /mnt/target/etc/fstab
+            break
+          else
+            echo -e "\e[00;31mPlease select a valid option\e[00m"
+          fi
+        done  
+      done
+    fi
 
--->Once you're done leave chroot by typing: exit
-   
--->Come back here and press ENTER to unmount everything." 
-fi
-read -s a
+    echo -e "\n==>REBUILDING INITRAMFS IMAGE"
+    build_initramfs
+    sleep 1
 
-sleep 2
-clean_unmount_out
-fi
+    install_bootloader
+    sleep 1
+
+    echo -e "\nGENERATING LOCALES"
+    generate_locales
+    sleep 1
+
+    if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+      echo -e "\e[00;36mCompleted. Press OK to unmount and clean, then reboot your system.\e[00m"
+    else
+      echo -e "\nYou didnt choose a bootloader. This is the right time\nto install or update an existing one:"
+      echo  -e "\n-->Open a new terminal and as root type: chroot /mnt/target"
+      echo  -e "\n-->Install or update your bootloader"
+      echo  -e "\n-->Once you're done leave chroot by typing: exit"
+      echo  -e "\n-->Come back here and press ENTER to unmount everything." 
+    fi
+    read -s a
+
+    sleep 2
+    clean_unmount_out
+  fi
 
 elif [ $BRinterface = "Dialog" ]; then
 
-if [ -z $(which dialog 2> /dev/null) ];then
-  echo -e "\e[00;31mPackage dialog is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"
- exit
-fi
+  if [ -z $(which dialog 2> /dev/null) ];then
+    echo -e "\e[00;31mPackage dialog is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"
+    exit
+  fi
 
-if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
+  if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
+    dialog --no-ok --title "Info" --msgbox "This script will restore a backup image of your system in user defined partitions.
 
-dialog --no-ok --title "Info" --msgbox "This script will restore a backup image of your system in user defined partitions.
-
---> Make sure you have created and formatted at least one partition 
+==> Make sure you have created and formatted at least one partition 
     for root (/) and optionally partitions for /home and /boot.
 
---> Also make sure that this system and the system you want
+==> Also make sure that this system and the system you want
     to restore have the same architecture (for chroot to work).
 
 Press OK to continue."  17 100
+  fi
 
-fi
+  exec 3>&1
 
-exec 3>&1
+  while [ -z "$BRdistro" ]; do
+    BRdistro=$(dialog --cancel-label Quit --menu "Select distribution to restore." 12 35 12   Arch Linux  Debian Linux  Fedora Linux 2>&1 1>&3)  
+    if [ $? = "1" ]; then
+      BRdistro=" "
+      exit
+    fi 
+  done
 
-while [ -z "$BRdistro" ]; do
-  BRdistro=$(dialog --cancel-label Quit --menu "Select distribution to restore." 12 35 12   Arch Linux  Debian Linux  Fedora Linux 2>&1 1>&3)  
-  if [ $? = "1" ]; then
-    BRdistro=" "
-    exit
-  fi 
-done
+  while [ -z "$BRroot" ]; do
+    BRroot=$(dialog --cancel-label Quit --menu "Select root partition." 14 40 14 `for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+    if [ $? = "1" ]; then
+      BRroot=" "
+      exit
+    fi 
+  done
 
-while [ -z "$BRroot" ]; do
-  BRroot=$(dialog --cancel-label Quit --menu "Select root partition." 14 40 14 `for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
-  if [ $? = "1" ]; then
-    BRroot=" "
-    exit
-  fi 
-done
+  if [ -z "$BRswap" ]; then
+    BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select swap partition." 14 40 14 `part_list ` 2>&1 1>&3)
+    if [ $? = "3" ]; then
+      BRswap=" "
+      exit
+    fi 
+  fi
 
-if [ -z "$BRswap" ]; then
-  BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select swap partition." 14 40 14 `part_list ` 2>&1 1>&3)
-  if [ $? = "3" ]; then
-    BRswap=" "
-    exit
-  fi 
-fi
+  if [ -z "$BRhome" ]; then
+    BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select home partition." 14 40 14 `part_list` 2>&1 1>&3)
+    if [ $? = "3" ]; then
+      BRhome=" "
+      exit
+    fi 
+  fi
 
-if [ -z "$BRhome" ]; then
-  BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select home partition." 14 40 14 `part_list` 2>&1 1>&3)
-  if [ $? = "3" ]; then
-    BRhome=" "
-    exit
-  fi 
-fi
+  if [ -z "$BRboot" ]; then
+    BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select boot partition." 14 40 14 `part_list` 2>&1 1>&3)
+    if [ $? = "3" ]; then
+      BRboot=" "
+      exit
+    fi 
+  fi
 
-if [ -z "$BRboot" ]; then
-  BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select boot partition." 14 40 14 `part_list` 2>&1 1>&3)
-  if [ $? = "3" ]; then
-    BRboot=" "
-    exit
-  fi 
-fi
-
-
-if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
-  REPLY=$(dialog  --cancel-label Skip --extra-button --extra-label Quit  --menu "Select bootloader." 12 35 12  Grub Bootloader Syslinux Bootloader 2>&1 1>&3)
+  if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
+    REPLY=$(dialog  --cancel-label Skip --extra-button --extra-label Quit  --menu "Select bootloader." 12 35 12  Grub Bootloader Syslinux Bootloader 2>&1 1>&3)
     if [ $? = "3" ]; then
       exit
     fi 
-  if [ $REPLY = "Grub" ]; then
-     while [ -z "$BRgrub" ]; do
-       BRgrub=$(dialog --cancel-label Quit  --menu "Select disk for Grub. " 12 40 12 `for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
-       if [ $? = "1" ]; then
-       BRgrub=" "
-        exit
-       fi 
-     done
-  elif [ $REPLY = "Syslinux" ]; then
-     while [ -z "$BRsyslinux" ]; do
-       BRsyslinux=$(dialog --cancel-label Quit  --menu "Select disk for Syslinux." 12 40 12 `for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
-       if [ $? = "1" ]; then
-       BRsyslinux=" "
-        exit
-       fi 
-     done
-  fi
-fi 
+    if [ $REPLY = "Grub" ]; then
+      while [ -z "$BRgrub" ]; do
+        BRgrub=$(dialog --cancel-label Quit  --menu "Select disk for Grub. " 12 40 12 `for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+        if [ $? = "1" ]; then
+          BRgrub=" "
+          exit
+        fi 
+      done
+    elif [ $REPLY = "Syslinux" ]; then
+      while [ -z "$BRsyslinux" ]; do
+        BRsyslinux=$(dialog --cancel-label Quit  --menu "Select disk for Syslinux." 12 40 12 `for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+        if [ $? = "1" ]; then
+          BRsyslinux=" "
+          exit
+        fi 
+      done
+    fi
+  fi 
 
-if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-  echo "NO BOOTLOADER SELECTED" | dialog --progressbox "WARNING" 30 70
-  sleep 2
-fi
+  if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
+    echo "NO BOOTLOADER SELECTED" | dialog --progressbox "WARNING" 30 70
+    sleep 2
+  fi
    
-if [ "x$BRswap" = "x-1" ] || [[ "x$BRswap" == *"Error"* ]]; then
-	unset BRswap
-fi
-if [ "x$BRboot" = "x-1" ] || [[ "x$BRboot" == *"Error"* ]]; then
-	unset BRboot
-fi
-if [ "x$BRhome" = "x-1" ] || [[ "x$BRhome" == *"Error"* ]]; then
-	unset BRhome
-fi
-if [ "x$BRgrub" = "x-1" ]; then
-	unset BRgrub
-fi
-if [ "x$BRsyslinux" = "x-1" ]; then
-	unset BRsyslinux
-fi
+  if [ "x$BRswap" = "x-1" ] || [[ "x$BRswap" == *"Error"* ]]; then
+    unset BRswap
+  fi
+  if [ "x$BRboot" = "x-1" ] || [[ "x$BRboot" == *"Error"* ]]; then
+    unset BRboot
+  fi
+  if [ "x$BRhome" = "x-1" ] || [[ "x$BRhome" == *"Error"* ]]; then
+    unset BRhome
+  fi
+  if [ "x$BRgrub" = "x-1" ]; then
+    unset BRgrub
+  fi
+  if [ "x$BRsyslinux" = "x-1" ]; then
+    unset BRsyslinux
+  fi
 
-distrolist=(Arch Debian Fedora)
+  distrolist=(Arch Debian Fedora)
+  check_input
 
-check_input
+  mount_all | dialog --progressbox "Working..." 30 70
 
-mount_all | dialog --progressbox "Working..." 30 70
+  BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
 
-BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
+  if [   -n "$BRhome" ]; then
+    BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
+  fi
 
-if [   -n "$BRhome" ]; then
-  BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
-fi
+  if [   -n "$BRboot" ]; then
+    BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
+  fi
 
-if [   -n "$BRboot" ]; then
-  BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
-fi
+  sleep 2
 
-sleep 2
+  if [  "x$BRfsystem" = "xbtrfs" ]; then
+    while [ -z "$BRrootsubvol" ]; do
+      dialog --title "Message"  --yesno "BTRFS root file system detected. Do you want to create a subvolume for root (/) ?" 8 50
 
-if [  "x$BRfsystem" = "xbtrfs" ]; then
-  while [ -z "$BRrootsubvol" ]; do
-    dialog --title "Message"  --yesno "BTRFS root file system detected. Do you want to create a subvolume for root (/) ?" 8 50
-
-    if [ "$?" = "0" ]; then
-      btrfsdef="y"
-    elif [ "$?" = "1" ]; then
-      btrfsdef="n"
-    fi
-  
-    if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
-      BRrootsubvol="y"
-    elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
-      BRrootsubvol="n"
-    fi
-  done 
-
-  if [ "x$BRrootsubvol" = "xy" ]; then
-
-    while [ -z "$BRrootsubvolname" ]; do   
-      BRrootsubvolname=$(dialog  --no-cancel --inputbox "Enter subvolume name" 8 50 2>&1 1>&3)
-      if [ -z "$BRrootsubvolname" ]; then
-        echo "Please enter a name for the subvolume." | dialog --progressbox "ERROR" 30 70
-        sleep 2
+      if [ "$?" = "0" ]; then
+        btrfsdef="y"
+      elif [ "$?" = "1" ]; then
+        btrfsdef="n"
       fi
-    done
+  
+      if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+        BRrootsubvol="y"
+      elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+        BRrootsubvol="n"
+      fi
+    done 
+
+    if [ "x$BRrootsubvol" = "xy" ]; then
+      while [ -z "$BRrootsubvolname" ]; do   
+        BRrootsubvolname=$(dialog  --no-cancel --inputbox "Enter subvolume name" 8 50 2>&1 1>&3)
+        if [ -z "$BRrootsubvolname" ]; then
+          echo "Please enter a name for the subvolume." | dialog --progressbox "ERROR" 30 70
+          sleep 2
+        fi
+      done
  
-    while [ -z "$BRhomesubvol" ]; do
-      dialog --title "Message"  --yesno "Create subvolume for /home inside $BRrootsubvolname ?" 8 50
+      while [ -z "$BRhomesubvol" ]; do
+        dialog --title "Message"  --yesno "Create subvolume for /home inside $BRrootsubvolname ?" 8 50
 
-      if [ "$?" = "0" ]; then
-        btrfsdef="y"
-      elif [ "$?" = "1" ]; then
-        btrfsdef="n"
-      fi
+        if [ "$?" = "0" ]; then
+          btrfsdef="y"
+        elif [ "$?" = "1" ]; then
+          btrfsdef="n"
+        fi
   
-      if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
-        BRhomesubvol="y"
-      elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
-        BRhomesubvol="n"
-      fi
-    done 
+        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+          BRhomesubvol="y"
+        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+          BRhomesubvol="n"
+        fi
+      done 
 
-    while [ -z "$BRvarsubvol" ]; do
-      dialog --title "Message"  --yesno "Create subvolume for /var inside $BRrootsubvolname ?" 8 50
+      while [ -z "$BRvarsubvol" ]; do
+        dialog --title "Message"  --yesno "Create subvolume for /var inside $BRrootsubvolname ?" 8 50
 
-      if [ "$?" = "0" ]; then
-        btrfsdef="y"
-      elif [ "$?" = "1" ]; then
-        btrfsdef="n"
-      fi
+        if [ "$?" = "0" ]; then
+          btrfsdef="y"
+        elif [ "$?" = "1" ]; then
+          btrfsdef="n"
+        fi
   
-      if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
-        BRvarsubvol="y"
-      elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
-        BRvarsubvol="n"
-      fi
-    done
+        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+          BRvarsubvol="y"
+        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+          BRvarsubvol="n"
+        fi
+      done
 
-    while [ -z "$BRusrsubvol" ]; do
-      dialog --title "Message"  --yesno "Create subvolume for /usr inside $BRrootsubvolname ?" 8 50
+      while [ -z "$BRusrsubvol" ]; do
+        dialog --title "Message"  --yesno "Create subvolume for /usr inside $BRrootsubvolname ?" 8 50
 
-      if [ "$?" = "0" ]; then
-        btrfsdef="y"
-      elif [ "$?" = "1" ]; then
-        btrfsdef="n"
-      fi
+        if [ "$?" = "0" ]; then
+          btrfsdef="y"
+        elif [ "$?" = "1" ]; then
+          btrfsdef="n"
+        fi
   
-      if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
-        BRusrsubvol="y"
-      elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
-        BRusrsubvol="n"
-      fi
-    done 
+        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+          BRusrsubvol="y"
+        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+          BRusrsubvol="n"
+        fi
+      done 
 
-    if [ "x$BRhomesubvol" = "x-1" ]; then
+      if [ "x$BRhomesubvol" = "x-1" ]; then
 	unset BRhomesubvol
-    fi
-    if [ "x$BRusrsubvol" = "x-1" ]; then
+      fi
+      if [ "x$BRusrsubvol" = "x-1" ]; then
 	unset BRusrsubvol
-    fi
-    if [ "x$BRhome" = "x-1" ]; then
+      fi
+      if [ "x$BRhome" = "x-1" ]; then
 	unset BRvarsubvol
+      fi
+      create_subvols 2>&1 | dialog --progressbox "Working..." 30 70
+      sleep 2
     fi
-    create_subvols 2>&1 | dialog --progressbox "Working..." 30 70
-    sleep 2
+  elif [  "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
+    echo "Not a btrfs root filesystem, proceeding without subvolumes..." | dialog --progressbox "ERROR" 30 70
+    sleep 3
   fi
-elif [  "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
-  echo "Not a btrfs root filesystem, proceeding without subvolumes..." | dialog --progressbox "ERROR" 30 70
-  sleep 3
-fi
 
-echo -e "\n==>GETTING TAR IMAGE"
+  echo -e "\n==>GETTING TAR IMAGE"
 
-if [ -n "$BRfile" ]; then
-  if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-    echo "File not found." | dialog --progressbox "ERROR" 30 70
-    sleep 2
-  else
-(   echo "Copying file please wait..." 
-    cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
-  fi
-fi
-
-if [ -n "$BRurl" ]; then
-  if [ -n "$BRusername" ]; then
- (  wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
-    if [ "$?" -ne "0" ]; then
-      echo ERROR
+  if [ -n "$BRfile" ]; then
+    if [ ! -f $BRfile ] || [ -z $BRfile ]; then
+      echo "File not found." | dialog --progressbox "ERROR" 30 70
       sleep 2
-      rm /mnt/target/fullbackup.tgz
-    fi ) | dialog --progressbox "Downloading file..." 30 70
-  else
-  ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
-    if [ "$?" -ne "0" ]; then
-      echo ERROR
-      sleep 2
-      rm /mnt/target/fullbackup.tgz
-    fi ) | dialog --progressbox "Downloading file..." 30 70
+    else
+      ( echo "Copying file please wait..." 
+      cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
+    fi
   fi
-fi
 
-while [ ! -f /mnt/target/fullbackup.tgz ]; do
-
-REPLY=$(dialog  --cancel-label Quit --menu "Select backup file. Choose an option." 13 50 13  File "local file" URL "remote file" Protected "protected server" 2>&1 1>&3)
-
-if [ $? = "1" ]; then
-    if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-      unmount_only_in_subvol
-      remount_delete_subvols
-     fi
-     clean_unmount_in
-elif [ $REPLY = "File" ]; then
-  BRfile=$(dialog  --no-cancel --inputbox "Enter the path of the backup file" 8 50 2>&1 1>&3)
-  if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-    echo "File not found" | dialog --progressbox "ERROR" 30 70
-    sleep 2
-  else
-(   echo "Copying file please wait..."
-    cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
-  fi
-  
-elif [ $REPLY = "URL" ] || [ $REPLY = "Protected" ]; then
-  BRurl=$(dialog  --no-cancel --inputbox "Enter the URL for the backup file" 8 50 2>&1 1>&3)
-  if [  $REPLY = "Protected" ]; then
-    BRusername=$(dialog --no-cancel --inputbox "Enter the username" 8 50 2>&1 1>&3)
-    BRpassword=$(dialog --no-cancel --inputbox "Enter the password" 8 50 2>&1 1>&3)
- (  wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
+  if [ -n "$BRurl" ]; then
+    if [ -n "$BRusername" ]; then
+      ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
       if [ "$?" -ne "0" ]; then
-        echo  ERROR
-	sleep 2
+        echo ERROR
+        sleep 2
         rm /mnt/target/fullbackup.tgz
       fi ) | dialog --progressbox "Downloading file..." 30 70
+    else
+      ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
+      if [ "$?" -ne "0" ]; then
+        echo ERROR
+        sleep 2
+        rm /mnt/target/fullbackup.tgz
+      fi ) | dialog --progressbox "Downloading file..." 30 70
+    fi
+  fi
 
-  elif [ $REPLY = "URL" ]; then
-  ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
-     if [ "$?" -ne "0" ]; then
-       echo  ERROR
-       sleep 2
-       rm /mnt/target/fullbackup.tgz 
-     fi ) | dialog --progressbox "Downloading file..." 30 70
-  fi 
-fi
+  while [ ! -f /mnt/target/fullbackup.tgz ]; do
+    REPLY=$(dialog  --cancel-label Quit --menu "Select backup file. Choose an option." 13 50 13  File "local file" URL "remote file" Protected "protected server" 2>&1 1>&3)
+    if [ $? = "1" ]; then
+      if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+        unmount_only_in_subvol
+        remount_delete_subvols
+      fi
+      clean_unmount_in
+    elif [ $REPLY = "File" ]; then
+      BRfile=$(dialog  --no-cancel --inputbox "Enter the path of the backup file" 8 50 2>&1 1>&3)
+        if [ ! -f $BRfile ] || [ -z $BRfile ]; then
+          echo "File not found" | dialog --progressbox "ERROR" 30 70
+          sleep 2
+        else
+          ( echo "Copying file please wait..."
+          cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
+        fi
+  
+    elif [ $REPLY = "URL" ] || [ $REPLY = "Protected" ]; then
+      BRurl=$(dialog  --no-cancel --inputbox "Enter the URL for the backup file" 8 50 2>&1 1>&3)
+      if [  $REPLY = "Protected" ]; then
+        BRusername=$(dialog --no-cancel --inputbox "Enter the username" 8 50 2>&1 1>&3)
+        BRpassword=$(dialog --no-cancel --inputbox "Enter the password" 8 50 2>&1 1>&3)
+        ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
+        if [ "$?" -ne "0" ]; then
+          echo  ERROR
+	  sleep 2
+          rm /mnt/target/fullbackup.tgz
+        fi ) | dialog --progressbox "Downloading file..." 30 70
 
-done
+      elif [ $REPLY = "URL" ]; then
+        ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
+        if [ "$?" -ne "0" ]; then
+          echo  ERROR
+          sleep 2
+          rm /mnt/target/fullbackup.tgz 
+        fi ) | dialog --progressbox "Downloading file..." 30 70
+      fi 
+    fi
+  done
 
-if [ -z $def ]; then
-
-dialog --title "Summary"  --yesno "
-`show_summary`
+  if [ -z $def ]; then
+    dialog --title "Summary"  --yesno "`show_summary`
 ------------------------------------------
 Press Yes to continue, or No to abort." 19 60
 
- if [ $? = "0" ]; then
-   def="y"
- elif [ $? = "1" ]; then
-   def="n"
- fi
-fi
+    if [ $? = "0" ]; then
+      def="y"
+    elif [ $? = "1" ]; then
+      def="n"
+    fi
+  fi
 
-if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
-   if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-   unmount_only_in_subvol
-   remount_delete_subvols 
-   fi
- clean_unmount_in
-fi  
+  if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
+    if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+      unmount_only_in_subvol
+      remount_delete_subvols 
+    fi
+    clean_unmount_in
+  fi  
 
-( tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING ) | dialog --progressbox "EXTRACTING" 30 70
-sleep 2
+  ( tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING ) | dialog --progressbox "EXTRACTING" 30 70
+  sleep 2
 
-mount_dev_proc_sys 2>&1 | dialog --progressbox "MOUNTING /dev /proc /sys" 30 70
-sleep 2
+  mount_dev_proc_sys 2>&1 | dialog --progressbox "MOUNTING /dev /proc /sys" 30 70
+  sleep 2
 
-generate_fstab
-dialog --yesno   "
+  generate_fstab
+  dialog --yesno   "
 GENERATING FSTAB
 `cat /mnt/target/etc/fstab`
 __________________________________________________________________
 
 Edit fstab ?"  30 70
 
-if [ $? = "0" ]; then
- while [ -z "$BRdeditor" ]; do
-   BRdeditor=$(dialog --no-cancel  --menu "Select editor." 12 35 12   nano editor vi editor 2>&1 1>&3)  
-   $BRdeditor /mnt/target/etc/fstab
- done
-fi
+  if [ $? = "0" ]; then
+    while [ -z "$BRdeditor" ]; do
+      BRdeditor=$(dialog --no-cancel  --menu "Select editor." 12 35 12   nano editor vi editor 2>&1 1>&3)  
+      $BRdeditor /mnt/target/etc/fstab
+    done
+  fi
 
-build_initramfs 2>&1 | dialog --progressbox "REBUILDING INITRAMFS IMAGE" 30 70
-sleep 2
-
-if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-  install_bootloader 2>&1 | dialog --progressbox "INSTALLING AND CONFIGURING BOOTLOADER" 30 70
+  build_initramfs 2>&1 | dialog --progressbox "REBUILDING INITRAMFS IMAGE" 30 70
   sleep 2
-fi
 
-generate_locales 2>&1 | dialog --progressbox "GENERATING LOCALES" 30 70
-sleep 2
+  if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+    install_bootloader 2>&1 | dialog --progressbox "INSTALLING AND CONFIGURING BOOTLOADER" 30 70
+    sleep 2
+  fi
 
-if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-  dialog --title "Info" --msgbox  "Completed. Press OK to unmount and clean, then reboot your system."  10 50
-else
-  dialog --title "Info" --msgbox  "You didnt choose a bootloader. This is the right time to install or update an existing one:
+  generate_locales 2>&1 | dialog --progressbox "GENERATING LOCALES" 30 70
+  sleep 2
+
+  if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+    dialog --title "Info" --msgbox  "Completed. Press OK to unmount and clean, then reboot your system."  10 50
+  else
+    dialog --title "Info" --msgbox  "You didnt choose a bootloader. This is the right time to install or update an existing one:
 
 -->Open a new terminal and as root type: chroot /mnt/target
 
@@ -1552,10 +1530,10 @@ else
 -->Once you're done leave chroot by typing: exit
    
 -->Come back here and press OK to unmount everything."  17 100
-fi
+  fi
 
-sleep 2
-clean_unmount_out
+  sleep 2
+  clean_unmount_out
 
 else
   echo -e "\e[00;31mWrong interface name\n\e[00;36mAvailable options: CLI Dialog\e[00m"

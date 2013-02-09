@@ -1072,7 +1072,13 @@ if [ $BRinterface = "CLI" ]; then
         echo " "
         if [ $REPLY = "3" ]; then
 	  read -p "USERNAME: " BRusername
-	  read -sp "PASSWORD: " BRpassword
+          x='x' 
+          echo -n "PASSWORD: " 
+          while [ "$x" ]; do 
+            read -sn1 x 
+            BRpassword=$BRpassword$x 
+            echo -n "*" 
+          done 
 	  echo " "
 	  wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2
           if [ "$?" -ne "0" ]; then
@@ -1492,7 +1498,7 @@ Press OK to continue."  20 100
       BRurl=$(dialog  --no-cancel --inputbox "Enter the URL for the backup file" 8 50 2>&1 1>&3)
       if [  $REPLY = "Protected" ]; then
         BRusername=$(dialog --no-cancel --inputbox "Enter the username" 8 50 2>&1 1>&3)
-        BRpassword=$(dialog --no-cancel --passwordbox "Enter the password" 8 50 2>&1 1>&3)
+        BRpassword=$(dialog --no-cancel --insecure --passwordbox "Enter the password" 8 50 2>&1 1>&3)
         ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
         if [ "$?" -ne "0" ]; then
           echo  "Error downloading file"

@@ -167,7 +167,10 @@ mount_dev_proc_sys () {
 
 generate_fstab () {
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
-  echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /mnt/target/etc/fstab 
+  echo > /mnt/target/etc/fstab
+  if [ $BRdistro = Arch ]; then
+    echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" >> /mnt/target/etc/fstab 
+  fi  
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo "$BRroot   /  btrfs compress=lzo,subvol=$BRrootsubvolname,noatime 0 0" >> /mnt/target/etc/fstab
@@ -278,11 +281,11 @@ install_bootloader () {
       dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux
       cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
-      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT Debian" >> /mnt/target/boot/syslinux/syslinux.cfg
+      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT debian" >> /mnt/target/boot/syslinux/syslinux.cfg
       if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL debian\n\tMENU LABEL Debian\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
       else
-        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL debian\n\tMENU LABEL Debian\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
       fi
 
     elif [ $BRdistro = Fedora ]; then
@@ -308,11 +311,11 @@ install_bootloader () {
       dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRsyslinux
       cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
-      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT Fedora" >> /mnt/target/boot/syslinux/syslinux.cfg
+      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT fedora" >> /mnt/target/boot/syslinux/syslinux.cfg
       if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+       echo -e "LABEL fedora\n\tMENU LABEL Fedora\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
       else
-        echo -e "LABEL linux\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL fedora\n\tMENU LABEL Fedora\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
       fi
     fi
   fi
@@ -1189,7 +1192,7 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
 
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-      echo -e "\e[00;36mCompleted. Press OK to unmount and clean, then reboot your system.\e[00m"
+      echo -e "\e[00;36mCompleted. Press ENTER to unmount and clean, then reboot your system.\e[00m"
     else
       echo -e "\nYou didn't choose a bootloader. This is the right time\nto install or update an existing one:"
       echo  -e "\n==>Open a new terminal and as root type: chroot /mnt/target"

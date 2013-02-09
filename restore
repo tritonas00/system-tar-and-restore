@@ -1433,14 +1433,12 @@ Press OK to continue."  20 100
     sleep 3
   fi
 
-  echo -e "\n==>GETTING TAR IMAGE"
-
   if [ -n "$BRfile" ]; then
     if [ ! -f $BRfile ] || [ -z $BRfile ]; then
       echo "File not found." | dialog --progressbox "ERROR" 30 70
       sleep 2
     else
-      ( echo "Copying file please wait..." 
+      ( echo "==>Copying file please wait..." 
       cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
     fi
   fi
@@ -1463,8 +1461,8 @@ Press OK to continue."  20 100
     fi
   fi
 
-  ( if [ -f /mnt/target/fullbackup.tgz ]; then
-      echo "==>Checking file..." 
+    if [ -f /mnt/target/fullbackup.tgz ]; then
+    ( echo "==>Checking file..." 
       tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
       if [ "$?" = "0" ]; then
         echo  "File appears OK"
@@ -1473,8 +1471,8 @@ Press OK to continue."  20 100
         echo  "Error while reading file"
         sleep 2
         rm /mnt/target/fullbackup.tgz 2>&1
-      fi 
-  fi ) | dialog --progressbox "Working..." 30 70
+      fi ) | dialog --progressbox "Working..." 30 70
+  fi 
 
   while [ ! -f /mnt/target/fullbackup.tgz ]; do
     REPLY=$(dialog  --cancel-label Quit --menu "Select backup file. Choose an option." 13 50 13  File "local file" URL "remote file" Protected "protected server" 2>&1 1>&3)
@@ -1490,7 +1488,7 @@ Press OK to continue."  20 100
           echo "File not found" | dialog --progressbox "ERROR" 30 70
           sleep 2
         else
-          ( echo "Copying file please wait..."
+          ( echo "==>Copying file please wait..."
           cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
         fi
   

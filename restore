@@ -1506,7 +1506,7 @@ Press OK to continue."  20 100
         fi ) | dialog --progressbox "Downloading file..." 30 70
       fi 
     fi
-      ( echo "==>Checking file..." 
+    ( echo "==>Checking file..." 
       tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
       if [ "$?" = "0" ]; then
         echo  "File appears OK"

@@ -166,6 +166,7 @@ mount_dev_proc_sys () {
 }
 
 generate_fstab () {
+  cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" > /mnt/target/etc/fstab 
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then

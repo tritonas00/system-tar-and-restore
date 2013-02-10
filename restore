@@ -159,13 +159,13 @@ show_summary() {
   echo "Backup File: $BRfile $BRurl"
 }
 
-mount_dev_proc_sys () {
+mount_dev_proc_sys() {
   mount --bind /dev /mnt/target/dev
   mount -t proc /proc /mnt/target/proc
   mount -t sysfs /sys /mnt/target/sys 2>&1 && echo SUCCESS  || echo FAILED
 }
 
-generate_fstab () {
+generate_fstab() {
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   echo > /mnt/target/etc/fstab
   if [ $BRdistro = Arch ]; then
@@ -202,7 +202,7 @@ generate_fstab () {
   rm /mnt/target/etc/fstab2
 }
 
-build_initramfs () {
+build_initramfs() {
   if [ $BRdistro = Arch ]; then
     chroot /mnt/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
 
@@ -231,7 +231,7 @@ build_initramfs () {
   fi
 }
 
-install_bootloader () {
+install_bootloader() {
   if [ -n "$BRgrub" ]; then
     echo -e "\n==>INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [ $BRdistro = Arch ]; then
@@ -321,7 +321,7 @@ install_bootloader () {
   fi
 }
 
-generate_locales () {
+generate_locales() {
   if [ $BRdistro = Fedora ]; then
     chroot /mnt/target localedef -f UTF-8 -i en_US en_US.UTF-8 2>&1 && echo SUCCESS || echo WARNING
   else
@@ -464,7 +464,7 @@ clean_unmount_out() {
   exit
 }
 
-create_subvols () {
+create_subvols() {
   echo -e "\n==>CREATING SUBVOLUMES"
   btrfs subvolume create /mnt/target/$BRrootsubvolname
   if [ "x$BRhomesubvol" = "xy" ]; then
@@ -1438,7 +1438,7 @@ Press OK to continue."  20 100
       echo "File not found." | dialog --progressbox "ERROR" 30 70
       sleep 2
     else
-      ( echo "==>Copying file please wait..." 
+      ( echo "==>Copying file..." 
       cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
     fi
   fi
@@ -1488,7 +1488,7 @@ Press OK to continue."  20 100
           echo "File not found" | dialog --progressbox "ERROR" 30 70
           sleep 2
         else
-          ( echo "==>Copying file please wait..."
+          ( echo "==>Copying file..."
           cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
         fi
   

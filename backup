@@ -15,7 +15,7 @@ if [ $BRtar = "y" ]; then
 fi
 }
 
-run_tar () {
+run_tar() {
 if [ $BRhome = "n" ] &&  [ $BRhidden = "y" ] &&  [ $BRtar = "n" ]; then
   tar cvpf  "$BRFile".tar  --sparse --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/*  --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
   echo "==>Locating hidden files and folders inside /home, please wait..." 

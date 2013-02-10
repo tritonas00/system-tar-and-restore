@@ -1588,7 +1588,7 @@ Edit fstab ?"  30 70
 
 ==>Once you're done leave chroot by typing: exit
    
-==>Come back here and press OK to unmount everything."  17 100
+==>Come back here and press OK to unmount everything."  15 100
   fi
 
   sleep 2

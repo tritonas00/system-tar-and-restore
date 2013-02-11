@@ -1201,10 +1201,10 @@ if [ $BRinterface = "CLI" ]; then
       echo -e "\e[00;36mCompleted. Press ENTER to unmount and clean, then reboot your system.\e[00m"
     else
       echo -e "\nSince you haven't chosen a bootloader, this is the right\ntime to install (or update an existing) one. To do so:"
-      echo  -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
-      echo  -e "\n==>Install or update your bootloader"
-      echo  -e "\n==>When done, for leaving chroot, enter: exit"
-      echo  -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices." 
+      echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
+      echo -e "\n==>Install or update your bootloader"
+      echo -e "\n==>When done, for leaving chroot, enter: exit"
+      echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices." 
     fi
     read -s a
 

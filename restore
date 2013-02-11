@@ -1235,7 +1235,7 @@ elif [ $BRinterface = "Dialog" ]; then
 ==> Fedora backups can only be restored from a Fedora enviroment,
     due to extra tar options.
 
-Press OK to continue."  20 100
+Press OK to continue."  22 80
   fi
 
   exec 3>&1
@@ -1590,7 +1590,7 @@ to install (or update an existing) one. To do so:
 ==>When done, for leaving chroot, enter: exit
    
 ==>Finally, return to this window and press OK to unmount 
-   all remaining (engaged) devices."  15 100
+   all remaining (engaged) devices."  17 70
   fi
 
   sleep 2

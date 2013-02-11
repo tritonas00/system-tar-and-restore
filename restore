@@ -1033,10 +1033,10 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
   if [ -f /mnt/target/fullbackup.tgz ]; then
-    echo "==>Checking file..."
+    echo "==>Checking archive..."
     tar tf /mnt/target/fullbackup.tgz 1>/dev/null
     if [ "$?" = "0" ]; then
-      echo -e "\e[00;32mFile appears OK\e[00m"
+      echo -e "\e[00;32mArchive appears OK\e[00m"
     else 
       echo -e "\e[00;31mError while reading file\e[00m"
       rm /mnt/target/fullbackup.tgz
@@ -1097,10 +1097,10 @@ if [ $BRinterface = "CLI" ]; then
         echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
       fi
     done
-    echo "==>Checking file..."
+    echo "==>Checking archive..."
     tar tf /mnt/target/fullbackup.tgz 1>/dev/null
     if [ "$?" = "0" ]; then
-      echo -e "\e[00;32mFile appears OK\e[00m"
+      echo -e "\e[00;32mArchive appears OK\e[00m"
     else 
       echo -e "\e[00;31mError while reading file\e[00m"
       rm /mnt/target/fullbackup.tgz
@@ -1465,7 +1465,7 @@ Press OK to continue."  20 100
     ( echo "==>Checking file..." 
       tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
       if [ "$?" = "0" ]; then
-        echo  "File appears OK"
+        echo  "Archive appears OK"
         sleep 2
       else 
         echo  "Error while reading file"
@@ -1516,7 +1516,7 @@ Press OK to continue."  20 100
     ( echo "==>Checking file..." 
       tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
       if [ "$?" = "0" ]; then
-        echo  "File appears OK"
+        echo  "Archive appears OK"
         sleep 2
       else 
         echo  "Error while reading file"

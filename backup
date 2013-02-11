@@ -273,7 +273,7 @@ SYSLINUX Packages:
 -->Debian: syslinux extlinux
 -->Fedora: syslinux syslinux-extlinux
 
-Press OK to continue." 20 100
+Press OK to continue." 22 70
   fi
 
   if [ ! -d "$BRFOLDER" ] &&  [ -n "$BRFOLDER" ]; then

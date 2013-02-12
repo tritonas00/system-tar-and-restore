@@ -88,7 +88,7 @@ while true; do
 done
 
 if [ $(id -u) -gt 0 ]; then
-  echo -e "\e[00;31mScript must run as root.\e[00m"
+  echo -e "\e[00;31mScript must run as root\e[00m"
   exit
 fi
 
@@ -136,7 +136,7 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
   if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
-    echo -e "\e[00;31mDirectory does not exist.\e[00m"
+    echo -e "\e[00;31mDirectory does not exist\e[00m"
     unset BRFOLDER
   fi
 

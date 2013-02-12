@@ -675,7 +675,7 @@ if [ -n "$BRrootsubvol" ]; then
 fi
 
 if [ $(id -u) -gt 0 ]; then
-  echo -e "\e[00;31mScript must run as root.\e[00m"
+  echo -e "\e[00;31mScript must run as root\e[00m"
   exit
 fi
 

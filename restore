@@ -1462,7 +1462,7 @@ Press OK to continue."  22 80
   fi
 
   if [ -f /mnt/target/fullbackup.tgz ]; then
-    ( echo "==>Checking file..." 
+    ( echo "==>Checking archive..." 
       tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
       if [ "$?" = "0" ]; then
         echo  "Archive appears OK"
@@ -1514,7 +1514,7 @@ Press OK to continue."  22 80
       fi 
     fi
     if [ -f /mnt/target/fullbackup.tgz ]; then
-      ( echo "==>Checking file..." 
+      ( echo "==>Checking archive..." 
         tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
         if [ "$?" = "0" ]; then
           echo  "Archive appears OK"

@@ -679,10 +679,13 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
+DEFAULTIFS=$IFS
+IFS=$'\n'
 if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
   echo -e "\e[00;31mFile not found\e[00m"
   exit
 fi
+IFS=$DEFAULTIFS
 
 if [ -n "$BRdistro" ]; then
   distrolist=(Arch Debian Fedora)

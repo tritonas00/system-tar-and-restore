@@ -11,17 +11,6 @@ update_list() {
 }
 
 check_input() {
-  if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
-    echo -e "\e[00;31mFile not found\e[00m"
-    exit
-  fi
-
-  for i in ${distrolist[@]}; do if [[ $i == ${BRdistro} ]] ; then BRdistrocheck="true" ; fi; done
-  if [ ! "$BRdistrocheck" = "true" ]; then
-    echo -e "\e[00;31mWrong distribution name\n\e[00;36mAvailable options: Arch Debian Fedora\e[00m"
-    exit
-  fi
-
   for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
   if [ ! "$BRrootcheck" = "true" ]; then
     echo -e "\e[00;31mWrong root partition\e[00m"
@@ -690,6 +679,20 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
+if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
+  echo -e "\e[00;31mFile not found\e[00m"
+  exit
+fi
+
+if [ -n "$BRdistro" ]; then
+  distrolist=(Arch Debian Fedora)
+  for i in ${distrolist[@]}; do if [[ $i == ${BRdistro} ]] ; then BRdistrocheck="true" ; fi; done
+  if [ ! "$BRdistrocheck" = "true" ]; then
+    echo -e "\e[00;31mWrong distribution name\n\e[00;36mAvailable options: Arch Debian Fedora\e[00m"
+    exit
+  fi
+fi
+
 PS3="Choice: "
 
 interfaces=(CLI Dialog)
@@ -727,7 +730,7 @@ if [ $BRinterface = "CLI" ]; then
 
   echo -e "\n==>READING USER INPUT"
 
-  rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)
+  rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`) 
   distrolist=(Arch Debian Fedora)
   editorlist=(nano vi)
 

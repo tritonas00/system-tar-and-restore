@@ -679,24 +679,24 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
+PS3="Choice: "
 DEFAULTIFS=$IFS
 IFS=$'\n'
+
 if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
   echo -e "\e[00;31mFile not found\e[00m"
   exit
 fi
-IFS=$DEFAULTIFS
 
-if [ -n "$BRdistro" ]; then
-  distrolist=(Arch Debian Fedora)
+distrolist=(Arch Debian Fedora)
+
+if [ -n "$BRdistro" ]; then  
   for i in ${distrolist[@]}; do if [[ $i == ${BRdistro} ]] ; then BRdistrocheck="true" ; fi; done
   if [ ! "$BRdistrocheck" = "true" ]; then
     echo -e "\e[00;31mWrong distribution name\n\e[00;36mAvailable options: Arch Debian Fedora\e[00m"
     exit
   fi
 fi
-
-PS3="Choice: "
 
 interfaces=(CLI Dialog)
 
@@ -716,8 +716,6 @@ while [ -z "$BRinterface" ]; do
 done
 
 if [ $BRinterface = "CLI" ]; then
-
-  IFS=$'\n'
   clear
 
   if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
@@ -734,7 +732,6 @@ if [ $BRinterface = "CLI" ]; then
   echo -e "\n==>READING USER INPUT"
 
   rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`) 
-  distrolist=(Arch Debian Fedora)
   editorlist=(nano vi)
 
   while [ -z "$BRdistro" ]; do
@@ -1218,6 +1215,7 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
 elif [ $BRinterface = "Dialog" ]; then
+  IFS=$DEFAULTIFS
 
   if [ -z $(which dialog 2> /dev/null) ];then
     echo -e "\e[00;31mPackage dialog is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"

@@ -11,6 +11,11 @@ update_list() {
 }
 
 check_input() {
+  if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
+    echo -e "\e[00;31mFile not found\e[00m"
+    exit
+  fi
+
   for i in ${distrolist[@]}; do if [[ $i == ${BRdistro} ]] ; then BRdistrocheck="true" ; fi; done
   if [ ! "$BRdistrocheck" = "true" ]; then
     echo -e "\e[00;31mWrong distribution name\n\e[00;36mAvailable options: Arch Debian Fedora\e[00m"
@@ -85,11 +90,6 @@ check_input() {
       echo -e "\e[00;31mWrong disk for syslinux\e[00m"
       exit
     fi
-fi
-
-if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
-  echo -e "\e[00;31mFile not found\e[00m"
-  exit
 fi
 }
 
@@ -1434,13 +1434,8 @@ Press OK to continue."  22 80
   fi
 
   if [ -n "$BRfile" ]; then
-    if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-      echo "File not found." | dialog --progressbox "ERROR" 30 70
-      sleep 2
-    else
-      ( echo "==>Copying file..." 
-      cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
-    fi
+    ( echo "==>Copying file..." 
+    cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
   fi
 
   if [ -n "$BRurl" ]; then
@@ -1461,7 +1456,7 @@ Press OK to continue."  22 80
     fi
   fi
 
-    if [ -f /mnt/target/fullbackup.tgz ]; then
+  if [ -f /mnt/target/fullbackup.tgz ]; then
     ( echo "==>Checking file..." 
       tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
       if [ "$?" = "0" ]; then
@@ -1513,16 +1508,18 @@ Press OK to continue."  22 80
         fi ) | dialog --progressbox "Downloading file..." 30 70
       fi 
     fi
-    ( echo "==>Checking file..." 
-      tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
-      if [ "$?" = "0" ]; then
-        echo  "Archive appears OK"
-        sleep 2
-      else 
-        echo  "Error while reading file"
-        sleep 2
-        rm /mnt/target/fullbackup.tgz 2>&1
-      fi ) | dialog --progressbox "Working..." 30 70
+    if [ -f /mnt/target/fullbackup.tgz ]; then
+      ( echo "==>Checking file..." 
+        tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
+        if [ "$?" = "0" ]; then
+          echo  "Archive appears OK"
+          sleep 2
+        else 
+          echo  "Error while reading file"
+          sleep 2
+          rm /mnt/target/fullbackup.tgz 2>&1
+        fi ) | dialog --progressbox "Working..." 30 70
+    fi
   done
 
   if [ -z $def ]; then

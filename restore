@@ -24,14 +24,16 @@ check_input() {
     BRSTOP=y
   fi
 
-  for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
-  if [ ! "$BRrootcheck" = "true" ]; then
-    echo -e "\e[00;31mWrong root partition:\e[00m $BRroot"
-    BRSTOP=y
-  fi
-  if grep -wq $BRroot  /proc/mounts; then
-    echo -e "\e[00;33m$BRroot is already mounted as $(df -m | grep "$BRroot" | awk '{ print $6 }'), refusing to use it\e[00m"
-    BRSTOP=y
+  if [ -n "$BRroot" ]; then
+    for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
+    if [ ! "$BRrootcheck" = "true" ]; then
+      echo -e "\e[00;31mWrong root partition:\e[00m $BRroot"
+      BRSTOP=y
+    fi
+    if grep -wq $BRroot  /proc/mounts; then
+      echo -e "\e[00;33m$BRroot is already mounted as $(df -m | grep "$BRroot" | awk '{ print $6 }'), refusing to use it\e[00m"
+      BRSTOP=y
+    fi
   fi
 
   if [ -n "$BRswap" ]; then
@@ -651,7 +653,11 @@ while true; do
   esac
 done
 
+DEFAULTIFS=$IFS
+IFS=$'\n'
 
+distrolist=(Arch Debian Fedora)
+check_input
 
 if [ -n "$BRroot" ]; then
   if [ -z "$BRswap" ]; then
@@ -722,7 +728,6 @@ done
 
 if [ $BRinterface = "CLI" ]; then
   clear
-  IFS=$'\n'
 
   if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     echo -e "This script will restore a backup image of your system\nin user defined partitions."
@@ -735,8 +740,7 @@ if [ $BRinterface = "CLI" ]; then
     clear
   fi
 
-  rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`) 
-  distrolist=(Arch Debian Fedora)
+  rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)   
   editorlist=(nano vi)
 
   while [ -z "$BRdistro" ]; do
@@ -1221,6 +1225,7 @@ if [ $BRinterface = "CLI" ]; then
 
 elif [ $BRinterface = "Dialog" ]; then
   clear
+  IFS=$DEFAULTIFS
 
   if [ -z $(which dialog 2> /dev/null) ];then
     echo -e "\e[00;31mPackage dialog is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"

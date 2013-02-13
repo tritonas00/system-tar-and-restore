@@ -1059,13 +1059,15 @@ if [ $BRinterface = "CLI" ]; then
       wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2
       if [ "$?" -ne "0" ]; then
         echo -e "\e[00;31mError downloading file\e[00m"
-        rm /mnt/target/fullbackup.tgz
+        echo -e "\e[00;31mWrong URL or network is down\e[00m"
+        rm /mnt/target/fullbackup.tgz 2>/dev/null
       fi
     else
       wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
       if [ "$?" -ne "0" ]; then
         echo -e "\e[00;31mError downloading file\e[00m"
-        rm /mnt/target/fullbackup.tgz
+        echo -e "\e[00;31mWrong URL or network is down\e[00m"
+        rm /mnt/target/fullbackup.tgz 2>/dev/null
       fi
     fi
   fi
@@ -1076,7 +1078,7 @@ if [ $BRinterface = "CLI" ]; then
     if [ "$?" = "0" ]; then
       echo -e "\e[00;32mArchive appears OK\e[00m"
     else 
-      echo -e "\e[00;31mError while reading file\e[00m"
+      echo -e "\e[00;31mError reading archive\e[00m"
       rm /mnt/target/fullbackup.tgz
     fi 
   fi
@@ -1119,14 +1121,16 @@ if [ $BRinterface = "CLI" ]; then
 	  wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2
           if [ "$?" -ne "0" ]; then
             echo -e "\e[00;31mError downloading file\e[00m"
-	    rm /mnt/target/fullbackup.tgz
+            echo -e "\e[00;31mWrong URL or network is down\e[00m"
+	    rm /mnt/target/fullbackup.tgz 2>/dev/null
           fi
 	  break
         fi
         wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
         if [ "$?" -ne "0" ]; then
           echo -e "\e[00;31mError downloading file\e[00m"
-	  rm /mnt/target/fullbackup.tgz 
+          echo -e "\e[00;31mWrong URL or network is down\e[00m"
+	  rm /mnt/target/fullbackup.tgz 2>/dev/null
         fi
         break
       else
@@ -1139,7 +1143,7 @@ if [ $BRinterface = "CLI" ]; then
       if [ "$?" = "0" ]; then
         echo -e "\e[00;32mArchive appears OK\e[00m"
       else 
-        echo -e "\e[00;31mError while reading file\e[00m"
+        echo -e "\e[00;31mError reading archive\e[00m"
         rm /mnt/target/fullbackup.tgz
       fi 
     fi
@@ -1482,15 +1486,17 @@ Press OK to continue."  22 80
       ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
       if [ "$?" -ne "0" ]; then
         echo "Error downloading file"
+        echo "Wrong URL or network is down"
         sleep 2
-        rm /mnt/target/fullbackup.tgz
+        rm /mnt/target/fullbackup.tgz 2>/dev/null
       fi ) | dialog --progressbox "Downloading file..." 30 70
     else
       ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
       if [ "$?" -ne "0" ]; then
         echo "Error downloading file"
+        echo "Wrong URL or network is down"
         sleep 2
-        rm /mnt/target/fullbackup.tgz
+        rm /mnt/target/fullbackup.tgz 2>/dev/null
       fi ) | dialog --progressbox "Downloading file..." 30 70
     fi
   fi
@@ -1502,7 +1508,7 @@ Press OK to continue."  22 80
         echo  "Archive appears OK"
         sleep 2
       else 
-        echo  "Error while reading file"
+        echo  "Error reading archive"
         sleep 2
         rm /mnt/target/fullbackup.tgz 2>&1
       fi ) | dialog --progressbox "Working..." 30 70
@@ -1534,16 +1540,18 @@ Press OK to continue."  22 80
         ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
         if [ "$?" -ne "0" ]; then
           echo  "Error downloading file"
+          echo "Wrong URL or network is down"
 	  sleep 2
-          rm /mnt/target/fullbackup.tgz
+          rm /mnt/target/fullbackup.tgz 2>/dev/null
         fi ) | dialog --progressbox "Downloading file..." 30 70
 
       elif [ $REPLY = "URL" ]; then
         ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
         if [ "$?" -ne "0" ]; then
           echo  "Error downloading file"
+          echo "Wrong URL or network is down"
           sleep 2
-          rm /mnt/target/fullbackup.tgz 
+          rm /mnt/target/fullbackup.tgz 2>/dev/null
         fi ) | dialog --progressbox "Downloading file..." 30 70
       fi 
     fi
@@ -1554,7 +1562,7 @@ Press OK to continue."  22 80
           echo  "Archive appears OK"
           sleep 2
         else 
-          echo  "Error while reading file"
+          echo  "Error reading archive"
           sleep 2
           rm /mnt/target/fullbackup.tgz 2>&1
         fi ) | dialog --progressbox "Working..." 30 70

@@ -24,6 +24,11 @@ check_input() {
     BRSTOP=y
   fi
 
+  if [ -n "$BRfile" ] && [ -n "$BRurl" ]; then
+    echo -e "\e[00;31mDont use both local file and url at the same time\e[00m"
+    BRSTOP=y
+  fi
+
   if [ -n "$BRroot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
@@ -1037,7 +1042,7 @@ if [ $BRinterface = "CLI" ]; then
   echo -e "\n==>GETTING TAR IMAGE"
   
   if [ -n "$BRfile" ]; then
-    echo "==>Copying file..."
+    echo "Copying file..."
     cp $BRfile "/mnt/target/fullbackup.tgz"
   fi
 
@@ -1058,7 +1063,7 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
   if [ -f /mnt/target/fullbackup.tgz ]; then
-    echo "==>Checking archive..."
+    echo "Checking archive..."
     tar tf /mnt/target/fullbackup.tgz 1>/dev/null
     if [ "$?" = "0" ]; then
       echo -e "\e[00;32mArchive appears OK\e[00m"
@@ -1084,7 +1089,7 @@ if [ $BRinterface = "CLI" ]; then
         if [ ! -f $BRfile ] || [ -z $BRfile ]; then
           echo -e "\e[00;31mFile not found\e[00m"
 	else
-          echo "==>Copying file..."
+          echo "Copying file..."
           cp $BRfile "/mnt/target/fullbackup.tgz"                  
 	fi        
         break
@@ -1121,7 +1126,7 @@ if [ $BRinterface = "CLI" ]; then
       fi
     done
     if [ -f /mnt/target/fullbackup.tgz ]; then
-      echo "==>Checking archive..."
+      echo "Checking archive..."
       tar tf /mnt/target/fullbackup.tgz 1>/dev/null
       if [ "$?" = "0" ]; then
         echo -e "\e[00;32mArchive appears OK\e[00m"
@@ -1460,7 +1465,7 @@ Press OK to continue."  22 80
   fi
 
   if [ -n "$BRfile" ]; then
-    ( echo "==>Copying file..." 
+    ( echo "Copying file..." 
     cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
   fi
 
@@ -1483,7 +1488,7 @@ Press OK to continue."  22 80
   fi
 
   if [ -f /mnt/target/fullbackup.tgz ]; then
-    ( echo "==>Checking archive..." 
+    ( echo "Checking archive..." 
       tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
       if [ "$?" = "0" ]; then
         echo  "Archive appears OK"
@@ -1509,7 +1514,7 @@ Press OK to continue."  22 80
           echo "File not found" | dialog --progressbox "ERROR" 30 70
           sleep 2
         else
-          ( echo "==>Copying file..."
+          ( echo "Copying file..."
           cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox "Working..." 30 70
         fi
   
@@ -1535,7 +1540,7 @@ Press OK to continue."  22 80
       fi 
     fi
     if [ -f /mnt/target/fullbackup.tgz ]; then
-      ( echo "==>Checking archive..." 
+      ( echo "Checking archive..." 
         tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
         if [ "$?" = "0" ]; then
           echo  "Archive appears OK"

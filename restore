@@ -11,74 +11,96 @@ update_list() {
 }
 
 check_input() {
+  if [ -n "$BRdistro" ]; then  
+    for i in ${distrolist[@]}; do if [[ $i == ${BRdistro} ]] ; then BRdistrocheck="true" ; fi; done
+    if [ ! "$BRdistrocheck" = "true" ]; then
+      echo -e "\e[00;31mWrong distribution name: \e[00m$BRdistro\n\e[00;36mAvailable options: Arch Debian Fedora\e[00m"
+      BRSTOP=y
+    fi
+  fi
+
+  if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
+    echo -e "\e[00;31mFile not found:\e[00m $BRfile"
+    BRSTOP=y
+  fi
+
   for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
   if [ ! "$BRrootcheck" = "true" ]; then
-    echo -e "\e[00;31mWrong root partition\e[00m"
-    exit
+    echo -e "\e[00;31mWrong root partition:\e[00m $BRroot"
+    BRSTOP=y
   fi
-  if grep -q $BRroot /proc/mounts; then
+  if grep -wq $BRroot  /proc/mounts; then
     echo -e "\e[00;33m$BRroot is already mounted as $(df -m | grep "$BRroot" | awk '{ print $6 }'), refusing to use it\e[00m"
-    exit
+    BRSTOP=y
   fi
 
   if [ -n "$BRswap" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
-      echo -e "\e[00;31mWrong swap partition\e[00m"
-      exit
+      echo -e "\e[00;31mWrong swap partition:\e[00m $BRswap"
+      BRSTOP=y
     fi
     if [ "$BRswap" == "$BRroot" ]; then
       echo -e "\e[00;33m$BRswap already used\e[00m"
-      exit
+      BRSTOP=y
     fi
   fi
 
   if [ -n "$BRhome" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
      if [ ! "$BRhomecheck" = "true" ]; then
-    echo -e "\e[00;31mWrong home partition\e[00m"
-       exit
+    echo -e "\e[00;31mWrong home partition:\e[00m $BRhome"
+       BRSTOP=y
      fi
      if [ "$BRhome" == "$BRroot" ] || [ "$BRhome" == "$BRswap" ]; then
       echo -e "\e[00;33m$BRhome already used\e[00m"
-       exit
+       BRSTOP=y
      fi
-    if grep -q $BRhome /proc/mounts; then
+    if grep -wq $BRhome /proc/mounts; then
       echo -e "\e[00;33m$BRhome is already mounted as $(df -m | grep "$BRhome" | awk '{ print $6 }'), refusing to use it\e[00m"
-      exit
+      BRSTOP=y
     fi
   fi
 
   if [ -n "$BRboot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     if [ ! "$BRbootcheck" = "true" ]; then
-    echo -e "\e[00;31mWrong boot partition\e[00m"
-      exit
+    echo -e "\e[00;31mWrong boot partition:\e[00m $BRboot"
+      BRSTOP=y
     fi
     if [ "$BRboot" == "$BRroot" ] || [ "$BRboot" == "$BRswap" ] || [ "$BRboot" == "$BRhome" ]; then
       echo -e "\e[00;33m$BRboot already used\e[00m"
-      exit
+      BRSTOP=y
     fi
-    if grep -q $BRboot /proc/mounts; then
-      echo -e "\e[00;33m$BRboot is already mounted as $(df -m | grep "$BRhome" | awk '{ print $6 }'), refusing to use it\e[00m"
-      exit
+    if grep -wq $BRboot /proc/mounts; then
+      echo -e "\e[00;33m$BRboot is already mounted as $(df -m | grep "$BRboot" | awk '{ print $6 }'), refusing to use it\e[00m"
+      BRSTOP=y
     fi
   fi
 
   if [ -n "$BRgrub" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
-      echo -e "\e[00;31mWrong disk for grub\e[00m"
-      exit
+      echo -e "\e[00;31mWrong disk for grub:\e[00m $BRgrub"
+      BRSTOP=y
     fi
   fi
 
   if [ -n "$BRsyslinux" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
     if [ ! "$BRsyslinuxcheck" = "true" ]; then
-      echo -e "\e[00;31mWrong disk for syslinux\e[00m"
-      exit
+      echo -e "\e[00;31mWrong disk for syslinux:\e[00m $BRsyslinux"
+      BRSTOP=y
     fi
+  fi
+
+  if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
+    echo -e "\e[00;31mDont use both bootloaders at the same time\e[00m"
+    BRSTOP=y
+  fi
+
+if [ -n "$BRSTOP" ]; then
+  exit
 fi
 }
 
@@ -680,23 +702,6 @@ if [ $(id -u) -gt 0 ]; then
 fi
 
 PS3="Choice: "
-DEFAULTIFS=$IFS
-IFS=$'\n'
-
-if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
-  echo -e "\e[00;31mFile not found\e[00m"
-  exit
-fi
-
-distrolist=(Arch Debian Fedora)
-
-if [ -n "$BRdistro" ]; then  
-  for i in ${distrolist[@]}; do if [[ $i == ${BRdistro} ]] ; then BRdistrocheck="true" ; fi; done
-  if [ ! "$BRdistrocheck" = "true" ]; then
-    echo -e "\e[00;31mWrong distribution name\n\e[00;36mAvailable options: Arch Debian Fedora\e[00m"
-    exit
-  fi
-fi
 
 interfaces=(CLI Dialog)
 
@@ -717,6 +722,7 @@ done
 
 if [ $BRinterface = "CLI" ]; then
   clear
+  IFS=$'\n'
 
   if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     echo -e "This script will restore a backup image of your system\nin user defined partitions."
@@ -729,9 +735,8 @@ if [ $BRinterface = "CLI" ]; then
     clear
   fi
 
-  echo -e "\n==>READING USER INPUT"
-
   rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`) 
+  distrolist=(Arch Debian Fedora)
   editorlist=(nano vi)
 
   while [ -z "$BRdistro" ]; do
@@ -1215,7 +1220,7 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
 elif [ $BRinterface = "Dialog" ]; then
-  IFS=$DEFAULTIFS
+  clear
 
   if [ -z $(which dialog 2> /dev/null) ];then
     echo -e "\e[00;31mPackage dialog is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"

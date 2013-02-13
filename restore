@@ -24,6 +24,14 @@ check_input() {
     BRSTOP=y
   fi
 
+  if [ -n "$BRurl" ]; then
+    ping -c 2 $BRurl 1>/dev/null 2>/dev/null
+      if [ ! $? -eq 0 ]; then 
+        echo -e "\e[00;31mWrong URL or network is down:\e[00m $BRurl"
+        BRSTOP=y
+      fi
+  fi
+
   if [ -n "$BRfile" ] && [ -n "$BRurl" ]; then
     echo -e "\e[00;31mDont use both local file and url at the same time\e[00m"
     BRSTOP=y

@@ -367,6 +367,7 @@ remount_delete_subvols() {
   fi
 
   echo -e "\n==>CLEANING AND UNMOUNTING"
+  echo "Unmounting $BRroot"
   umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED 
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
@@ -380,9 +381,10 @@ remount_delete_subvols() {
 }  
 
 unmount_only_in_subvol() {
-  echo -e "\n==>UNMOUNTING SUBVOLUME $BRrootsubvolname"
+  echo -e "\n==>UNMOUNTING"
   cd ~ 
   if [ -n "$BRhome" ]; then
+    echo "Unmounting $BRhome"
     umount  $BRhome
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
@@ -395,6 +397,7 @@ unmount_only_in_subvol() {
     fi
   fi
   if [ -n "$BRboot" ]; then
+    echo "Unmounting $BRboot"
     umount  $BRboot
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
@@ -404,6 +407,7 @@ unmount_only_in_subvol() {
       rm -r /mnt/target/boot
     fi
   fi
+  echo "Unmounting subvolume $BRrootsubvolname"
   umount $BRroot 
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
@@ -416,6 +420,7 @@ clean_unmount_in() {
   echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~ 
   if [ -n "$BRhome" ]; then
+    echo "Unmounting $BRhome"
     umount  $BRhome
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
@@ -426,6 +431,7 @@ clean_unmount_in() {
     fi
   fi
   if [ -n "$BRboot" ]; then
+    echo "Unmounting $BRboot"
     umount  $BRboot
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
@@ -440,6 +446,7 @@ clean_unmount_in() {
     rm /mnt/target/fullbackup.tgz
   fi
 
+  echo "Unmounting $BRroot"
   umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED 
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
@@ -460,11 +467,14 @@ clean_unmount_out() {
   umount /mnt/target/proc
   umount /mnt/target/sys
   if [ -n "$BRhome" ]; then
+    echo "Unmounting $BRhome"
     umount  $BRhome
   fi
   if [ -n "$BRboot" ]; then
+    echo "Unmounting $BRboot"
     umount  $BRboot
   fi
+  echo "Unmounting $BRroot"
   umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED 
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
@@ -495,6 +505,7 @@ create_subvols() {
 echo -e "\n==>CLEANING AND UNMOUNTING"  
   cd ~ 
   if [ -n "$BRhome" ]; then
+    echo "Unmounting $BRhome"
     umount  $BRhome
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
@@ -505,6 +516,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
     fi
   fi
   if [ -n "$BRboot" ]; then
+    echo "Unmounting $BRboot"
     umount  $BRboot
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
@@ -514,6 +526,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
       rm -r /mnt/target/boot
     fi
   fi
+  echo "Unmounting $BRroot"
   umount $BRroot 
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"

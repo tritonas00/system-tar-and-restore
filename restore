@@ -995,7 +995,7 @@ if [ $BRinterface = "CLI" ]; then
 
       while [ -z "$BRvarsubvol" ]; do
         echo -e "\n\e[00;36mCreate subvolume for /var inside $BRrootsubvolname ?\e[00m"
-        read -p " (Y/n):" an
+        read -p "(Y/n):" an
 
         if [ -n "$an" ]; then
           btrfsdef=$an

@@ -25,8 +25,6 @@ The script will ask:
 
 - If /home directory is excluded, it will ask if you want to keep hidden files and folders inside it
 
-- If you want to activate --acls  --selinux --xattrs options (Necessary if the host and the target system is Fedora)
-
 
 The script also supports all input as arguments:
 
@@ -42,21 +40,13 @@ exclude /home directory
 **-n, --no-hidden**       
 dont keep home's hidden files and folders
 
-**-f, --fedora-tar**   
-Activate --acls  --selinux --xattrs (Required / Available only in Fedora)
 
-Examples:
+Example:
 
 - Backup directory=/home/john/
-- Include /home  
 
 <code>sudo ./backup -d /home/john/</code>
 
-- Backup directory=/home/john/
-- Exclude /home (Only include hidden folders and files)
-- --acls  --selinux --xattrs activated
-
-<code>sudo ./backup -f -h -d /home/john/</code>
 
 
 ###RESTORE###
@@ -68,7 +58,7 @@ re-generate locales and finally unmounts and cleans everything.
 User must create partitions using his favorite partition manager before running the script.
 At least one / (root) partition is required and optionally a seperate partition for /home, /boot and a swap partition.
 
-For booting a btrfs subvolumed root successfully, it is recommended to have a seperate /boot partition.
+For booting a btrfs subvolumed root successfully with Syslinux, it is recommended to have a seperate /boot partition.
 
 Also recommended subvolume name is: __active.
 
@@ -88,7 +78,7 @@ The script will ask for:
 
 - Boot partition   ( Optional )  
 
-- Bootloader. Grub(2) and syslinux/extlinux are both supported.  
+- Bootloader. Grub(2) and syslinux/extlinux are both supported.  ( Optional )  
 
 - Bootloader install location. (MBR of the given device)  
 

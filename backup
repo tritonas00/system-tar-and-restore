@@ -247,7 +247,7 @@ if [ $BRinterface = "CLI" ]; then
 
     echo "==>Setting permissions"
     chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
-    echo "==>Done. Backup image and logs saved in $BRFOLDER"
+    echo -e "\e[00;36mDone. Backup image and logs saved in $BRFOLDER.\e[00m"
   fi  
 
 elif [ $BRinterface = "Dialog" ]; then

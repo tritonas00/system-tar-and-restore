@@ -7,9 +7,8 @@ Supported distributions: Arch, Debian, Fedora
 
 ###LIMITATIONS###
 
-- LVM (not supported)
+- LVM  (not supported)
 - UEFI (not supported - user must install bootloader manually)
-
 
 ###REQUIREMENTS###
 

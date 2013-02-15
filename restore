@@ -1641,5 +1641,5 @@ to install (or update an existing) one. To do so:
   clean_unmount_out
 
 else
-  echo -e "\e[00;31mWrong interface name\n\e[00;36mAvailable options: CLI Dialog\e[00m"
+  echo -e "\e[00;31mWrong interface name:\e[00m $BRinterface\n\e[00;36mAvailable options: CLI Dialog\e[00m"
 fi

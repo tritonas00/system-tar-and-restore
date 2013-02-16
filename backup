@@ -1,6 +1,17 @@
 #!/bin/bash
 
+init_variables() {
+  BR_NORM='\e[00m'
+  BR_RED='\e[00;31m'
+  BR_GREEN='\e[00;32m'
+  BR_YELLOW='\e[00;33m'
+  BR_BLUE='\e[00;34m'
+  BR_MAGENTA='\e[00;35m'
+  BR_CYAN='\e[00;36m'
+}
+
 clear
+init_variables
 
 show_summary() {
 echo "Backup Folder = $BRFOLDER
@@ -16,36 +27,32 @@ fi
 }
 
 run_tar() {
-if [ $BRhome = "n" ] &&  [ $BRhidden = "y" ] &&  [ $BRtar = "n" ]; then
-  tar cvpf  "$BRFile".tar  --sparse --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/*  --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
-  echo "==>Locating hidden files and folders inside /home, please wait..." 
-  find /home -maxdepth 1 -print | xargs tar rpvf "$BRFile".tar --no-recursion 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
-  find /home -maxdepth 2 -name ".*" -print | xargs tar rpvf "$BRFile".tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+  BR_TAROPTS="--sparse --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=${BRFOLDER}"
+  if [ ${BRhome} = "n" ]; then
+    BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
+  fi
+  if [ ${BRtar} = "y" ]; then
+    BR_TAROPTS="${BR_TAROPTS} --acls --selinux --xattrs"
+  fi
+
   echo "==>Creating archive..."
+  tar cvpf  "$BRFile".tar  ${BR_TAROPTS}   / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+
+  if [ $BRhidden = "y" ]; then
+    echo "==>Locating hidden files and folders inside /home, please wait..."
+    find /home -maxdepth 1 -print | xargs tar rpvf "$BRFile".tar --no-recursion 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+    find /home -maxdepth 2 -name ".*" -print0 | xargs -0 tar rpvf "$BRFile".tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+  fi
+
+  echo "==>Compressing archive..."
   gzip "$BRFile".tar
-elif [ $BRhome = "n" ] &&  [ $BRhidden = "n" ] &&  [ $BRtar = "n" ]; then
-  tar cvpzf  "$BRFile".tgz  --sparse --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/*  --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
-elif [ $BRhome = "y" ] &&  [ $BRtar = "n" ]; then
-  tar cvpzf  "$BRFile".tgz  --sparse --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/*  --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
-elif [ $BRhome = "n" ] &&  [ $BRhidden = "y" ] &&  [ $BRtar = "y" ]; then
-  tar cvpf  "$BRFile".tar  --sparse  --acls  --selinux --xattrs --exclude=/home --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/*  --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
-  echo "==>Locating hidden files and folders inside /home, please wait..." 
-  find /home -maxdepth 1 -print | xargs tar rpvf "$BRFile".tar --no-recursion 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
-  find /home -maxdepth 2 -name ".*" -print | xargs tar rpvf "$BRFile".tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
-   echo "==>Creating archive..."
-  gzip "$BRFile".tar
-elif [ $BRhome = "n" ] &&  [ $BRhidden = "n" ] &&  [ $BRtar = "y" ]; then
-    tar cvpzf  "$BRFile".tgz  --sparse --acls  --selinux --xattrs --exclude=/home/* --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/*  --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
-elif [ $BRhome = "y" ] &&  [ $BRtar = "y" ]; then
-  tar cvpzf  "$BRFile".tgz  --sparse --acls  --selinux --xattrs --exclude=/run/*  --exclude=/lost+found --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log 
-fi
 }
 
 BRargs=`getopt -o "i:d:hn" -l "interface:,directory:,exclude-home,no-hidden,help" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ]; then
   echo "See $0 --help"
-  exit 
+  exit
 fi
 
 eval set -- "$BRargs";
@@ -60,7 +67,7 @@ while true; do
       BRFOLDER=$2
       shift 2
     ;;
-    -h|--exclude-home) 
+    -h|--exclude-home)
       BRhome="n"
       shift
     ;;
@@ -79,7 +86,7 @@ while true; do
 "
       exit
       shift
-    ;;  
+    ;;
     --)
       shift
       break
@@ -88,7 +95,7 @@ while true; do
 done
 
 if [ $(id -u) -gt 0 ]; then
-  echo -e "\e[00;31mScript must run as root\e[00m"
+  echo -e "${BR_RED}Script must run as root${BR_NORM}"
   exit
 fi
 
@@ -102,16 +109,16 @@ PS3="Choice: "
 interfaces=(CLI Dialog)
 
 while [ -z "$BRinterface" ]; do
-  echo -e "\n\e[00;36mSelect interface or enter Q to quit\e[00m"
+  echo -e "\n${BR_CYAN}Select interface or enter Q to quit${BR_NORM}"
   select c in ${interfaces[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo -e "\e[00;33mAborted by User\e[00m"
+      echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#interfaces[@]} ]; then
       BRinterface=$c
       break
     else
-      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+      echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
     fi
   done
 done
@@ -122,26 +129,26 @@ if [ $BRinterface = "CLI" ]; then
     echo "This script will make a tar backup image of your entire system."
     echo -e "\n==>Make sure you have enough free space."
     echo -e "\n==>Also make sure you have GRUB or SYSLINUX packages installed."
-    echo -e "\n\e[00;33mGRUB Packages:\e[00m"
+    echo -e "\n${BR_YELLOW}GRUB Packages:${BR_NORM}"
     echo "Arch: grub-bios"
     echo "Debian: grub-pc"
     echo "Fedora: grub2"
-    echo -e "\n\e[00;33mSYSLINUX Packages:\e[00m"
+    echo -e "\n${BR_YELLOW}SYSLINUX Packages:${BR_NORM}"
     echo "Arch: syslinux"
     echo "Debian: syslinux extlinux"
     echo "Fedora: syslinux syslinux-extlinux"
-    echo -e "\n\e[00;36mPress ENTER to continue.\e[00m" 
+    echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
     read -s a
     clear
   fi
 
   if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
-    echo -e "\e[00;31mDirectory does not exist\e[00m"
+    echo -e "${BR_RED}Directory does not exist${BR_NORM}"
     unset BRFOLDER
   fi
 
   while [ -z "$BRFOLDER" ]; do
-    echo -e "\n\e[00;36mThe default folder for creating the backup file is / (root)\nDo you want to save in the default folder?\e[00m" 
+    echo -e "\n${BR_CYAN}The default folder for creating the backup file is / (root)\nDo you want to save in the default folder?${BR_NORM}"
     read -p "(Y/n): " an
 
     if [ -n "$an" ]; then
@@ -149,24 +156,24 @@ if [ $BRinterface = "CLI" ]; then
     else
       def="y"
     fi
-  
+
     if [ $def = "y" ] || [ $def = "Y" ]; then
       BRFOLDER="/"
     elif [ $def = "n" ] || [ $def = "N" ]; then
       while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-        echo -e "\n\e[00;36mInsert the folder path where the backup will be created\e[00m"
+        echo -e "\n${BR_CYAN}Insert the folder path where the backup will be created${BR_NORM}"
         read -p "Path: " BRFOLDER
         if [ ! -d "$BRFOLDER" ]; then
-          echo -e "\e[00;31mDirectory does not exist.\e[00m"
+          echo -e "${BR_RED}Directory does not exist.${BR_NORM}"
         fi
-      done 
+      done
     else
-      echo -e "\e[00;31mPlease enter a valid option\e[00m"
+      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
     fi
-  done 
+  done
 
   while [ -z "$BRhome" ] ; do
-    echo -e "\n\e[00;36mDo you want to include /home?\e[00m"
+    echo -e "\n${BR_CYAN}Do you want to include /home?${BR_NORM}"
     read -p "(Y/n):" an
 
     if [ -n "$an" ]; then
@@ -174,19 +181,19 @@ if [ $BRinterface = "CLI" ]; then
     else
       def="y"
     fi
-  
+
     if [ $def = "y" ] || [ $def = "Y" ]; then
       BRhome="y"
     elif [ $def = "n" ] || [ $def = "N" ]; then
       BRhome="n"
     else
-      echo -e "\e[00;31mPlease enter a valid option\e[00m"
+      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
     fi
-  done  
+  done
 
   if [ $BRhome = "n" ]; then
     while [ -z "$BRhidden" ] ; do
-      echo -e "\n\e[00;36mDo you want to keep hidden files and folders inside /home?\e[00m"
+      echo -e "\n${BR_CYAN}Do you want to keep hidden files and folders inside /home?${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -200,16 +207,16 @@ if [ $BRinterface = "CLI" ]; then
       elif [ $def = "n" ] || [ $def = "N" ]; then
         BRhidden="n"
       else
-        echo -e "\e[00;31mPlease enter a valid option\e[00m"
-      fi 
+        echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+      fi
     done
   fi
 
-  echo -e "\n\e[00;32mSUMMARY\e[00m"
+  echo -e "\n${BR_GREEN}SUMMARY${BR_NORM}"
   show_summary
 
   while [ -z "$BRcontinue" ]; do
-    echo -e "\n\e[00;36mDo you want continue?\e[00m"
+    echo -e "\n${BR_CYAN}Do you want continue?${BR_NORM}"
     read -p "(Y/n):" an
 
     if [ -n "$an" ]; then
@@ -217,17 +224,17 @@ if [ $BRinterface = "CLI" ]; then
     else
       def="y"
     fi
-  
+
     if [ $def = "y" ] || [ $def = "Y" ]; then
       BRcontinue="y"
     elif [ $def = "n" ] || [ $def = "N" ]; then
       BRcontinue="n"
-      echo -e "\e[00;33mAborted by User\e[00m"
+      echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
       exit
     else
-      echo -e "\e[00;31mPlease enter a valid option\e[00m"
+      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
     fi
-  done  
+  done
 
   if [  "x$BRcontinue" = "xy" ]; then
     BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
@@ -247,12 +254,12 @@ if [ $BRinterface = "CLI" ]; then
 
     echo "==>Setting permissions"
     chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
-    echo -e "\e[00;36mCompleted. Backup image and logs saved in $BRFOLDER.\e[00m"
-  fi  
+    echo -e "${BR_CYAN}Completed. Backup image and logs saved in $BRFOLDER.${BR_NORM}"
+  fi
 
 elif [ $BRinterface = "Dialog" ]; then
   if [ -z $(which dialog 2> /dev/null) ];then
-    echo -e "\e[00;31mPackage dialog is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"
+    echo -e "${BR_RED}Package dialog is not installed\n${BR_CYAN}Install the package and re-run the script${BR_NORM}"
     exit
   fi
 
@@ -288,15 +295,15 @@ Press OK to continue." 22 70
       BRFOLDER="/"
     else
       while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-        exec 3>&1 
-        BRFOLDER=$(dialog  --no-cancel --inputbox "Insert the folder path where the backup will be created" 8 50 2>&1 1>&3)  
+        exec 3>&1
+        BRFOLDER=$(dialog  --no-cancel --inputbox "Insert the folder path where the backup will be created" 8 50 2>&1 1>&3)
         if [ ! -d "$BRFOLDER" ]; then
           echo "Directory does not exist." | dialog --progressbox "ERROR" 30 70
           sleep 2
         fi
-      done 
+      done
     fi
-  done 
+  done
 
   while [ -z "$BRhome" ]; do
     dialog --title "Message"  --yesno "Do you want to include /home?" 8 50
@@ -305,7 +312,7 @@ Press OK to continue." 22 70
     else
       BRhome="n"
     fi
-  done  
+  done
 
   if [ $BRhome = "n" ]; then
     while [ -z "$BRhidden" ] ; do
@@ -341,5 +348,5 @@ Press Yes to continue or No to abort." 13 50
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
   dialog --title "Info" --msgbox  "Completed. Backup image and logs saved in $BRFOLDER" 8 50
 else
-  echo -e "\e[00;31mWrong interface name:\e[00m $BRinterface\n\e[00;36mAvailable options: CLI Dialog\e[00m"
+  echo -e "${BR_RED}Wrong interface name:${BR_NORM} $BRinterface\n${BR_CYAN}Available options: CLI Dialog${BR_NORM}"
 fi

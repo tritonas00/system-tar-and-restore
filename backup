@@ -38,7 +38,7 @@ run_tar() {
   echo "==>Creating archive..."
   tar cvpf  "$BRFile".tar  ${BR_TAROPTS}   / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
 
-  if [ $BRhidden = "y" ]; then
+  if [ "x$BRhidden" = "xy" ]; then
     echo "==>Locating hidden files and folders inside /home, please wait..."
     find /home -maxdepth 1 -print | xargs tar rpvf "$BRFile".tar --no-recursion 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
     find /home -maxdepth 2 -name ".*" -print0 | xargs -0 tar rpvf "$BRFile".tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log

@@ -27,7 +27,7 @@ fi
 }
 
 run_tar() {
-  BR_TAROPTS="--sparse --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=${BRFOLDER}"
+  BR_TAROPTS="--sparse --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
   if [ ${BRhome} = "n" ]; then
     BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
   fi
@@ -36,7 +36,7 @@ run_tar() {
   fi
 
   echo "==>Creating archive..."
-  tar cvpf  "$BRFile".tar  ${BR_TAROPTS}   / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+  tar cvpf  "$BRFile".tar  ${BR_TAROPTS}  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
 
   if [ "x$BRhidden" = "xy" ]; then
     echo "==>Locating hidden files and folders inside /home, please wait..."

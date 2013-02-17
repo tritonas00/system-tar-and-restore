@@ -17,7 +17,7 @@ show_summary() {
 echo "Backup Folder = $BRFOLDER
 Include Home Directory = $BRhome"
 
-if [ $BRhome = "n" ]; then
+if [ "$BRhome" = "n" ]; then
   echo "Keep home's hidden files and folders = $BRhidden"
 fi
 
@@ -28,24 +28,25 @@ fi
 
 run_tar() {
   BR_TAROPTS="--sparse --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
-  if [ ${BRhome} = "n" ]; then
+
+  echo "==>Generating directory list..."
+  find  /  -maxdepth 1 -print | tail -n +2 > "$BRFOLDER"/list
+  sleep 1
+
+  if [ ${BRhome} = "n" ] &&  [ ${BRhidden} = "n" ] ; then
     BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
+  elif [ ${BRhome} = "n" ] &&  [ ${BRhidden} = "y" ] ; then
+    find  /  -maxdepth 1 -name 'home' -prune -o -print | tail -n +2 > "$BRFOLDER"/list
+    find  /home  -maxdepth 2  -iname ".*" >> "$BRFOLDER"/list
   fi
+
   if [ ${BRtar} = "y" ]; then
     BR_TAROPTS="${BR_TAROPTS} --acls --selinux --xattrs"
   fi
 
   echo "==>Creating archive..."
-  tar cvpf  "$BRFile".tar  ${BR_TAROPTS}  --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
-
-  if [ "x$BRhidden" = "xy" ]; then
-    echo "==>Locating hidden files and folders inside /home, please wait..."
-    find /home -maxdepth 1 -print | xargs tar rpvf "$BRFile".tar --no-recursion 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
-    find /home -maxdepth 2 -name ".*" -print0 | xargs -0 tar rpvf "$BRFile".tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
-  fi
-
-  echo "==>Compressing archive..."
-  gzip "$BRFile".tar
+  sleep 1
+  tar zcvfpT   "$BRFile".tar.gz "$BRFOLDER"/list  ${BR_TAROPTS}  --exclude="$BRFOLDER" 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
 }
 
 BRargs=`getopt -o "i:d:hn" -l "interface:,directory:,exclude-home,no-hidden,help" -n "$1" -- "$@"`
@@ -246,7 +247,6 @@ if [ $BRinterface = "CLI" ]; then
     touch "$BRFOLDER"/errors
     sleep 1
 
-    echo "==>Creating backup image, please wait..."
     BRFile="$BRFOLDER"/Backup-"`date +%A-%d-%m-%Y-%T`"
     sleep 1
 

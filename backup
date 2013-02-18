@@ -280,7 +280,7 @@ Press OK to continue." 22 70
   fi
 
   if [ ! -d "$BRFOLDER" ] &&  [ -n "$BRFOLDER" ]; then
-    echo "Directory does not exist." | dialog --progressbox "ERROR" 30 70
+    echo "Directory does not exist." | dialog --progressbox "ERROR" 6 30
     sleep 2
     unset BRFOLDER
   fi
@@ -294,7 +294,7 @@ Press OK to continue." 22 70
         exec 3>&1
         BRFOLDER=$(dialog  --no-cancel --inputbox "Insert the folder path where the backup will be created" 8 50 2>&1 1>&3)
         if [ ! -d "$BRFOLDER" ]; then
-          echo "Directory does not exist." | dialog --progressbox "ERROR" 30 70
+          echo "Directory does not exist." | dialog --progressbox "ERROR" 6 30
           sleep 2
         fi
       done

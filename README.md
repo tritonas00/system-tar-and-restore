@@ -157,8 +157,8 @@ make subvolume for /var
 **-U, --usrsubvol**   
 make subvolume for /usr
 
-**--help** 
-show all arguments
+**--help**   
+ show all arguments
 
 **Examples:** 
 

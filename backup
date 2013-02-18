@@ -43,7 +43,6 @@ run_tar() {
   echo "==>Creating archive..."
   sleep 1
   tar cvpzf "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
-  rm -r /tmp/list
 }
 
 BRargs=`getopt -o "i:d:hn" -l "interface:,directory:,exclude-home,no-hidden,help" -n "$1" -- "$@"`
@@ -346,4 +345,8 @@ Press Yes to continue or No to abort." 13 50
   dialog --title "Info" --msgbox  "Completed. Backup image and logs saved in $BRFOLDER" 8 50
 else
   echo -e "${BR_RED}Wrong interface name:${BR_NORM} $BRinterface\n${BR_CYAN}Available options: CLI Dialog${BR_NORM}"
+fi
+
+if [ -f /tmp/list ]; then
+  rm -r /tmp/list
 fi

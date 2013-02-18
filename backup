@@ -145,7 +145,7 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
   while [ -z "$BRFOLDER" ]; do
-    echo -e "\n${BR_CYAN}The default folder for creating the backup file is / (root)\nSave in the default folder?${BR_NORM}"
+    echo -e "\n${BR_CYAN}The default folder for creating the backup file is / (root).\nSave in the default folder?${BR_NORM}"
     read -p "(Y/n): " an
 
     if [ -n "$an" ]; then
@@ -286,7 +286,7 @@ Press OK to continue." 22 70
   fi
 
   while [ -z "$BRFOLDER" ]; do
-    dialog --title "Message" --yesno "The default folder for creating the backup file is / (root). Save in the default folder?" 8 50
+    dialog --title "Message" --yesno "The default folder for creating the backup file is / (root).\nSave in the default folder?" 8 65
     if [ $? = "0" ]; then
       BRFOLDER="/"
     else
@@ -302,7 +302,7 @@ Press OK to continue." 22 70
   done
 
   while [ -z "$BRhome" ]; do
-    dialog --title "Message"  --yesno "Include /home directory?" 8 50
+    dialog --title "Message"  --yesno "Include /home directory?" 7 35
     if [ $? = "0" ]; then
       BRhome="y"
     else

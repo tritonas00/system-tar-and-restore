@@ -17,7 +17,7 @@ show_summary() {
 echo "Backup Folder = $BRFOLDER
 Include Home Directory = $BRhome"
 
-if [ "$BRhome" = "n" ]; then
+if [ "$BRhome" = "No" ]; then
   echo "Keep home's hidden files and folders = $BRhidden"
 fi
 
@@ -180,15 +180,15 @@ if [ $BRinterface = "CLI" ]; then
     fi
 
     if [ $def = "y" ] || [ $def = "Y" ]; then
-      BRhome="y"
+      BRhome="Yes"
     elif [ $def = "n" ] || [ $def = "N" ]; then
-      BRhome="n"
+      BRhome="No"
     else
       echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
     fi
   done
 
-  if [ $BRhome = "n" ]; then
+  if [ $BRhome = "No" ]; then
     while [ -z "$BRhidden" ] ; do
       echo -e "\n${BR_CYAN}Keep hidden files and folders inside /home?${BR_NORM}"
       read -p "(Y/n):" an
@@ -200,9 +200,9 @@ if [ $BRinterface = "CLI" ]; then
       fi
 
       if [ $def = "y" ] || [ $def = "Y" ]; then
-        BRhidden="y"
+        BRhidden="Yes"
       elif [ $def = "n" ] || [ $def = "N" ]; then
-        BRhidden="n"
+        BRhidden="No"
       else
         echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
       fi
@@ -304,26 +304,26 @@ Press OK to continue." 22 70
   while [ -z "$BRhome" ]; do
     dialog --title "Message"  --yesno "Include /home directory?" 6 35
     if [ $? = "0" ]; then
-      BRhome="y"
+      BRhome="Yes"
     else
-      BRhome="n"
+      BRhome="No"
     fi
   done
 
-  if [ $BRhome = "n" ]; then
+  if [ $BRhome = "No" ]; then
     while [ -z "$BRhidden" ] ; do
       dialog --title "Message"  --yesno "Keep hidden files and folders inside /home?" 6 50
       if [ $? = "0" ]; then
-        BRhidden="y"
+        BRhidden="Yes"
       else
-        BRhidden="n"
+        BRhidden="No"
       fi
     done
   fi
 
   dialog --title "Summary"  --yesno "`show_summary`
 ------------------------------------
-Press Yes to continue or No to abort." 13 50
+Press Yes to continue or No to abort." 12 50
 
   if [ $? = "1" ]; then
     exit
@@ -339,7 +339,7 @@ Press Yes to continue or No to abort." 13 50
 
   BRFile="$BRFOLDER"/Backup-"`date +%A-%d-%m-%Y-%T`"
 
-  run_tar | dialog --progressbox "Creating backup image..." 30 70
+  run_tar | dialog --progressbox "Creating backup image..." 30 90
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
   dialog --title "Info" --msgbox  "Completed. Backup image and logs saved in $BRFOLDER" 8 50

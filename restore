@@ -947,7 +947,7 @@ if [ $BRinterface = "CLI" ]; then
 
   if [  "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
-      echo -e "\n==>BTRFS root file system detected\n\e[00;36mDo you want to create a subvolume for root (/) ?\e[00m"
+      echo -e "\n==>BTRFS root file system detected\n\e[00;36mCreate subvolume for root (/) ?\e[00m"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -1154,7 +1154,7 @@ if [ $BRinterface = "CLI" ]; then
   echo " "
 
   while [ -z "$BRcontinue" ]; do
-    echo -e "\n\e[00;36mDo you want continue?\e[00m"
+    echo -e "\n\e[00;36mContinue?\e[00m"
     read -p "(Y/n):" an
 
     if [ -n "$an" ]; then
@@ -1194,7 +1194,7 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
 
     while [ -z "$BRedit" ] ; do
-      echo -e "\n\e[00;36mDo you want to edit fstab ?\e[00m"
+      echo -e "\n\e[00;36mEdit fstab ?\e[00m"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -1387,7 +1387,7 @@ Press OK to continue."  22 80
 
   if [  "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
-      dialog --title "Message"  --yesno "BTRFS root file system detected. Do you want to create a subvolume for root (/) ?" 8 50
+      dialog --title "Message"  --yesno "BTRFS root file system detected. Create subvolume for root (/) ?" 8 50
 
       if [ "$?" = "0" ]; then
         btrfsdef="y"

@@ -145,7 +145,7 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
   while [ -z "$BRFOLDER" ]; do
-    echo -e "\n${BR_CYAN}The default folder for creating the backup file is / (root)\nDo you want to save in the default folder?${BR_NORM}"
+    echo -e "\n${BR_CYAN}The default folder for creating the backup file is / (root)\nSave in the default folder?${BR_NORM}"
     read -p "(Y/n): " an
 
     if [ -n "$an" ]; then
@@ -170,7 +170,7 @@ if [ $BRinterface = "CLI" ]; then
   done
 
   while [ -z "$BRhome" ] ; do
-    echo -e "\n${BR_CYAN}Do you want to include /home?${BR_NORM}"
+    echo -e "\n${BR_CYAN}Include /home directory?${BR_NORM}"
     read -p "(Y/n):" an
 
     if [ -n "$an" ]; then
@@ -190,7 +190,7 @@ if [ $BRinterface = "CLI" ]; then
 
   if [ $BRhome = "n" ]; then
     while [ -z "$BRhidden" ] ; do
-      echo -e "\n${BR_CYAN}Do you want to keep hidden files and folders inside /home?${BR_NORM}"
+      echo -e "\n${BR_CYAN}Keep hidden files and folders inside /home?${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -213,7 +213,7 @@ if [ $BRinterface = "CLI" ]; then
   show_summary
 
   while [ -z "$BRcontinue" ]; do
-    echo -e "\n${BR_CYAN}Do you want continue?${BR_NORM}"
+    echo -e "\n${BR_CYAN}Continue?${BR_NORM}"
     read -p "(Y/n):" an
 
     if [ -n "$an" ]; then
@@ -250,7 +250,7 @@ if [ $BRinterface = "CLI" ]; then
 
     echo "==>Setting permissions"
     chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
-    echo -e "${BR_CYAN}Completed. Backup image and logs saved in $BRFOLDER.${BR_NORM}"
+    echo -e "${BR_CYAN}Completed. Backup image and logs saved in $BRFOLDER${BR_NORM}"
   fi
 
 elif [ $BRinterface = "Dialog" ]; then
@@ -286,7 +286,7 @@ Press OK to continue." 22 70
   fi
 
   while [ -z "$BRFOLDER" ]; do
-    dialog --title "Message" --yesno "The default folder for creating the backup file is / (root). Do you want to save in the default folder?" 8 50
+    dialog --title "Message" --yesno "The default folder for creating the backup file is / (root). Save in the default folder?" 8 50
     if [ $? = "0" ]; then
       BRFOLDER="/"
     else
@@ -302,7 +302,7 @@ Press OK to continue." 22 70
   done
 
   while [ -z "$BRhome" ]; do
-    dialog --title "Message"  --yesno "Do you want to include /home?" 8 50
+    dialog --title "Message"  --yesno "Include /home directory?" 8 50
     if [ $? = "0" ]; then
       BRhome="y"
     else
@@ -312,7 +312,7 @@ Press OK to continue." 22 70
 
   if [ $BRhome = "n" ]; then
     while [ -z "$BRhidden" ] ; do
-      dialog --title "Message"  --yesno "Do you want to keep hidden files and folders inside /home?" 8 50
+      dialog --title "Message"  --yesno "Keep hidden files and folders inside /home?" 8 50
       if [ $? = "0" ]; then
         BRhidden="y"
       else

@@ -47,7 +47,7 @@ exclude /home directory
 **-n, --no-hidden**       
 dont keep home's hidden files and folders
 
-**--help**
+**--help** 
 show all arguments
 
 
@@ -157,7 +157,7 @@ make subvolume for /var
 **-U, --usrsubvol**   
 make subvolume for /usr
 
-**--help**
+**--help** 
 show all arguments
 
 **Examples:** 
@@ -189,8 +189,8 @@ show all arguments
 
 **Demos** 
 
-http://www.youtube.com/watch?v=GpNSEyaynLk
+http://www.youtube.com/watch?v=GpNSEyaynLk 
 
-http://www.youtube.com/watch?v=QHkCsEW-qY8
+http://www.youtube.com/watch?v=QHkCsEW-qY8 
 
-http://www.youtube.com/watch?v=kvExZYeaCZI
+http://www.youtube.com/watch?v=kvExZYeaCZI 

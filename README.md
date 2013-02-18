@@ -47,6 +47,9 @@ exclude /home directory
 **-n, --no-hidden**       
 dont keep home's hidden files and folders
 
+**--help**
+show all arguments
+
 
 Example:
 
@@ -95,6 +98,10 @@ The script will ask for:
 
 - The *.tgz image file. This can be obtained locally (by entering the full path of the file), or remotelly (by entering full url of the file).
    Also protected url is supported, which will ask for server's username and password.  
+
+- Later it will ask you if you want to edit the generated fstab file further. Old fstab kept as fstab-old.
+
+- At the end, If you didn't choose a bootaloader, the script will help you to chroot and install a bootloader manually.
 
 
 The script also supports all input as arguments:
@@ -150,6 +157,9 @@ make subvolume for /var
 **-U, --usrsubvol**   
 make subvolume for /usr
 
+**--help**
+show all arguments
+
 **Examples:** 
 
 - Distro= Arch
@@ -179,6 +189,8 @@ make subvolume for /usr
 
 **Demos** 
 
-http://www.youtube.com/watch?v=eoGKI1Ls1ng       
+http://www.youtube.com/watch?v=GpNSEyaynLk
 
-http://www.youtube.com/watch?v=-ot5G4dB3DM 
+http://www.youtube.com/watch?v=QHkCsEW-qY8
+
+http://www.youtube.com/watch?v=kvExZYeaCZI

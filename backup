@@ -29,9 +29,9 @@ fi
 run_tar() {
   BR_TAROPTS="--sparse --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
 
-  if [ ${BRhome} = "n" ] &&  [ ${BRhidden} = "n" ] ; then
+  if [ ${BRhome} = "No" ] &&  [ ${BRhidden} = "No" ] ; then
     BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
-  elif [ ${BRhome} = "n" ] &&  [ ${BRhidden} = "y" ] ; then
+  elif [ ${BRhome} = "No" ] &&  [ ${BRhidden} = "Yes" ] ; then
     find /home/*/  -maxdepth 1 -iname ".*" -prune -o -print   > /tmp/list
     BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/list"
   fi
@@ -65,11 +65,11 @@ while true; do
       shift 2
     ;;
     -h|--exclude-home)
-      BRhome="n"
+      BRhome="No"
       shift
     ;;
     -n|--no-hidden)
-      BRhidden="n"
+      BRhidden="No"
       shift
     ;;
     --help)

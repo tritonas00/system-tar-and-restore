@@ -1510,7 +1510,7 @@ Press OK to continue."  22 80
         echo  "Error reading archive"
         sleep 2
         rm /mnt/target/fullbackup.tgz 2>&1
-      fi ) | dialog --progressbox 5 30
+      fi ) | dialog --progressbox 4 30
   fi 
 
   while [ ! -f /mnt/target/fullbackup.tgz ]; do
@@ -1564,7 +1564,7 @@ Press OK to continue."  22 80
           echo  "Error reading archive"
           sleep 2
           rm /mnt/target/fullbackup.tgz 2>&1
-        fi ) | dialog --progressbox 5 30
+        fi ) | dialog --progressbox 4 30
     fi
   done
 

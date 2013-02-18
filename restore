@@ -1588,14 +1588,18 @@ Press Yes to continue, or No to abort." 19 60
     clean_unmount_in
   fi  
 
-  ( tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING ) | dialog --progressbox "EXTRACTING" 30 70
+  ( tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING ) | dialog --progressbox "EXTRACTING" 30 90
   sleep 2
 
-  mount_dev_proc_sys 2>&1 | dialog --progressbox "MOUNTING /dev /proc /sys" 30 70
+  mount_dev_proc_sys 2>&1 | dialog --progressbox "MOUNTING /dev /proc /sys" 15 70
   sleep 2
 
   generate_fstab
-  dialog --yesno   "GENERATING FSTAB\n`cat /mnt/target/etc/fstab`\n__________________________________________________________________\n\nEdit fstab ?"  30 70
+  dialog --yesno   "GENERATING FSTAB
+`cat /mnt/target/etc/fstab`
+__________________________________________________________________
+
+Edit fstab ?"  30 70
 
   if [ $? = "0" ]; then
     while [ -z "$BRdeditor" ]; do

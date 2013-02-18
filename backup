@@ -29,15 +29,11 @@ fi
 run_tar() {
   BR_TAROPTS="--sparse --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
 
-  echo "==>Generating input list..."
-  find  /  -maxdepth 1 -print | tail -n +2 > "$BRFOLDER"/list
-  sleep 1
-
   if [ ${BRhome} = "n" ] &&  [ ${BRhidden} = "n" ] ; then
     BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
   elif [ ${BRhome} = "n" ] &&  [ ${BRhidden} = "y" ] ; then
-    find  /  -maxdepth 1 -name 'home' -prune -o -print | tail -n +2 > "$BRFOLDER"/list
-    find  /home  -maxdepth 2  -iname ".*" >> "$BRFOLDER"/list
+    find /home/*/  -maxdepth 1 -iname ".*" -prune -o -print   > /tmp/list
+    BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/list"
   fi
 
   if [ ${BRtar} = "y" ]; then
@@ -46,7 +42,8 @@ run_tar() {
 
   echo "==>Creating archive..."
   sleep 1
-  tar zcvfpT "$BRFile".tar.gz "$BRFOLDER"/list  ${BR_TAROPTS} --exclude="$BRFOLDER" 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+  tar cvpzf "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+  rm -r /tmp/list
 }
 
 BRargs=`getopt -o "i:d:hn" -l "interface:,directory:,exclude-home,no-hidden,help" -n "$1" -- "$@"`

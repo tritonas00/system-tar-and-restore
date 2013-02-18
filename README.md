@@ -47,7 +47,7 @@ exclude /home directory
 **-n, --no-hidden**       
 dont keep home's hidden files and folders
 
-**--help** 
+**--help**   
 show all arguments
 
 

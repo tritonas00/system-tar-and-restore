@@ -302,7 +302,7 @@ Press OK to continue." 22 70
   done
 
   while [ -z "$BRhome" ]; do
-    dialog --title "Message"  --yesno "Include /home directory?" 7 35
+    dialog --title "Message"  --yesno "Include /home directory?" 6 35
     if [ $? = "0" ]; then
       BRhome="y"
     else
@@ -312,7 +312,7 @@ Press OK to continue." 22 70
 
   if [ $BRhome = "n" ]; then
     while [ -z "$BRhidden" ] ; do
-      dialog --title "Message"  --yesno "Keep hidden files and folders inside /home?" 8 50
+      dialog --title "Message"  --yesno "Keep hidden files and folders inside /home?" 6 50
       if [ $? = "0" ]; then
         BRhidden="y"
       else

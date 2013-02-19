@@ -48,6 +48,11 @@ check_input() {
     BRSTOP=y
   fi
 
+  if [ -n "$BRfile" ] || [ -n "$BRurl" ] && [ -n "$BRrestore" ]; then
+    echo -e "\e[00;31mDont use local file / url and tranfer mode at the same time\e[00m"
+    BRSTOP=y
+  fi
+
   if [ -n "$BRroot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then

@@ -9,6 +9,8 @@ run_rsync() {
     find /home/*/  -maxdepth 1 -iname ".*" -prune -o -print   > /tmp/list
     BR_RSYNCOPTS="${BR_RSYNCOPTS} --exclude-from=/tmp/list"
   fi
+
+  rsync -aAXv / /mnt/target  ${BR_RSYNCOPTS} 2>&1 && echo SUCCESS  || echo WARNING
 }
 
 part_list() {
@@ -579,7 +581,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   fi
 }
 
-BRargs=`getopt -o "i:d:r:s:b:h:g:S:f:u:n:p:R:HVUy" -l "interface:,distro:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes,rootsubvolname:,homesubvol,varsubvol,usrsubvol" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:r:s:b:h:g:S:f:u:n:p:R:HVUyt" -l "interface:,distro:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -624,10 +626,12 @@ while true; do
       shift 2
     ;;
     -f|--file) 
-      BRfile=$2
+      BRmode="restore"
+      BRfile=$2      
       shift 2
     ;;
     -u|--url) 
+      BRmode="restore"
       BRurl=$2
       shift 2
     ;;
@@ -661,9 +665,14 @@ while true; do
       BRusrsubvol="y"
       shift
     ;;
+    -t|--transfer)
+      BRmode="transfer"
+      shift
+    ;;
     --help)
       echo "
 -i,  --interface       interface to use
+-t,  --transfer        activate tranfer mode
 -d,  --distro          target distribution
 -r,  --root            root partition
 -s,  --swap            swap partition
@@ -948,7 +957,7 @@ if [ $BRinterface = "CLI" ]; then
 
   while [ -z "$BRmode" ]; do
     echo -e "\n\e[00;36mSelect Mode or enter Q to quit\e[00m"
-    select c in Restore Transfer; do
+    select c in "Restore system from backup file" "Transfer this system"; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "\e[00;33mAborted by User\e[00m"
         exit
@@ -968,7 +977,7 @@ if [ $BRinterface = "CLI" ]; then
   
   if [ $BRmode = "transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      echo -e "\n\e[00;36mTranfer only hidden files and folder in /home ?\e[00m"
+      echo -e "\n\e[00;36mTranfer entire /home directory?\n(If no only hidden files and folders will be tranfered)\e[00m"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -978,11 +987,11 @@ if [ $BRinterface = "CLI" ]; then
       fi
   
       if [ $def = "y" ] || [ $def = "Y" ]; then
-        BRhidden="y"
-        echo -e "\e[00;32mOnly /home's hidden files and folders will be tranfered\e[00m" 
-      elif [ $def = "n" ] || [ $def = "N" ]; then
         BRhidden="n"
         echo -e "\e[00;32mEntire /home directory will be tranfered\e[00m" 
+      elif [ $def = "n" ] || [ $def = "N" ]; then
+        BRhidden="y"
+         echo -e "\e[00;32mOnly /home's hidden files and folders will be tranfered\e[00m" 
       else
         echo -e "\e[00;31mPlease select a valid option\e[00m"
       fi
@@ -1247,7 +1256,7 @@ fi
       sleep 1
     elif [ $BRmode = "transfer" ]; then
       echo -e "\n==>TRANSFERING"
-      rsync -aAXv / /mnt/target  ${BR_RSYNCOPTS} 2>&1 && echo SUCCESS  || echo WARNING
+      run_rsync
     fi
 
     echo -e "\n==>MOUNTING /dev /proc /sys"

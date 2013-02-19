@@ -963,7 +963,7 @@ if [ $BRinterface = "CLI" ]; then
 
   while [ -z "$BRmode" ]; do
     echo -e "\n\e[00;36mSelect Mode or enter Q to quit\e[00m"
-    select c in "Restore system from backup file" "Transfer this system"; do
+    select c in "Restore system from a backup file" "Transfer this system"; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "\e[00;33mAborted by User\e[00m"
         exit
@@ -1225,8 +1225,7 @@ if [ $BRinterface = "CLI" ]; then
   
   echo -e "\n\e[00;32mSUMMARY\e[00m"
   show_summary
-  echo " "
-
+ 
   while [ -z "$BRcontinue" ]; do
     echo -e "\n\e[00;36mContinue?\e[00m"
     read -p "(Y/n):" an

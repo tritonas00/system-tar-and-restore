@@ -3,8 +3,8 @@
 clear
 
 run_rsync() {
-   if [ ${BRhidden} = "n" ]; then
-     rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs} 2>&1 && echo SUCCESS  || echo WARNING
+  if [ ${BRhidden} = "n" ]; then
+    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs} 2>&1 && echo SUCCESS  || echo WARNING
   elif [ ${BRhidden} = "y" ]; then
     find /home/*/  -maxdepth 1 -iname ".*" -prune -o -print   > /tmp/list
     rsync -aAXv / /mnt/target --exclude-from=/tmp/list --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs} 2>&1 && echo SUCCESS  || echo WARNING
@@ -494,7 +494,9 @@ clean_unmount_in() {
 clean_unmount_out() {
   echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~ 
-  rm /mnt/target/fullbackup.tgz
+  if [ -f /mnt/target/fullbackup.tgz ]; then
+    rm /mnt/target/fullbackup.tgz
+  fi
   umount /mnt/target/dev
   umount /mnt/target/proc
   umount /mnt/target/sys
@@ -1117,99 +1119,32 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
   fi
 
-
+  if [ $BRmode = "restore" ]; then
+    echo -e "\n==>GETTING TAR IMAGE"
   
-if [ $BRmode = "restore" ]; then
-  echo -e "\n==>GETTING TAR IMAGE"
-  
-  if [ -n "$BRfile" ]; then
-    echo "Copying file..."
-    cp $BRfile "/mnt/target/fullbackup.tgz"
-  fi
-
-  if [ -n "$BRurl" ]; then
-    if [ -n "$BRusername" ]; then
-      wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2
-      if [ "$?" -ne "0" ]; then
-        echo -e "\e[00;31mError downloading file\e[00m"
-        echo -e "\e[00;31mWrong URL or network is down\e[00m"
-        rm /mnt/target/fullbackup.tgz 2>/dev/null
-      fi
-    else
-      wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
-      if [ "$?" -ne "0" ]; then
-        echo -e "\e[00;31mError downloading file\e[00m"
-        echo -e "\e[00;31mWrong URL or network is down\e[00m"
-        rm /mnt/target/fullbackup.tgz 2>/dev/null
-      fi
+    if [ -n "$BRfile" ]; then
+      echo "Copying file..."
+      cp $BRfile "/mnt/target/fullbackup.tgz"
     fi
-  fi
 
-  if [ -f /mnt/target/fullbackup.tgz ]; then
-    echo "Checking archive..."
-    tar tf /mnt/target/fullbackup.tgz 1>/dev/null
-    if [ "$?" = "0" ]; then
-      echo -e "\e[00;32mArchive appears OK\e[00m"
-    else 
-      echo -e "\e[00;31mError reading archive\e[00m"
-      rm /mnt/target/fullbackup.tgz
-    fi 
-  fi
-
-  while [ ! -f /mnt/target/fullbackup.tgz ]; do
-    echo -e "\n\e[00;36mSelect an option or enter Q to quit\e[00m"
-    select c in "File" "URL" "Protected URL"; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-        echo -e "\e[00;33mAborted by User\e[00m"
-        if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-          unmount_only_in_subvol
-          remount_delete_subvols
+    if [ -n "$BRurl" ]; then
+      if [ -n "$BRusername" ]; then
+        wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2
+        if [ "$?" -ne "0" ]; then
+          echo -e "\e[00;31mError downloading file\e[00m"
+          echo -e "\e[00;31mWrong URL or network is down\e[00m"
+          rm /mnt/target/fullbackup.tgz 2>/dev/null
         fi
-        clean_unmount_in
-      elif [ $REPLY = "1" ]; then        
-        echo -e "\n\e[00;36mEnter the path of the backup file\e[00m"
-        read -p "Path:" BRfile
-        if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-          echo -e "\e[00;31mFile not found\e[00m"
-	else
-          echo "Copying file..."
-          cp $BRfile "/mnt/target/fullbackup.tgz"                  
-	fi        
-        break
-      
-      elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
-        echo -e "\n\e[00;36mEnter the URL for the backup file\e[00m"
-        read -p "URL:" BRurl
-        echo " "
-        if [ $REPLY = "3" ]; then
-	  read -p "USERNAME: " BRusername
-          x='x' 
-          echo -n "PASSWORD: " 
-          while [ "$x" ]; do 
-            read -sn1 x 
-            BRpassword=$BRpassword$x 
-            echo -n "*" 
-          done 
-	  echo " "
-	  wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2
-          if [ "$?" -ne "0" ]; then
-            echo -e "\e[00;31mError downloading file\e[00m"
-            echo -e "\e[00;31mWrong URL or network is down\e[00m"
-	    rm /mnt/target/fullbackup.tgz 2>/dev/null
-          fi
-	  break
-        fi
+      else
         wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
         if [ "$?" -ne "0" ]; then
           echo -e "\e[00;31mError downloading file\e[00m"
           echo -e "\e[00;31mWrong URL or network is down\e[00m"
-	  rm /mnt/target/fullbackup.tgz 2>/dev/null
+          rm /mnt/target/fullbackup.tgz 2>/dev/null
         fi
-        break
-      else
-        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
       fi
-    done
+    fi
+
     if [ -f /mnt/target/fullbackup.tgz ]; then
       echo "Checking archive..."
       tar tf /mnt/target/fullbackup.tgz 1>/dev/null
@@ -1220,8 +1155,73 @@ if [ $BRmode = "restore" ]; then
         rm /mnt/target/fullbackup.tgz
       fi 
     fi
-  done
-fi
+
+    while [ ! -f /mnt/target/fullbackup.tgz ]; do
+      echo -e "\n\e[00;36mSelect an option or enter Q to quit\e[00m"
+      select c in "File" "URL" "Protected URL"; do
+        if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+          echo -e "\e[00;33mAborted by User\e[00m"
+          if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+            unmount_only_in_subvol
+            remount_delete_subvols
+          fi
+          clean_unmount_in
+        elif [ $REPLY = "1" ]; then        
+          echo -e "\n\e[00;36mEnter the path of the backup file\e[00m"
+          read -p "Path:" BRfile
+          if [ ! -f $BRfile ] || [ -z $BRfile ]; then
+            echo -e "\e[00;31mFile not found\e[00m"
+	  else
+            echo "Copying file..."
+            cp $BRfile "/mnt/target/fullbackup.tgz"                  
+	  fi        
+          break
+      
+        elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
+          echo -e "\n\e[00;36mEnter the URL for the backup file\e[00m"
+          read -p "URL:" BRurl
+          echo " "
+          if [ $REPLY = "3" ]; then
+	    read -p "USERNAME: " BRusername
+            x='x' 
+            echo -n "PASSWORD: " 
+            while [ "$x" ]; do 
+              read -sn1 x 
+              BRpassword=$BRpassword$x 
+              echo -n "*" 
+            done 
+	    echo " "
+	    wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2
+            if [ "$?" -ne "0" ]; then
+              echo -e "\e[00;31mError downloading file\e[00m"
+              echo -e "\e[00;31mWrong URL or network is down\e[00m"
+	      rm /mnt/target/fullbackup.tgz 2>/dev/null
+            fi
+	    break
+          fi
+          wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
+          if [ "$?" -ne "0" ]; then
+            echo -e "\e[00;31mError downloading file\e[00m"
+            echo -e "\e[00;31mWrong URL or network is down\e[00m"
+	    rm /mnt/target/fullbackup.tgz 2>/dev/null
+          fi
+          break
+        else
+          echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+        fi
+      done
+      if [ -f /mnt/target/fullbackup.tgz ]; then
+        echo "Checking archive..."
+        tar tf /mnt/target/fullbackup.tgz 1>/dev/null
+        if [ "$?" = "0" ]; then
+          echo -e "\e[00;32mArchive appears OK\e[00m"
+        else 
+          echo -e "\e[00;31mError reading archive\e[00m"
+          rm /mnt/target/fullbackup.tgz
+        fi 
+      fi
+    done
+  fi
   
   echo -e "\n\e[00;32mSUMMARY\e[00m"
   show_summary

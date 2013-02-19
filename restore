@@ -2,6 +2,15 @@
 
 clear
 
+run_rsync() {
+  BR_RSYNCOPTS="--exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs}"
+  
+  if [ ${BRhidden} = "y" ]; then
+    find /home/*/  -maxdepth 1 -iname ".*" -prune -o -print   > /tmp/list
+    BR_RSYNCOPTS="${BR_RSYNCOPTS} --exclude-from=/tmp/list"
+  fi
+}
+
 part_list() {
   for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
 }
@@ -182,7 +191,12 @@ show_summary() {
   else 
     echo "Bootloader: None (WARNING)"
   fi
-  echo "Backup File: $BRfile $BRurl"
+
+  if [ $BRmode = "restore" ]; then
+    echo "Backup File: $BRfile $BRurl"
+  elif [ $BRmode = "transfer" ]; then
+    echo "Source: /"
+  fi
 }
 
 mount_dev_proc_sys() {
@@ -932,6 +946,49 @@ if [ $BRinterface = "CLI" ]; then
     unset BRsyslinux
   fi
 
+  while [ -z "$BRmode" ]; do
+    echo -e "\n\e[00;36mSelect Mode or enter Q to quit\e[00m"
+    select c in Restore Transfer; do
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "\e[00;33mAborted by User\e[00m"
+        exit
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
+        echo -e "\e[00;32mYou selected Restore Mode\e[00m" 
+        BRmode="restore"
+        break
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
+        echo -e "\e[00;32mYou selected Transfer Mode\e[00m" 
+        BRmode="transfer"
+        break
+      else
+        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+      fi
+    done
+  done
+  
+  if [ $BRmode = "transfer" ]; then
+    while [ -z "$BRhidden" ]; do
+      echo -e "\n\e[00;36mTranfer only hidden files and folder in /home ?\e[00m"
+      read -p "(Y/n):" an
+
+      if [ -n "$an" ]; then
+        def=$an
+      else
+        def="y"
+      fi
+  
+      if [ $def = "y" ] || [ $def = "Y" ]; then
+        BRhidden="y"
+        echo -e "\e[00;32mOnly /home's hidden files and folders will be tranfered\e[00m" 
+      elif [ $def = "n" ] || [ $def = "N" ]; then
+        BRhidden="n"
+        echo -e "\e[00;32mEntire /home directory will be tranfered\e[00m" 
+      else
+        echo -e "\e[00;31mPlease select a valid option\e[00m"
+      fi
+    done
+  fi
+
   check_input
   mount_all
 
@@ -1047,6 +1104,9 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
   fi
 
+
+  
+if [ $BRmode = "restore" ]; then
   echo -e "\n==>GETTING TAR IMAGE"
   
   if [ -n "$BRfile" ]; then
@@ -1148,6 +1208,7 @@ if [ $BRinterface = "CLI" ]; then
       fi 
     fi
   done
+fi
   
   echo -e "\n\e[00;32mSUMMARY\e[00m"
   show_summary
@@ -1180,9 +1241,14 @@ if [ $BRinterface = "CLI" ]; then
     fi
     clean_unmount_in
   elif [  "x$BRcontinue" = "xy" ]; then
-    echo -e "\n==>EXTRACTING"
-    tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING  
-    sleep 1
+    if [ $BRmode = "restore" ]; then
+      echo -e "\n==>EXTRACTING"
+      tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING  
+      sleep 1
+    elif [ $BRmode = "transfer" ]; then
+      echo -e "\n==>TRANSFERING"
+      rsync -aAXv / /mnt/target  ${BR_RSYNCOPTS} 2>&1 && echo SUCCESS  || echo WARNING
+    fi
 
     echo -e "\n==>MOUNTING /dev /proc /sys"
     mount_dev_proc_sys
@@ -1227,16 +1293,20 @@ if [ $BRinterface = "CLI" ]; then
       done
     fi
 
-    echo -e "\n==>REBUILDING INITRAMFS IMAGE"
-    build_initramfs
-    sleep 1
+    if [ $BRmode = "restore" ]; then
+      echo -e "\n==>REBUILDING INITRAMFS IMAGE"
+      build_initramfs
+      sleep 1
+    fi
 
     install_bootloader
     sleep 1
 
-    echo -e "\n==>GENERATING LOCALES"
-    generate_locales
-    sleep 1
+    if [ $BRmode = "restore" ]; then
+      echo -e "\n==>GENERATING LOCALES"
+      generate_locales
+      sleep 1
+    fi
 
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
       echo -e "\e[00;36mCompleted. Press ENTER to unmount and clean, then reboot your system.\e[00m"
@@ -1640,4 +1710,8 @@ to install (or update an existing) one. To do so:
 
 else
   echo -e "\e[00;31mWrong interface name:\e[00m $BRinterface\n\e[00;36mAvailable options: CLI Dialog\e[00m"
+fi
+
+if [ -f /tmp/list ]; then
+  rm -r /tmp/list
 fi

@@ -3,8 +3,8 @@
 clear
 
 run_rsync() {
-  BR_RSYNCOPTS="--exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs}"
-  
+  BR_RSYNCOPTS="--exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
+
   if [ ${BRhidden} = "y" ]; then
     find /home/*/  -maxdepth 1 -iname ".*" -prune -o -print   > /tmp/list
     BR_RSYNCOPTS="${BR_RSYNCOPTS} --exclude-from=/tmp/list"
@@ -667,6 +667,7 @@ while true; do
     ;;
     -t|--transfer)
       BRmode="transfer"
+      BRrestore="off"
       shift
     ;;
     --help)
@@ -730,8 +731,8 @@ if [ -n "$BRroot" ]; then
     BRgrub=-1
     BRsyslinux=-1
   fi  
-   
-  if [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
+
+  if [ -z "$BRfile" ] && [ -z "$BRurl" ] && [ -z "$BRrestore"  ]; then
     echo -e "\e[00;33mYou must enter a file or a URL to get the backup\e[00m"
     exit
   fi
@@ -1306,16 +1307,13 @@ fi
       echo -e "\n==>REBUILDING INITRAMFS IMAGE"
       build_initramfs
       sleep 1
-    fi
-
-    install_bootloader
-    sleep 1
-
-    if [ $BRmode = "restore" ]; then
       echo -e "\n==>GENERATING LOCALES"
       generate_locales
       sleep 1
     fi
+
+    install_bootloader
+    sleep 1
 
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
       echo -e "\e[00;36mCompleted. Press ENTER to unmount and clean, then reboot your system.\e[00m"

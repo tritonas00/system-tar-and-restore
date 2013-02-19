@@ -3,14 +3,12 @@
 clear
 
 run_rsync() {
-  BR_RSYNCOPTS="--exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
-
-  if [ ${BRhidden} = "y" ]; then
+   if [ ${BRhidden} = "n" ]; then
+     rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs} 2>&1 && echo SUCCESS  || echo WARNING
+  elif [ ${BRhidden} = "y" ]; then
     find /home/*/  -maxdepth 1 -iname ".*" -prune -o -print   > /tmp/list
-    BR_RSYNCOPTS="${BR_RSYNCOPTS} --exclude-from=/tmp/list"
+    rsync -aAXv / /mnt/target --exclude-from=/tmp/list --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs} 2>&1 && echo SUCCESS  || echo WARNING
   fi
-
-  rsync -aAXv / /mnt/target  ${BR_RSYNCOPTS} 2>&1 && echo SUCCESS  || echo WARNING
 }
 
 part_list() {

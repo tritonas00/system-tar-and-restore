@@ -1321,8 +1321,10 @@ if [ $BRinterface = "CLI" ]; then
     generate_locales
     sleep 1
 
-    install_bootloader
-    sleep 1
+    if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+      install_bootloader
+      sleep 1
+    fi
 
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
       echo -e "\e[00;36mCompleted. Press ENTER to unmount and clean, then reboot your system.\e[00m"

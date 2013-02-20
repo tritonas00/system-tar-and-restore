@@ -271,16 +271,10 @@ build_initramfs() {
 
   elif [ $BRdistro = Fedora ]; then
     for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
-    BRmax=${list[0]}
-    for f in ${list[@]}; do
-      if [[ "$f" > "$BRmax" ]]; then
-        BRmax=$f
-      fi
+      echo working...
+      chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
     done
-    BRinitrd=$BRmax  
-    echo working...
-    chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
-  fi
+ fi
 }
 
 install_bootloader() {

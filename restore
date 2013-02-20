@@ -260,8 +260,8 @@ generate_fstab() {
 
 build_initramfs() {
   if [ $BRdistro = Arch ]; then
-    for i in `find /boot -name vmlinuz* | sed 's_/boot/vmlinuz-*__'`  ; do
-     chroot /mnt/target mkinitcpio -p $i  2>&1 && echo SUCCESS  || echo WARNING
+    for BRinitrd in `find /boot -name vmlinuz* | sed 's_/boot/vmlinuz-*__'`  ; do
+     chroot /mnt/target mkinitcpio -p $BRinitrd  2>&1 && echo SUCCESS  || echo WARNING
     done
     
   elif [ $BRdistro = Debian ]; then
@@ -309,11 +309,15 @@ install_bootloader() {
       chroot /mnt/target syslinux-install_update -i -a -m
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /mnt/target/boot/syslinux/syslinux.cfg
       if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-        echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-        echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        for BRinitrd in `find /boot -name vmlinuz* | sed 's_/boot/vmlinuz-*__'`  ; do
+          echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+          echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        done  
       else
-        echo -e "LABEL arch\n\tMENU LABEL Arch Linux\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-linux.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-        echo -e "LABEL archfallback\n\tMENU LABEL Arch Linux Fallback\n\tLINUX ../vmlinuz-linux\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-linux-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        for BRinitrd in `find /boot -name vmlinuz* | sed 's_/boot/vmlinuz-*__'`  ; do
+          echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+          echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot  ro\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        done
       fi
 
     elif [ $BRdistro = Debian ]; then

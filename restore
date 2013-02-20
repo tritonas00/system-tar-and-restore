@@ -1698,8 +1698,10 @@ Edit fstab ?"  30 70
   build_initramfs 2>&1 | dialog --progressbox "REBUILDING INITRAMFS IMAGE" 30 70
   sleep 2
 
-  install_bootloader 2>&1 | dialog --progressbox "INSTALLING AND CONFIGURING BOOTLOADER" 30 70
-  sleep 2
+  if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+    install_bootloader 2>&1 | dialog --progressbox "INSTALLING AND CONFIGURING BOOTLOADER" 30 70
+    sleep 2
+  fi
 
   generate_locales 2>&1 | dialog --progressbox "GENERATING LOCALES" 30 70
   sleep 2

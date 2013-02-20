@@ -335,14 +335,6 @@ install_bootloader() {
       fi
 
     elif [ $BRdistro = Fedora ]; then
-      list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
-      BRmax=${list[0]}
-      for f in ${list[@]}; do
-        if [[ "$f" > "$BRmax" ]]; then
-          BRmax=$f
-        fi
-      done
-      BRinitrd=$BRmax  
       mkdir -p /mnt/target/boot/syslinux
       chroot /mnt/target extlinux -i /boot/syslinux
       if [ -n "$BRboot" ]; then
@@ -359,9 +351,13 @@ install_bootloader() {
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
       echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT fedora" >> /mnt/target/boot/syslinux/syslinux.cfg
       if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-       echo -e "LABEL fedora\n\tMENU LABEL Fedora\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
+          echo -e "LABEL fedora\n\tMENU LABEL Fedora-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        done
       else
-        echo -e "LABEL fedora\n\tMENU LABEL Fedora\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
+          echo -e "LABEL fedora\n\tMENU LABEL Fedora-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        done
       fi
     fi
   fi

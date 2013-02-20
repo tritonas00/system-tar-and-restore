@@ -51,6 +51,13 @@ check_input() {
     BRSTOP=y
   fi
 
+  if [ "x$BRmode" = "xtransfer" ]; then
+    if [ -z $(which rsync 2> /dev/null) ];then
+      echo -e "\e[00;31mPackage rsync is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"
+      BRSTOP=y
+    fi
+  fi
+
   if [ -n "$BRroot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
@@ -963,7 +970,7 @@ if [ $BRinterface = "CLI" ]; then
 
   while [ -z "$BRmode" ]; do
     echo -e "\n\e[00;36mSelect Mode or enter Q to quit\e[00m"
-    select c in "Restore system from a backup file" "Transfer this system"; do
+    select c in "Restore system from a backup file" "Transfer this system with rsync"; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "\e[00;33mAborted by User\e[00m"
         exit
@@ -1255,10 +1262,11 @@ if [ $BRinterface = "CLI" ]; then
   elif [  "x$BRcontinue" = "xy" ]; then
     if [ $BRmode = "restore" ]; then
       echo -e "\n==>EXTRACTING"
-      tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING  
       sleep 1
+      tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING  
     elif [ $BRmode = "transfer" ]; then
       echo -e "\n==>TRANSFERING"
+      sleep 1
       run_rsync
     fi
 
@@ -1305,14 +1313,13 @@ if [ $BRinterface = "CLI" ]; then
       done
     fi
 
-    if [ $BRmode = "restore" ]; then
-      echo -e "\n==>REBUILDING INITRAMFS IMAGE"
-      build_initramfs
-      sleep 1
-      echo -e "\n==>GENERATING LOCALES"
-      generate_locales
-      sleep 1
-    fi
+    echo -e "\n==>REBUILDING INITRAMFS IMAGE"
+    build_initramfs
+    sleep 1    
+
+    echo -e "\n==>GENERATING LOCALES"
+    generate_locales
+    sleep 1
 
     install_bootloader
     sleep 1

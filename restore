@@ -271,7 +271,7 @@ build_initramfs() {
 
   elif [ $BRdistro = Fedora ]; then
     for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
-      echo working...
+      echo "==>Building image for $BRinitrd..."
       chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
     done
  fi

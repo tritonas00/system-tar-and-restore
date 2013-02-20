@@ -55,7 +55,7 @@ check_input() {
     BRSTOP=y
   fi
 
-  if [ "x$BRmode" = "xtransfer" ]; then
+  if [ "x$BRmode" = "xTransfer" ]; then
     if [ -z $(which rsync 2> /dev/null) ];then
       echo -e "\e[00;31mPackage rsync is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"
       BRSTOP=y
@@ -208,9 +208,9 @@ show_summary() {
     echo "Bootloader: None (WARNING)"
   fi
 
-  if [ $BRmode = "restore" ]; then
+  if [ $BRmode = "Restore" ]; then
     echo "Backup File: $BRfile $BRurl"
-  elif [ $BRmode = "transfer" ]; then
+  elif [ $BRmode = "Transfer" ]; then
     echo "Source: /"
   fi
 }
@@ -642,12 +642,12 @@ while true; do
       shift 2
     ;;
     -f|--file) 
-      BRmode="restore"
+      BRmode="Restore"
       BRfile=$2      
       shift 2
     ;;
     -u|--url) 
-      BRmode="restore"
+      BRmode="Restore"
       BRurl=$2
       shift 2
     ;;
@@ -682,7 +682,7 @@ while true; do
       shift
     ;;
     -t|--transfer)
-      BRmode="transfer"
+      BRmode="Transfer"
       BRrestore="off"
       shift
     ;;
@@ -980,11 +980,11 @@ if [ $BRinterface = "CLI" ]; then
         exit
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
         echo -e "\e[00;32mYou selected Restore Mode\e[00m" 
-        BRmode="restore"
+        BRmode="Restore"
         break
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
         echo -e "\e[00;32mYou selected Transfer Mode\e[00m" 
-        BRmode="transfer"
+        BRmode="Transfer"
         break
       else
         echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
@@ -992,7 +992,7 @@ if [ $BRinterface = "CLI" ]; then
     done
   done
   
-  if [ $BRmode = "transfer" ]; then
+  if [ $BRmode = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
       echo -e "\n\e[00;36mTranfer entire /home directory?\n(If no only hidden files and folders will be tranfered)\e[00m"
       read -p "(Y/n):" an
@@ -1130,7 +1130,7 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
   fi
 
-  if [ $BRmode = "restore" ]; then
+  if [ $BRmode = "Restore" ]; then
     echo -e "\n==>GETTING TAR IMAGE"
   
     if [ -n "$BRfile" ]; then
@@ -1264,11 +1264,11 @@ if [ $BRinterface = "CLI" ]; then
     fi
     clean_unmount_in
   elif [  "x$BRcontinue" = "xy" ]; then
-    if [ $BRmode = "restore" ]; then
+    if [ $BRmode = "Restore" ]; then
       echo -e "\n==>EXTRACTING"
       sleep 1
       tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING  
-    elif [ $BRmode = "transfer" ]; then
+    elif [ $BRmode = "Transfer" ]; then
       echo -e "\n==>TRANSFERING"
       sleep 1
       run_rsync
@@ -1459,6 +1459,25 @@ Press OK to continue."  22 80
     unset BRsyslinux
   fi
 
+  while [ -z "$BRmode" ]; do
+    BRmode=$(dialog --cancel-label Quit --menu "Select Mode" 12 50 12   Restore "system from a backup file"  Transfer "this system with rsync" 2>&1 1>&3)  
+    if [ $? = "1" ]; then
+      BRmode=" "
+      exit
+    fi
+  done
+
+  if [ $BRmode = "Transfer" ]; then
+    while [ -z "$BRhidden" ]; do
+      dialog --title "Message"  --yesno "Tranfer entire /home directory?\n\nIf no only hidden files and folders will be tranfered" 10 50
+      if [ $? = "0" ]; then
+        BRhidden="n"
+      else
+        BRhidden="y"
+      fi
+    done
+  fi
+
   check_input
 
   mount_all | dialog --progressbox "Working..." 30 70
@@ -1566,85 +1585,32 @@ Press OK to continue."  22 80
     sleep 3
   fi
 
-  if [ -n "$BRfile" ]; then
-    ( echo "Copying file..." 
-    cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox  4 30
-  fi
-
-  if [ -n "$BRurl" ]; then
-    if [ -n "$BRusername" ]; then
-      ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
-      if [ "$?" -ne "0" ]; then
-        echo "Error downloading file"
-        echo "Wrong URL or network is down"
-        sleep 2
-        rm /mnt/target/fullbackup.tgz 2>/dev/null
-      fi ) | dialog --progressbox "Downloading file..." 30 70
-    else
-      ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
-      if [ "$?" -ne "0" ]; then
-        echo "Error downloading file"
-        echo "Wrong URL or network is down"
-        sleep 2
-        rm /mnt/target/fullbackup.tgz 2>/dev/null
-      fi ) | dialog --progressbox "Downloading file..." 30 70
+  if [ $BRmode = "Restore" ]; then
+    if [ -n "$BRfile" ]; then
+      ( echo "Copying file..." 
+      cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox  4 30
     fi
-  fi
 
-  if [ -f /mnt/target/fullbackup.tgz ]; then
-    ( echo "Checking archive..." 
-      tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
-      if [ "$?" = "0" ]; then
-        echo  "Archive appears OK"
-        sleep 2
-      else 
-        echo  "Error reading archive"
-        sleep 2
-        rm /mnt/target/fullbackup.tgz 2>&1
-      fi ) | dialog --progressbox 4 30
-  fi 
-
-  while [ ! -f /mnt/target/fullbackup.tgz ]; do
-    REPLY=$(dialog  --cancel-label Quit --menu "Select backup file. Choose an option." 13 50 13  File "local file" URL "remote file" Protected "protected server" 2>&1 1>&3)
-    if [ $? = "1" ]; then
-      if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-        unmount_only_in_subvol
-        remount_delete_subvols
-      fi
-      clean_unmount_in
-    elif [ $REPLY = "File" ]; then
-      BRfile=$(dialog  --no-cancel --inputbox "Enter the path of the backup file" 8 50 2>&1 1>&3)
-        if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-          echo "File not found" | dialog --progressbox "ERROR" 6 20
-          sleep 2
-        else
-          ( echo "Copying file..."
-          cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox 4 30
-        fi
-  
-    elif [ $REPLY = "URL" ] || [ $REPLY = "Protected" ]; then
-      BRurl=$(dialog  --no-cancel --inputbox "Enter the URL for the backup file" 8 50 2>&1 1>&3)
-      if [  $REPLY = "Protected" ]; then
-        BRusername=$(dialog --no-cancel --inputbox "Enter the username" 8 50 2>&1 1>&3)
-        BRpassword=$(dialog --no-cancel --insecure --passwordbox "Enter the password" 8 50 2>&1 1>&3)
-        ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
+    if [ -n "$BRurl" ]; then
+      if [ -n "$BRusername" ]; then
+        ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
         if [ "$?" -ne "0" ]; then
-          echo  "Error downloading file"
+          echo "Error downloading file"
           echo "Wrong URL or network is down"
-	  sleep 2
+          sleep 2
           rm /mnt/target/fullbackup.tgz 2>/dev/null
         fi ) | dialog --progressbox "Downloading file..." 30 70
-
-      elif [ $REPLY = "URL" ]; then
+      else
         ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
         if [ "$?" -ne "0" ]; then
-          echo  "Error downloading file"
+          echo "Error downloading file"
           echo "Wrong URL or network is down"
           sleep 2
           rm /mnt/target/fullbackup.tgz 2>/dev/null
         fi ) | dialog --progressbox "Downloading file..." 30 70
-      fi 
+      fi
     fi
+
     if [ -f /mnt/target/fullbackup.tgz ]; then
       ( echo "Checking archive..." 
         tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
@@ -1656,8 +1622,63 @@ Press OK to continue."  22 80
           sleep 2
           rm /mnt/target/fullbackup.tgz 2>&1
         fi ) | dialog --progressbox 4 30
-    fi
-  done
+    fi 
+
+    while [ ! -f /mnt/target/fullbackup.tgz ]; do
+      REPLY=$(dialog  --cancel-label Quit --menu "Select backup file. Choose an option." 13 50 13  File "local file" URL "remote file" Protected "protected server" 2>&1 1>&3)
+      if [ $? = "1" ]; then
+        if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+          unmount_only_in_subvol
+          remount_delete_subvols
+        fi
+        clean_unmount_in
+      elif [ $REPLY = "File" ]; then
+        BRfile=$(dialog  --no-cancel --inputbox "Enter the path of the backup file" 8 50 2>&1 1>&3)
+          if [ ! -f $BRfile ] || [ -z $BRfile ]; then
+            echo "File not found" | dialog --progressbox "ERROR" 6 20
+            sleep 2
+          else
+            ( echo "Copying file..."
+            cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox 4 30
+          fi
+  
+      elif [ $REPLY = "URL" ] || [ $REPLY = "Protected" ]; then
+        BRurl=$(dialog  --no-cancel --inputbox "Enter the URL for the backup file" 8 50 2>&1 1>&3)
+        if [  $REPLY = "Protected" ]; then
+          BRusername=$(dialog --no-cancel --inputbox "Enter the username" 8 50 2>&1 1>&3)
+          BRpassword=$(dialog --no-cancel --insecure --passwordbox "Enter the password" 8 50 2>&1 1>&3)
+          ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
+          if [ "$?" -ne "0" ]; then
+            echo  "Error downloading file"
+            echo "Wrong URL or network is down"
+	    sleep 2
+            rm /mnt/target/fullbackup.tgz 2>/dev/null
+          fi ) | dialog --progressbox "Downloading file..." 30 70
+
+        elif [ $REPLY = "URL" ]; then
+          ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
+          if [ "$?" -ne "0" ]; then
+            echo  "Error downloading file"
+            echo "Wrong URL or network is down"
+            sleep 2
+            rm /mnt/target/fullbackup.tgz 2>/dev/null
+          fi ) | dialog --progressbox "Downloading file..." 30 70
+        fi 
+      fi
+      if [ -f /mnt/target/fullbackup.tgz ]; then
+        ( echo "Checking archive..." 
+          tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
+          if [ "$?" = "0" ]; then
+            echo  "Archive appears OK"
+            sleep 2
+          else 
+            echo  "Error reading archive"
+            sleep 2
+            rm /mnt/target/fullbackup.tgz 2>&1
+          fi ) | dialog --progressbox 4 30
+      fi
+    done
+  fi
 
   if [ -z $def ]; then
     dialog --title "Summary"  --yesno "`show_summary`
@@ -1679,8 +1700,13 @@ Press Yes to continue, or No to abort." 19 60
     clean_unmount_in
   fi  
 
-  ( tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING ) | dialog --progressbox "EXTRACTING" 30 90
-  sleep 2
+  if [ $BRmode = "Restore" ]; then
+    ( tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING ) | dialog --progressbox "EXTRACTING" 30 90
+    sleep 2
+  elif [ $BRmode = "Transfer" ]; then
+    run_rsync  2>&1 | dialog --progressbox "TRANSFERING" 30 90
+    sleep 2
+  fi
 
   mount_dev_proc_sys 2>&1 | dialog --progressbox "MOUNTING /dev /proc /sys" 15 70
   sleep 2

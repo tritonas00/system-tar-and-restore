@@ -7,7 +7,9 @@ run_rsync() {
     rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs} 2>&1 && echo SUCCESS  || echo WARNING
   elif [ ${BRhidden} = "y" ]; then
      rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/*}
-     rsync -aAXv /home/*/.[^.]* /mnt/target/home/*/ 2>&1 && echo SUCCESS  || echo WARNING
+     for dir in `ls /home` ; do
+       rsync -aAXv /home/$dir/.[^.]* /mnt/target/home/$dir/
+     done
   fi
 }
 

@@ -260,8 +260,10 @@ generate_fstab() {
 
 build_initramfs() {
   if [ $BRdistro = Arch ]; then
-    chroot /mnt/target mkinitcpio -p linux  2>&1 && echo SUCCESS  || echo WARNING
-
+    for i in `find /boot -name vmlinuz* | sed 's_/boot/vmlinuz-*__'`  ; do
+     chroot /mnt/target mkinitcpio -p $i  2>&1 && echo SUCCESS  || echo WARNING
+    done
+    
   elif [ $BRdistro = Debian ]; then
     list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
     BRmax=${list[0]}

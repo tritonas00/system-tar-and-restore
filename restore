@@ -265,18 +265,12 @@ build_initramfs() {
     done
     
   elif [ $BRdistro = Debian ]; then
-    list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
-    BRmax=${list[0]}
-    for f in ${list[@]}; do
-      if [[ "$f" > "$BRmax" ]]; then
-        BRmax=$f
-      fi
+    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
+      chroot /mnt/target update-initramfs -u -k $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
     done
-    BRinitrd=$BRmax
-    chroot /mnt/target update-initramfs -u -k $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
 
   elif [ $BRdistro = Fedora ]; then
-    list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
+    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
     BRmax=${list[0]}
     for f in ${list[@]}; do
       if [[ "$f" > "$BRmax" ]]; then
@@ -321,14 +315,6 @@ install_bootloader() {
       fi
 
     elif [ $BRdistro = Debian ]; then
-      list=(`ls /mnt/target/boot/vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`)
-      BRmax=${list[0]}
-      for f in ${list[@]}; do
-        if [[ "$f" > "$BRmax" ]]; then
-        BRmax=$f
-        fi
-      done
-      BRinitrd=$BRmax  
       mkdir -p /mnt/target/boot/syslinux
       chroot /mnt/target extlinux -i /boot/syslinux
       if [ -n "$BRboot" ]; then
@@ -345,9 +331,13 @@ install_bootloader() {
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
       echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT debian" >> /mnt/target/boot/syslinux/syslinux.cfg
       if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-        echo -e "LABEL debian\n\tMENU LABEL Debian\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+        for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
+          echo -e "LABEL debian\n\tMENU LABEL Debian\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+        done
       else
-        echo -e "LABEL debian\n\tMENU LABEL Debian\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+        for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
+          echo -e "LABEL debian\n\tMENU LABEL Debian\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND root=$BRroot ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+        done
       fi
 
     elif [ $BRdistro = Fedora ]; then

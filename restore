@@ -1469,7 +1469,7 @@ Press OK to continue."  22 80
 
   if [ $BRmode = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      dialog --title "Message"  --yesno "Tranfer entire /home directory?\n\nIf no only hidden files and folders will be tranfered" 10 50
+      dialog --title "Message"  --yesno "Tranfer entire /home directory?\n\nIf no only hidden files and folders will be tranfered" 9 50
       if [ $? = "0" ]; then
         BRhidden="n"
       else
@@ -1728,13 +1728,13 @@ Edit fstab ?"  30 70
   build_initramfs 2>&1 | dialog --progressbox "REBUILDING INITRAMFS IMAGE" 30 70
   sleep 2
 
+  generate_locales 2>&1 | dialog --progressbox "GENERATING LOCALES" 30 70
+  sleep 2
+
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
     install_bootloader 2>&1 | dialog --progressbox "INSTALLING AND CONFIGURING BOOTLOADER" 30 70
     sleep 2
   fi
-
-  generate_locales 2>&1 | dialog --progressbox "GENERATING LOCALES" 30 70
-  sleep 2
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
     dialog --title "Info" --msgbox  "Completed. Press OK to unmount and clean, then reboot your system."  7 50

@@ -10,7 +10,7 @@ run_rsync() {
     echo "==>Transfering /home's hidden files and folders"
     sleep 1
     for dir in `ls /home` ; do
-      rsync -aAXv /home/$dir/.[^.]* /mnt/target/home/$dir/
+      rsync -aAXv /home/$dir/.[^.]* /mnt/target/home/$dir/  --exclude=.gvfs
     done
   fi
 }
@@ -46,12 +46,12 @@ check_input() {
   fi
 
   if [ -n "$BRfile" ] && [ -n "$BRurl" ]; then
-    echo -e "\e[00;31mDont use both local file and url at the same time\e[00m"
+    echo -e "\e[00;33mDont use both local file and url at the same time\e[00m"
     BRSTOP=y
   fi
 
   if [ -n "$BRfile" ] || [ -n "$BRurl" ] && [ -n "$BRrestore" ]; then
-    echo -e "\e[00;31mDont use local file / url and tranfer mode at the same time\e[00m"
+    echo -e "\e[00;33mDont use local file / url and tranfer mode at the same time\e[00m"
     BRSTOP=y
   fi
 
@@ -135,7 +135,7 @@ check_input() {
   fi
 
   if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
-    echo -e "\e[00;31mDont use both bootloaders at the same time\e[00m"
+    echo -e "\e[00;33mDont use both bootloaders at the same time\e[00m"
     BRSTOP=y
   fi
 

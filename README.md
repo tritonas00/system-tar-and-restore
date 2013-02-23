@@ -3,17 +3,18 @@
 System tar & restore contains two bash scripts, backup and restore.
 
 The purpose is to make the process of backing up and restoring a full GNU/Linux installation easier, 
-using tar.
+using tar or transfer an existing installation using rsync.
 
 Supported distributions: Arch, Debian, Fedora
 
 ###LIMITATIONS###
 
-- LVM  (not supported)
+- LVM  (not supported - not tested)
 - UEFI (not supported - user must install bootloader manually)
 
 ###REQUIREMENTS###
 
+- rsync (for Transfer Mode)
 - dialog (for ncurses interface)
 - wget   (for downloading backup images)
 
@@ -61,12 +62,17 @@ Example:
 
 ###RESTORE###
 
-Restore script uses the above created archive to extract it in user defined partitions, generates fstab using uuids,
-rebuilds initramfs image, installs and auto-configures grub or syslinux in MBR of given device,
-re-generate locales and finally unmounts and cleans everything.
-
 User must create partitions using his favorite partition manager before running the script.
 At least one / (root) partition is required and optionally a seperate partition for /home, /boot and a swap partition.
+
+Restore script contains two modes: **Restore** and **Transfer**.
+
+In **Restore Mode**, the script uses the above created archive to extract it in user defined partitions.
+
+In **Transfer Mode**, the script uses rsync to transfer the root filesystem (/) in user defined partitions.
+
+Then generates fstab using uuids, rebuilds initramfs image for every available kernel, re-generates locales, 
+installs and auto-configures Grub or Syslinux in MBR of given device and finally unmounts and cleans everything.
 
 For booting a btrfs subvolumed root successfully with Syslinux, it is recommended to have a seperate /boot partition.
 
@@ -92,11 +98,13 @@ The script will ask for:
 
 - Bootloader install location. (MBR of the given device)  
 
+- Select Mode
+
 - If the root filesystem is btrfs, the script will ask if you want to create a subvolume for it.
    If yes, it will ask for the subvolume's name and also if you want to create seperate
    subvolumes for /home, /usr and /var inside root subvolume.  
 
-- The *.tgz image file. This can be obtained locally (by entering the full path of the file), or remotelly (by entering full url of the file).
+- If Restore Mode is selected it will ask for the *.tgz image file. This can be obtained locally (by entering the full path of the file), or remotelly (by entering full url of the file).
    Also protected url is supported, which will ask for server's username and password.  
 
 - Later it will ask you if you want to edit the generated fstab file further. Old fstab kept as fstab-old.
@@ -108,6 +116,9 @@ The script also supports all input as arguments:
 
 **-i, --interface**   
 interface to use
+
+**-t, --transfer**   
+activate tranfer mode  
 
 **-d, --distro**   
 target distribution
@@ -186,6 +197,13 @@ make subvolume for /usr
 - remote file in protected http server
 
 <code>sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -S /dev/sdb -u http://server/data/backup.tgz -n user -p pass</code>
+
+- Distro= Arch
+- root = /dev/sdb3
+- syslinux  
+- transfer mode  
+
+<code>sudo ./restore -d Arch -r /dev/sdb3 -S /dev/sdb -t</code>  
 
 **Demos** 
 

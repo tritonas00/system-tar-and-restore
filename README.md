@@ -84,7 +84,7 @@ The script will ask for:
 
 - Interface to use 
 
-- Target distribution's name. This is the name of the distribution which the tar backup contains.  
+- Target distribution
 
 - Root partition ( / )  
 

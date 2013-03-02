@@ -2,6 +2,16 @@
 
 clear
 
+detect_distro() {
+  if [ -f /mnt/target/etc/fedora-release ]; then
+    BRdistro="Fedora"
+  elif [ -f /mnt/target/etc/pacman.conf ]; then
+    BRdistro="Arch"
+  elif [ -f /mnt/target/etc/apt/sources.list ]; then
+    BRdistro="Debian"
+  fi
+}
+
 run_rsync() {
   if [ ${BRhidden} = "n" ]; then
     rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs} 2>&1 && echo SUCCESS  || echo WARNING
@@ -31,14 +41,6 @@ update_list() {
 }
 
 check_input() {
-  if [ -n "$BRdistro" ]; then  
-    for i in ${distrolist[@]}; do if [[ $i == ${BRdistro} ]] ; then BRdistrocheck="true" ; fi; done
-    if [ ! "$BRdistrocheck" = "true" ]; then
-      echo -e "\e[00;31mWrong distribution name: \e[00m$BRdistro\n\e[00;36mAvailable options: Arch Debian Fedora\e[00m"
-      BRSTOP=y
-    fi
-  fi
-
   if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
     echo -e "\e[00;31mFile not found:\e[00m $BRfile"
     BRSTOP=y
@@ -175,7 +177,7 @@ show_summary() {
     BRbootloader=Syslinux
   fi
 
-  echo -e "Distro to restore: $BRdistro\nRoot Partition: $BRroot $BRfsystem"
+  echo -e "Root Partition: $BRroot $BRfsystem"
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo "Root Subvolume: $BRrootsubvolname"
@@ -586,7 +588,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   fi
 }
 
-BRargs=`getopt -o "i:d:r:s:b:h:g:S:f:u:n:p:R:HVUyt" -l "interface:,distro:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUyt" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -600,10 +602,6 @@ while true; do
   case "$1" in
     -i|--interface)
       BRinterface=$2
-      shift 2
-    ;;
-    -d|--distro)
-      BRdistro=$2
       shift 2
     ;;
     -r|--root) 
@@ -679,7 +677,6 @@ while true; do
       echo "
 -i,  --interface       interface to use
 -t,  --transfer        activate tranfer mode
--d,  --distro          target distribution
 -r,  --root            root partition
 -s,  --swap            swap partition
 -b,  --boot            boot partition
@@ -711,7 +708,6 @@ done
 DEFAULTIFS=$IFS
 IFS=$'\n'
 
-distrolist=(Arch Debian Fedora)
 check_input
 
 if [ -n "$BRroot" ]; then
@@ -727,11 +723,6 @@ if [ -n "$BRroot" ]; then
     BRhome=-1
   fi
 
-  if [ -z "$BRdistro" ]; then
-    echo -e "\e[00;33mYou must specify your target distribution\e[00m"
-    exit
-  fi
-  
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
     BRgrub=-1
     BRsyslinux=-1
@@ -784,7 +775,7 @@ done
 if [ $BRinterface = "CLI" ]; then
   clear
 
-  if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
+  if [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     echo -e "This script will restore a backup image of your system\nor transfer this system in user defined partitions."
     echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
     echo -e "\n==>If you didn't include /home directory in the backup\n   and you already have a seperate /home partition,\n   simply enter it when prompted."
@@ -795,25 +786,9 @@ if [ $BRinterface = "CLI" ]; then
     clear
   fi
 
+  editorlist=(nano vi)
   rootlist=(` for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
                    for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done `)
-  editorlist=(nano vi)
-
-  while [ -z "$BRdistro" ]; do
-    echo -e "\n\e[00;36mSelect distribution to restore/transfer or enter Q to quit\e[00m"
-    select c in ${distrolist[@]}; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-        echo -e "\e[00;33mAborted by User\e[00m"
-        exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#distrolist[@]} ]; then
-        BRdistro=$c
-        echo -e "\e[00;32mYou selected $BRdistro\e[00m" 
-        break
-      else
-        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
-      fi
-    done  
-  done
 
   while [ -z "$BRroot" ]; do
     echo -e "\n\e[00;36mSelect the number of your root partition or enter Q to quit\e[00m"
@@ -1264,6 +1239,8 @@ if [ $BRinterface = "CLI" ]; then
       run_rsync
     fi
 
+    detect_distro
+
     echo -e "\n==>MOUNTING /dev /proc /sys"
     mount_dev_proc_sys
     sleep 1 
@@ -1343,7 +1320,7 @@ elif [ $BRinterface = "Dialog" ]; then
     exit
   fi
 
-  if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
+  if [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     dialog --no-ok --title "Info" --msgbox "This script will restore a backup image of your system or transfer this system in user defined partitions.
 
 ==>Make sure you have created and formatted at least one partition 
@@ -1363,14 +1340,6 @@ Press OK to continue."  22 80
   fi
 
   exec 3>&1
-
-  while [ -z "$BRdistro" ]; do
-    BRdistro=$(dialog --cancel-label Quit --menu "Select distribution to restore/transfer:" 12 35 12   Arch Linux  Debian Linux  Fedora Linux 2>&1 1>&3)  
-    if [ $? = "1" ]; then
-      BRdistro=" "
-      exit
-    fi 
-  done
 
   while [ -z "$BRroot" ]; do
     BRroot=$(dialog --cancel-label Quit --menu "Select root partition:" 18 60 14 `root_part_list_dialog ` 2>&1 1>&3)
@@ -1697,6 +1666,8 @@ Press Yes to continue, or No to abort." 19 60
     run_rsync  2>&1 | dialog --progressbox "TRANSFERING" 30 90
     sleep 2
   fi
+
+  detect_distro
 
   mount_dev_proc_sys 2>&1 | dialog --progressbox "MOUNTING /dev /proc /sys" 15 70
   sleep 2

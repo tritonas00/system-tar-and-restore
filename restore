@@ -15,12 +15,19 @@ run_rsync() {
   fi
 }
 
-part_list() {
+part_list_dialog() {
   for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
+  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"`  -e `echo /dev/mapper/"${BRboot##*/}"`
+}
+
+root_part_list_dialog() {
+  for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
+  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
 }
 
 update_list() {
-  list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}") ` )
+  list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")
+             for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e $(echo /dev/mapper/"${BRroot##*/}") -e $(echo /dev/mapper/"${BRswap##*/}") -e $(echo /dev/mapper/"${BRhome##*/}") -e $(echo /dev/mapper/"${BRboot##*/}") ` )
 }
 
 check_input() {
@@ -54,10 +61,22 @@ check_input() {
     fi
   fi
 
-
+  if [ -n "$BRroot" ]; then
+    for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
+    for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
+    if [ ! "$BRrootcheck" = "true" ]; then
+      echo -e "\e[00;31mWrong root partition:\e[00m $BRroot"
+      BRSTOP=y
+    fi
+    if grep -wq $BRroot  /proc/mounts; then
+      echo -e "\e[00;33m$BRroot is already mounted as $(df -m | grep "$BRroot" | awk '{ print $6 }'), refusing to use it\e[00m"
+      BRSTOP=y
+    fi
+  fi
 
   if [ -n "$BRswap" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
+    for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "\e[00;31mWrong swap partition:\e[00m $BRswap"
       BRSTOP=y
@@ -87,6 +106,7 @@ check_input() {
 
   if [ -n "$BRboot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
+    for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     if [ ! "$BRbootcheck" = "true" ]; then
     echo -e "\e[00;31mWrong boot partition:\e[00m $BRboot"
       BRSTOP=y
@@ -765,7 +785,7 @@ if [ $BRinterface = "CLI" ]; then
   clear
 
   if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
-    echo -e "This script will restore a backup image of your system\nin user defined partitions."
+    echo -e "This script will restore a backup image of your system\nor transfer this system in user defined partitions."
     echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
     echo -e "\n==>If you didn't include /home directory in the backup\n   and you already have a seperate /home partition,\n   simply enter it when prompted."
     echo -e "\n==>Also make sure that this system and the system you want\n   to restore have the same architecture (for chroot to work)."
@@ -775,9 +795,8 @@ if [ $BRinterface = "CLI" ]; then
     clear
   fi
 
-rootlist2=(` for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
-for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)
-  rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)   
+  rootlist=(` for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
+                   for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done `)
   editorlist=(nano vi)
 
   while [ -z "$BRdistro" ]; do
@@ -798,11 +817,11 @@ for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $
 
   while [ -z "$BRroot" ]; do
     echo -e "\n\e[00;36mSelect the number of your root partition or enter Q to quit\e[00m"
-    select c in ${rootlist2[@]}; do
+    select c in ${rootlist[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "\e[00;33mAborted by User\e[00m"
         exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist2[@]} ]; then
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
         BRroot=(`echo $c | awk '{ print $1 }'`)
         echo -e "\e[00;32mYou selected $BRroot as your root partition\e[00m" 
         break
@@ -1325,7 +1344,7 @@ elif [ $BRinterface = "Dialog" ]; then
   fi
 
   if [ -z "$BRdistro" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
-    dialog --no-ok --title "Info" --msgbox "This script will restore a backup image of your system in user defined partitions.
+    dialog --no-ok --title "Info" --msgbox "This script will restore a backup image of your system or transfer this system in user defined partitions.
 
 ==>Make sure you have created and formatted at least one partition 
    for root (/) and optionally partitions for /home and /boot.
@@ -1354,7 +1373,7 @@ Press OK to continue."  22 80
   done
 
   while [ -z "$BRroot" ]; do
-    BRroot=$(dialog --cancel-label Quit --menu "Select root partition:" 14 40 14 `for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+    BRroot=$(dialog --cancel-label Quit --menu "Select root partition:" 18 60 14 `root_part_list_dialog ` 2>&1 1>&3)
     if [ $? = "1" ]; then
       BRroot=" "
       exit
@@ -1362,7 +1381,7 @@ Press OK to continue."  22 80
   done
 
   if [ -z "$BRswap" ]; then
-    BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select swap partition:" 14 40 14 `part_list ` 2>&1 1>&3)
+    BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select swap partition:" 18 60 14 `part_list_dialog ` 2>&1 1>&3)
     if [ $? = "3" ]; then
       BRswap=" "
       exit
@@ -1370,7 +1389,7 @@ Press OK to continue."  22 80
   fi
 
   if [ -z "$BRhome" ]; then
-    BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select home partition:" 14 40 14 `part_list` 2>&1 1>&3)
+    BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select home partition:" 18 60 14 `part_list_dialog` 2>&1 1>&3)
     if [ $? = "3" ]; then
       BRhome=" "
       exit
@@ -1378,7 +1397,7 @@ Press OK to continue."  22 80
   fi
 
   if [ -z "$BRboot" ]; then
-    BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select boot partition:" 14 40 14 `part_list` 2>&1 1>&3)
+    BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select boot partition:" 18 60 14 `part_list_dialog` 2>&1 1>&3)
     if [ $? = "3" ]; then
       BRboot=" "
       exit

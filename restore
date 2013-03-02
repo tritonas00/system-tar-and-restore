@@ -74,6 +74,10 @@ check_input() {
       echo -e "\e[00;33m$BRroot is already mounted as $(df -m | grep "$BRroot" | awk '{ print $6 }'), refusing to use it\e[00m"
       BRSTOP=y
     fi
+    if pvdisplay |  grep -w $BRroot > /dev/null; then
+      echo -e "\e[00;33m$BRroot contains lvm physical volume, refusing to use it\nUse the volume's name instead\e[00m"
+      BRSTOP=y
+    fi
   fi
 
   if [ -n "$BRswap" ]; then
@@ -85,6 +89,10 @@ check_input() {
     fi
     if [ "$BRswap" == "$BRroot" ]; then
       echo -e "\e[00;33m$BRswap already used\e[00m"
+      BRSTOP=y
+    fi
+    if pvdisplay |  grep -w $BRswap > /dev/null; then
+      echo -e "\e[00;33m$BRswap contains lvm physical volume, refusing to use it\nUse the volume's name instead\e[00m"
       BRSTOP=y
     fi
   fi
@@ -104,6 +112,10 @@ check_input() {
       echo -e "\e[00;33m$BRhome is already mounted as $(df -m | grep "$BRhome" | awk '{ print $6 }'), refusing to use it\e[00m"
       BRSTOP=y
     fi
+    if pvdisplay |  grep -w $BRhome > /dev/null; then
+      echo -e "\e[00;33m$BRhome contains lvm physical volume, refusing to use it\nUse the volume's name instead\e[00m"
+      BRSTOP=y
+    fi
   fi
 
   if [ -n "$BRboot" ]; then
@@ -119,6 +131,10 @@ check_input() {
     fi
     if grep -wq $BRboot /proc/mounts; then
       echo -e "\e[00;33m$BRboot is already mounted as $(df -m | grep "$BRboot" | awk '{ print $6 }'), refusing to use it\e[00m"
+      BRSTOP=y
+    fi
+    if pvdisplay |  grep -w $BRboot > /dev/null; then
+      echo -e "\e[00;33m$BRboot contains lvm physical volume, refusing to use it\nUse the volume's name instead\e[00m"
       BRSTOP=y
     fi
   fi

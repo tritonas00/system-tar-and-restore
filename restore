@@ -54,17 +54,7 @@ check_input() {
     fi
   fi
 
-  if [ -n "$BRroot" ]; then
-    for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
-    if [ ! "$BRrootcheck" = "true" ]; then
-      echo -e "\e[00;31mWrong root partition:\e[00m $BRroot"
-      BRSTOP=y
-    fi
-    if grep -wq $BRroot  /proc/mounts; then
-      echo -e "\e[00;33m$BRroot is already mounted as $(df -m | grep "$BRroot" | awk '{ print $6 }'), refusing to use it\e[00m"
-      BRSTOP=y
-    fi
-  fi
+
 
   if [ -n "$BRswap" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
@@ -80,6 +70,7 @@ check_input() {
 
   if [ -n "$BRhome" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
+    for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
      if [ ! "$BRhomecheck" = "true" ]; then
     echo -e "\e[00;31mWrong home partition:\e[00m $BRhome"
        BRSTOP=y
@@ -784,6 +775,8 @@ if [ $BRinterface = "CLI" ]; then
     clear
   fi
 
+rootlist2=(` for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
+for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)
   rootlist=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done`)   
   editorlist=(nano vi)
 
@@ -805,11 +798,11 @@ if [ $BRinterface = "CLI" ]; then
 
   while [ -z "$BRroot" ]; do
     echo -e "\n\e[00;36mSelect the number of your root partition or enter Q to quit\e[00m"
-    select c in ${rootlist[@]}; do
+    select c in ${rootlist2[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "\e[00;33mAborted by User\e[00m"
         exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist2[@]} ]; then
         BRroot=(`echo $c | awk '{ print $1 }'`)
         echo -e "\e[00;32mYou selected $BRroot as your root partition\e[00m" 
         break

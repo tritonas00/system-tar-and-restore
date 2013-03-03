@@ -172,7 +172,7 @@ mount_all() {
       sleep 1
       rm -r /mnt/target
     fi
-    exit
+    touch /tmp/stop
   else
     echo SUCCESS
   fi
@@ -194,7 +194,7 @@ mount_all() {
       sleep 1
       rm -r /mnt/target
     fi
-    exit
+    touch /tmp/stop
     else
       echo SUCCESS
     fi
@@ -225,7 +225,7 @@ mount_all() {
         sleep 1
         rm -r /mnt/target
       fi
-      exit
+      touch /tmp/stop
     else
       echo SUCCESS
     fi
@@ -1045,6 +1045,12 @@ if [ $BRinterface = "CLI" ]; then
   check_input
   mount_all
 
+  if [ -f /tmp/stop ]; then
+    rm  /tmp/stop
+    echo -e "\e[00;31mError while mounting partitions\e[00m"
+    exit
+  fi
+
   BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
   BRfsize=(`lsblk -d -n -o size 2> /dev/null $BRroot`)
 
@@ -1463,7 +1469,7 @@ Press OK to continue."  22 80
   fi 
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    echo "NO BOOTLOADER SELECTED" | dialog --progressbox "WARNING" 6 30
+    echo "NO BOOTLOADER SELECTED" | dialog --title "Warning" --progressbox  3 30
     sleep 2
   fi
    
@@ -1504,7 +1510,13 @@ Press OK to continue."  22 80
 
   check_input
 
-  mount_all
+  mount_all 2>&1 | dialog --title "Working" --progressbox 30 70
+
+  if [ -f /tmp/stop ]; then
+    rm  /tmp/stop
+    echo -e "\e[00;31mError while mounting partitions\e[00m"
+    exit
+  fi
 
   BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
   BRfsize=(`lsblk -d -n -o size 2> /dev/null $BRroot`)
@@ -1542,7 +1554,7 @@ Press OK to continue."  22 80
       while [ -z "$BRrootsubvolname" ]; do   
         BRrootsubvolname=$(dialog  --no-cancel --inputbox "Enter subvolume name" 8 50 2>&1 1>&3)
         if [ -z "$BRrootsubvolname" ]; then
-          echo "Please enter a name for the subvolume." | dialog --progressbox "ERROR" 6 45
+          echo "Please enter a name for the subvolume" | dialog --title "Error" --progressbox  3 45
           sleep 2
         fi
       done
@@ -1604,18 +1616,18 @@ Press OK to continue."  22 80
       if [ "x$BRhome" = "x-1" ]; then
 	unset BRvarsubvol
       fi
-      create_subvols 2>&1 | dialog --progressbox "Working..." 30 70
+      create_subvols 2>&1 | dialog --title "Creating subvolumes" --progressbox  30 70
       sleep 2
     fi
   elif [  "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
-    echo "Not a btrfs root filesystem, proceeding without subvolumes..." | dialog --progressbox "ERROR" 6 70
+    echo "Not a btrfs root filesystem, proceeding without subvolumes..." | dialog --title "Warning" --progressbox 3 70
     sleep 3
   fi
 
   if [ $BRmode = "Restore" ]; then
     if [ -n "$BRfile" ]; then
       ( echo "Copying file..." 
-      cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox  4 30
+      cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --title "Copying" --progressbox  4 30
     fi
 
     if [ -n "$BRurl" ]; then
@@ -1626,7 +1638,7 @@ Press OK to continue."  22 80
           echo "Wrong URL or network is down"
           sleep 2
           rm /mnt/target/fullbackup.tgz 2>/dev/null
-        fi ) | dialog --progressbox "Downloading file..." 30 70
+        fi ) | dialog --title "Downloading" --progressbox  30 70
       else
         ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
         if [ "$?" -ne "0" ]; then
@@ -1634,7 +1646,7 @@ Press OK to continue."  22 80
           echo "Wrong URL or network is down"
           sleep 2
           rm /mnt/target/fullbackup.tgz 2>/dev/null
-        fi ) | dialog --progressbox "Downloading file..." 30 70
+        fi ) | dialog --title "Downloading" --progressbox 30 70
       fi
     fi
 
@@ -1648,7 +1660,7 @@ Press OK to continue."  22 80
           echo  "Error reading archive"
           sleep 2
           rm /mnt/target/fullbackup.tgz 2>&1
-        fi ) | dialog --progressbox 4 30
+        fi ) | dialog --title "Checking" --progressbox 4 30
     fi 
 
     while [ ! -f /mnt/target/fullbackup.tgz ]; do
@@ -1662,11 +1674,11 @@ Press OK to continue."  22 80
       elif [ $REPLY = "File" ]; then
         BRfile=$(dialog  --no-cancel --inputbox "Enter the path of the backup file:" 8 50 2>&1 1>&3)
           if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-            echo "File not found" | dialog --progressbox "ERROR" 6 20
+            echo "File not found" | dialog --title "Error" --progressbox  3 20
             sleep 2
           else
             ( echo "Copying file..."
-            cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --progressbox 4 30
+            cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --title "Copying" --progressbox 4 30
           fi
   
       elif [ $REPLY = "URL" ] || [ $REPLY = "Protected" ]; then
@@ -1680,7 +1692,7 @@ Press OK to continue."  22 80
             echo "Wrong URL or network is down"
 	    sleep 2
             rm /mnt/target/fullbackup.tgz 2>/dev/null
-          fi ) | dialog --progressbox "Downloading file..." 30 70
+          fi ) | dialog --title "Downloading" --progressbox  30 70
 
         elif [ $REPLY = "URL" ]; then
           ( wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2 2>&1
@@ -1689,7 +1701,7 @@ Press OK to continue."  22 80
             echo "Wrong URL or network is down"
             sleep 2
             rm /mnt/target/fullbackup.tgz 2>/dev/null
-          fi ) | dialog --progressbox "Downloading file..." 30 70
+          fi ) | dialog --title "Downloading" --progressbox 30 70
         fi 
       fi
       if [ -f /mnt/target/fullbackup.tgz ]; then
@@ -1702,7 +1714,7 @@ Press OK to continue."  22 80
             echo  "Error reading archive"
             sleep 2
             rm /mnt/target/fullbackup.tgz 2>&1
-          fi ) | dialog --progressbox 4 30
+          fi ) | dialog --title "Checking" --progressbox 4 30
       fi
     done
   fi
@@ -1728,24 +1740,23 @@ Press Yes to continue, or No to abort." 19 60
   fi  
 
   if [ $BRmode = "Restore" ]; then
-    ( tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING ) | dialog --progressbox "EXTRACTING" 30 90
+    ( tar xvpfz /mnt/target/fullbackup.tgz -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING ) | dialog --title "EXTRACTING" --progressbox  30 90
     sleep 2
   elif [ $BRmode = "Transfer" ]; then
-    run_rsync  2>&1 | dialog --progressbox "TRANSFERING" 30 90
+    run_rsync  2>&1 | dialog --title  "TRANSFERING" --progressbox 30 90
     sleep 2
   fi
 
   detect_distro
 
-  mount_dev_proc_sys 2>&1 | dialog --progressbox "MOUNTING /dev /proc /sys" 15 70
+  mount_dev_proc_sys 2>&1 | dialog --title "MOUNTING /dev /proc /sys" --progressbox  15 70
   sleep 2
 
   generate_fstab
-  dialog --yesno   "GENERATING FSTAB
-`cat /mnt/target/etc/fstab`
+  dialog --title "GENERATING FSTAB" --yesno "`cat /mnt/target/etc/fstab`
 __________________________________________________________________
 
-Edit fstab ?"  30 70
+Edit fstab ?" 30 100
 
   if [ $? = "0" ]; then
     while [ -z "$BRdeditor" ]; do
@@ -1754,14 +1765,14 @@ Edit fstab ?"  30 70
     done
   fi
 
-  build_initramfs 2>&1 | dialog --progressbox "REBUILDING INITRAMFS IMAGE" 30 70
+  build_initramfs 2>&1 | dialog --title "REBUILDING INITRAMFS IMAGE" --progressbox  30 70
   sleep 2
 
-  generate_locales 2>&1 | dialog --progressbox "GENERATING LOCALES" 30 70
+  generate_locales 2>&1 | dialog --title "GENERATING LOCALES" --progressbox  30 70
   sleep 2
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    install_bootloader 2>&1 | dialog --progressbox "INSTALLING AND CONFIGURING BOOTLOADER" 30 70
+    install_bootloader 2>&1 | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
     sleep 2
   fi
 

@@ -69,12 +69,11 @@ check_input() {
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "\e[00;31mWrong root partition:\e[00m $BRroot"
       BRSTOP=y
+    elif  pvdisplay 2>&1 |  grep -w $BRroot > /dev/null; then
+      echo -e "\e[00;33m$BRroot contains lvm physical volume, refusing to use it\nUse a logical volume instead\e[00m"
+      BRSTOP=y
     elif [[ ! -z `lsblk $BRroot -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" ` ]]; then
       echo -e "\e[00;33m$BRroot is already mounted as $(lsblk $BRroot -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" | sed '/^$/d'), refusing to use it\e[00m"
-      BRSTOP=y
-    fi
-    if pvdisplay 2>&1 |  grep -w $BRroot > /dev/null; then
-      echo -e "\e[00;33m$BRroot contains lvm physical volume, refusing to use it\nUse the volume's name instead\e[00m"
       BRSTOP=y
     fi
   fi
@@ -85,13 +84,12 @@ check_input() {
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "\e[00;31mWrong swap partition:\e[00m $BRswap"
       BRSTOP=y
+    elif pvdisplay 2>&1 |  grep -w $BRswap > /dev/null; then
+      echo -e "\e[00;33m$BRswap contains lvm physical volume, refusing to use it\nUse a logical volume instead\e[00m"
+      BRSTOP=y
     fi
     if [ "$BRswap" == "$BRroot" ]; then
       echo -e "\e[00;33m$BRswap already used\e[00m"
-      BRSTOP=y
-    fi
-    if pvdisplay 2>&1 |  grep -w $BRswap > /dev/null; then
-      echo -e "\e[00;33m$BRswap contains lvm physical volume, refusing to use it\nUse the volume's name instead\e[00m"
       BRSTOP=y
     fi
   fi
@@ -102,6 +100,9 @@ check_input() {
      if [ ! "$BRhomecheck" = "true" ]; then
     echo -e "\e[00;31mWrong home partition:\e[00m $BRhome"
        BRSTOP=y
+    elif pvdisplay 2>&1 |  grep -w $BRhome > /dev/null; then
+      echo -e "\e[00;33m$BRhome contains lvm physical volume, refusing to use it\nUse a logical volume instead\e[00m"
+      BRSTOP=y
     elif [[ ! -z `lsblk $BRhome -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" ` ]]; then
       echo -e "\e[00;33m$BRhome is already mounted as $(lsblk $BRhome -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" | sed '/^$/d'), refusing to use it\e[00m"
       BRSTOP=y
@@ -109,10 +110,6 @@ check_input() {
     if [ "$BRhome" == "$BRroot" ] || [ "$BRhome" == "$BRswap" ]; then
      echo -e "\e[00;33m$BRhome already used\e[00m"
      BRSTOP=y
-    fi
-    if pvdisplay 2>&1 |  grep -w $BRhome > /dev/null; then
-      echo -e "\e[00;33m$BRhome contains lvm physical volume, refusing to use it\nUse the volume's name instead\e[00m"
-      BRSTOP=y
     fi
   fi
 
@@ -125,13 +122,12 @@ check_input() {
     elif [[ ! -z `lsblk $BRboot -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" ` ]]; then
       echo -e "\e[00;33m$BRboot is already mounted as $(lsblk $BRboot -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" | sed '/^$/d'), refusing to use it\e[00m"
       BRSTOP=y
+    elif pvdisplay 2>&1 |  grep -w $BRboot > /dev/null; then
+      echo -e "\e[00;33m$BRboot contains lvm physical volume, refusing to use it\nUse a logical volume instead\e[00m"
+      BRSTOP=y
     fi
     if [ "$BRboot" == "$BRroot" ] || [ "$BRboot" == "$BRswap" ] || [ "$BRboot" == "$BRhome" ]; then
       echo -e "\e[00;33m$BRboot already used\e[00m"
-      BRSTOP=y
-    fi
-    if pvdisplay 2>&1 |  grep -w $BRboot > /dev/null; then
-      echo -e "\e[00;33m$BRboot contains lvm physical volume, refusing to use it\nUse the volume's name instead\e[00m"
       BRSTOP=y
     fi
   fi

@@ -174,7 +174,8 @@ mount_all() {
       sleep 1
       rm -r /mnt/target 2>&1 && echo SUCCESS  || echo FAILED 
     fi
-    touch /tmp/stop
+    echo -e "\e[00;31mError while mounting partitions\e[00m"
+    exit
   else
     echo SUCCESS
   fi
@@ -199,7 +200,8 @@ mount_all() {
         sleep 1
         rm -r /mnt/target
       fi
-      touch /tmp/stop
+      echo -e "\e[00;31mError while mounting partitions\e[00m"
+      exit
     else
       echo SUCCESS
     fi
@@ -234,7 +236,8 @@ mount_all() {
         sleep 1
         rm -r /mnt/target
       fi
-      touch /tmp/stop
+      echo -e "\e[00;31mError while mounting partitions\e[00m"
+      exit
     else
       echo SUCCESS
     fi
@@ -1055,12 +1058,6 @@ if [ $BRinterface = "CLI" ]; then
   check_input
   mount_all
 
-  if [ -f /tmp/stop ]; then
-    rm  /tmp/stop
-    echo -e "\e[00;31mError while mounting partitions\e[00m"
-    exit
-  fi
-
   BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
   BRfsize=(`lsblk -d -n -o size 2> /dev/null $BRroot`)
 
@@ -1521,14 +1518,7 @@ Press OK to continue."  25 80
   fi
 
   check_input
-
-  mount_all 2>&1 | dialog --title "Working" --progressbox 30 70
-
-  if [ -f /tmp/stop ]; then
-    rm  /tmp/stop
-    echo -e "\e[00;31mError while mounting partitions\e[00m"
-    exit
-  fi
+  mount_all
 
   BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
   BRfsize=(`lsblk -d -n -o size 2> /dev/null $BRroot`)

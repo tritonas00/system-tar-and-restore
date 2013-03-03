@@ -30,11 +30,6 @@ part_list_dialog() {
   for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"`  -e `echo /dev/mapper/"${BRboot##*/}"`
 }
 
-root_part_list_dialog() {
-  for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
-  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
-}
-
 update_list() {
   list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")
          for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e $(echo /dev/mapper/"${BRroot##*/}") -e $(echo /dev/mapper/"${BRswap##*/}") -e $(echo /dev/mapper/"${BRhome##*/}") -e $(echo /dev/mapper/"${BRboot##*/}") ` )
@@ -842,16 +837,15 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
   editorlist=(nano vi)
-  rootlist=(` for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
-             for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done `)
-
+  update_list
+ 
   while [ -z "$BRroot" ]; do
     echo -e "\n\e[00;36mSelect the number of your root partition or enter Q to quit\e[00m"
-    select c in ${rootlist[@]}; do
+    select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "\e[00;33mAborted by User\e[00m"
         exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
         BRroot=(`echo $c | awk '{ print $1 }'`)
         echo -e "\e[00;32mYou selected $BRroot as your root partition\e[00m" 
         break
@@ -1408,7 +1402,7 @@ Press OK to continue."  25 80
   exec 3>&1
 
   while [ -z "$BRroot" ]; do
-    BRroot=$(dialog --cancel-label Quit --menu "Select root partition:" 18 60 14 `root_part_list_dialog ` 2>&1 1>&3)
+    BRroot=$(dialog --cancel-label Quit --menu "Select root partition:" 18 60 14 `part_list_dialog ` 2>&1 1>&3)
     if [ $? = "1" ]; then
       BRroot=" "
       exit

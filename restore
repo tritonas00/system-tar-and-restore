@@ -72,8 +72,8 @@ check_input() {
     elif  pvdisplay 2>&1 |  grep -w $BRroot > /dev/null; then
       echo -e "\e[00;33m$BRroot contains lvm physical volume, refusing to use it\nUse a logical volume instead\e[00m"
       BRSTOP=y
-    elif [[ ! -z `lsblk $BRroot -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" ` ]]; then
-      echo -e "\e[00;33m$BRroot is already mounted as $(lsblk $BRroot -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" | sed '/^$/d'), refusing to use it\e[00m"
+    elif [[ ! -z `lsblk -d -n -o mountpoint 2>  /dev/null $BRroot` ]]; then
+      echo -e "\e[00;33m$BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRroot), refusing to use it\e[00m"
       BRSTOP=y
     fi
   fi
@@ -103,8 +103,8 @@ check_input() {
     elif pvdisplay 2>&1 |  grep -w $BRhome > /dev/null; then
       echo -e "\e[00;33m$BRhome contains lvm physical volume, refusing to use it\nUse a logical volume instead\e[00m"
       BRSTOP=y
-    elif [[ ! -z `lsblk $BRhome -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" ` ]]; then
-      echo -e "\e[00;33m$BRhome is already mounted as $(lsblk $BRhome -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" | sed '/^$/d'), refusing to use it\e[00m"
+    elif [[ ! -z `lsblk -d -n -o mountpoint 2>  /dev/null $BRhome` ]]; then
+      echo -e "\e[00;33m$BRhome is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRhome), refusing to use it\e[00m"
       BRSTOP=y
     fi
     if [ "$BRhome" == "$BRroot" ] || [ "$BRhome" == "$BRswap" ]; then
@@ -119,11 +119,11 @@ check_input() {
     if [ ! "$BRbootcheck" = "true" ]; then
     echo -e "\e[00;31mWrong boot partition:\e[00m $BRboot"
       BRSTOP=y
-    elif [[ ! -z `lsblk $BRboot -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" ` ]]; then
-      echo -e "\e[00;33m$BRboot is already mounted as $(lsblk $BRboot -o MOUNTPOINT 2>  /dev/null | sed "s/MOUNTPOINT//g" | sed '/^$/d'), refusing to use it\e[00m"
-      BRSTOP=y
     elif pvdisplay 2>&1 |  grep -w $BRboot > /dev/null; then
       echo -e "\e[00;33m$BRboot contains lvm physical volume, refusing to use it\nUse a logical volume instead\e[00m"
+      BRSTOP=y
+    elif [[ ! -z `lsblk -d -n -o mountpoint 2>  /dev/null $BRboot` ]]; then
+      echo -e "\e[00;33m$BRboot is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRboot), refusing to use it\e[00m"
       BRSTOP=y
     fi
     if [ "$BRboot" == "$BRroot" ] || [ "$BRboot" == "$BRswap" ] || [ "$BRboot" == "$BRhome" ]; then
@@ -186,7 +186,7 @@ show_summary() {
     BRbootloader=Syslinux
   fi
 
-  echo -e "Root Partition: $BRroot $BRfsystem"
+  echo -e "Root Partition: $BRroot $BRfsystem $BRfsize"
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo "Root Subvolume: $BRrootsubvolname"
@@ -209,11 +209,11 @@ show_summary() {
   fi
 
   if [ -n "$BRboot" ]; then
-    echo "Boot Partition: $BRboot $BRbootfsystem"
+    echo "Boot Partition: $BRboot $BRbootfsystem $BRbootfsize"
   fi
 
   if [ -n "$BRhome" ]; then
-    echo "Home Partition: $BRhome $BRhomefsystem"
+    echo "Home Partition: $BRhome $BRhomefsystem $BRhomefsize"
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
@@ -797,7 +797,7 @@ if [ $BRinterface = "CLI" ]; then
 
   editorlist=(nano vi)
   rootlist=(` for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
-                   for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done `)
+             for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done `)
 
   while [ -z "$BRroot" ]; do
     echo -e "\n\e[00;36mSelect the number of your root partition or enter Q to quit\e[00m"
@@ -993,13 +993,16 @@ if [ $BRinterface = "CLI" ]; then
   mount_all
 
   BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
+  BRfsize=(`lsblk -d -n -o size 2> /dev/null $BRroot`)
 
   if [ -n "$BRhome" ]; then
     BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
+    BRhomefsize=(`lsblk -d -n -o size 2> /dev/null $BRhome`)
   fi
 
   if [ -n "$BRboot" ]; then
     BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
+    BRbootfsize=(`lsblk -d -n -o size 2> /dev/null $BRboot`)
   fi
 
   if [  "x$BRfsystem" = "xbtrfs" ]; then
@@ -1451,13 +1454,16 @@ Press OK to continue."  22 80
   mount_all | dialog --progressbox "Working..." 30 70
 
   BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
+  BRfsize=(`lsblk -d -n -o size 2> /dev/null $BRroot`)
 
-  if [   -n "$BRhome" ]; then
+  if [ -n "$BRhome" ]; then
     BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
+    BRhomefsize=(`lsblk -d -n -o size 2> /dev/null $BRhome`)
   fi
 
-  if [   -n "$BRboot" ]; then
+  if [ -n "$BRboot" ]; then
     BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
+    BRbootfsize=(`lsblk -d -n -o size 2> /dev/null $BRboot`)
   fi
 
   sleep 2

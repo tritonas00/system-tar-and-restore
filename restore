@@ -193,7 +193,7 @@ mount_all() {
     else
       sleep 1
       rm -r /mnt/target
-    fi    
+    fi
     exit
     else
       echo SUCCESS
@@ -1504,7 +1504,7 @@ Press OK to continue."  22 80
 
   check_input
 
-  mount_all | dialog --progressbox "Working..." 30 70
+  mount_all
 
   BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
   BRfsize=(`lsblk -d -n -o size 2> /dev/null $BRroot`)

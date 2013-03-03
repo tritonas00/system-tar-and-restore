@@ -164,18 +164,71 @@ mount_all() {
   sleep 1
 
   echo -e "\n==>MOUNTING $BRroot (/)"
-  mount $BRroot /mnt/target 2>&1 && echo SUCCESS || echo WARNING
+  mount $BRroot /mnt/target
+  if [ "$?" -ne "0" ]; then
+    if [ "$(ls -A /mnt/target)" ]; then
+      echo "/mnt/target is not empty"
+    else
+      sleep 1
+      rm -r /mnt/target
+    fi
+    exit
+  else
+    echo SUCCESS
+  fi
 
   if [ -n "$BRhome" ]; then
     echo -e "\n==>MOUNTING $BRhome (/home)"
     mkdir /mnt/target/home 2>&1 
-    mount $BRhome /mnt/target/home 2>&1 && echo SUCCESS || echo WARNING
+    mount $BRhome /mnt/target/home
+    if [ "$?" -ne "0" ]; then
+      if [ "$(ls -A /mnt/target/home)" ]; then
+        echo "/mnt/target/home is not empty"
+      else
+        rm -r /mnt/target/home
+      fi
+    umount $BRroot
+    if [ "$(ls -A /mnt/target)" ]; then
+      echo "/mnt/target is not empty"
+    else
+      sleep 1
+      rm -r /mnt/target
+    fi    
+    exit
+    else
+      echo SUCCESS
+    fi
   fi
 
   if [ -n "$BRboot" ]; then
     echo -e "\n==>MOUNTING $BRboot (/boot)"
     mkdir /mnt/target/boot 2>&1
-    mount $BRboot /mnt/target/boot 2>&1 && echo SUCCESS || echo WARNING
+    mount $BRboot /mnt/target/boot
+    if [ "$?" -ne "0" ]; then
+      if [ "$(ls -A /mnt/target/boot)" ]; then
+        echo "/mnt/target/boot is not empty"
+      else
+        rm -r /mnt/target/boot
+      fi
+      if [ -n "$BRhome" ]; then  
+        umount $BRhome
+        if [ "$(ls -A /mnt/target/home)" ]; then
+          echo "/mnt/target/home is not empty"
+        else
+          rm -r /mnt/target/home
+        fi
+      fi
+      umount $BRroot
+      if [ "$(ls -A /mnt/target)" ]; then
+        echo "/mnt/target is not empty"
+      else
+        sleep 1
+        rm -r /mnt/target
+      fi
+      exit
+    else
+      echo SUCCESS
+    fi
   fi 
 }
 
@@ -784,7 +837,7 @@ done
 if [ $BRinterface = "CLI" ]; then
   clear
 
-  if [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
+  if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     echo -e "This script will restore a backup image of your system\nor transfer this system in user defined partitions."
     echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
     echo -e "\n==>If you didn't include /home directory in the backup\n   and you already have a seperate /home partition,\n   simply enter it when prompted."
@@ -1332,7 +1385,7 @@ elif [ $BRinterface = "Dialog" ]; then
     exit
   fi
 
-  if [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
+  if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     dialog --no-ok --title "Info" --msgbox "This script will restore a backup image of your system or transfer this system in user defined partitions.
 
 ==>Make sure you have created and formatted at least one partition 

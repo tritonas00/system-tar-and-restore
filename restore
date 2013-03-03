@@ -187,14 +187,14 @@ mount_all() {
       else
         rm -r /mnt/target/home
       fi
-    umount $BRroot
-    if [ "$(ls -A /mnt/target)" ]; then
-      echo "/mnt/target is not empty"
-    else
-      sleep 1
-      rm -r /mnt/target
-    fi
-    touch /tmp/stop
+      umount $BRroot
+      if [ "$(ls -A /mnt/target)" ]; then
+        echo "/mnt/target is not empty"
+      else
+        sleep 1
+        rm -r /mnt/target
+      fi
+      touch /tmp/stop
     else
       echo SUCCESS
     fi

@@ -166,7 +166,7 @@ mount_all() {
   echo -e "\n==>MOUNTING $BRroot (/)"
   mount $BRroot /mnt/target
   if [ "$?" -ne "0" ]; then
-    echo -e "\n==>CLEANING AND UNMOUNTING"
+    echo -e "\n==>CLEANING"
     cd ~
     if [ "$(ls -A /mnt/target)" ]; then
       echo "/mnt/target is not empty"
@@ -191,6 +191,7 @@ mount_all() {
       else
         rm -r /mnt/target/home
       fi
+      echo "Unmounting $BRroot"
       umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED 
       if [ "$(ls -A /mnt/target)" ]; then
         echo "/mnt/target is not empty"
@@ -212,6 +213,7 @@ mount_all() {
       echo -e "\n==>CLEANING AND UNMOUNTING"
       cd ~
       if [ -n "$BRhome" ]; then  
+        echo "Unmounting $BRhome"
         umount $BRhome
         if [ "$(ls -A /mnt/target/home)" ]; then
           echo "/mnt/target/home is not empty"
@@ -224,6 +226,7 @@ mount_all() {
       else
         rm -r /mnt/target/boot
       fi
+      echo "Unmounting $BRroot"
       umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED 
       if [ "$(ls -A /mnt/target)" ]; then
         echo "/mnt/target is not empty"

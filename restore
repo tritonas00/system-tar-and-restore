@@ -477,6 +477,7 @@ unmount_only_in_subvol() {
 clean_unmount_error() {
   echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~
+  sleep 1
   if [ -n "$BRhome" ]; then
     umount $BRhome 2> /dev/null
     if [ "$(ls -A /mnt/target/home)" ]; then

@@ -280,7 +280,7 @@ Press OK to continue." 22 70
   fi
 
   if [ ! -d "$BRFOLDER" ] &&  [ -n "$BRFOLDER" ]; then
-    echo "Directory does not exist." | dialog --progressbox "ERROR" 6 30
+    echo "Directory does not exist" | dialog --title "Error" --progressbox 3 30
     sleep 2
     unset BRFOLDER
   fi
@@ -294,7 +294,7 @@ Press OK to continue." 22 70
         exec 3>&1
         BRFOLDER=$(dialog  --no-cancel --inputbox "Insert the folder path where the backup will be created" 8 50 2>&1 1>&3)
         if [ ! -d "$BRFOLDER" ]; then
-          echo "Directory does not exist." | dialog --progressbox "ERROR" 6 30
+          echo "Directory does not exist" | dialog --title "Error" --progressbox 3 30
           sleep 2
         fi
       done
@@ -339,7 +339,7 @@ Press Yes to continue or No to abort." 12 50
 
   BRFile="$BRFOLDER"/Backup-"`date +%A-%d-%m-%Y-%T`"
 
-  run_tar | dialog --progressbox "Creating backup image..." 30 90
+  run_tar | dialog --title "Creating backup image" --progressbox  30 90
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
   dialog --title "Info" --msgbox  "Completed. Backup image and logs saved in $BRFOLDER" 8 50
@@ -348,5 +348,5 @@ else
 fi
 
 if [ -f /tmp/list ]; then
-  rm -r /tmp/list
+  rm  /tmp/list
 fi

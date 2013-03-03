@@ -168,6 +168,7 @@ mount_all() {
   if [ "$?" -ne "0" ]; then
     echo -e "\n==>CLEANING"
     cd ~
+    sleep 1
     if [ "$(ls -A /mnt/target)" ]; then
       echo "/mnt/target is not empty"
     else
@@ -187,6 +188,7 @@ mount_all() {
     if [ "$?" -ne "0" ]; then
       echo -e "\n==>CLEANING AND UNMOUNTING"
       cd ~
+      sleep 1
       if [ "$(ls -A /mnt/target/home)" ]; then
         echo "/mnt/target/home is not empty"
       else
@@ -214,6 +216,7 @@ mount_all() {
     if [ "$?" -ne "0" ]; then
       echo -e "\n==>CLEANING AND UNMOUNTING"
       cd ~
+      sleep 1
       if [ -n "$BRhome" ]; then  
         echo "Unmounting $BRhome"
         umount $BRhome

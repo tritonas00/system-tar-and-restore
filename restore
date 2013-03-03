@@ -935,7 +935,7 @@ if [ $BRinterface = "CLI" ]; then
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
               echo -e "\e[00;33mAborted by User\e[00m"
 	      exit
-	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
+	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
 	      BRgrub=(`echo $c | awk '{ print $1 }'`)
               echo -e "\e[00;32mYou selected $BRgrub to install GRUB\e[00m" 
 	      break
@@ -953,7 +953,7 @@ if [ $BRinterface = "CLI" ]; then
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
               echo -e "\e[00;33mAborted by User\e[00m"
 	      exit
-	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#rootlist[@]} ]; then
+	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
 	      BRsyslinux=(`echo $c | awk '{ print $1 }'`)
               echo -e "\e[00;32mYou selected $BRsyslinux to install Syslinux\e[00m" 
 	      break

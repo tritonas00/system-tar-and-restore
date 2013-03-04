@@ -1385,20 +1385,19 @@ if [ $BRinterface = "CLI" ]; then
 
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
       echo -e "\e[00;36mCompleted. Press ENTER to unmount and clean, then reboot your system.\e[00m"
+    elif [ -n "$BRbootloadercheck" ]; then
+      echo -e "\n$BRbootloader not found, so this is the right time\nto install and update a bootloader. To do so:"
+      echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
+      echo -e "\n==>Install and update a bootloader"
+      echo -e "\n==>When done, for leaving chroot, enter: exit"
+      echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices." 
     else
-      if [ -n "$BRbootloadercheck" ]; then
-        echo -e "\n$BRbootloader not found, so this is the right time\nto install and update a bootloader. To do so:"
-        echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
-        echo -e "\n==>Install and update a bootloader"
-        echo -e "\n==>When done, for leaving chroot, enter: exit"
-        echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices." 
-      else
-        echo -e "\nSince you haven't chosen a bootloader, this is the right\ntime to install (or update an existing) one. To do so:"
-        echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
-        echo -e "\n==>Install or update your bootloader"
-        echo -e "\n==>When done, for leaving chroot, enter: exit"
-        echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices." 
-      fi
+      echo -e "\nSince you haven't chosen a bootloader, this is the right\ntime to install (or update an existing) one. To do so:"
+      echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
+      echo -e "\n==>Install or update your bootloader"
+      echo -e "\n==>When done, for leaving chroot, enter: exit"
+      echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices." 
+    fi
     read -s a
 
     sleep 2
@@ -1824,9 +1823,8 @@ Edit fstab ?" 30 100
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
     dialog --title "Info" --msgbox  "Completed. Press OK to unmount and clean, then reboot your system."  7 50
-  else
-    if [ -n "$BRbootloadercheck" ]; then
-      dialog --title "Info" --msgbox  "$BRbootloader not found, so this is the right time to install and 
+  elif  [ -n "$BRbootloadercheck" ]; then
+    dialog --title "Info" --msgbox  "$BRbootloader not found, so this is the right time to install and 
 update a bootloader. To do so:
 
 ==>On a new terminal with root access, enter: chroot /mnt/target
@@ -1837,8 +1835,8 @@ update a bootloader. To do so:
    
 ==>Finally, return to this window and press OK to unmount 
    all remaining (engaged) devices."  17 70
-    else
-      dialog --title "Info" --msgbox  "Since you haven't chosen a bootloader, this is the right time 
+  else
+    dialog --title "Info" --msgbox  "Since you haven't chosen a bootloader, this is the right time 
 to install (or update an existing) one. To do so:
 
 ==>On a new terminal with root access, enter: chroot /mnt/target
@@ -1849,7 +1847,6 @@ to install (or update an existing) one. To do so:
    
 ==>Finally, return to this window and press OK to unmount 
    all remaining (engaged) devices."  17 70
-    fi
   fi
 
   sleep 2

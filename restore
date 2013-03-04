@@ -1386,7 +1386,7 @@ if [ $BRinterface = "CLI" ]; then
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
       echo -e "\e[00;36mCompleted. Press ENTER to unmount and clean, then reboot your system.\e[00m"
     elif [ -n "$BRbootloadercheck" ]; then
-      echo -e "\n$BRbootloader not found, so this is the right time\nto install and update a bootloader. To do so:"
+      echo -e "\n$BRbootloader not found, so this is the right time to\ninstall and update a bootloader. To do so:"
       echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
       echo -e "\n==>Install and update a bootloader"
       echo -e "\n==>When done, for leaving chroot, enter: exit"

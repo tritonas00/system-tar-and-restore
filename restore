@@ -201,12 +201,6 @@ mount_all() {
 }
 
 show_summary() {
-  if [ -n "$BRgrub" ]; then
-    BRbootloader=Grub
-  elif [ -n "$BRsyslinux" ]; then
-    BRbootloader=Syslinux
-  fi
-
   echo -e "Root Partition: $BRroot $BRfsystem $BRfsize"
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
@@ -1270,7 +1264,12 @@ if [ $BRinterface = "CLI" ]; then
       fi
     done
   fi
-  
+
+  if [ -n "$BRgrub" ]; then
+    BRbootloader=Grub
+  elif [ -n "$BRsyslinux" ]; then
+    BRbootloader=Syslinux
+  fi  
   echo -e "\n\e[00;32mSUMMARY\e[00m"
   show_summary
  
@@ -1741,6 +1740,12 @@ Press OK to continue."  25 80
     done
   fi
 
+  if [ -n "$BRgrub" ]; then
+    BRbootloader=Grub
+  elif [ -n "$BRsyslinux" ]; then
+    BRbootloader=Syslinux
+  fi
+
   if [ -z $def ]; then
     dialog --title "Summary"  --yesno "`show_summary`
 ------------------------------------------
@@ -1795,14 +1800,14 @@ Edit fstab ?" 30 100
 
   if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ]; then    
     if [ ! -d /mnt/target/etc/grub.d ]; then
-      echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 50
+      echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49
       sleep 2
       unset BRgrub
       BRbootloadercheck="fail"
     fi
   elif [ $BRmode = "Restore" ] && [ -n "$BRsyslinux" ]; then    
     if [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
-      echo -e "Syslinux not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 50
+      echo -e "Syslinux not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 53
       sleep 2
       unset BRsyslinux
       BRbootloadercheck="fail"

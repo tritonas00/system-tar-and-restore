@@ -1793,6 +1793,22 @@ Edit fstab ?" 30 100
   generate_locales 2>&1 | dialog --title "GENERATING LOCALES" --progressbox  30 70
   sleep 2
 
+  if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ]; then    
+    if [ ! -d /mnt/target/etc/grub.d ]; then
+      echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 50
+      sleep 2
+      unset BRgrub
+      BRbootloadercheck="fail"
+    fi
+  elif [ $BRmode = "Restore" ] && [ -n "$BRsyslinux" ]; then    
+    if [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
+      echo -e "Syslinux not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 50
+      sleep 2
+      unset BRsyslinux
+      BRbootloadercheck="fail"
+    fi
+  fi 
+
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
     install_bootloader 2>&1 | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
     sleep 2
@@ -1801,7 +1817,20 @@ Edit fstab ?" 30 100
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
     dialog --title "Info" --msgbox  "Completed. Press OK to unmount and clean, then reboot your system."  7 50
   else
-    dialog --title "Info" --msgbox  "Since you haven't chosen a bootloader, this is the right time 
+    if [ -n "$BRbootloadercheck" ]; then
+      dialog --title "Info" --msgbox  "$BRbootloader not found, so this is the right time to 
+install and update a bootloader. To do so:
+
+==>On a new terminal with root access, enter: chroot /mnt/target
+
+==>Install or update your bootloader.
+
+==>When done, for leaving chroot, enter: exit
+   
+==>Finally, return to this window and press OK to unmount 
+   all remaining (engaged) devices."  17 70
+    else
+      dialog --title "Info" --msgbox  "Since you haven't chosen a bootloader, this is the right time 
 to install (or update an existing) one. To do so:
 
 ==>On a new terminal with root access, enter: chroot /mnt/target
@@ -1812,6 +1841,7 @@ to install (or update an existing) one. To do so:
    
 ==>Finally, return to this window and press OK to unmount 
    all remaining (engaged) devices."  17 70
+    fi
   fi
 
   sleep 2

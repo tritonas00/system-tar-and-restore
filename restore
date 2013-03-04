@@ -1377,7 +1377,7 @@ if [ $BRinterface = "CLI" ]; then
       echo -e "\e[00;36mCompleted. Press ENTER to unmount and clean, then reboot your system.\e[00m"
     else
       if [ -n "$BRbootloadercheck" ]; then
-        echo -e "\n$BRbootloader not found, so this is the right\ntime to install and upddate a bootloader. To do so:"
+        echo -e "\n$BRbootloader not found, so this is the right time to\ninstall and update a bootloader. To do so:"
       else
         echo -e "\nSince you haven't chosen a bootloader, this is the right\ntime to install (or update an existing) one. To do so:"
       fi

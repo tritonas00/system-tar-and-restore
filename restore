@@ -56,6 +56,17 @@ check_input() {
       echo -e "\e[00;31mPackage rsync is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"
       BRSTOP=y
     fi
+    if [ -n "$BRgrub" ]; then
+      if [ ! -d /etc/grub.d ]; then
+        echo -e "\e[00;31mGrub not found\e[00m"
+        BRSTOP=y
+      fi
+    elif [ -n "$BRsyslinux" ]; then
+      if [ -z $(which extlinux 2> /dev/null) ];then
+        echo -e "\e[00;31mSyslinux not found\e[00m"
+        BRSTOP=y
+      fi
+    fi 
   fi
 
   if [ -n "$BRroot" ]; then

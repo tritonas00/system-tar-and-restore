@@ -1823,8 +1823,8 @@ Edit fstab ?" 30 100
     dialog --title "Info" --msgbox  "Completed. Press OK to unmount and clean, then reboot your system."  7 50
   else
     if [ -n "$BRbootloadercheck" ]; then
-      dialog --title "Info" --msgbox  "$BRbootloader not found, so this is the right time to 
-install and update a bootloader. To do so:
+      dialog --title "Info" --msgbox  "$BRbootloader not found, so this is the right time to install and 
+update a bootloader. To do so:
 
 ==>On a new terminal with root access, enter: chroot /mnt/target
 

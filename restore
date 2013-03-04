@@ -1364,21 +1364,21 @@ if [ $BRinterface = "CLI" ]; then
     generate_locales
     sleep 1
 
-   if [ -n "$BRgrub" ]; then
-     if [ ! -d /mnt/target/etc/grub.d ]; then
-       echo -e "\e[00;31mGrub2 not found\e[00m"
-       echo -e "\e[00;33mProceeding without bootloader\e[00m"
-       unset BRgrub
-       BRbootloadercheck="fail"
-     fi
-   elif [ -n "$BRsyslinux" ]; then
-     if [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
-       echo -e "\e[00;31mSyslinux not found\e[00m"
-       echo -e "\e[00;33mProceeding without bootloader\e[00m"
-       unset BRsyslinux
-       BRbootloadercheck="fail"
-     fi
-   fi 
+    if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ]; then    
+      if [ ! -d /mnt/target/etc/grub.d ]; then
+        echo -e "\e[00;31mGrub2 not found\e[00m"
+        echo -e "\e[00;33mProceeding without bootloader\e[00m"
+        unset BRgrub
+        BRbootloadercheck="fail"
+      fi
+    elif [ $BRmode = "Restore" ] && [ -n "$BRsyslinux" ]; then    
+      if [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
+        echo -e "\e[00;31mSyslinux not found\e[00m"
+        echo -e "\e[00;33mProceeding without bootloader\e[00m"
+        unset BRsyslinux
+        BRbootloadercheck="fail"
+      fi
+    fi 
  
     install_bootloader
     sleep 1
@@ -1388,7 +1388,7 @@ if [ $BRinterface = "CLI" ]; then
       echo -e "\e[00;36mCompleted. Press ENTER to unmount and clean, then reboot your system.\e[00m"
     else
       if [ -n "$BRbootloadercheck" ]; then
-        echo -e "\n$BRbootloader not found, so this is the right time to\ninstall and update a bootloader. To do so:"
+        echo -e "\n$BRbootloader not found, so this is the right time\nto install and update a bootloader. To do so:"
       else
         echo -e "\nSince you haven't chosen a bootloader, this is the right\ntime to install (or update an existing) one. To do so:"
       fi

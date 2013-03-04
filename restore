@@ -1388,14 +1388,17 @@ if [ $BRinterface = "CLI" ]; then
     else
       if [ -n "$BRbootloadercheck" ]; then
         echo -e "\n$BRbootloader not found, so this is the right time\nto install and update a bootloader. To do so:"
+        echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
+        echo -e "\n==>Install and update a bootloader"
+        echo -e "\n==>When done, for leaving chroot, enter: exit"
+        echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices." 
       else
         echo -e "\nSince you haven't chosen a bootloader, this is the right\ntime to install (or update an existing) one. To do so:"
+        echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
+        echo -e "\n==>Install or update your bootloader"
+        echo -e "\n==>When done, for leaving chroot, enter: exit"
+        echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices." 
       fi
-      echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
-      echo -e "\n==>Install or update your bootloader"
-      echo -e "\n==>When done, for leaving chroot, enter: exit"
-      echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices." 
-    fi
     read -s a
 
     sleep 2
@@ -1828,7 +1831,7 @@ update a bootloader. To do so:
 
 ==>On a new terminal with root access, enter: chroot /mnt/target
 
-==>Install or update your bootloader.
+==>Install and update a bootloader.
 
 ==>When done, for leaving chroot, enter: exit
    

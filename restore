@@ -239,10 +239,15 @@ show_summary() {
   fi
 }
 
-mount_dev_proc_sys() {
+prepare_chroot() {
+  echo -e "Binding /dev"
   mount --bind /dev /mnt/target/dev
+  echo -e "Binding /dev/pts"
+  mount --bind  /dev/pts /mnt/target/dev/pts
+  echo -e "Mounting /proc"
   mount -t proc /proc /mnt/target/proc
-  mount -t sysfs /sys /mnt/target/sys 2>&1 && echo SUCCESS  || echo FAILED
+  echo -e "Mounting /sys"
+  mount -t sysfs /sys /mnt/target/sys
 }
 
 generate_fstab() {
@@ -253,33 +258,24 @@ generate_fstab() {
   fi  
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-    echo "$BRroot   /  btrfs compress=lzo,subvol=$BRrootsubvolname,noatime 0 0" >> /mnt/target/etc/fstab
+    echo "UUID=$(lsblk -d -n -o uuid $BRroot)   /  btrfs compress=lzo,subvol=$BRrootsubvolname,noatime 0 0" >> /mnt/target/etc/fstab
   elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ]; then
-    echo "$BRroot  /  btrfs  defaults,noatime    0  0" >> /mnt/target/etc/fstab
+    echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  defaults,noatime    0  0" >> /mnt/target/etc/fstab
   else
-    echo "$BRroot  /  $BRfsystem  defaults,noatime    0  1" >> /mnt/target/etc/fstab
+    echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  $BRfsystem  defaults,noatime    0  1" >> /mnt/target/etc/fstab
   fi
 
   if [ -n "$BRswap" ]; then
-    echo "$BRswap    swap   swap    defaults    0  0" >> /mnt/target/etc/fstab
+    echo "UUID=$(lsblk -d -n -o uuid $BRswap)    swap   swap    defaults    0  0" >> /mnt/target/etc/fstab
   fi
 
   if [ -n "$BRhome" ]; then
-    echo "$BRhome  /home  $BRhomefsystem  defaults,noatime    0  2" >> /mnt/target/etc/fstab
+    echo "UUID=$(lsblk -d -n -o uuid $BRhome)  /home  $BRhomefsystem  defaults,noatime    0  2" >> /mnt/target/etc/fstab
   fi
 
   if [ -n "$BRboot" ]; then
-    echo "$BRboot  /boot  $BRbootfsystem  defaults    0  1" >> /mnt/target/etc/fstab
+    echo "UUID=$(lsblk -d -n -o uuid $BRboot)  /boot  $BRbootfsystem  defaults    0  1" >> /mnt/target/etc/fstab
   fi
-
-  sed -n 's|^/dev/\([sh]d[a-z][0-9]\).*|\1|p' </mnt/target/etc/fstab > /mnt/target/etc/fstab2
-
-  while read LINE; do   
-    UUID=`ls -l /dev/disk/by-uuid | grep "$LINE" | sed -n 's/^.* \([^ ]*\) -> .*$/\1/p'`
-    sed -i "s|^/dev/${LINE}|UUID=${UUID}|" /mnt/target/etc/fstab
-  done </mnt/target/etc/fstab2
-  
-  rm /mnt/target/etc/fstab2
 }
 
 build_initramfs() {
@@ -548,8 +544,9 @@ clean_unmount_out() {
   if [ -f /mnt/target/fullbackup.tgz ]; then
     rm /mnt/target/fullbackup.tgz
   fi
-  umount /mnt/target/dev
+  umount /mnt/target/dev/pts  
   umount /mnt/target/proc
+  umount /mnt/target/dev
   umount /mnt/target/sys
   if [ -n "$BRhome" ]; then
     echo "Unmounting $BRhome"
@@ -1299,8 +1296,8 @@ if [ $BRinterface = "CLI" ]; then
 
     detect_distro
 
-    echo -e "\n==>MOUNTING /dev /proc /sys"
-    mount_dev_proc_sys
+    echo -e "\n==>PREPARING CHROOT ENVIROMENT"
+    prepare_chroot
     sleep 1 
 
     echo -e "\n==>GENERATING FSTAB"
@@ -1737,7 +1734,7 @@ Press Yes to continue, or No to abort." 19 60
 
   detect_distro
 
-  mount_dev_proc_sys 2>&1 | dialog --title "MOUNTING /dev /proc /sys" --progressbox  15 70
+  prepare_chroot 2>&1 | dialog --title "PREPARING CHROOT ENVIROMENT" --progressbox  15 70
   sleep 2
 
   generate_fstab
@@ -1753,7 +1750,7 @@ Edit fstab ?" 30 100
     done
   fi
 
-  build_initramfs 2>&1 | dialog --title "REBUILDING INITRAMFS IMAGE" --progressbox  30 70
+  build_initramfs 2>&1 | dialog --title "REBUILDING INITRAMFS IMAGE" --progressbox  30 100
   sleep 2
 
   generate_locales 2>&1 | dialog --title "GENERATING LOCALES" --progressbox  30 70

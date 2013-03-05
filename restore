@@ -1390,15 +1390,17 @@ if [ $BRinterface = "CLI" ]; then
       echo -e "${BR_CYAN}Completed. Press ENTER to unmount and clean, then reboot your system.${BR_NORM}"
     elif [ -n "$BRbootloadercheck" ]; then
       echo -e "\n$BRbootloader not found, so this is the right time to\ninstall and update a bootloader. To do so:"
-      echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
+      echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
+      echo -e "\n==>Then chroot into the restored system: chroot /mnt/target"
       echo -e "\n==>Install and update a bootloader"
-      echo -e "\n==>When done, for leaving chroot, enter: exit"
+      echo -e "\n==>When done, leave chroot: exit"
       echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices." 
     else
       echo -e "\nSince you haven't chosen a bootloader, this is the right\ntime to install (or update an existing) one. To do so:"
-      echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
+      echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
+      echo -e "\n==>Then chroot into the restored/transferred system: chroot /mnt/target"
       echo -e "\n==>Install or update your bootloader"
-      echo -e "\n==>When done, for leaving chroot, enter: exit"
+      echo -e "\n==>When done, leave chroot: exit"
       echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices." 
     fi
     read -s a
@@ -1827,26 +1829,32 @@ Edit fstab ?" 30 100
     dialog --title "Info" --msgbox  "$BRbootloader not found, so this is the right time to install and 
 update a bootloader. To do so:
 
-==>On a new terminal with root access, enter: chroot /mnt/target
+==>For internet connection to work, on a new terminal with root
+   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf
+
+==>Then chroot into the restored system: chroot /mnt/target
 
 ==>Install and update a bootloader.
 
-==>When done, for leaving chroot, enter: exit
+==>When done, leave chroot: exit
    
 ==>Finally, return to this window and press OK to unmount 
-   all remaining (engaged) devices."  17 70
+   all remaining (engaged) devices."  19 80
   else
     dialog --title "Info" --msgbox  "Since you haven't chosen a bootloader, this is the right time 
 to install (or update an existing) one. To do so:
 
-==>On a new terminal with root access, enter: chroot /mnt/target
+==>For internet connection to work, on a new terminal with root
+   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf
+
+==>Then chroot into the restored/transferred system: chroot /mnt/target
 
 ==>Install or update your bootloader.
 
-==>When done, for leaving chroot, enter: exit
+==>When done, leave chroot: exit
    
 ==>Finally, return to this window and press OK to unmount 
-   all remaining (engaged) devices."  17 70
+   all remaining (engaged) devices."  19 80
   fi
 
   sleep 2

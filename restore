@@ -2,6 +2,18 @@
 
 clear
 
+init_variables() {
+  BR_NORM='\e[00m'
+  BR_RED='\e[00;31m'
+  BR_GREEN='\e[00;32m'
+  BR_YELLOW='\e[00;33m'
+  BR_BLUE='\e[00;34m'
+  BR_MAGENTA='\e[00;35m'
+  BR_CYAN='\e[00;36m'
+}
+
+init_variables
+
 detect_distro() {
   if [ -f /mnt/target/etc/fedora-release ]; then
     BRdistro="Fedora"
@@ -37,30 +49,30 @@ update_list() {
 
 check_input() {
   if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
-    echo -e "\e[00;31mFile not found:\e[00m $BRfile"
+    echo -e "${BR_RED}File not found:${BR_NORM} $BRfile"
     BRSTOP=y
   fi
 
   if [ -n "$BRfile" ] && [ -n "$BRurl" ]; then
-    echo -e "\e[00;33mDont use both local file and url at the same time\e[00m"
+    echo -e "${BR_YELLOW}Dont use both local file and url at the same time${BR_NORM}"
     BRSTOP=y
   fi
 
   if [ -n "$BRfile" ] || [ -n "$BRurl" ] && [ -n "$BRrestore" ]; then
-    echo -e "\e[00;33mDont use local file / url and tranfer mode at the same time\e[00m"
+    echo -e "${BR_YELLOW}Dont use local file / url and tranfer mode at the same time${BR_NORM}"
     BRSTOP=y
   fi
 
   if [ "x$BRmode" = "xTransfer" ]; then
     if [ -z $(which rsync 2> /dev/null) ];then
-      echo -e "\e[00;31mPackage rsync is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"
+      echo -e "${BR_RED}Package rsync is not installed\n${BR_CYAN}Install the package and re-run the script${BR_NORM}"
       BRSTOP=y
     fi
     if [ -n "$BRgrub" ] && [ ! -d /etc/grub.d ]; then
-        echo -e "\e[00;31mGrub not found\e[00m"
+        echo -e "${BR_RED}Grub not found${BR_NORM}"
         BRSTOP=y
     elif [ -n "$BRsyslinux" ] && [ -z $(which extlinux 2> /dev/null) ];then
-        echo -e "\e[00;31mSyslinux not found\e[00m"
+        echo -e "${BR_RED}Syslinux not found${BR_NORM}"
         BRSTOP=y
     fi 
   fi
@@ -69,13 +81,13 @@ check_input() {
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
-      echo -e "\e[00;31mWrong root partition:\e[00m $BRroot"
+      echo -e "${BR_RED}Wrong root partition:${BR_NORM} $BRroot"
       BRSTOP=y
     elif  pvdisplay 2>&1 |  grep -w $BRroot > /dev/null; then
-      echo -e "\e[00;33m$BRroot contains lvm physical volume, refusing to use it\nUse a logical volume instead\e[00m"
+      echo -e "${BR_YELLOW}$BRroot contains lvm physical volume, refusing to use it\nUse a logical volume instead${BR_NORM}"
       BRSTOP=y
     elif [[ ! -z `lsblk -d -n -o mountpoint 2>  /dev/null $BRroot` ]]; then
-      echo -e "\e[00;33m$BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRroot), refusing to use it\e[00m"
+      echo -e "${BR_YELLOW}$BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRroot), refusing to use it${BR_NORM}"
       BRSTOP=y
     fi
   fi
@@ -84,14 +96,14 @@ check_input() {
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
-      echo -e "\e[00;31mWrong swap partition:\e[00m $BRswap"
+      echo -e "${BR_RED}Wrong swap partition:${BR_NORM} $BRswap"
       BRSTOP=y
     elif pvdisplay 2>&1 |  grep -w $BRswap > /dev/null; then
-      echo -e "\e[00;33m$BRswap contains lvm physical volume, refusing to use it\nUse a logical volume instead\e[00m"
+      echo -e "${BR_YELLOW}$BRswap contains lvm physical volume, refusing to use it\nUse a logical volume instead${BR_NORM}"
       BRSTOP=y
     fi
     if [ "$BRswap" == "$BRroot" ]; then
-      echo -e "\e[00;33m$BRswap already used\e[00m"
+      echo -e "${BR_YELLOW}$BRswap already used${BR_NORM}"
       BRSTOP=y
     fi
   fi
@@ -100,17 +112,17 @@ check_input() {
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
      if [ ! "$BRhomecheck" = "true" ]; then
-    echo -e "\e[00;31mWrong home partition:\e[00m $BRhome"
+    echo -e "${BR_RED}Wrong home partition:${BR_NORM} $BRhome"
        BRSTOP=y
     elif pvdisplay 2>&1 |  grep -w $BRhome > /dev/null; then
-      echo -e "\e[00;33m$BRhome contains lvm physical volume, refusing to use it\nUse a logical volume instead\e[00m"
+      echo -e "${BR_YELLOW}$BRhome contains lvm physical volume, refusing to use it\nUse a logical volume instead${BR_NORM}"
       BRSTOP=y
     elif [[ ! -z `lsblk -d -n -o mountpoint 2>  /dev/null $BRhome` ]]; then
-      echo -e "\e[00;33m$BRhome is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRhome), refusing to use it\e[00m"
+      echo -e "${BR_YELLOW}$BRhome is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRhome), refusing to use it${BR_NORM}"
       BRSTOP=y
     fi
     if [ "$BRhome" == "$BRroot" ] || [ "$BRhome" == "$BRswap" ]; then
-     echo -e "\e[00;33m$BRhome already used\e[00m"
+     echo -e "${BR_YELLOW}$BRhome already used${BR_NORM}"
      BRSTOP=y
     fi
   fi
@@ -119,17 +131,17 @@ check_input() {
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     if [ ! "$BRbootcheck" = "true" ]; then
-    echo -e "\e[00;31mWrong boot partition:\e[00m $BRboot"
+    echo -e "${BR_RED}Wrong boot partition:${BR_NORM} $BRboot"
       BRSTOP=y
     elif pvdisplay 2>&1 |  grep -w $BRboot > /dev/null; then
-      echo -e "\e[00;33m$BRboot contains lvm physical volume, refusing to use it\nUse a logical volume instead\e[00m"
+      echo -e "${BR_YELLOW}$BRboot contains lvm physical volume, refusing to use it\nUse a logical volume instead${BR_NORM}"
       BRSTOP=y
     elif [[ ! -z `lsblk -d -n -o mountpoint 2>  /dev/null $BRboot` ]]; then
-      echo -e "\e[00;33m$BRboot is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRboot), refusing to use it\e[00m"
+      echo -e "${BR_YELLOW}$BRboot is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRboot), refusing to use it${BR_NORM}"
       BRSTOP=y
     fi
     if [ "$BRboot" == "$BRroot" ] || [ "$BRboot" == "$BRswap" ] || [ "$BRboot" == "$BRhome" ]; then
-      echo -e "\e[00;33m$BRboot already used\e[00m"
+      echo -e "${BR_YELLOW}$BRboot already used${BR_NORM}"
       BRSTOP=y
     fi
   fi
@@ -137,7 +149,7 @@ check_input() {
   if [ -n "$BRgrub" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
-      echo -e "\e[00;31mWrong disk for grub:\e[00m $BRgrub"
+      echo -e "${BR_RED}Wrong disk for grub:${BR_NORM} $BRgrub"
       BRSTOP=y
     fi
   fi
@@ -145,13 +157,13 @@ check_input() {
   if [ -n "$BRsyslinux" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
     if [ ! "$BRsyslinuxcheck" = "true" ]; then
-      echo -e "\e[00;31mWrong disk for syslinux:\e[00m $BRsyslinux"
+      echo -e "${BR_RED}Wrong disk for syslinux:${BR_NORM} $BRsyslinux"
       BRSTOP=y
     fi
   fi
 
   if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
-    echo -e "\e[00;33mDont use both bootloaders at the same time\e[00m"
+    echo -e "${BR_YELLOW}Dont use both bootloaders at the same time${BR_NORM}"
     BRSTOP=y
   fi
 
@@ -782,7 +794,7 @@ if [ -n "$BRroot" ]; then
   fi  
 
   if [ -z "$BRfile" ] && [ -z "$BRurl" ] && [ -z "$BRrestore"  ]; then
-    echo -e "\e[00;33mYou must enter a file or a URL to get the backup\e[00m"
+    echo -e "${BR_YELLOW}You must enter a file or a URL to get the backup${BR_NORM}"
     exit
   fi
 fi
@@ -802,7 +814,7 @@ if [ -n "$BRrootsubvol" ]; then
 fi
 
 if [ $(id -u) -gt 0 ]; then
-  echo -e "\e[00;31mScript must run as root\e[00m"
+  echo -e "${BR_RED}Script must run as root${BR_NORM}"
   exit
 fi
 
@@ -811,16 +823,16 @@ PS3="Choice: "
 interfaces=(CLI Dialog)
 
 while [ -z "$BRinterface" ]; do
-  echo -e "\n\e[00;36mSelect interface or enter Q to quit\e[00m"
+  echo -e "\n${BR_CYAN}Select interface or enter Q to quit${BR_NORM}"
   select c in ${interfaces[@]}; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo -e "\e[00;33mAborted by User\e[00m"
+      echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
       exit
     elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#interfaces[@]} ]; then
       BRinterface=$c
       break
     else
-      echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+      echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
     fi
   done
 done
@@ -835,7 +847,7 @@ if [ $BRinterface = "CLI" ]; then
     echo -e "\n==>If you didn't include /home directory in the backup\n   and you already have a seperate /home partition,\n   simply enter it when prompted."
     echo -e "\n==>Also make sure that this system and the system you want\n   to restore have the same architecture (for chroot to work)."
     echo -e "\n==>Fedora backups can only be restored from a Fedora enviroment,\n   due to extra tar options."
-    echo -e "\n\e[00;36mPress ENTER to continue.\e[00m"
+    echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
     read -s a
     clear
   fi
@@ -844,17 +856,17 @@ if [ $BRinterface = "CLI" ]; then
   update_list
  
   while [ -z "$BRroot" ]; do
-    echo -e "\n\e[00;36mSelect the number of your root partition or enter Q to quit\e[00m"
+    echo -e "\n${BR_CYAN}Select the number of your root partition or enter Q to quit${BR_NORM}"
     select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-        echo -e "\e[00;33mAborted by User\e[00m"
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
         BRroot=(`echo $c | awk '{ print $1 }'`)
-        echo -e "\e[00;32mYou selected $BRroot as your root partition\e[00m" 
+        echo -e "${BR_GREEN}You selected $BRroot as your root partition${BR_NORM}" 
         break
       else
-        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
       fi
     done  
   done
@@ -862,20 +874,20 @@ if [ $BRinterface = "CLI" ]; then
   update_list
 
   if [ -z "$BRswap" ]; then
-    echo -e "\n\e[00;36mSelect the number of your swap partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
+    echo -e "\n${BR_CYAN}Select the number of your swap partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-        echo -e "\e[00;33mAborted by User\e[00m"
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
         BRswap=(`echo $c | awk '{ print $1 }'`)
-        echo -e "\e[00;32mYou selected $BRswap as your swap partition\e[00m" 
+        echo -e "${BR_GREEN}You selected $BRswap as your swap partition${BR_NORM}" 
         break
       elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-        echo  -e "\e[00;32mNo swap\e[00m"
+        echo  -e "${BR_GREEN}No swap${BR_NORM}"
         break
       else
-        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
       fi
     done
   fi
@@ -883,20 +895,20 @@ if [ $BRinterface = "CLI" ]; then
   update_list
 
   if [ -z "$BRhome" ]; then
-    echo -e "\n\e[00;36mSelect the number of your home partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
+    echo -e "\n${BR_CYAN}Select the number of your home partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-        echo -e "\e[00;33mAborted by User\e[00m"
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
         BRhome=(`echo $c | awk '{ print $1 }'`)
-        echo -e "\e[00;32mYou selected $BRhome as your home partition\e[00m" 
+        echo -e "${BR_GREEN}You selected $BRhome as your home partition${BR_NORM}" 
         break
       elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-        echo  -e "\e[00;32mNo seperate home\e[00m"
+        echo  -e "${BR_GREEN}No seperate home${BR_NORM}"
         break
       else
-        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
       fi
     done
   fi
@@ -904,47 +916,47 @@ if [ $BRinterface = "CLI" ]; then
   update_list
 
   if [ -z "$BRboot" ]; then
-    echo -e "\n\e[00;36mSelect the number of your boot partition or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
+    echo -e "\n${BR_CYAN}Select the number of your boot partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-        echo -e "\e[00;33mAborted by User\e[00m"
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
         BRboot=(`echo $c | awk '{ print $1 }'`)
-        echo -e "\e[00;32mYou selected $BRboot as your boot partition\e[00m" 
+        echo -e "${BR_GREEN}You selected $BRboot as your boot partition${BR_NORM}" 
         break
       elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-        echo  -e "\e[00;32mNo seperate boot\e[00m"
+        echo  -e "${BR_GREEN}No seperate boot${BR_NORM}"
         break
       else
-        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
       fi
     done
   fi
 
   if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
-    echo -e "\n\e[00;36mSelect the number of your bootloader or enter Q to quit \n\e[00;35m(Optional - Press C to skip) \e[00m"
+    echo -e "\n${BR_CYAN}Select the number of your bootloader or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in Grub Syslinux; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-        echo -e "\e[00;33mAborted by User\e[00m"
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
        	exit
       elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-        echo -e "\n\e[00;33m--->WARNING! NO BOOTLOADER SELECTED<---\n\e[00m"
+        echo -e "\n${BR_YELLOW}--->WARNING! NO BOOTLOADER SELECTED<---\n${BR_NORM}"
         break 
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
 
         while [ -z "$BRgrub" ]; do
-          echo -e "\n\e[00;36mWhere to install GRUB? Enter Q to quit\e[00m"
+          echo -e "\n${BR_CYAN}Where to install GRUB? Enter Q to quit${BR_NORM}"
 	  select c in /dev/[hs]d[a-z]; do
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-              echo -e "\e[00;33mAborted by User\e[00m"
+              echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
 	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
 	      BRgrub=(`echo $c | awk '{ print $1 }'`)
-              echo -e "\e[00;32mYou selected $BRgrub to install GRUB\e[00m" 
+              echo -e "${BR_GREEN}You selected $BRgrub to install GRUB${BR_NORM}" 
 	      break
 	    else
-              echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+              echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
 	    fi
 	  done
         done
@@ -952,23 +964,23 @@ if [ $BRinterface = "CLI" ]; then
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
 
         while [ -z "$BRsyslinux" ]; do
-          echo -e "\n\e[00;36mWhere to install Syslinux? Enter Q to quit\e[00m"
+          echo -e "\n${BR_CYAN}Where to install Syslinux? Enter Q to quit${BR_NORM}"
 	  select c in /dev/[hs]d[a-z]; do
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-              echo -e "\e[00;33mAborted by User\e[00m"
+              echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
 	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
 	      BRsyslinux=(`echo $c | awk '{ print $1 }'`)
-              echo -e "\e[00;32mYou selected $BRsyslinux to install Syslinux\e[00m" 
+              echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}" 
 	      break
 	    else
-              echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+              echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
 	    fi
 	  done
         done
         break
       else
-        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
       fi
     done
   fi 
@@ -991,28 +1003,28 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
   while [ -z "$BRmode" ]; do
-    echo -e "\n\e[00;36mSelect Mode or enter Q to quit\e[00m"
+    echo -e "\n${BR_CYAN}Select Mode or enter Q to quit${BR_NORM}"
     select c in "Restore system from a backup file" "Transfer this system with rsync"; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-        echo -e "\e[00;33mAborted by User\e[00m"
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
-        echo -e "\e[00;32mYou selected Restore Mode\e[00m" 
+        echo -e "${BR_GREEN}You selected Restore Mode${BR_NORM}" 
         BRmode="Restore"
         break
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
-        echo -e "\e[00;32mYou selected Transfer Mode\e[00m" 
+        echo -e "${BR_GREEN}You selected Transfer Mode${BR_NORM}" 
         BRmode="Transfer"
         break
       else
-        echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
       fi
     done
   done
   
   if [ $BRmode = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      echo -e "\n\e[00;36mTranfer entire /home directory?\n(If no only hidden files and folders will be tranfered)\e[00m"
+      echo -e "\n${BR_CYAN}Tranfer entire /home directory?\n(If no only hidden files and folders will be tranfered)${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -1023,12 +1035,12 @@ if [ $BRinterface = "CLI" ]; then
   
       if [ $def = "y" ] || [ $def = "Y" ]; then
         BRhidden="n"
-        echo -e "\e[00;32mEntire /home directory will be tranfered\e[00m" 
+        echo -e "${BR_GREEN}Entire /home directory will be tranfered${BR_NORM}" 
       elif [ $def = "n" ] || [ $def = "N" ]; then
         BRhidden="y"
-         echo -e "\e[00;32mOnly /home's hidden files and folders will be tranfered\e[00m" 
+         echo -e "${BR_GREEN}Only /home's hidden files and folders will be tranfered${BR_NORM}" 
       else
-        echo -e "\e[00;31mPlease select a valid option\e[00m"
+        echo -e "${BR_RED}Please select a valid option${BR_NORM}"
       fi
     done
   fi
@@ -1038,7 +1050,7 @@ if [ $BRinterface = "CLI" ]; then
 
   if [ -f /tmp/stop ]; then
     rm  /tmp/stop
-    echo -e "\e[00;31mError while mounting partitions\e[00m"
+    echo -e "${BR_RED}Error while mounting partitions${BR_NORM}"
     clean_unmount_error
   fi
 
@@ -1057,7 +1069,7 @@ if [ $BRinterface = "CLI" ]; then
 
   if [  "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
-      echo -e "\n==>BTRFS root file system detected\n\e[00;36mCreate subvolume for root (/) ?\e[00m"
+      echo -e "\n==>BTRFS root file system detected\n${BR_CYAN}Create subvolume for root (/) ?${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -1071,7 +1083,7 @@ if [ $BRinterface = "CLI" ]; then
       elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
         BRrootsubvol="n"
       else
-        echo -e "\e[00;31mPlease select a valid option\e[00m"
+        echo -e "${BR_RED}Please select a valid option${BR_NORM}"
       fi
     done 
 
@@ -1080,12 +1092,12 @@ if [ $BRinterface = "CLI" ]; then
         read -p "Enter subvolume name: " BRrootsubvolname
         echo "Subvolume name: $BRrootsubvolname"
         if [ -z "$BRrootsubvolname" ]; then
-          echo -e "\n\e[00;36mPlease enter a name for the subvolume.\e[00m"
+          echo -e "\n${BR_CYAN}Please enter a name for the subvolume.${BR_NORM}"
         fi
       done
  
       while [ -z "$BRhomesubvol" ]; do
-        echo -e "\n\e[00;36mCreate subvolume for /home inside $BRrootsubvolname ?\e[00m"
+        echo -e "\n${BR_CYAN}Create subvolume for /home inside $BRrootsubvolname ?${BR_NORM}"
         read -p "(Y/n) " an
 
         if [ -n "$an" ]; then
@@ -1099,12 +1111,12 @@ if [ $BRinterface = "CLI" ]; then
         elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
           BRhomesubvol="n"
         else
-          echo -e "\e[00;31mPlease select a valid option\e[00m"
+          echo -e "${BR_RED}Please select a valid option${BR_NORM}"
         fi
       done 
 
       while [ -z "$BRvarsubvol" ]; do
-        echo -e "\n\e[00;36mCreate subvolume for /var inside $BRrootsubvolname ?\e[00m"
+        echo -e "\n${BR_CYAN}Create subvolume for /var inside $BRrootsubvolname ?${BR_NORM}"
         read -p "(Y/n):" an
 
         if [ -n "$an" ]; then
@@ -1118,12 +1130,12 @@ if [ $BRinterface = "CLI" ]; then
         elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
           BRvarsubvol="n"
         else
-          echo -e "\e[00;31mPlease select a valid option\e[00m"
+          echo -e "${BR_RED}Please select a valid option${BR_NORM}"
         fi
       done
 
       while [ -z "$BRusrsubvol" ]; do
-        echo -e "\n\e[00;36mCreate subvolume for /usr inside $BRrootsubvolname ?\e[00m"
+        echo -e "\n${BR_CYAN}Create subvolume for /usr inside $BRrootsubvolname ?${BR_NORM}"
         read -p "(Y/n):" an
 
         if [ -n "$an" ]; then
@@ -1137,7 +1149,7 @@ if [ $BRinterface = "CLI" ]; then
         elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
           BRusrsubvol="n"
         else
-          echo -e "\e[00;31mPlease select a valid option\e[00m"
+          echo -e "${BR_RED}Please select a valid option${BR_NORM}"
         fi
       done 
 
@@ -1153,7 +1165,7 @@ if [ $BRinterface = "CLI" ]; then
       create_subvols
     fi
   elif [  "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
-    echo -e "\e[00;33mNot a btrfs root filesystem, proceeding without subvolumes...\e[00m"
+    echo -e "${BR_YELLOW}Not a btrfs root filesystem, proceeding without subvolumes...${BR_NORM}"
     sleep 1
   fi
 
@@ -1169,15 +1181,15 @@ if [ $BRinterface = "CLI" ]; then
       if [ -n "$BRusername" ]; then
         wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup.tgz $BRurl --tries=2
         if [ "$?" -ne "0" ]; then
-          echo -e "\e[00;31mError downloading file\e[00m"
-          echo -e "\e[00;31mWrong URL or network is down\e[00m"
+          echo -e "${BR_RED}Error downloading file${BR_NORM}"
+          echo -e "${BR_RED}Wrong URL or network is down${BR_NORM}"
           rm /mnt/target/fullbackup.tgz 2>/dev/null
         fi
       else
         wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
         if [ "$?" -ne "0" ]; then
-          echo -e "\e[00;31mError downloading file\e[00m"
-          echo -e "\e[00;31mWrong URL or network is down\e[00m"
+          echo -e "${BR_RED}Error downloading file${BR_NORM}"
+          echo -e "${BR_RED}Wrong URL or network is down${BR_NORM}"
           rm /mnt/target/fullbackup.tgz 2>/dev/null
         fi
       fi
@@ -1187,28 +1199,28 @@ if [ $BRinterface = "CLI" ]; then
       echo "Checking archive..."
       tar tf /mnt/target/fullbackup.tgz 1>/dev/null
       if [ "$?" = "0" ]; then
-        echo -e "\e[00;32mArchive appears OK\e[00m"
+        echo -e "${BR_GREEN}Archive appears OK${BR_NORM}"
       else 
-        echo -e "\e[00;31mError reading archive\e[00m"
+        echo -e "${BR_RED}Error reading archive${BR_NORM}"
         rm /mnt/target/fullbackup.tgz
       fi 
     fi
 
     while [ ! -f /mnt/target/fullbackup.tgz ]; do
-      echo -e "\n\e[00;36mSelect an option or enter Q to quit\e[00m"
+      echo -e "\n${BR_CYAN}Select an option or enter Q to quit${BR_NORM}"
       select c in "File" "URL" "Protected URL"; do
         if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-          echo -e "\e[00;33mAborted by User\e[00m"
+          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
           if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
             unmount_only_in_subvol
             remount_delete_subvols
           fi
           clean_unmount_in
         elif [ $REPLY = "1" ]; then        
-          echo -e "\n\e[00;36mEnter the path of the backup file\e[00m"
+          echo -e "\n${BR_CYAN}Enter the path of the backup file${BR_NORM}"
           read -p "Path:" BRfile
           if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-            echo -e "\e[00;31mFile not found\e[00m"
+            echo -e "${BR_RED}File not found${BR_NORM}"
 	  else
             echo "Copying file..."
             cp $BRfile "/mnt/target/fullbackup.tgz"                  
@@ -1216,7 +1228,7 @@ if [ $BRinterface = "CLI" ]; then
           break
       
         elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
-          echo -e "\n\e[00;36mEnter the URL for the backup file\e[00m"
+          echo -e "\n${BR_CYAN}Enter the URL for the backup file${BR_NORM}"
           read -p "URL:" BRurl
           echo " "
           if [ $REPLY = "3" ]; then
@@ -1231,30 +1243,30 @@ if [ $BRinterface = "CLI" ]; then
 	    echo " "
 	    wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2
             if [ "$?" -ne "0" ]; then
-              echo -e "\e[00;31mError downloading file\e[00m"
-              echo -e "\e[00;31mWrong URL or network is down\e[00m"
+              echo -e "${BR_RED}Error downloading file${BR_NORM}"
+              echo -e "${BR_RED}mWrong URL or network is down${BR_NORM}"
 	      rm /mnt/target/fullbackup.tgz 2>/dev/null
             fi
 	    break
           fi
           wget -O /mnt/target/fullbackup.tgz $BRurl --tries=2
           if [ "$?" -ne "0" ]; then
-            echo -e "\e[00;31mError downloading file\e[00m"
-            echo -e "\e[00;31mWrong URL or network is down\e[00m"
+            echo -e "${BR_RED}Error downloading file${BR_NORM}"
+            echo -e "${BR_RED}Wrong URL or network is down${BR_NORM}"
 	    rm /mnt/target/fullbackup.tgz 2>/dev/null
           fi
           break
         else
-          echo -e "\e[00;31mPlease select a valid option from the list or enter Q to quit\e[00m"
+          echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
         fi
       done
       if [ -f /mnt/target/fullbackup.tgz ]; then
         echo "Checking archive..."
         tar tf /mnt/target/fullbackup.tgz 1>/dev/null
         if [ "$?" = "0" ]; then
-          echo -e "\e[00;32mArchive appears OK\e[00m"
+          echo -e "${BR_GREEN}Archive appears OK${BR_NORM}"
         else 
-          echo -e "\e[00;31mError reading archive\e[00m"
+          echo -e "${BR_RED}Error reading archive${BR_NORM}"
           rm /mnt/target/fullbackup.tgz
         fi 
       fi
@@ -1266,11 +1278,11 @@ if [ $BRinterface = "CLI" ]; then
   elif [ -n "$BRsyslinux" ]; then
     BRbootloader=Syslinux
   fi  
-  echo -e "\n\e[00;32mSUMMARY\e[00m"
+  echo -e "\n${BR_GREEN}SUMMARY${BR_NORM}"
   show_summary
  
   while [ -z "$BRcontinue" ]; do
-    echo -e "\n\e[00;36mContinue?\e[00m"
+    echo -e "\n${BR_CYAN}Continue?${BR_NORM}"
     read -p "(Y/n):" an
 
     if [ -n "$an" ]; then
@@ -1282,10 +1294,10 @@ if [ $BRinterface = "CLI" ]; then
     if [ $def = "y" ] || [ $def = "Y" ]; then
       BRcontinue="y"
     elif [ $def = "n" ] || [ $def = "N" ]; then
-      echo -e "\e[00;33mAborted by User\e[00m"
+      echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
       BRcontinue="n"
     else
-      echo -e "\e[00;31mPlease enter a valid option\e[00m"
+      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
     fi
   done  
 
@@ -1318,7 +1330,7 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
 
     while [ -z "$BRedit" ] ; do
-      echo -e "\n\e[00;36mEdit fstab ?\e[00m"
+      echo -e "\n${BR_CYAN}Edit fstab ?${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -1332,20 +1344,20 @@ if [ $BRinterface = "CLI" ]; then
       elif [ $def = "n" ] || [ $def = "N" ]; then
         BRedit="n"
       else
-        echo -e "\e[00;31mPlease select a valid option\e[00m"
+        echo -e "${BR_RED}Please select a valid option${BR_NORM}"
       fi
     done
 
     if [ $BRedit = "y" ]; then
       while [ -z "$BReditor" ]; do
-        echo -e "\n\e[00;36mSelect editor\e[00m"
+        echo -e "\n${BR_CYAN}Select editor${BR_NORM}"
         select c in ${editorlist[@]}; do
           if [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#editorlist[@]} ]; then
             BReditor=$c
             $BReditor /mnt/target/etc/fstab
             break
           else
-            echo -e "\e[00;31mPlease select a valid option\e[00m"
+            echo -e "${BR_RED}Please select a valid option${BR_NORM}"
           fi
         done  
       done
@@ -1360,13 +1372,13 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
 
     if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/etc/grub.d ]; then
-        echo -e "\e[00;31mGrub not found\e[00m"
-        echo -e "\e[00;33mProceeding without bootloader\e[00m"
+        echo -e "${BR_RED}Grub not found${BR_NORM}"
+        echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
         unset BRgrub
         BRbootloadercheck="fail"
     elif [ $BRmode = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
-        echo -e "\e[00;31mSyslinux not found\e[00m"
-        echo -e "\e[00;33mProceeding without bootloader\e[00m"
+        echo -e "${BR_RED}Syslinux not found${BR_NORM}"
+        echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
         unset BRsyslinux
         BRbootloadercheck="fail"
     fi 
@@ -1375,7 +1387,7 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
 
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-      echo -e "\e[00;36mCompleted. Press ENTER to unmount and clean, then reboot your system.\e[00m"
+      echo -e "${BR_CYAN}Completed. Press ENTER to unmount and clean, then reboot your system.${BR_NORM}"
     elif [ -n "$BRbootloadercheck" ]; then
       echo -e "\n$BRbootloader not found, so this is the right time to\ninstall and update a bootloader. To do so:"
       echo -e "\n==>On a new terminal with root access, enter: chroot /mnt/target"
@@ -1400,7 +1412,7 @@ elif [ $BRinterface = "Dialog" ]; then
   IFS=$DEFAULTIFS
 
   if [ -z $(which dialog 2> /dev/null) ];then
-    echo -e "\e[00;31mPackage dialog is not installed\n\e[00;36mInstall the package and re-run the script\e[00m"
+    echo -e "${BR_RED}Package dialog is not installed\n${BR_CYAN}Install the package and re-run the script${BR_NORM}"
     exit
   fi
 
@@ -1529,7 +1541,7 @@ Press OK to continue."  25 80
 
   if [ -f /tmp/stop ]; then
     rm  /tmp/stop
-    echo -e "\e[00;31mError while mounting partitions\e[00m"
+    echo -e "${BR_RED}Error while mounting partitions${BR_NORM}"
     clean_unmount_error
   fi
 
@@ -1841,5 +1853,5 @@ to install (or update an existing) one. To do so:
   clean_unmount_out
 
 else
-  echo -e "\e[00;31mWrong interface name:\e[00m $BRinterface\n\e[00;36mAvailable options: CLI Dialog\e[00m"
+  echo -e "${BR_RED}Wrong interface name:${BR_NORM} $BRinterface\n${BR_CYAN}Available options: CLI Dialog${BR_NORM}"
 fi

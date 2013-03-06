@@ -1681,7 +1681,7 @@ Press OK to continue."  25 80
 
     if [ -f /mnt/target/fullbackup.tgz ]; then
       ( echo "Checking archive..." 
-        tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
+        tar tf /mnt/target/fullbackup.tgz > /dev/null 2>&1
         if [ "$?" = "0" ]; then
           echo  "Archive appears OK"
           sleep 2
@@ -1703,7 +1703,7 @@ Press OK to continue."  25 80
       elif [ $REPLY = "File" ]; then
         BRfile=$(dialog  --no-cancel --inputbox "Enter the path of the backup file:" 8 50 2>&1 1>&3)
           if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-            echo "File not found" | dialog --title "Error" --progressbox  3 20
+            echo "File not found" | dialog --title "Error" --progressbox  3 18
             sleep 2
           else
             ( echo "Copying file..."
@@ -1735,7 +1735,7 @@ Press OK to continue."  25 80
       fi
       if [ -f /mnt/target/fullbackup.tgz ]; then
         ( echo "Checking archive..." 
-          tar tf /mnt/target/fullbackup.tgz 2>&1 1>/dev/null
+          tar tf /mnt/target/fullbackup.tgz > /dev/null 2>&1
           if [ "$?" = "0" ]; then
             echo  "Archive appears OK"
             sleep 2

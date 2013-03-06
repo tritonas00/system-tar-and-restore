@@ -69,11 +69,11 @@ check_input() {
       BRSTOP=y
     fi
     if [ -n "$BRgrub" ] && [ ! -d /etc/grub.d ]; then
-        echo -e "${BR_RED}Grub not found${BR_NORM}"
-        BRSTOP=y
+      echo -e "${BR_RED}Grub not found${BR_NORM}"
+      BRSTOP=y
     elif [ -n "$BRsyslinux" ] && [ -z $(which extlinux 2> /dev/null) ];then
-        echo -e "${BR_RED}Syslinux not found${BR_NORM}"
-        BRSTOP=y
+      echo -e "${BR_RED}Syslinux not found${BR_NORM}"
+      BRSTOP=y
     fi 
   fi
 
@@ -1372,15 +1372,15 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
 
     if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/etc/grub.d ]; then
-        echo -e "${BR_RED}Grub not found${BR_NORM}"
-        echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
-        unset BRgrub
-        BRbootloadercheck="fail"
+      echo -e "${BR_RED}Grub not found${BR_NORM}"
+      echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
+      unset BRgrub
+      BRbootloadercheck="fail"
     elif [ $BRmode = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
-        echo -e "${BR_RED}Syslinux not found${BR_NORM}"
-        echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
-        unset BRsyslinux
-        BRbootloadercheck="fail"
+      echo -e "${BR_RED}Syslinux not found${BR_NORM}"
+      echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
+      unset BRsyslinux
+      BRbootloadercheck="fail"
     fi 
  
     install_bootloader
@@ -1807,15 +1807,15 @@ Edit fstab ?" 30 100
   sleep 2
 
   if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/etc/grub.d ]; then
-      echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49
-      sleep 2
-      unset BRgrub
-      BRbootloadercheck="fail"
+    echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49
+    sleep 2
+    unset BRgrub
+    BRbootloadercheck="fail"
   elif [ $BRmode = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
-      echo -e "Syslinux not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 53
-      sleep 2
-      unset BRsyslinux
-      BRbootloadercheck="fail"
+    echo -e "Syslinux not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 53
+    sleep 2
+    unset BRsyslinux
+    BRbootloadercheck="fail"
   fi 
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then

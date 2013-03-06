@@ -1499,7 +1499,7 @@ Press OK to continue."  25 80
   fi 
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    echo "NO BOOTLOADER SELECTED" | dialog --title "Warning" --progressbox  3 30
+    echo "NO BOOTLOADER SELECTED" | dialog --title "Warning" --progressbox  3 26
     sleep 2
   fi
    

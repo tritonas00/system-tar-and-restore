@@ -15,7 +15,7 @@ init_variables() {
 init_variables
 
 detect_distro() {
-  if [ -f /mnt/target/etc/fedora-release ]; then
+  if [ -f /mnt/target/etc/yum.conf ]; then
     BRdistro="Fedora"
   elif [ -f /mnt/target/etc/pacman.conf ]; then
     BRdistro="Arch"

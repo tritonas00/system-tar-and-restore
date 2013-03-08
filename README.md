@@ -166,7 +166,7 @@ make subvolume for /usr
 The system that runs the restore script and the target system (the one you want to restore), must have the same architecture (for chroot to work).
 
 For booting a btrfs subvolumed root successfully with Syslinux, it is recommended to have a seperate /boot partition.
-Recommended subvolume name is: *__active*.  
+Recommended subvolume name is: *__active*  
 
 When using LVM, it is also recommended to have a seperate /boot partition.  
 

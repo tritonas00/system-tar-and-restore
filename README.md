@@ -79,15 +79,15 @@ The script will ask for:
 
 - Interface to use  
 
-- Root partition ( / )  
+- Root partition  
 
-- Swap partition ( Optional )  
+- Swap partition (Optional)  
 
-- Home partition ( Optional )  
+- Home partition (Optional)  
 
-- Boot partition   ( Optional )  
+- Boot partition   (Optional)  
 
-- Bootloader. Grub(2) and syslinux/extlinux are both supported.  ( Optional )  
+- Bootloader. Grub(2) and syslinux/extlinux are both supported.  (Optional)  
 
 - Bootloader install location. (MBR of the given device)  
 
@@ -97,10 +97,10 @@ The script will ask for:
    If yes, it will ask for the subvolume's name and also if you want to create seperate
    subvolumes for /home, /usr and /var inside root subvolume.  
 
-- If Restore Mode is selected it will ask for the *.tgz image file. This can be obtained locally (by entering the full path of the file), or remotelly (by entering full url of the file).
+- If Restore Mode is selected it will ask for the *.tgz image file. This can be obtained locally (by entering the full path of the file), or remotelly (by entering the url of the file).
    Also protected url is supported, which will ask for server's username and password.  
 
-- Later it will ask you if you want to edit the generated fstab file further. Old fstab kept as fstab-old.
+- Later it will ask you if you want to edit the generated fstab file further. Old fstab saved as fstab-old.
 
 - At the end, if you didn't choose a bootloader or the selected bootloader not found in the target system, the script will help you to chroot and install a bootloader manually.
 
@@ -170,6 +170,8 @@ For booting a btrfs subvolumed root successfully with Syslinux, it is recommende
 Recommended subvolume name is: __active.
 
 When using LVM, it also recommended to have a seperate /boot partition.  
+
+In case of Fedora, old /etc/default/grub is saved as /etc/default/grub-old.  
 
 ###EXAMPLES###
 

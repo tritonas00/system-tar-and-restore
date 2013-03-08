@@ -77,9 +77,11 @@ installs and auto-configures Grub or Syslinux in MBR of given device and finally
 
 For booting a btrfs subvolumed root successfully with Syslinux, it is recommended to have a seperate /boot partition.
 
-Also recommended subvolume name is: __active.
+Recommended subvolume name is: __active.
 
-The system that runs the script and the target system (the one we want to restore), must have the same architecture (for chroot to work).
+When using LVM, it also recommended to have a seperate /boot partition.  
+
+The system that runs the script and the target system (the one you want to restore), must have the same architecture (for chroot to work).
 
 The script will ask for:
 

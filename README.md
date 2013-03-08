@@ -100,7 +100,7 @@ The script will ask for:
 - If Restore Mode is selected it will ask for the *.tgz image file. This can be obtained locally (by entering the full path of the file), or remotelly (by entering the url of the file).
    Also protected url is supported, which will ask for server's username and password.  
 
-- Later it will ask you if you want to edit the generated fstab file further. Old */mnt/target/etc/fstab* is saved as */mnt/target/etc/fstab-old*.  
+- Later it will ask you if you want to edit the generated fstab file further. Old */etc/fstab* is saved as */etc/fstab-old*.  
 
 - At the end, if you didn't choose a bootloader or the selected bootloader not found in the target system, the script will help you to chroot and install a bootloader manually.
 
@@ -171,7 +171,7 @@ Recommended subvolume name is: __active.
 
 When using LVM, it also recommended to have a seperate /boot partition.  
 
-If target distribution is Fedora and Grub is selected, the file */mnt/target/etc/default/grub* is saved as */mnt/target/etc/default/grub-old* and re-generated.  
+If target distribution is Fedora and Grub is selected, the file */etc/default/grub* is saved as */etc/default/grub-old* and re-generated.  
 
 ###EXAMPLES###
 

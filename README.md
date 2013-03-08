@@ -9,7 +9,6 @@ Supported distributions: Arch, Debian, Fedora
 
 ###LIMITATIONS###
 
-- LVM  (not supported - not tested)
 - UEFI (not supported - not tested)
 
 ###REQUIREMENTS###
@@ -65,6 +64,8 @@ Example:
 User must create partitions using his favorite partition manager before running the script.
 At least one / (root) partition is required and optionally a seperate partition for /home, /boot and a swap partition.
 
+In case of LVM, make sure that all logical volumes are formatted and activated.  
+
 Restore script contains two modes: **Restore** and **Transfer**.
 
 In **Restore Mode**, the script uses the above created archive to extract it in user defined partitions.
@@ -82,9 +83,7 @@ The system that runs the script and the target system (the one we want to restor
 
 The script will ask for:
 
-- Interface to use 
-
-- Target distribution
+- Interface to use  
 
 - Root partition ( / )  
 
@@ -119,9 +118,6 @@ interface to use
 
 **-t, --transfer**   
 activate tranfer mode  
-
-**-d, --distro**   
-target distribution
 
 **-r, --root**    
 root partition
@@ -173,37 +169,33 @@ make subvolume for /usr
 
 **Examples:** 
 
-- Distro= Arch
 - root = /dev/sdb1
 - grub  
 - local file
 
-<code>sudo ./restore -d Arch -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tgz</code>
+<code>sudo ./restore -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tgz</code>
 
-- Distro= Debian
 - root = /dev/sdb1
 - home = /dev/sdb2
 - swap = /dev/sdb3
 - syslinux 
 - remote file on ftp server
 
-<code>sudo ./restore -d Debian -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/data/backup.tgz</code>
+<code>sudo ./restore -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/data/backup.tgz</code>
 
-- Distro= Fedora
 - root = /dev/sdb2
 - boot = /dev/sdb1
 - home = /dev/sdb3
 - syslinux 
 - remote file in protected http server
 
-<code>sudo ./restore -d Fedora -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -S /dev/sdb -u http://server/data/backup.tgz -n user -p pass</code>
+<code>sudo ./restore -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -S /dev/sdb -u http://server/data/backup.tgz -n user -p pass</code>
 
-- Distro= Arch
 - root = /dev/sdb3
 - syslinux  
 - transfer mode  
 
-<code>sudo ./restore -d Arch -r /dev/sdb3 -S /dev/sdb -t</code>  
+<code>sudo ./restore -r /dev/sdb3 -S /dev/sdb -t</code>  
 
 **Demos** 
 

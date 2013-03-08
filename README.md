@@ -171,7 +171,7 @@ Recommended subvolume name is: __active.
 
 When using LVM, it also recommended to have a seperate /boot partition.  
 
-In case of Fedora, old /etc/default/grub is saved as /etc/default/grub-old.  
+In case of Fedora, /etc/default/grub is saved as /etc/default/grub-old in the target system.  
 
 ###EXAMPLES###
 

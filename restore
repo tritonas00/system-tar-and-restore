@@ -1403,7 +1403,7 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
 
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-      echo -e "${BR_CYAN}Completed. Press ENTER to unmount and clean, then reboot your system.${BR_NORM}"
+      echo -e "${BR_CYAN}Completed. Press ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
     elif [ -n "$BRbootloadercheck" ]; then
       echo -e "\n$BRbootloader not found, so this is the right time to\ninstall and update a bootloader. To do so:"
       echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
@@ -1846,7 +1846,7 @@ Edit fstab ?" 30 100
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    dialog --title "Info" --msgbox  "Completed. Press OK to unmount and clean, then reboot your system."  7 50
+    dialog --title "Info" --msgbox  "Completed. Press OK to unmount all remaining (engaged) devices, then reboot your system."  7 50
   elif  [ -n "$BRbootloadercheck" ]; then
     dialog --title "Info" --msgbox  "$BRbootloader not found, so this is the right time to install and 
 update a bootloader. To do so:

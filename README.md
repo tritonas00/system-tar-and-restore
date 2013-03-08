@@ -102,7 +102,7 @@ The script will ask for:
 
 - Later it will ask you if you want to edit the generated fstab file further. Old fstab kept as fstab-old.
 
-- At the end, If you didn't choose a bootloader, the script will help you to chroot and install a bootloader manually.
+- At the end, If you didn't choose a bootloader or the selected bootloader not found in the target system, the script will help you to chroot and install a bootloader manually.
 
 
 The script also supports all input as arguments:

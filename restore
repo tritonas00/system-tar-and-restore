@@ -1515,7 +1515,7 @@ Press OK to continue."  25 80
   fi 
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    echo "NO BOOTLOADER SELECTED" | dialog --title "Warning" --progressbox  3 26
+    echo "WARNING! NO BOOTLOADER SELECTED" | dialog  --progressbox  3 35
     sleep 2
   fi
    
@@ -1678,7 +1678,7 @@ Press OK to continue."  25 80
   if [ $BRmode = "Restore" ]; then
     if [ -n "$BRfile" ]; then
       ( echo "Copying file..." 
-      cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --title "Copying" --progressbox  4 30
+      cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog  --progressbox  4 30
     fi
 
     if [ -n "$BRurl" ]; then
@@ -1711,7 +1711,7 @@ Press OK to continue."  25 80
           echo  "Error reading archive"
           sleep 2
           rm /mnt/target/fullbackup.tgz 2>&1
-        fi ) | dialog --title "Checking" --progressbox 4 30
+        fi ) | dialog  --progressbox 4 30
     fi 
 
     while [ ! -f /mnt/target/fullbackup.tgz ]; do
@@ -1729,7 +1729,7 @@ Press OK to continue."  25 80
             sleep 2
           else
             ( echo "Copying file..."
-            cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog --title "Copying" --progressbox 4 30
+            cp "${BRfile[@]}" "/mnt/target/fullbackup.tgz" ) | dialog  --progressbox 4 30
           fi
   
       elif [ $REPLY = "URL" ] || [ $REPLY = "Protected" ]; then
@@ -1765,7 +1765,7 @@ Press OK to continue."  25 80
             echo  "Error reading archive"
             sleep 2
             rm /mnt/target/fullbackup.tgz 2>&1
-          fi ) | dialog --title "Checking" --progressbox 4 30
+          fi ) | dialog  --progressbox 4 30
       fi
     done
   fi

@@ -75,14 +75,6 @@ In **Transfer Mode**, the script uses rsync to transfer the root filesystem (/) 
 Then generates fstab using uuids, rebuilds initramfs image for every available kernel, re-generates locales, 
 installs and auto-configures Grub or Syslinux in MBR of given device and finally unmounts and cleans everything.
 
-For booting a btrfs subvolumed root successfully with Syslinux, it is recommended to have a seperate /boot partition.
-
-Recommended subvolume name is: __active.
-
-When using LVM, it also recommended to have a seperate /boot partition.  
-
-The system that runs the script and the target system (the one you want to restore), must have the same architecture (for chroot to work).
-
 The script will ask for:
 
 - Interface to use  
@@ -168,6 +160,16 @@ make subvolume for /usr
 
 **--help**   
  show all arguments
+
+**Notes:**  
+
+The system that runs the restore script and the target system (the one you want to restore), must have the same architecture (for chroot to work).
+
+For booting a btrfs subvolumed root successfully with Syslinux, it is recommended to have a seperate /boot partition.
+
+Recommended subvolume name is: __active.
+
+When using LVM, it also recommended to have a seperate /boot partition.  
 
 **Examples:** 
 

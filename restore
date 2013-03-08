@@ -1033,7 +1033,7 @@ if [ $BRinterface = "CLI" ]; then
   
   if [ $BRmode = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      echo -e "\n${BR_CYAN}Tranfer entire /home directory?\n(If no only hidden files and folders will be tranfered)${BR_NORM}"
+      echo -e "\n${BR_CYAN}Tranfer entire /home directory?\n(If no, only hidden files and folders will be tranfered)${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -1545,7 +1545,7 @@ Press OK to continue."  25 80
 
   if [ $BRmode = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      dialog --title "Message"  --yesno "Tranfer entire /home directory?\n\nIf no only hidden files and folders will be tranfered" 9 50
+      dialog --title "Message"  --yesno "Tranfer entire /home directory?\n\nIf No, only hidden files and folders will be tranfered" 9 50
       if [ $? = "0" ]; then
         BRhidden="n"
       else

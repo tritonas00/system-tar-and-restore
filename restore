@@ -184,6 +184,9 @@ mount_all() {
   else
     echo SUCCESS
   fi
+  if [ "$(ls -A /mnt/target  | grep -vw "lost+found")" ]; then
+    touch /tmp/not-empty
+  fi
 
   if [ -n "$BRhome" ]; then
     echo -e "\n==>MOUNTING $BRhome (/home)"
@@ -193,6 +196,9 @@ mount_all() {
       touch /tmp/stop
     else
       echo SUCCESS
+    fi
+    if [ "$(ls -A /mnt/target/home  | grep -vw "lost+found")" ]; then
+      touch /tmp/not-empty
     fi
   fi
 
@@ -204,6 +210,9 @@ mount_all() {
       touch /tmp/stop
     else
       echo SUCCESS
+    fi
+    if [ "$(ls -A /mnt/target/boot  | grep -vw "lost+found")" ]; then
+      touch /tmp/not-empty
     fi
   fi 
 }
@@ -1053,6 +1062,13 @@ if [ $BRinterface = "CLI" ]; then
     echo -e "${BR_RED}Error while mounting partitions${BR_NORM}"
     clean_unmount_error
   fi
+  if [ -f /tmp/not-empty ]; then
+    rm  /tmp/not-empty
+    echo -e "${BR_RED}Partition not empty, refusing to use it${BR_NORM}"
+    echo -e "${BR_YELLOW}Target partitions must be formatted and cleaned${BR_NORM}"
+    clean_unmount_error
+  fi
+  
 
   BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
   BRfsize=(`lsblk -d -n -o size 2> /dev/null $BRroot`)
@@ -1544,6 +1560,12 @@ Press OK to continue."  25 80
   if [ -f /tmp/stop ]; then
     rm  /tmp/stop
     echo -e "${BR_RED}Error while mounting partitions${BR_NORM}"
+    clean_unmount_error
+  fi
+  if [ -f /tmp/not-empty ]; then
+    rm  /tmp/not-empty
+    echo -e "${BR_RED}Partition not empty, refusing to use it${BR_NORM}"
+    echo -e "${BR_YELLOW}Target partitions must be formatted and cleaned${BR_NORM}"
     clean_unmount_error
   fi
 

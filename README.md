@@ -161,7 +161,7 @@ make subvolume for /usr
 **--help**   
  show all arguments
 
-###NOTES###  
+###NOTES###
 
 The system that runs the restore script and the target system (the one you want to restore), must have the same architecture (for chroot to work).
 
@@ -171,7 +171,7 @@ Recommended subvolume name is: __active.
 
 When using LVM, it also recommended to have a seperate /boot partition.  
 
-###EXAMPLES###  
+###EXAMPLES###
 
 - root = /dev/sdb1
 - grub  
@@ -201,7 +201,7 @@ When using LVM, it also recommended to have a seperate /boot partition.
 
 <code>sudo ./restore -r /dev/sdb3 -S /dev/sdb -t</code>  
 
-###DEMOS###  
+###DEMOS###
 
 http://www.youtube.com/watch?v=GpNSEyaynLk 
 

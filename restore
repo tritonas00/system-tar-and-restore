@@ -861,6 +861,7 @@ if [ $BRinterface = "CLI" ]; then
     clear
   fi
 
+  bootloader_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f\r";  done`)
   editorlist=(nano vi)
   update_list
  
@@ -960,7 +961,7 @@ if [ $BRinterface = "CLI" ]; then
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
-	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#bootloader_list[@]} ]; then
 	      BRgrub=(`echo $c | awk '{ print $1 }'`)
               echo -e "${BR_GREEN}You selected $BRgrub to install GRUB${BR_NORM}" 
 	      break
@@ -978,7 +979,7 @@ if [ $BRinterface = "CLI" ]; then
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
-	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#bootloader_list[@]} ]; then
 	      BRsyslinux=(`echo $c | awk '{ print $1 }'`)
               echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}" 
 	      break

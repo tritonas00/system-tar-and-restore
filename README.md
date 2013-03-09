@@ -64,7 +64,7 @@ Example:
 User must create partitions using his favorite partition manager before running the script.
 At least one / (root) partition is required and optionally a seperate partition for /home, /boot and a swap partition.
 
-In case of LVM, make sure that all logical volumes are formatted and activated.  
+In case of LVM, make sure that target logical volumes are formatted and activated.  
 
 Restore script contains two modes: **Restore** and **Transfer**.
 

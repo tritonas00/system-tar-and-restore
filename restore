@@ -248,8 +248,10 @@ show_summary() {
     echo "Home Partition: $BRhome $BRhomefsystem $BRhomefsize"
   fi
 
-  if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    echo "$BRbootloader Location:  $BRgrub $BRsyslinux"
+  if [ -n "$BRgrub" ]; then
+    echo "$BRbootloader Location: $BRgrub"
+  elif [ -n "$BRsyslinux" ]; then
+    echo "$BRbootloader Location: $BRsyslinux"
   else 
     echo "Bootloader: None (WARNING)"
   fi

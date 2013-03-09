@@ -202,6 +202,15 @@ If target distribution is Fedora and Grub is selected, the file */etc/default/gr
 
 <code>sudo ./restore -r /dev/sdb3 -S /dev/sdb -t</code>  
 
+- root = /dev/sda2 (btrfs)
+- boot = /dev/sda1
+- root subvolume = __active
+- var, usr and home subvolumes
+- syslinux  
+- transfer mode  
+
+<code>sudo ./restore -t -b /dev/sda1 -r /dev/sda2 -S /dev/sda -R __active -V -U -H </code>  
+
 ###DEMOS###
 
 http://www.youtube.com/watch?v=GpNSEyaynLk 

@@ -205,7 +205,7 @@ If target distribution is Fedora and Grub is selected, the file */etc/default/gr
 - root = /dev/sda2 (btrfs)
 - boot = /dev/sda1
 - root subvolume = __active
-- var, usr and home subvolumes
+- /var, /usr and /home subvolumes
 - syslinux  
 - transfer mode  
 

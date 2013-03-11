@@ -1252,18 +1252,11 @@ if [ $BRinterface = "CLI" ]; then
           echo " "
           if [ $REPLY = "3" ]; then
 	    read -p "USERNAME: " BRusername
-            x='x' 
-            echo -n "PASSWORD: " 
-            while [ "$x" ]; do 
-              read -sn1 x 
-              BRpassword=$BRpassword$x 
-              echo -n "*" 
-            done 
-	    echo " "
+            read -p "PASSWORD: " BRpassword
 	    wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup.tgz $BRurl --tries=2
             if [ "$?" -ne "0" ]; then
               echo -e "${BR_RED}Error downloading file${BR_NORM}"
-              echo -e "${BR_RED}mWrong URL or network is down${BR_NORM}"
+              echo -e "${BR_RED}Wrong URL or network is down${BR_NORM}"
 	      rm /mnt/target/fullbackup.tgz 2>/dev/null
             fi
 	    break

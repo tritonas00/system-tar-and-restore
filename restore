@@ -59,7 +59,7 @@ check_input() {
   fi
 
   if [ -n "$BRfile" ] || [ -n "$BRurl" ] && [ -n "$BRrestore" ]; then
-    echo -e "${BR_YELLOW}Dont use local file / url and tranfer mode at the same time${BR_NORM}"
+    echo -e "${BR_YELLOW}Dont use local file / url and transfer mode at the same time${BR_NORM}"
     BRSTOP=y
   fi
 
@@ -752,7 +752,7 @@ while true; do
     --help)
       echo "
 -i,  --interface       interface to use
--t,  --transfer        activate tranfer mode
+-t,  --transfer        activate transfer mode
 -r,  --root            root partition
 -s,  --swap            swap partition
 -b,  --boot            boot partition
@@ -1036,7 +1036,7 @@ if [ $BRinterface = "CLI" ]; then
   
   if [ $BRmode = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      echo -e "\n${BR_CYAN}Tranfer entire /home directory?\n(If no, only hidden files and folders will be tranfered)${BR_NORM}"
+      echo -e "\n${BR_CYAN}Transfer entire /home directory?\n(If no, only hidden files and folders will be transfered)${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -1047,10 +1047,10 @@ if [ $BRinterface = "CLI" ]; then
   
       if [ $def = "y" ] || [ $def = "Y" ]; then
         BRhidden="n"
-        echo -e "${BR_GREEN}Entire /home directory will be tranfered${BR_NORM}" 
+        echo -e "${BR_GREEN}Entire /home directory will be transfered${BR_NORM}" 
       elif [ $def = "n" ] || [ $def = "N" ]; then
         BRhidden="y"
-         echo -e "${BR_GREEN}Only /home's hidden files and folders will be tranfered${BR_NORM}" 
+         echo -e "${BR_GREEN}Only /home's hidden files and folders will be transfered${BR_NORM}" 
       else
         echo -e "${BR_RED}Please select a valid option${BR_NORM}"
       fi
@@ -1548,7 +1548,7 @@ Press OK to continue."  25 80
 
   if [ $BRmode = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      dialog --title "Message"  --yesno "Tranfer entire /home directory?\n\nIf No, only hidden files and folders will be tranfered" 9 50
+      dialog --title "Message"  --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transfered" 9 50
       if [ $? = "0" ]; then
         BRhidden="n"
       else

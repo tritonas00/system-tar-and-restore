@@ -196,11 +196,11 @@ If target distribution is Fedora and Grub is selected, the file */etc/default/gr
 
 <code>sudo ./restore -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -S /dev/sdb -u http://server/data/backup.tgz -n user -p pass</code>
 
-- root = /dev/sdb3
+- root = /dev/mapper/debian-root
 - grub  
 - transfer mode  
 
-<code>sudo ./restore -r /dev/sdb3 -g /dev/sdb -t</code>  
+<code>sudo ./restore -r /dev/mapper/debian-root -g /dev/sdb -t</code>  
 
 - root = /dev/sda2 (btrfs)
 - boot = /dev/sda1

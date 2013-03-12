@@ -51,7 +51,7 @@ run_tar() {
   fi
 }
 
-BRargs=`getopt -o "i:d:hn" -l "interface:,directory:,exclude-home,no-hidden,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:c:hn" -l "interface:,directory:,exclude-home,compression,no-hidden,help" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ]; then
   echo "See $0 --help"
@@ -74,6 +74,10 @@ while true; do
       BRhome="No"
       shift
     ;;
+    -c|--compression)
+      BRcompression=$2
+      shift 2
+    ;;
     -n|--no-hidden)
       BRhidden="No"
       shift
@@ -83,6 +87,7 @@ while true; do
 -i, --interface         interface to use
 -d, --directory		path for backup folder
 -h, --exclude-home	exclude /home
+-c, --compression       compression type
 -n  --no-hidden         dont keep home's hidden files and folders
 
 --help	print this page

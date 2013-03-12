@@ -51,7 +51,7 @@ run_tar() {
   fi
 }
 
-BRargs=`getopt -o "i:d:c:hn" -l "interface:,directory:,exclude-home,compression,no-hidden,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:c:hn" -l "interface:,directory:,compression:,exclude-home,no-hidden,help" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ]; then
   echo "See $0 --help"
@@ -70,13 +70,13 @@ while true; do
       BRFOLDER=$2
       shift 2
     ;;
-    -h|--exclude-home)
-      BRhome="No"
-      shift
-    ;;
     -c|--compression)
       BRcompression=$2
       shift 2
+    ;;
+    -h|--exclude-home)
+      BRhome="No"
+      shift
     ;;
     -n|--no-hidden)
       BRhidden="No"
@@ -111,6 +111,21 @@ if [ -f /etc/yum.conf ]; then
   BRtar="y"
 else
   BRtar="n"
+fi
+
+if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
+  echo -e "${BR_RED}Directory does not exist:${BR_NORM} $BRFOLDER"
+  BRSTOP=y
+fi
+
+if  [ -n "$BRcompression" ] && [ ! "$BRcompression" =  "GZIP" ] && [ ! "$BRcompression" =  "XZ" ]; then
+  echo -e "${BR_RED}Wrong compression type:${BR_NORM} $BRcompression"
+  echo -e "${BR_CYAN}Supported compressors: GZIP XZ${BR_NORM}"
+  BRSTOP=y
+fi
+
+if [ -n "$BRSTOP" ]; then
+  exit
 fi
 
 PS3="Choice: "
@@ -151,11 +166,6 @@ if [ $BRinterface = "CLI" ]; then
     echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
     read -s a
     clear
-  fi
-
-  if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
-    echo -e "${BR_RED}Directory does not exist${BR_NORM}"
-    unset BRFOLDER
   fi
 
   while [ -z "$BRFOLDER" ]; do
@@ -305,12 +315,6 @@ SYSLINUX Packages:
 -->Fedora: syslinux syslinux-extlinux
 
 Press OK to continue." 22 70
-  fi
-
-  if [ ! -d "$BRFOLDER" ] &&  [ -n "$BRFOLDER" ]; then
-    echo "Directory does not exist" | dialog --title "Error" --progressbox 3 28
-    sleep 2
-    unset BRFOLDER
   fi
 
   while [ -z "$BRFOLDER" ]; do

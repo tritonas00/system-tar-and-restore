@@ -1771,7 +1771,6 @@ Press OK to continue."  25 80
         fi
       fi
     fi
-
     if [ -f /mnt/target/fullbackup ]; then
       ( echo "Checking archive..." 
         tar tf /mnt/target/fullbackup > /dev/null 2>&1
@@ -1795,19 +1794,19 @@ Press OK to continue."  25 80
         clean_unmount_in
       elif [ $REPLY = "File" ]; then
         BRfile=$(dialog  --no-cancel --inputbox "Enter the path of the backup file:" 8 50 2>&1 1>&3)
-          if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-            echo "File not found" | dialog --title "Error" --progressbox  3 18
-            sleep 2
+        if [ ! -f $BRfile ] || [ -z $BRfile ]; then
+          echo "File not found" | dialog --title "Error" --progressbox  3 18
+          sleep 2
+        else
+          detect_filetype
+          if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
+            ( echo "Copying file..."
+            cp "${BRfile[@]}" "/mnt/target/fullbackup" ) | dialog  --progressbox 4 30
           else
-            detect_filetype
-            if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
-              ( echo "Copying file..."
-              cp "${BRfile[@]}" "/mnt/target/fullbackup" ) | dialog  --progressbox 4 30
-            else
-               echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
-               sleep 2
-            fi
+            echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
+            sleep 2
           fi
+        fi
 
       elif [ $REPLY = "URL" ] || [ $REPLY = "Protected" ]; then
         BRurl=$(dialog  --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 2>&1 1>&3)

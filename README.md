@@ -87,7 +87,7 @@ The script will ask for:
 
 - Boot partition   (Optional)  
 
-- Bootloader. Grub2 and syslinux/extlinux are both supported.  (Optional)  
+- Bootloader. Grub2 and Syslinux are both supported.  (Optional)  
 
 - Bootloader install location. (MBR of the given device)  
 

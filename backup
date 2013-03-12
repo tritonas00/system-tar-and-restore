@@ -24,9 +24,11 @@ fi
 if [ $BRtar = "y" ]; then
   echo "Fefora detected: --acls --selinux --xattrs options activated"
 fi
+
+echo "Compression: $BRcompression"
 }
 
-run_tar() {
+run_tar() {  
   BR_TAROPTS="--sparse --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
 
   if [ ${BRhome} = "No" ] &&  [ ${BRhidden} = "No" ] ; then
@@ -42,7 +44,11 @@ run_tar() {
 
   echo "==>Creating archive..."
   sleep 1
-  tar cvpzf "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+  if [ ${BRcompression} = "GZIP" ]; then
+     tar cvpzf  "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+  elif [ ${BRcompression} = "XZ" ]; then
+     tar cvpJf  "$BRFile".tar.xz  ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+  fi
 }
 
 BRargs=`getopt -o "i:d:hn" -l "interface:,directory:,exclude-home,no-hidden,help" -n "$1" -- "$@"`
@@ -122,6 +128,9 @@ done
 
 if [ $BRinterface = "CLI" ]; then
   clear
+  DEFAULTIFS=$IFS
+  IFS=$'\n'
+  
   if [ -z "$BRFOLDER" ]; then
     echo "This script will make a tar backup image of your entire system."
     echo -e "\n==>Make sure you have enough free space."
@@ -208,6 +217,20 @@ if [ $BRinterface = "CLI" ]; then
       fi
     done
   fi
+
+  while [ -z "$BRcompression" ]; do
+    echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
+    select c in GZIP XZ; do
+      if [[ $REPLY = [1-2]* ]]; then
+        BRcompression=$c
+        break
+      else
+        echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
+      fi
+    done
+  done
+
+  IFS=$DEFAULTIFS
 
   echo -e "\n${BR_GREEN}SUMMARY${BR_NORM}"
   show_summary
@@ -320,6 +343,12 @@ Press OK to continue." 22 70
       fi
     done
   fi
+
+  exec 3>&1
+
+  while [ -z "$BRcompression" ]; do
+    BRcompression=$(dialog --no-cancel  --menu "Select compression type:" 12 35 12  GZIP "Fast, big file" XZ "Slow, smaller file" 2>&1 1>&3)  
+  done
 
   dialog --title "Summary"  --yesno "`show_summary`
 ------------------------------------

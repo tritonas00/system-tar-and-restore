@@ -84,11 +84,11 @@ while true; do
     ;;
     --help)
       echo "
--i, --interface         interface to use
+-i, --interface         interface to use (CLI Dialog)
 -d, --directory		path for backup folder
 -h, --exclude-home	exclude /home
--c, --compression       compression type
 -n  --no-hidden         dont keep home's hidden files and folders
+-c, --compression       compression type (GZIP XZ)
 
 --help	print this page
 "
@@ -124,8 +124,24 @@ if  [ -n "$BRcompression" ] && [ ! "$BRcompression" =  "GZIP" ] && [ ! "$BRcompr
   BRSTOP=y
 fi
 
+if  [ -n "$BRinterface" ] && [ ! "$BRinterface" =  "CLI" ] && [ ! "$BRinterface" =  "Dialog" ]; then
+  echo -e "${BR_RED}Wrong interface name:${BR_NORM} $BRinterface\n${BR_CYAN}Available options: CLI Dialog${BR_NORM}"
+  BRSTOP=y
+fi
+
+
+
 if [ -n "$BRSTOP" ]; then
   exit
+fi
+
+if [ -n "$BRFOLDER" ]; then
+  if [ -z "$BRhome" ]; then
+    BRhome="Yes"
+  fi
+  if [ -z "$BRhidden" ]; then
+    BRhidden="Yes"
+  fi
 fi
 
 PS3="Choice: "
@@ -381,8 +397,6 @@ Press Yes to continue or No to abort." 12 50
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
   dialog --title "Info" --msgbox  "Completed. Backup image and logs saved in $BRFOLDER" 8 50
-else
-  echo -e "${BR_RED}Wrong interface name:${BR_NORM} $BRinterface\n${BR_CYAN}Available options: CLI Dialog${BR_NORM}"
 fi
 
 if [ -f /tmp/list ]; then

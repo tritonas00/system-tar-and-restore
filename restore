@@ -15,9 +15,9 @@ init_variables() {
 init_variables
 
 detect_filetype() {
-  if [[  $BRfile == *.gz ]] || [[  $BRfile == *.tgz ]]; then
+  if file $BRfile  |  grep -w gzip  > /dev/null; then
     BRfiletype="gz"
-  elif [[  $BRfile == *.xz ]]; then
+  elif file $BRfile   |  grep -w XZ  > /dev/null; then
     BRfiletype="xz"
   else
     BRfiletype="wrong"
@@ -83,7 +83,7 @@ check_input() {
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
       echo -e "${BR_RED}Invalid file type${BR_NORM}"
-      echo -e "${BR_CYAN}Supported file types: .gz .tgz .xz ${BR_NORM}"
+      echo -e "${BR_CYAN}File must be a gzip or xz compressed archive${BR_NORM}"
       BRSTOP=y
     fi
   fi
@@ -202,9 +202,14 @@ check_input() {
     BRSTOP=y
   fi
 
-if [ -n "$BRSTOP" ]; then
-  exit
-fi
+  if  [ -n "$BRinterface" ] && [ ! "$BRinterface" =  "CLI" ] && [ ! "$BRinterface" =  "Dialog" ]; then
+    echo -e "${BR_RED}Wrong interface name:${BR_NORM} $BRinterface\n${BR_CYAN}Available options: CLI Dialog${BR_NORM}"
+    BRSTOP=y
+  fi
+
+  if [ -n "$BRSTOP" ]; then
+    exit
+  fi
 }
 
 mount_all() {
@@ -786,7 +791,7 @@ while true; do
     ;;
     --help)
       echo "
--i,  --interface       interface to use
+-i,  --interface       interface to use (CLI Dialog)
 -t,  --transfer        activate transfer mode
 -r,  --root            root partition
 -s,  --swap            swap partition
@@ -1969,7 +1974,4 @@ to install (or update an existing) one. To do so:
 
   sleep 2
   clean_unmount_out
-
-else
-  echo -e "${BR_RED}Wrong interface name:${BR_NORM} $BRinterface\n${BR_CYAN}Available options: CLI Dialog${BR_NORM}"
 fi

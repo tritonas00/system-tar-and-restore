@@ -831,6 +831,10 @@ IFS=$'\n'
 check_input
 
 if [ -n "$BRroot" ]; then
+  if [ -z "$BRrootsubvolname" ]; then
+    BRrootsubvol="n"
+  fi
+
   if [ -z "$BRswap" ]; then
     BRswap=-1
   fi
@@ -853,6 +857,8 @@ if [ -n "$BRroot" ]; then
     exit
   fi
 fi
+
+  
 
 if [ -n "$BRrootsubvol" ]; then
   if [ -z "$BRvarsubvol" ]; then

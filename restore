@@ -298,9 +298,9 @@ show_summary() {
 
   if [ $BRmode = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-      echo "File: $BRfile"
+      echo "Source: Local file $BRfiletype compressed"
     elif [ -n "$BRurl" ]; then
-      echo "URL: $BRurl"
+      echo "Source: Remote file $BRfiletype compressed"
     fi
   elif [ $BRmode = "Transfer" ]; then
     echo "Source: /"

@@ -297,7 +297,11 @@ show_summary() {
   fi
 
   if [ $BRmode = "Restore" ]; then
-    echo "Backup File: $BRfile $BRurl"
+    if [ -n "$BRfile" ]; then
+      echo "File: $BRfile"
+    elif [ -n "$BRurl" ]; then
+      echo "URL: $BRurl"
+    fi
   elif [ $BRmode = "Transfer" ]; then
     echo "Source: /"
   fi
@@ -1286,7 +1290,8 @@ if [ $BRinterface = "CLI" ]; then
             remount_delete_subvols
           fi
           clean_unmount_in
-        elif [ $REPLY = "1" ]; then        
+        elif [ $REPLY = "1" ]; then
+          unset BRurl     
           echo -e "\n${BR_CYAN}Enter the path of the backup file${BR_NORM}"
           read -p "Path:" BRfile          
           if [ ! -f $BRfile ] || [ -z $BRfile ]; then
@@ -1303,6 +1308,7 @@ if [ $BRinterface = "CLI" ]; then
           break
       
         elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
+          unset BRfile
           echo -e "\n${BR_CYAN}Enter the URL for the backup file${BR_NORM}"
           read -p "URL:" BRurl
           echo " "
@@ -1798,6 +1804,7 @@ Press OK to continue."  25 80
         fi
         clean_unmount_in
       elif [ $REPLY = "File" ]; then
+        unset BRurl
         BRfile=$(dialog  --no-cancel --inputbox "Enter the path of the backup file:" 8 50 2>&1 1>&3)
         if [ ! -f $BRfile ] || [ -z $BRfile ]; then
           echo "File not found" | dialog --title "Error" --progressbox  3 18
@@ -1814,6 +1821,7 @@ Press OK to continue."  25 80
         fi
 
       elif [ $REPLY = "URL" ] || [ $REPLY = "Protected" ]; then
+        unset BRfile
         BRurl=$(dialog  --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 2>&1 1>&3)
         if [  $REPLY = "Protected" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)

@@ -260,6 +260,18 @@ mount_all() {
 show_summary() {
   echo -e "Root Partition: $BRroot $BRfsystem $BRfsize"
 
+  if [ -n "$BRboot" ]; then
+    echo "Boot Partition: $BRboot $BRbootfsystem $BRbootfsize"
+  fi
+
+  if [ -n "$BRhome" ]; then
+    echo "Home Partition: $BRhome $BRhomefsystem $BRhomefsize"
+  fi
+
+  if [ -n "$BRswap" ]; then
+    echo "Swap Partition: $BRswap"
+  fi
+
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo "Root Subvolume: $BRrootsubvolname"
 
@@ -268,24 +280,12 @@ show_summary() {
     fi
 
     if [ "x$BRvarsubvol" = "xy" ]; then
-      echo "Var Subvolume: Yes"
+      echo "Var  Subvolume: Yes"
     fi
 
     if [ "x$BRusrsubvol" = "xy" ]; then
-      echo "Usr Subvolume: Yes"
+      echo "Usr  Subvolume: Yes"
     fi
-  fi
-
-  if [ -n "$BRswap" ]; then
-    echo "Swap Partition: $BRswap"
-  fi
-
-  if [ -n "$BRboot" ]; then
-    echo "Boot Partition: $BRboot $BRbootfsystem $BRbootfsize"
-  fi
-
-  if [ -n "$BRhome" ]; then
-    echo "Home Partition: $BRhome $BRhomefsystem $BRhomefsize"
   fi
 
   if [ -n "$BRgrub" ]; then
@@ -1910,7 +1910,10 @@ Press OK to continue."  25 80
 
   if [ -z $BRcontinue ]; then
     dialog --title "Summary"  --yesno "`show_summary`
-------------------------------------------
+
+
+
+
 Press Yes to continue, or No to abort." 19 60
 
     if [ $? = "0" ]; then
@@ -1948,9 +1951,11 @@ Press Yes to continue, or No to abort." 19 60
     sleep 2
   else
     dialog --title "GENERATING FSTAB" --yesno "`cat /mnt/target/etc/fstab`
-__________________________________________________________________
 
-Edit fstab ?" 30 100
+
+
+
+Edit fstab ?" 15 100
 
     if [ $? = "0" ]; then
       while [ -z "$BRdeditor" ]; do

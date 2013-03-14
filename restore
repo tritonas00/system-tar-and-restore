@@ -814,7 +814,7 @@ while true; do
 -u,  --url             url
 -n,  --username        username
 -p,  --password        password
--q,  --quiet           Dont ask, just run
+-q,  --quiet           dont ask, just run
 -R,  --rootsubvolname  subvolume name for /     (btrfs only)
 -H,  --homesubvol      make subvolume for /home (btrfs only)
 -V,  --varsubvol       make subvolume for /var  (btrfs only)

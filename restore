@@ -1576,7 +1576,7 @@ Press OK to continue."  25 80
   fi
 
   if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
-    REPLY=$(dialog  --cancel-label Skip --extra-button --extra-label Quit  --menu "Select bootloader:" 0 0 0  Grub Bootloader Syslinux Bootloader 2>&1 1>&3)
+    REPLY=$(dialog  --cancel-label Skip --extra-button --extra-label Quit  --menu "Select bootloader:" 12 35 12  Grub Bootloader Syslinux Bootloader 2>&1 1>&3)
     if [ $? = "3" ]; then
       exit
     fi

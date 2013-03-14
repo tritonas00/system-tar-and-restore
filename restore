@@ -1911,10 +1911,7 @@ Press OK to continue."  25 80
   if [ -z $BRcontinue ]; then
     dialog --title "Summary"  --yesno "`show_summary`
 
-
-
-
-Press Yes to continue, or No to abort." 19 60
+Press Yes to continue, or No to abort." 0 0
 
     if [ $? = "0" ]; then
       def="y"
@@ -1952,10 +1949,7 @@ Press Yes to continue, or No to abort." 19 60
   else
     dialog --title "GENERATING FSTAB" --yesno "`cat /mnt/target/etc/fstab`
 
-
-
-
-Edit fstab ?" 15 100
+Edit fstab ?" 0 0
 
     if [ $? = "0" ]; then
       while [ -z "$BRdeditor" ]; do

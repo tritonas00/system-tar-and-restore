@@ -710,7 +710,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   fi
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUyto" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqto" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -768,9 +768,9 @@ while true; do
       BRpassword=$2
       shift 2
     ;;
-    -y|--yes)
-      def="y"
+    -q|--quiet)
       BRcontinue="y"
+      BRedit="n"
       shift
     ;;
     -R|--rootsubvolname)
@@ -814,7 +814,7 @@ while true; do
 -u,  --url             url
 -n,  --username        username
 -p,  --password        password
--y,  --yes             yes to all
+-q,  --quiet           Dont ask, just run
 -R,  --rootsubvolname  subvolume name for /     (btrfs only)
 -H,  --homesubvol      make subvolume for /home (btrfs only)
 -V,  --varsubvol       make subvolume for /var  (btrfs only)
@@ -1908,7 +1908,7 @@ Press OK to continue."  25 80
     BRbootloader=Syslinux
   fi
 
-  if [ -z $def ]; then
+  if [ -z $BRcontinue ]; then
     dialog --title "Summary"  --yesno "`show_summary`
 ------------------------------------------
 Press Yes to continue, or No to abort." 19 60
@@ -1942,19 +1942,25 @@ Press Yes to continue, or No to abort." 19 60
   sleep 2
 
   generate_fstab
-  dialog --title "GENERATING FSTAB" --yesno "`cat /mnt/target/etc/fstab`
+
+  if [ -n "$BRedit" ]; then
+    cat /mnt/target/etc/fstab  | dialog --title "GENERATING FSTAB" --progressbox  30 100
+    sleep 2
+  else
+    dialog --title "GENERATING FSTAB" --yesno "`cat /mnt/target/etc/fstab`
 __________________________________________________________________
 
 Edit fstab ?" 30 100
 
-  if [ $? = "0" ]; then
-    while [ -z "$BRdeditor" ]; do
-      BRdeditor=$(dialog --no-cancel  --menu "Select editor." 12 35 12   nano editor vi editor 2>&1 1>&3)
-      $BRdeditor /mnt/target/etc/fstab
-    done
+    if [ $? = "0" ]; then
+      while [ -z "$BRdeditor" ]; do
+        BRdeditor=$(dialog --no-cancel  --menu "Select editor." 12 35 12   nano editor vi editor 2>&1 1>&3)
+        $BRdeditor /mnt/target/etc/fstab
+      done
+    fi
   fi
 
-  build_initramfs 2>&1 | dialog --title "REBUILDING INITRAMFS IMAGE" --progressbox  30 100
+  build_initramfs 2>&1 | dialog --title "REBUILDING INITRAMFS IMAGE" --progressbox  30 101
   sleep 2
 
   generate_locales 2>&1 | dialog --title "GENERATING LOCALES" --progressbox  30 70

@@ -302,8 +302,10 @@ show_summary() {
     elif [ -n "$BRurl" ]; then
       echo "Source: Remote $BRfiletype compressed archive"
     fi
-  elif [ $BRmode = "Transfer" ]; then
-    echo "Source: /"
+  elif [ $BRmode = "Transfer" ] && [ $BRhidden = "n" ]; then
+    echo "Source: / + Full /home directory"
+  elif [ $BRmode = "Transfer" ] && [ $BRhidden = "y" ]; then
+    echo "Source: / + /home's hidden files and folders only"
   fi
 }
 
@@ -708,7 +710,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   fi
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUyt" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUyto" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,yes,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -793,10 +795,15 @@ while true; do
       BRrestore="off"
       shift
     ;;
+    -o|--only-hidden)
+      BRhidden="y"
+      shift
+    ;;
     --help)
       echo "
 -i,  --interface       interface to use (CLI Dialog)
 -t,  --transfer        activate transfer mode
+-o,  --only-hidden     transfer /home's hidden files and folders only
 -r,  --root            root partition
 -s,  --swap            swap partition
 -b,  --boot            boot partition
@@ -858,8 +865,10 @@ if [ -n "$BRroot" ]; then
   fi
 fi
 
-  
-
+if [ "x$BRmode" = "xTransfer" ] && [ -z "$BRhidden" ]; then
+  BRhidden="n"
+fi
+    
 if [ -n "$BRrootsubvol" ]; then
   if [ -z "$BRvarsubvol" ]; then
     BRvarsubvol=-1
@@ -1086,7 +1095,7 @@ if [ $BRinterface = "CLI" ]; then
   
   if [ $BRmode = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      echo -e "\n${BR_CYAN}Transfer entire /home directory?\n(If no, only hidden files and folders will be transfered)${BR_NORM}"
+      echo -e "\n${BR_CYAN}Transfer entire /home directory?\n(If no, only hidden files and folders will be transferred)${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -1097,10 +1106,10 @@ if [ $BRinterface = "CLI" ]; then
   
       if [ $def = "y" ] || [ $def = "Y" ]; then
         BRhidden="n"
-        echo -e "${BR_GREEN}Entire /home directory will be transfered${BR_NORM}" 
+        echo -e "${BR_GREEN}Entire /home directory will be transferred${BR_NORM}" 
       elif [ $def = "n" ] || [ $def = "N" ]; then
         BRhidden="y"
-         echo -e "${BR_GREEN}Only /home's hidden files and folders will be transfered${BR_NORM}" 
+         echo -e "${BR_GREEN}Only /home's hidden files and folders will be transferred${BR_NORM}" 
       else
         echo -e "${BR_RED}Please select a valid option${BR_NORM}"
       fi
@@ -1621,7 +1630,7 @@ Press OK to continue."  25 80
 
   if [ $BRmode = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      dialog --title "Message"  --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transfered" 9 50
+      dialog --title "Message"  --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 9 50
       if [ $? = "0" ]; then
         BRhidden="n"
       else

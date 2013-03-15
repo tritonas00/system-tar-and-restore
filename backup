@@ -14,8 +14,8 @@ clear
 init_variables
 
 show_summary() {
-  echo "Backup Folder = $BRFOLDER
-  Include Home Directory = $BRhome"
+  echo "Backup Folder = $BRFOLDER"
+  echo "Include Home Directory = $BRhome"
 
   if [ "$BRhome" = "No" ]; then
     echo "Keep home's hidden files and folders = $BRhidden"
@@ -376,8 +376,8 @@ Press OK to continue." 22 70
   done
 
   dialog --title "Summary"  --yesno "`show_summary`
-------------------------------------
-Press Yes to continue or No to abort." 12 50
+
+Press Yes to continue or No to abort." 0 0
 
   if [ $? = "1" ]; then
     exit

@@ -14,18 +14,18 @@ clear
 init_variables
 
 show_summary() {
-echo "Backup Folder = $BRFOLDER
-Include Home Directory = $BRhome"
+  echo "Backup Folder = $BRFOLDER
+  Include Home Directory = $BRhome"
 
-if [ "$BRhome" = "No" ]; then
-  echo "Keep home's hidden files and folders = $BRhidden"
-fi
+  if [ "$BRhome" = "No" ]; then
+    echo "Keep home's hidden files and folders = $BRhidden"
+  fi
 
-if [ $BRtar = "y" ]; then
-  echo "Fefora detected: --acls --selinux --xattrs options activated"
-fi
+  if [ $BRtar = "y" ]; then
+    echo "Fefora detected: --acls --selinux --xattrs options activated"
+  fi
 
-echo "Compression: $BRcompression"
+  echo "Compression: $BRcompression"
 }
 
 run_tar() {

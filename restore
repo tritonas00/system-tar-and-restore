@@ -324,27 +324,27 @@ generate_fstab() {
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   echo > /mnt/target/etc/fstab
   if [ $BRdistro = Arch ]; then
-    echo  "tmpfs     /tmp          tmpfs     nodev,nosuid      0  0" >> /mnt/target/etc/fstab
+    echo  "tmpfs  /tmp  tmpfs  nodev,nosuid  0  0" >> /mnt/target/etc/fstab
   fi
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-    echo "UUID=$(lsblk -d -n -o uuid $BRroot)   /  btrfs compress=lzo,subvol=$BRrootsubvolname,noatime 0 0" >> /mnt/target/etc/fstab
+    echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  compress=lzo,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
   elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ]; then
-    echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  defaults,noatime    0  0" >> /mnt/target/etc/fstab
+    echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  defaults,noatime  0  0" >> /mnt/target/etc/fstab
   else
-    echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  $BRfsystem  defaults,noatime    0  1" >> /mnt/target/etc/fstab
-  fi
-
-  if [ -n "$BRswap" ]; then
-    echo "UUID=$(lsblk -d -n -o uuid $BRswap)    swap   swap    defaults    0  0" >> /mnt/target/etc/fstab
+    echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  $BRfsystem  defaults,noatime  0  1" >> /mnt/target/etc/fstab
   fi
 
   if [ -n "$BRhome" ]; then
-    echo "UUID=$(lsblk -d -n -o uuid $BRhome)  /home  $BRhomefsystem  defaults,noatime    0  2" >> /mnt/target/etc/fstab
+    echo "UUID=$(lsblk -d -n -o uuid $BRhome)  /home  $BRhomefsystem  defaults,noatime  0  2" >> /mnt/target/etc/fstab
   fi
 
   if [ -n "$BRboot" ]; then
-    echo "UUID=$(lsblk -d -n -o uuid $BRboot)  /boot  $BRbootfsystem  defaults    0  1" >> /mnt/target/etc/fstab
+    echo "UUID=$(lsblk -d -n -o uuid $BRboot)  /boot  $BRbootfsystem  defaults  0  1" >> /mnt/target/etc/fstab
+  fi
+
+  if [ -n "$BRswap" ]; then
+    echo "UUID=$(lsblk -d -n -o uuid $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
   fi
 }
 

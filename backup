@@ -1,6 +1,6 @@
 #!/bin/bash
 
-init_variables() {
+color_variables() {
   BR_NORM='\e[00m'
   BR_RED='\e[00;31m'
   BR_GREEN='\e[00;32m'
@@ -11,7 +11,7 @@ init_variables() {
 }
 
 clear
-init_variables
+color_variables
 
 show_summary() {
   echo "Backup Folder = $BRFOLDER"

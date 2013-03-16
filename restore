@@ -2,7 +2,7 @@
 
 clear
 
-init_variables() {
+color_variables() {
   BR_NORM='\e[00m'
   BR_RED='\e[00;31m'
   BR_GREEN='\e[00;32m'
@@ -12,7 +12,7 @@ init_variables() {
   BR_CYAN='\e[00;36m'
 }
 
-init_variables
+color_variables
 
 detect_filetype() {
   if file $BRfile  |  grep -w gzip  > /dev/null; then

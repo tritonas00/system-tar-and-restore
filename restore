@@ -1639,6 +1639,7 @@ Press OK to continue."  25 80
     done
   fi
 
+  IFS=$'\n'
   check_input
   mount_all 2>&1 | dialog --title "Mounting" --progressbox 30 70
 

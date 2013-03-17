@@ -14,18 +14,21 @@ clear
 color_variables
 
 show_summary() {
-  echo "Backup Folder = $BRFOLDER"
-  echo "Include Home Directory = $BRhome"
+  echo "DESTINATION: $BRFOLDER"
 
-  if [ "$BRhome" = "No" ]; then
-    echo "Keep home's hidden files and folders = $BRhidden"
+  if [ "$BRhome" = "Yes" ]; then
+    echo "SOURCE: / + Full /home directory"
+  elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
+    echo "SOURCE: / + /home's hidden files and folders only"
+  elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
+    echo "SOURCE: / - /home directory"
   fi
 
   if [ $BRtar = "y" ]; then
-    echo "Fefora detected: --acls --selinux --xattrs options activated"
+    echo "EXTRA OPTIONS: --acls --selinux --xattrs"
   fi
 
-  echo "Compression: $BRcompression"
+  echo "COMPRESSION: $BRcompression"
 }
 
 run_tar() {

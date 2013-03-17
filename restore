@@ -258,6 +258,7 @@ mount_all() {
 }
 
 show_summary() {
+  echo  "PARTITIONS:"
   echo -e "Root Partition: $BRroot $BRfsystem $BRfsize"
 
   if [ -n "$BRboot" ]; then
@@ -270,9 +271,10 @@ show_summary() {
 
   if [ -n "$BRswap" ]; then
     echo "Swap Partition: $BRswap"
-  fi
+  fi  
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+    echo -e "\nSUBVOLUMES:"
     echo "Root Subvolume: $BRrootsubvolname"
 
     if [ "x$BRhomesubvol" = "xy" ]; then
@@ -287,25 +289,31 @@ show_summary() {
       echo "Usr  Subvolume: Yes"
     fi
   fi
+  
+  echo -e "\nBOOTLOADER:"
 
   if [ -n "$BRgrub" ]; then
-    echo "$BRbootloader Location: $BRgrub"
+    echo "$BRbootloader"
+    echo "Location: $BRgrub"
   elif [ -n "$BRsyslinux" ]; then
-    echo "$BRbootloader Location: $BRsyslinux"
+    echo "$BRbootloader"
+    echo "Location: $BRsyslinux"
   else
-    echo "Bootloader: None (WARNING)"
+    echo "None (WARNING)"
   fi
+
+  echo -e "\nSOURCE:"
 
   if [ $BRmode = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-      echo "Source: Local $BRfiletype compressed archive"
+      echo "Local $BRfiletype compressed archive"
     elif [ -n "$BRurl" ]; then
-      echo "Source: Remote $BRfiletype compressed archive"
+      echo "Remote $BRfiletype compressed archive"
     fi
   elif [ $BRmode = "Transfer" ] && [ $BRhidden = "n" ]; then
-    echo "Source: / + Full /home directory"
+    echo "/ + Full /home directory"
   elif [ $BRmode = "Transfer" ] && [ $BRhidden = "y" ]; then
-    echo "Source: / + /home's hidden files and folders only"
+    echo "/ + /home's hidden files and folders only"
   fi
 }
 

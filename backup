@@ -254,9 +254,12 @@ if [ $BRinterface = "CLI" ]; then
 
   while [ -z "$BRcompression" ]; do
     echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
-    select c in GZIP XZ; do
-      if [[ $REPLY = [1-2]* ]]; then
-        BRcompression=$c
+    select c in "GZIP (Fast, big file)" "XZ   (Slow, smaller file)"; do
+      if [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
+        BRcompression="GZIP"
+        break
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
+        BRcompression="XZ"
         break
       else
         echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"

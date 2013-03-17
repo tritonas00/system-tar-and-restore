@@ -311,9 +311,9 @@ show_summary() {
       echo "Remote $BRfiletype compressed archive"
     fi
   elif [ $BRmode = "Transfer" ] && [ $BRhidden = "n" ]; then
-    echo "/ + Full /home directory"
+    echo "/ (entire system)"
   elif [ $BRmode = "Transfer" ] && [ $BRhidden = "y" ]; then
-    echo "/ + /home's hidden files and folders only"
+    echo "/ (/home's hidden files and folders only)"
   fi
 }
 

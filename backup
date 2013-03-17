@@ -17,11 +17,11 @@ show_summary() {
   echo "DESTINATION: $BRFOLDER"
 
   if [ "$BRhome" = "Yes" ]; then
-    echo "SOURCE: / + Full /home directory"
+    echo "SOURCE: / (entire system)"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
-    echo "SOURCE: / + /home's hidden files and folders only"
+    echo "SOURCE: / (/home's hidden files and folders only)"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
-    echo "SOURCE: / - /home directory"
+    echo "SOURCE: / (without /home directory)"
   fi
 
   if [ $BRtar = "y" ]; then

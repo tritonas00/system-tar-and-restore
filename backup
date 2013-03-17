@@ -303,7 +303,7 @@ if [ $BRinterface = "CLI" ]; then
     touch "$BRFOLDER"/errors
     sleep 1
 
-    BRFile="$BRFOLDER"/Backup-"`date +%A-%d-%m-%Y-%T`"
+    BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%A-%d-%m-%Y-%T)
     sleep 1
 
     run_tar
@@ -397,7 +397,7 @@ Press Yes to continue or No to abort." 0 0
   touch "$BRFOLDER"/errors
   sleep 1
 
-  BRFile="$BRFOLDER"/Backup-"`date +%A-%d-%m-%Y-%T`"
+  BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%A-%d-%m-%Y-%T)
 
   run_tar | dialog --title "Creating backup image" --progressbox  30 90
 

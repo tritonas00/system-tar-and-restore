@@ -15,20 +15,18 @@ color_variables
 
 show_summary() {
   echo "DESTINATION: $BRFOLDER"
+  echo "COMPRESSION: $BRcompression"
 
   if [ "$BRhome" = "Yes" ]; then
-    echo "SOURCE: / (entire system)"
+    echo "HOME DIR: Include"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
-    echo "SOURCE: / (/home's hidden files and folders only)"
+    echo "HOME DIR: Only hidden files and folders"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
-    echo "SOURCE: / (without /home directory)"
+    echo "HOME DIR: Exclude"
   fi
-
   if [ $BRtar = "y" ]; then
     echo "EXTRA OPTIONS: --acls --selinux --xattrs"
   fi
-
-  echo "COMPRESSION: $BRcompression"
 }
 
 run_tar() {

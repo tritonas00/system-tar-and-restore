@@ -302,18 +302,17 @@ show_summary() {
     echo "None (WARNING)"
   fi
 
-  echo -e "\nSOURCE:"
+  echo -e "\nPROCESS:"
 
   if [ $BRmode = "Restore" ]; then
-    if [ -n "$BRfile" ]; then
-      echo "Local $BRfiletype compressed archive"
-    elif [ -n "$BRurl" ]; then
-      echo "Remote $BRfiletype compressed archive"
-    fi
+    echo "Mode: $BRmode"
+    echo "File: $BRfiletype compressed archive"
   elif [ $BRmode = "Transfer" ] && [ $BRhidden = "n" ]; then
-    echo "/ (entire system)"
+    echo "Mode: $BRmode"
+    echo "Home: Include"
   elif [ $BRmode = "Transfer" ] && [ $BRhidden = "y" ]; then
-    echo "/ (/home's hidden files and folders only)"
+    echo "Mode: $BRmode"
+    echo "Home: Only hidden files and folders"
   fi
 }
 

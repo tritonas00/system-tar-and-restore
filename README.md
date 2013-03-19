@@ -56,26 +56,6 @@ compression type
 show all arguments
 
 
-Example:
-
-- Backup directory=/home/john/
-- Compression: GZIP  
-
-<code>sudo ./backup -d /home/john/ -c GZIP</code>  
-
-- Backup directory=/home/john/
-- Compression: GZIP  
-- Exclude /home directory  
-
-<code>sudo ./backup -d /home/john/ -c GZIP -h -n</code>   
-
-- Backup directory=/home/john/
-- Compression: GZIP  
-- Keep only /home's hidden files and folders
-
-<code>sudo ./backup -d /home/john/ -c GZIP -h</code>   
-
-
 
 ###RESTORE###
 
@@ -197,6 +177,23 @@ If target distribution is Fedora and Grub is selected, old */etc/default/grub* i
 
 
 ###EXAMPLES###
+
+- Backup directory=/home/john/
+- Compression: GZIP  
+
+<code>sudo ./backup -d /home/john/ -c GZIP</code>  
+
+- Backup directory=/home/john/
+- Compression: XZ  
+- Exclude /home directory  
+
+<code>sudo ./backup -d /home/john/ -c XZ -h -n</code>   
+
+- Backup directory=/home/john/
+- Compression: GZIP  
+- Keep only /home's hidden files and folders
+
+<code>sudo ./backup -d /home/john/ -c GZIP -h</code>   
 
 - root = /dev/sdb1
 - grub  

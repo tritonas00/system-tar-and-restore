@@ -22,7 +22,7 @@ Supported distributions: Arch, Debian, Fedora
 Backup script makes a tar backup of / in a given location. It will make a folder in that location which 
 contains the archive, the "errors" file (usefull for tracking tar errors/warnings) and the "log" file which contains the standard tar output.
 
-The script will ask:
+The script will ask for:
 
 - Interface to use 
 
@@ -30,7 +30,7 @@ The script will ask:
 
 - If you want to include your /home directory
 
-- If /home directory is excluded, it will ask if you want to keep hidden files and folders inside it
+- If /home directory is excluded, it will ask if you want to keep only hidden files and folders inside it
 
 - Compression type. GZIP and XZ are supported.
 
@@ -61,7 +61,19 @@ Example:
 - Backup directory=/home/john/
 - Compression: GZIP  
 
-<code>sudo ./backup -d /home/john/ -c GZIP</code>
+<code>sudo ./backup -d /home/john/ -c GZIP</code>  
+
+- Backup directory=/home/john/
+- Compression: GZIP  
+- Exclude /home directory  
+
+<code>sudo ./backup -d /home/john/ -c GZIP -h -n</code>   
+
+- Backup directory=/home/john/
+- Compression: GZIP  
+- Keep only /home's hidden files and folders
+
+<code>sudo ./backup -d /home/john/ -c GZIP -h</code>   
 
 
 

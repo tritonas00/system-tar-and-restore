@@ -20,7 +20,7 @@ Supported distributions: Arch, Debian, Fedora
 ###BACKUP###
 
 Backup script makes a tar backup of / in a given location. It will make a folder in that location which 
-contains the *.tgz file, the "errors" file (usefull for tracking tar errors/warnings) and the "log" file which contains the standard tar output.
+contains the archive, the "errors" file (usefull for tracking tar errors/warnings) and the "log" file which contains the standard tar output.
 
 The script will ask:
 
@@ -31,6 +31,8 @@ The script will ask:
 - If you want to include your /home directory
 
 - If /home directory is excluded, it will ask if you want to keep hidden files and folders inside it
+
+- Compression type. GZIP and XZ are supported.
 
 
 The script also supports all input as arguments:
@@ -47,6 +49,9 @@ exclude /home directory
 **-n, --no-hidden**       
 dont keep home's hidden files and folders
 
+**-c, --compression**
+compression type
+
 **--help**   
 show all arguments
 
@@ -54,8 +59,9 @@ show all arguments
 Example:
 
 - Backup directory=/home/john/
+- Compression: GZIP  
 
-<code>sudo ./backup -d /home/john/</code>
+<code>sudo ./backup -d /home/john/ -c GZIP</code>
 
 
 
@@ -113,6 +119,9 @@ interface to use
 **-t, --transfer**   
 activate tranfer mode  
 
+**-o,  --only-hidden**  
+transfer /home's hidden files and folders only  
+
 **-r, --root**    
 root partition
 
@@ -143,8 +152,8 @@ username
 **-p, --password**     
 password
 
-**-y, --yes**     
-yes to all
+**-q,  --quiet**
+dont ask, just run  
 
 **-R, --rootsubvolname**   
 subvolume name for root
@@ -170,7 +179,9 @@ Recommended subvolume name is: *__active*
 
 When using LVM, it is also recommended to have a seperate /boot partition.  
 
-If target distribution is Fedora and Grub is selected, the file */etc/default/grub* is saved as */etc/default/grub-old* and re-generated.  
+If target distribution is Fedora and Grub is selected, the file */etc/default/grub* is saved as */etc/default/grub-old* and re-generated. 
+
+In case of Syslinux, the file  */boot/syslinux/syslinux.cfg * is saved as   */boot/syslinux/syslinux.cfg-old *.  
 
 ###EXAMPLES###
 
@@ -178,7 +189,7 @@ If target distribution is Fedora and Grub is selected, the file */etc/default/gr
 - grub  
 - local file
 
-<code>sudo ./restore -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tgz</code>
+<code>sudo ./restore -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz</code>
 
 - root = /dev/sdb1
 - home = /dev/sdb2
@@ -186,7 +197,7 @@ If target distribution is Fedora and Grub is selected, the file */etc/default/gr
 - syslinux 
 - remote file on ftp server
 
-<code>sudo ./restore -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/data/backup.tgz</code>
+<code>sudo ./restore -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/data/backup.tar.xz</code>
 
 - root = /dev/sdb2
 - boot = /dev/sdb1
@@ -194,7 +205,7 @@ If target distribution is Fedora and Grub is selected, the file */etc/default/gr
 - syslinux 
 - remote file in protected http server
 
-<code>sudo ./restore -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -S /dev/sdb -u http://server/data/backup.tgz -n user -p pass</code>
+<code>sudo ./restore -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -S /dev/sdb -u http://server/data/backup.tar.gz -n user -p pass</code>
 
 - root = /dev/mapper/debian-root
 - boot = /dev/sdb1  

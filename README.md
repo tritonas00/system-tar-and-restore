@@ -152,7 +152,7 @@ username
 **-p, --password**     
 password
 
-**-q,  --quiet**
+**-q,  --quiet**  
 dont ask, just run  
 
 **-R, --rootsubvolname**   

@@ -95,7 +95,7 @@ The script will ask for:
    If yes, it will ask for the subvolume's name and also if you want to create seperate
    subvolumes for /home, /usr and /var inside root subvolume.  
 
-- If Restore Mode is selected it will ask for the *.tgz image file. This can be obtained locally (by entering the full path of the file), or remotelly (by entering the url of the file).
+- If Restore Mode is selected it will ask for the backup archive. This can be obtained locally (by entering the full path of the file), or remotelly (by entering the url of the file).
    Also protected url is supported, which will ask for server's username and password.  
 
 - Later it will ask you if you want to edit the generated fstab file further. Old */etc/fstab* is saved as */etc/fstab-old*.  

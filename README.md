@@ -181,25 +181,25 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - Backup directory=/home/john/
 - Compression: GZIP  
 
-<code>sudo ./backup -d /home/john/ -c GZIP</code>  
+<code>sudo ./backup.sh -d /home/john/ -c GZIP</code>  
 
 - Backup directory=/home/john/
 - Compression: XZ  
 - Exclude /home directory  
 
-<code>sudo ./backup -d /home/john/ -c XZ -h -n</code>   
+<code>sudo ./backup.sh -d /home/john/ -c XZ -h -n</code>   
 
 - Backup directory=/home/john/
 - Compression: GZIP  
 - Keep only /home's hidden files and folders
 
-<code>sudo ./backup -d /home/john/ -c GZIP -h</code>   
+<code>sudo ./backup.sh -d /home/john/ -c GZIP -h</code>   
 
 - root = /dev/sdb1
 - grub  
 - local file
 
-<code>sudo ./restore -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz</code>
+<code>sudo ./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz</code>
 
 - root = /dev/sdb1
 - home = /dev/sdb2
@@ -207,7 +207,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux 
 - remote file on ftp server
 
-<code>sudo ./restore -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/data/backup.tar.xz</code>
+<code>sudo ./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/data/backup.tar.xz</code>
 
 - root = /dev/sdb2
 - boot = /dev/sdb1
@@ -215,14 +215,14 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux 
 - remote file in protected http server
 
-<code>sudo ./restore -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -S /dev/sdb -u http://server/data/backup.tar.gz -n user -p pass</code>
+<code>sudo ./restore.sh -r /dev/sdb2 -b /dev/sdb1 -h /dev/sdb3 -S /dev/sdb -u http://server/data/backup.tar.gz -n user -p pass</code>
 
 - root = /dev/mapper/debian-root
 - boot = /dev/sdb1  
 - grub  
 - transfer mode  
 
-<code>sudo ./restore -r /dev/mapper/debian-root -b /dev/sdb1 -g /dev/sdb -t</code>  
+<code>sudo ./restore.sh -r /dev/mapper/debian-root -b /dev/sdb1 -g /dev/sdb -t</code>  
 
 - root = /dev/sda2 (btrfs)
 - boot = /dev/sda1
@@ -231,7 +231,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux  
 - transfer mode  
 
-<code>sudo ./restore -t -b /dev/sda1 -r /dev/sda2 -S /dev/sda -R __active -V -U -H </code>  
+<code>sudo ./restore.sh -t -b /dev/sda1 -r /dev/sda2 -S /dev/sda -R __active -V -U -H </code>  
 
 ###DEMOS###
 

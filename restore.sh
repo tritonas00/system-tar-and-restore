@@ -396,10 +396,13 @@ install_bootloader() {
 
   elif [ -n "$BRsyslinux" ]; then
 
-    if [ -f /mnt/target/boot/syslinux/syslinux.cfg ]; then
-      mv /mnt/target/boot/syslinux/syslinux.cfg /mnt/target/boot/syslinux/syslinux.cfg-old
+    if [ -d /mnt/target/boot/syslinux-old ]; then
+      rm -r /mnt/target/boot/syslinux-old
     fi
-      
+    if [ -d /mnt/target/boot/syslinux ]; then
+      mv /mnt/target/boot/syslinux /mnt/target/boot/syslinux-old
+    fi
+    mkdir -p /mnt/target/boot/syslinux
     echo -e "\n==>INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
     if [ $BRdistro = Arch ]; then
       chroot /mnt/target syslinux-install_update -i -a -m
@@ -417,7 +420,6 @@ install_bootloader() {
       fi
 
     elif [ $BRdistro = Debian ]; then
-      mkdir -p /mnt/target/boot/syslinux
       chroot /mnt/target extlinux -i /boot/syslinux
       if [ -n "$BRboot" ]; then
         BRdev=`echo $BRboot | cut -c -8`
@@ -443,7 +445,6 @@ install_bootloader() {
       fi
 
     elif [ $BRdistro = Fedora ]; then
-      mkdir -p /mnt/target/boot/syslinux
       chroot /mnt/target extlinux -i /boot/syslinux
       if [ -n "$BRboot" ]; then
         BRdev=`echo $BRboot | cut -c -8`

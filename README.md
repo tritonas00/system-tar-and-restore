@@ -171,7 +171,7 @@ Recommended subvolume name is: *__active*
 
 When using LVM, it is also recommended to have a seperate /boot partition.  
 
-In the target system, in case of Syslinux, old */boot/syslinux/syslinux.cfg* is saved as */boot/syslinux/syslinux.cfg-old*.  
+In the target system, in case of Syslinux, old directory */boot/syslinux* is saved as */boot/syslinux-old*.  
 
 In the target system, if distribution is Fedora and Grub is selected, old */etc/default/grub* is saved as */etc/default/grub-old*.  
 

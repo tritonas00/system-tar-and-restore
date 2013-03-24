@@ -1486,7 +1486,7 @@ if [ $BRinterface = "CLI" ]; then
     generate_locales
     sleep 1
 
-    if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/etc/grub.d ]; then
+    if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -f /mnt/target/etc/default/grub ]; then
       echo -e "${BR_RED}Grub not found${BR_NORM}"
       echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
       unset BRgrub

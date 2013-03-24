@@ -395,7 +395,7 @@ install_bootloader() {
     fi
 
   elif [ -n "$BRsyslinux" ]; then
-
+    echo -e "\n==>INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
     if [ -d /mnt/target/boot/syslinux-old ]; then
       rm -r /mnt/target/boot/syslinux-old
     fi
@@ -403,8 +403,8 @@ install_bootloader() {
       mv /mnt/target/boot/syslinux /mnt/target/boot/syslinux-old
     fi
     mkdir -p /mnt/target/boot/syslinux
-    touch /mnt/target/boot/syslinux/syslinux.cfg
-    echo -e "\n==>INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
+    touch /mnt/target/boot/syslinux/syslinux.cfg    
+
     if [ $BRdistro = Arch ]; then
       chroot /mnt/target syslinux-install_update -i -a -m
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /mnt/target/boot/syslinux/syslinux.cfg

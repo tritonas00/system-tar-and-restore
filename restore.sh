@@ -403,6 +403,7 @@ install_bootloader() {
       mv /mnt/target/boot/syslinux /mnt/target/boot/syslinux-old
     fi
     mkdir -p /mnt/target/boot/syslinux
+    touch /mnt/target/boot/syslinux/syslinux.cfg
     echo -e "\n==>INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
     if [ $BRdistro = Arch ]; then
       chroot /mnt/target syslinux-install_update -i -a -m

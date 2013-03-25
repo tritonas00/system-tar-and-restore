@@ -235,7 +235,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 
 ###DEMOS###
 
-http://www.youtube.com/watch?v=GpNSEyaynLk(Restoring Arch Linux)
+[Restoring Arch Linux Video](http://www.youtube.com/watch?v=GpNSEyaynLk)
 
 http://www.youtube.com/watch?v=QHkCsEW-qY8 
 

@@ -384,7 +384,9 @@ install_bootloader() {
       chroot /mnt/target grub-install  $BRgrub
       chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED
     elif [ $BRdistro = Fedora ]; then
-      mv /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old
+      if [ -f /mnt/target/etc/default/grub ]; then
+        mv /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old
+      fi
       echo 'GRUB_TIMEOUT=5' > /mnt/target/etc/default/grub
       echo 'GRUB_DEFAULT=saved' >> /mnt/target/etc/default/grub
       echo 'GRUB_CMDLINE_LINUX="vconsole.keymap=us rhgb quiet"' >> /mnt/target/etc/default/grub

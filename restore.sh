@@ -103,7 +103,7 @@ check_input() {
       echo -e "${BR_RED}Package rsync is not installed\n${BR_CYAN}Install the package and re-run the script${BR_NORM}"
       BRSTOP=y
     fi
-    if [ -n "$BRgrub" ] && [ ! -f /etc/default/grub ]; then
+    if [ -n "$BRgrub" ] && [ ! -d /usr/lib/grub/i386-pc ]; then
       echo -e "${BR_RED}Grub not found${BR_NORM}"
       BRSTOP=y
     elif [ -n "$BRsyslinux" ] && [ -z $(which extlinux 2> /dev/null) ];then
@@ -1486,7 +1486,7 @@ if [ $BRinterface = "CLI" ]; then
     generate_locales
     sleep 1
 
-    if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -f /mnt/target/etc/default/grub ]; then
+    if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
       echo -e "${BR_RED}Grub not found${BR_NORM}"
       echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
       unset BRgrub
@@ -1980,7 +1980,7 @@ Edit fstab ?" 0 0
   generate_locales 2>&1 | dialog --title "GENERATING LOCALES" --progressbox  30 70
   sleep 2
 
-  if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -f /mnt/target/etc/default/grub ]; then
+  if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
     echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49
     sleep 2
     unset BRgrub

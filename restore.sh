@@ -937,7 +937,7 @@ if [ $BRinterface = "CLI" ]; then
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     echo -e "This script will restore a backup image of your system\nor transfer this system in user defined partitions."
     echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
-    echo -e "\n==>In case of LVM, make sure that target logical volumes are\n   formatted and activated."
+    echo -e "\n==>In case of LVM, make sure that target volume group\n   is activated."
     echo -e "\n==>If you didn't include /home directory in the backup\n   and you already have a seperate /home partition,\n   simply enter it when prompted."
     echo -e "\n==>Also make sure that this system and the system you want\n   to restore have the same architecture (for chroot to work)."
     echo -e "\n==>Fedora backups can only be restored from a Fedora enviroment,\n   due to extra tar options."
@@ -1549,8 +1549,8 @@ elif [ $BRinterface = "Dialog" ]; then
 ==>Make sure you have created and formatted at least one partition
    for root (/) and optionally partitions for /home and /boot.
 
-==>In case of LVM, make sure that target logical volumes are
-   formatted and activated.
+==>In case of LVM, make sure that the target volume group
+   is activated.
 
 ==>If you didn't include /home directory in the backup
    and you already have a seperate /home partition,

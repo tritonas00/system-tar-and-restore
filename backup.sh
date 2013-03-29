@@ -27,10 +27,13 @@ show_summary() {
   if [ $BRtar = "y" ]; then
     echo "EXTRA OPTIONS: --acls --selinux --xattrs"
   fi
+  if [ -n "$BR_USER_OPTS" ]; then
+    echo "USER OPTIONS: $BR_USER_OPTS"
+  fi
 }
 
 run_tar() {
-  BR_TAROPTS="--sparse --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
+  BR_TAROPTS="--sparse  $BR_USER_OPTS --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
 
   if [ ${BRhome} = "No" ] &&  [ ${BRhidden} = "No" ] ; then
     BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
@@ -52,7 +55,7 @@ run_tar() {
   fi
 }
 
-BRargs=`getopt -o "i:d:c:hn" -l "interface:,directory:,compression:,exclude-home,no-hidden,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:c:u:hn" -l "interface:,directory:,compression:,user-options:,exclude-home,no-hidden,help" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ]; then
   echo "See $0 --help"
@@ -65,6 +68,10 @@ while true; do
   case "$1" in
     -i|--interface)
       BRinterface=$2
+      shift 2
+    ;;
+    -u|--user-options)
+      BR_USER_OPTS=$2
       shift 2
     ;;
     -d|--directory)
@@ -90,6 +97,7 @@ while true; do
 -h, --exclude-home	exclude /home
 -n  --no-hidden         dont keep home's hidden files and folders
 -c, --compression       compression type (GZIP XZ)
+-u, --user-options      user defined tar options
 
 --help	print this page
 "

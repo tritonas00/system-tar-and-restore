@@ -33,7 +33,7 @@ show_summary() {
 }
 
 run_tar() {
-  BR_TAROPTS="--sparse  $BR_USER_OPTS --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
+  BR_TAROPTS="--sparse $BR_USER_OPTS --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
 
   if [ ${BRhome} = "No" ] &&  [ ${BRhidden} = "No" ] ; then
     BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"

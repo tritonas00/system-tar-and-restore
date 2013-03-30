@@ -97,7 +97,7 @@ while true; do
 -h, --exclude-home	exclude /home
 -n  --no-hidden         dont keep home's hidden files and folders
 -c, --compression       compression type (GZIP XZ)
--u, --user-options      user defined tar options
+-u, --user-options      user defined tar options (See tar --help)
 
 --help	print this page
 "

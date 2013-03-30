@@ -71,6 +71,7 @@ while true; do
       shift 2
     ;;
     -u|--user-options)
+      BRuseroptions="Yes"
       BR_USER_OPTS=$2
       shift 2
     ;;
@@ -138,8 +139,6 @@ if  [ -n "$BRinterface" ] && [ ! "$BRinterface" =  "CLI" ] && [ ! "$BRinterface"
   BRSTOP=y
 fi
 
-
-
 if [ -n "$BRSTOP" ]; then
   exit
 fi
@@ -150,6 +149,9 @@ if [ -n "$BRFOLDER" ]; then
   fi
   if [ -z "$BRhidden" ]; then
     BRhidden="Yes"
+  fi
+  if [ -z "$BRuseroptions" ]; then
+    BRuseroptions="No"
   fi
 fi
 
@@ -257,6 +259,27 @@ if [ $BRinterface = "CLI" ]; then
       fi
     done
   fi
+
+  while [ -z "$BRuseroptions" ]; do
+    echo -e "\n${BR_CYAN}Enter additional tar options?${BR_NORM}"
+    read -p "(y/N):" an
+
+    if [ -n "$an" ]; then
+      def=$an
+    else
+      def="n"
+    fi
+
+    if [ $def = "y" ] || [ $def = "Y" ]; then
+      BRuseroptions="Yes"
+      read -p "Enter options (See tar --help):" BR_USER_OPTS
+      echo "Options: $BR_USER_OPTS"
+    elif [ $def = "n" ] || [ $def = "N" ]; then
+      BRuseroptions="No"
+    else
+      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+    fi
+  done
 
   while [ -z "$BRcompression" ]; do
     echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
@@ -382,6 +405,16 @@ Press OK to continue." 22 70
   fi
 
   exec 3>&1
+
+  while [ -z "$BRuseroptions" ]; do
+    dialog --title "Message"  --yesno "Specify additional tar options?" 6 35
+    if [ $? = "0" ]; then
+      BRuseroptions="Yes"
+      BR_USER_OPTS=$(dialog  --no-cancel --inputbox "Enter additional tar options: (See tar --help)" 8 70 2>&1 1>&3)
+    else
+      BRuseroptions="No"
+    fi
+  done
 
   while [ -z "$BRcompression" ]; do
     BRcompression=$(dialog --no-cancel  --menu "Select compression type:" 12 35 12  GZIP "Fast, big file" XZ "Slow, smaller file" 2>&1 1>&3)

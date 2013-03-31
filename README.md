@@ -26,7 +26,7 @@ The script will ask for:
 
 - Interface to use 
 
-- If you want to save the backup in the default folder (/root), or enter your desired path
+- If you want to save the backup in the default folder (/), or enter your desired path
 
 - If you want to include your /home directory
 

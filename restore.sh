@@ -884,7 +884,7 @@ if [ -n "$BRroot" ]; then
   fi
 
   if [ -z "$BRfile" ] && [ -z "$BRurl" ] && [ -z "$BRrestore"  ]; then
-    echo -e "${BR_YELLOW}You must enter a file or a URL to get the backup${BR_NORM}"
+    echo -e "${BR_YELLOW}You must specify a backup file or enable transfer mode${BR_NORM}"
     exit
   fi
 fi

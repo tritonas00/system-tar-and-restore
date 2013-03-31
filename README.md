@@ -79,15 +79,13 @@ The script will ask for:
 
 - Root partition  
 
-- Swap partition (Optional)  
+- (Optional) Swap partition   
 
-- Home partition (Optional)  
+- (Optional) Home partition   
 
-- Boot partition   (Optional)  
+- (Optional) Boot partition    
 
-- Bootloader. Grub2 and Syslinux are both supported.  (Optional)  
-
-- Bootloader install location. (MBR of the given device)  
+- (Optional) Bootloader and target disk (MBR). Grub2 and Syslinux are both supported.  
 
 - Select Mode
 

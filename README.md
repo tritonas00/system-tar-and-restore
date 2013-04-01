@@ -32,6 +32,8 @@ The script will ask for:
 
 - If /home directory is excluded, it will ask if you want to keep only hidden files and folders inside it
 
+- If you want to enter any additional tar options (See tar --help)  
+
 - Compression type. GZIP and XZ are supported.
 
 
@@ -51,6 +53,9 @@ dont keep home's hidden files and folders
 
 **-c, --compression**
 compression type
+
+**-u, --user-options  
+additional tar options (See tar --help)  
 
 **--help**   
 show all arguments

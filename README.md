@@ -51,7 +51,7 @@ exclude /home directory
 **-n, --no-hidden**       
 dont keep home's hidden files and folders
 
-**-c, --compression**
+**-c, --compression**  
 compression type
 
 **-u, --user-options**   

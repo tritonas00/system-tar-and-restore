@@ -236,7 +236,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 
 <code>sudo ./restore.sh -t -b /dev/sda1 -r /dev/sda2 -S /dev/sda -R __active -V -U -H </code>  
 
-###DEMOS###**(Outdated)**
+###DEMOS (Outdated)###
 
 [Restoring Arch Linux Video](http://www.youtube.com/watch?v=GpNSEyaynLk)  
 

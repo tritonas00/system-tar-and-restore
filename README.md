@@ -54,7 +54,7 @@ dont keep home's hidden files and folders
 **-c, --compression**
 compression type
 
-**-u, --user-options  
+**-u, --user-options**   
 additional tar options (See tar --help)  
 
 **--help**   

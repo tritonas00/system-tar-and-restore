@@ -9,7 +9,7 @@ Supported distributions: Arch, Debian, Fedora
 
 ###STABLE REALEASES###
 
-[Download Here (Includes wrappers)](http://code.google.com/p/system-tar-and-restore/downloads/list)  
+[Download Here (Main scripts and wrappers)](http://code.google.com/p/system-tar-and-restore/downloads/list)  
 
 ###LIMITATIONS###
 

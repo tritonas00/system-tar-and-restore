@@ -7,6 +7,10 @@ using tar or transfer an existing installation using rsync.
 
 Supported distributions: Arch, Debian, Fedora
 
+###STABLE REALEASES###
+
+[Download Here (Includes wrappers)](http://code.google.com/p/system-tar-and-restore/downloads/list)  
+
 ###LIMITATIONS###
 
 - UEFI (not supported - not tested)

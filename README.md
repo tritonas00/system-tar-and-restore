@@ -183,7 +183,7 @@ In the target system, in case of Syslinux, old directory */boot/syslinux* is sav
 In the target system, if distribution is Fedora and Grub is selected, old */etc/default/grub* is saved as */etc/default/grub-old*.  
 
 
-###EXAMPLES###
+###EXAMPLES USING ARGUMENTS###
 
 - Backup directory=/home/john/
 - Compression: GZIP  

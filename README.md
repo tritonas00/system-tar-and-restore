@@ -7,6 +7,10 @@ using tar or transfer an existing installation using rsync.
 
 Supported distributions: Arch, Debian, Fedora
 
+###DEMO###
+
+[Video](http://www.youtube.com/watch?v=X4VlZhRqSlU)  
+
 ###STABLE RELEASES###
 
 [Download Here (Main scripts and wrappers)](http://code.google.com/p/system-tar-and-restore/downloads/list)  
@@ -238,12 +242,4 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux  
 - transfer mode  
 
-<code>sudo ./restore.sh -t -b /dev/sda1 -r /dev/sda2 -S /dev/sda -R __active -V -U -H </code>  
-
-###DEMOS (Outdated)###
-
-[Restoring Arch Linux Video](http://www.youtube.com/watch?v=GpNSEyaynLk)  
-
-[Restoring Debian Video](http://www.youtube.com/watch?v=QHkCsEW-qY8)  
-
-[Restoring Fedora Video](http://www.youtube.com/watch?v=kvExZYeaCZI)   
+<code>sudo ./restore.sh -t -b /dev/sda1 -r /dev/sda2 -S /dev/sda -R __active -V -U -H </code>

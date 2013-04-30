@@ -1348,8 +1348,13 @@ if [ $BRinterface = "CLI" ]; then
       	  else
             detect_filetype
             if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
-              echo "Copying file..."
-              cp $BRfile "/mnt/target/fullbackup"
+              if [ -n "$BRomitcopy" ]; then
+                echo "Symlinking file..."
+                ln -s $BRfile "/mnt/target/fullbackup"
+              else
+                echo "Copying file..."
+                cp $BRfile "/mnt/target/fullbackup"
+              fi
             else
                echo -e "${BR_RED}Invalid file type${BR_NORM}"
             fi
@@ -1876,8 +1881,14 @@ Press OK to continue."  25 80
         else
           detect_filetype
           if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
-            ( echo "Copying file..."
-            cp "${BRfile[@]}" "/mnt/target/fullbackup" ) | dialog  --progressbox 4 30
+           (if [ -n "$BRomitcopy" ]; then
+              echo "Symlinking file..."
+              ln -s $BRfile "/mnt/target/fullbackup"
+              sleep 2
+            else
+              echo "Copying file..."
+              cp $BRfile "/mnt/target/fullbackup"
+            fi) | dialog  --progressbox 4 30
           else
             echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
             sleep 2

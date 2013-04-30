@@ -1356,7 +1356,7 @@ if [ $BRinterface = "CLI" ]; then
                 cp $BRfile "/mnt/target/fullbackup"
               fi
             else
-               echo -e "${BR_RED}Invalid file type${BR_NORM}"
+              echo -e "${BR_RED}Invalid file type${BR_NORM}"
             fi
 	  fi
           break
@@ -1802,14 +1802,14 @@ Press OK to continue."  25 80
 
   if [ $BRmode = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-      ( if [ -n "$BRomitcopy" ]; then
-          echo "Symlinking file..."
-          ln -s $BRfile "/mnt/target/fullbackup"
-          sleep 2
-        else
-          echo "Copying file..."
-          cp $BRfile "/mnt/target/fullbackup"
-        fi )  | dialog  --progressbox  4 30
+     (if [ -n "$BRomitcopy" ]; then
+        echo "Symlinking file..."
+        ln -s $BRfile "/mnt/target/fullbackup"
+        sleep 2
+      else
+        echo "Copying file..."
+        cp $BRfile "/mnt/target/fullbackup"
+      fi)  | dialog  --progressbox  4 30
     fi
 
     if [ -n "$BRurl" ]; then

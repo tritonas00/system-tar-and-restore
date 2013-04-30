@@ -734,7 +734,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   fi
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqto" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoO" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,omit-copy" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -823,6 +823,10 @@ while true; do
       BRhidden="y"
       shift
     ;;
+    -O|--omit-copy)
+      BRomitcopy="y"
+      shift
+    ;;
     --help)
       echo "
 -i,  --interface       interface to use (CLI Dialog)
@@ -839,6 +843,7 @@ while true; do
 -n,  --username        username
 -p,  --password        password
 -q,  --quiet           dont ask, just run
+-O,  --omit-copy       dont copy the archive, just symlink it
 -R,  --rootsubvolname  subvolume name for /     (btrfs only)
 -H,  --homesubvol      make subvolume for /home (btrfs only)
 -V,  --varsubvol       make subvolume for /var  (btrfs only)
@@ -1275,8 +1280,13 @@ if [ $BRinterface = "CLI" ]; then
     echo -e "\n==>GETTING TAR IMAGE"
 
     if [ -n "$BRfile" ]; then
-      echo "Copying file..."
-      cp $BRfile "/mnt/target/fullbackup"
+      if [ -n "$BRomitcopy" ]; then
+        echo "Symlinking file..."
+        ln -s $BRfile "/mnt/target/fullbackup"
+      else
+        echo "Copying file..."
+        cp $BRfile "/mnt/target/fullbackup"
+      fi
     fi
 
     if [ -n "$BRurl" ]; then
@@ -1787,8 +1797,14 @@ Press OK to continue."  25 80
 
   if [ $BRmode = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-      ( echo "Copying file..."
-      cp "${BRfile[@]}" "/mnt/target/fullbackup" ) | dialog  --progressbox  4 30
+      ( if [ -n "$BRomitcopy" ]; then
+          echo "Symlinking file..."
+          ln -s $BRfile "/mnt/target/fullbackup"
+          sleep 2
+        else
+          echo "Copying file..."
+          cp $BRfile "/mnt/target/fullbackup"
+        fi )  | dialog  --progressbox  4 30
     fi
 
     if [ -n "$BRurl" ]; then

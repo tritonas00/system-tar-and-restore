@@ -1804,11 +1804,11 @@ Press OK to continue."  25 80
     if [ -n "$BRfile" ]; then
      (if [ -n "$BRomitcopy" ]; then
         echo "Symlinking file..."
-        ln -s $BRfile "/mnt/target/fullbackup"
+        ln -s "${BRfile[@]}" "/mnt/target/fullbackup"
         sleep 2
       else
         echo "Copying file..."
-        cp $BRfile "/mnt/target/fullbackup"
+        cp "${BRfile[@]}" "/mnt/target/fullbackup"
       fi)  | dialog  --progressbox  4 30
     fi
 
@@ -1883,11 +1883,11 @@ Press OK to continue."  25 80
           if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
            (if [ -n "$BRomitcopy" ]; then
               echo "Symlinking file..."
-              ln -s $BRfile "/mnt/target/fullbackup"
+              ln -s "${BRfile[@]}" "/mnt/target/fullbackup"
               sleep 2
             else
               echo "Copying file..."
-              cp $BRfile "/mnt/target/fullbackup"
+              cp "${BRfile[@]}" "/mnt/target/fullbackup"
             fi) | dialog  --progressbox 4 30
           else
             echo "Invalid file type" | dialog --title "Error" --progressbox  3 21

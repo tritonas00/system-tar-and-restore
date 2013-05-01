@@ -839,11 +839,11 @@ while true; do
 -g,  --grub            disk for grub
 -S,  --syslinux        disk for syslinux
 -f,  --file            backup file path
+-O,  --omit-copy       dont copy backup file, just symlink it
 -u,  --url             url
 -n,  --username        username
 -p,  --password        password
 -q,  --quiet           dont ask, just run
--O,  --omit-copy       dont copy the archive, just symlink it
 -R,  --rootsubvolname  subvolume name for /     (btrfs only)
 -H,  --homesubvol      make subvolume for /home (btrfs only)
 -V,  --varsubvol       make subvolume for /var  (btrfs only)
@@ -1280,7 +1280,7 @@ if [ $BRinterface = "CLI" ]; then
     echo -e "\n==>GETTING TAR IMAGE"
 
     if [ -n "$BRfile" ]; then
-      if [ -n "$BRomitcopy" ]; then
+      if [ "x$BRomitcopy" = "xy" ]; then
         echo "Symlinking file..."
         ln -s $BRfile "/mnt/target/fullbackup"
       else
@@ -1348,7 +1348,25 @@ if [ $BRinterface = "CLI" ]; then
       	  else
             detect_filetype
             if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
-              if [ -n "$BRomitcopy" ]; then
+              while [ -z "$BRomitcopy" ]; do
+                echo -e "\n${BR_CYAN}Copy backup file in root partition? (If no, it will be symlinked)${BR_NORM}"
+                read -p "(Y/n):" an
+
+                if [ -n "$an" ]; then
+                  def=$an
+                else
+                  def="y"
+                fi
+
+                if [ $def = "y" ] || [ $def = "Y" ]; then
+                  BRomitcopy="n"
+                elif [ $def = "n" ] || [ $def = "N" ]; then
+                  BRomitcopy="y"
+                else
+                  echo -e "${BR_RED}Please select a valid option${BR_NORM}"
+                fi
+              done
+              if [ $BRomitcopy = "y" ]; then
                 echo "Symlinking file..."
                 ln -s $BRfile "/mnt/target/fullbackup"
               else
@@ -1802,7 +1820,7 @@ Press OK to continue."  25 80
 
   if [ $BRmode = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-     (if [ -n "$BRomitcopy" ]; then
+     (if [ "x$BRomitcopy" = "xy" ]; then
         echo "Symlinking file..."
         ln -s "${BRfile[@]}" "/mnt/target/fullbackup"
         sleep 2
@@ -1881,7 +1899,15 @@ Press OK to continue."  25 80
         else
           detect_filetype
           if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
-           (if [ -n "$BRomitcopy" ]; then
+            while [ -z "$BRomitcopy" ]; do
+              dialog --title "Message" --yesno "Copy backup file in root partition?\n\n(If no, it will be symlinked)" 8 40
+              if [ $? = "0" ]; then
+                BRomitcopy="n"
+              else
+                BRomitcopy="y"
+              fi
+            done
+           (if [ $BRomitcopy = "y" ]; then
               echo "Symlinking file..."
               ln -s "${BRfile[@]}" "/mnt/target/fullbackup"
               sleep 2

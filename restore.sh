@@ -170,7 +170,7 @@ check_input() {
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     for i in $(ls /dev/md/*); do  if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     if [ ! "$BRbootcheck" = "true" ]; then
-    echo -e "${BR_RED}Wrong boot partition:${BR_NORM} $BRboot"
+      echo -e "${BR_RED}Wrong boot partition:${BR_NORM} $BRboot"
       BRSTOP=y
     elif pvdisplay 2>&1 |  grep -w $BRboot > /dev/null; then
       echo -e "${BR_YELLOW}$BRboot contains lvm physical volume, refusing to use it\nUse a logical volume instead${BR_NORM}"

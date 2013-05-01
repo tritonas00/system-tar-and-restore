@@ -12,8 +12,6 @@ color_variables() {
   BR_CYAN='\e[00;36m'
 }
 
-color_variables
-
 detect_filetype() {
   if file $BRfile  |  grep -w gzip  > /dev/null; then
     BRfiletype="gz"
@@ -734,7 +732,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   fi
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoO" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,omit-copy" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoON" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,omit-copy,no-color" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -827,9 +825,14 @@ while true; do
       BRomitcopy="y"
       shift
     ;;
+    -N|--no-color)
+      BRnocolor="y"
+      shift
+    ;;
     --help)
       echo "
 -i,  --interface       interface to use (CLI Dialog)
+-N,  --no-color        disable colors
 -t,  --transfer        activate transfer mode
 -o,  --only-hidden     transfer /home's hidden files and folders only
 -r,  --root            root partition
@@ -860,6 +863,10 @@ while true; do
     ;;
   esac
 done
+
+if [ -z "$BRnocolor" ]; then
+  color_variables
+fi
 
 DEFAULTIFS=$IFS
 IFS=$'\n'

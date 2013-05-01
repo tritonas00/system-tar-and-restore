@@ -11,7 +11,6 @@ color_variables() {
 }
 
 clear
-color_variables
 
 show_summary() {
   echo "DESTINATION: $BRFOLDER"
@@ -55,7 +54,7 @@ run_tar() {
   fi
 }
 
-BRargs=`getopt -o "i:d:c:u:hn" -l "interface:,directory:,compression:,user-options:,exclude-home,no-hidden,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:c:u:hnN" -l "interface:,directory:,compression:,user-options:,exclude-home,no-hidden,no-color,help" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ]; then
   echo "See $0 --help"
@@ -91,9 +90,14 @@ while true; do
       BRhidden="No"
       shift
     ;;
+    -N|--no-color)
+      BRnocolor="y"
+      shift
+    ;;
     --help)
       echo "
 -i, --interface         interface to use (CLI Dialog)
+-N, --no-color          disable colors
 -d, --directory		path for backup folder
 -h, --exclude-home	exclude /home
 -n  --no-hidden         dont keep home's hidden files and folders
@@ -111,6 +115,10 @@ while true; do
     ;;
   esac
 done
+
+if [ -z "$BRnocolor" ]; then
+  color_variables
+fi
 
 if [ $(id -u) -gt 0 ]; then
   echo -e "${BR_RED}Script must run as root${BR_NORM}"

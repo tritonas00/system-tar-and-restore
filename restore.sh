@@ -72,7 +72,7 @@ part_list_dialog() {
 update_list() {
   list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")
          for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e $(echo /dev/mapper/"${BRroot##*/}") -e $(echo /dev/mapper/"${BRswap##*/}") -e $(echo /dev/mapper/"${BRhome##*/}") -e $(echo /dev/mapper/"${BRboot##*/}")
-         for f in $(ls /dev/md/*); do echo -e "$f $(lsblk -d -n -o size $f)\r" ; done | grep -vw -e $(echo /dev/md/"${BRroot##*/}") -e $(echo /dev/md/"${BRswap##*/}") -e $(echo /dev/md/"${BRhome##*/}") -e $(echo /dev/md/"${BRboot##*/}")` )
+         for f in $(ls /dev/md/* 2>/dev/null); do echo -e "$f $(lsblk -d -n -o size $f)\r" ; done | grep -vw -e $(echo /dev/md/"${BRroot##*/}") -e $(echo /dev/md/"${BRswap##*/}") -e $(echo /dev/md/"${BRhome##*/}") -e $(echo /dev/md/"${BRboot##*/}")` )
 }
 
 check_input() {
@@ -955,7 +955,7 @@ if [ $BRinterface = "CLI" ]; then
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     echo -e "This script will restore a backup image of your system\nor transfer this system in user defined partitions."
     echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
-    echo -e "\n==>In case of LVM, make sure that the target volume group\n   is activated."
+    echo -e "\n==>Make sure that target LVM volume group is activated and target\n   RAID array is properly assembled."
     echo -e "\n==>If you didn't include /home directory in the backup\n   and you already have a seperate /home partition,\n   simply enter it when prompted."
     echo -e "\n==>Also make sure that this system and the system you want\n   to restore have the same architecture (for chroot to work)."
     echo -e "\n==>Fedora backups can only be restored from a Fedora enviroment,\n   due to extra tar options."
@@ -1595,8 +1595,8 @@ elif [ $BRinterface = "Dialog" ]; then
 ==>Make sure you have created and formatted at least one partition
    for root (/) and optionally partitions for /home and /boot.
 
-==>In case of LVM, make sure that the target volume group
-   is activated.
+==>Make sure that target LVM volume group is activated and target
+   RAID array is properly assembled.
 
 ==>If you didn't include /home directory in the backup
    and you already have a seperate /home partition,

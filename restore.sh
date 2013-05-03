@@ -66,13 +66,13 @@ run_rsync() {
 part_list_dialog() {
   for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
   for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"`  -e `echo /dev/mapper/"${BRboot##*/}"`
-  for f in $(ls /dev/md/*); do echo -e "$f $(lsblk -d -n -o size $f)\r" ; done | grep -vw -e `echo /dev/md/"${BRroot##*/}"` -e `echo /dev/md/"${BRswap##*/}"` -e `echo /dev/md/"${BRhome##*/}"`  -e `echo /dev/md/"${BRboot##*/}"`
+  for f in /dev/md[0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
 }
 
 update_list() {
   list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")
          for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e $(echo /dev/mapper/"${BRroot##*/}") -e $(echo /dev/mapper/"${BRswap##*/}") -e $(echo /dev/mapper/"${BRhome##*/}") -e $(echo /dev/mapper/"${BRboot##*/}")
-         for f in $(ls /dev/md/* 2>/dev/null); do echo -e "$f $(lsblk -d -n -o size $f)\r" ; done | grep -vw -e $(echo /dev/md/"${BRroot##*/}") -e $(echo /dev/md/"${BRswap##*/}") -e $(echo /dev/md/"${BRhome##*/}") -e $(echo /dev/md/"${BRboot##*/}")` )
+         for f in /dev/md[0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")` )
 }
 
 check_input() {
@@ -115,7 +115,7 @@ check_input() {
   if [ -n "$BRroot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
-    for i in $(ls /dev/md/*); do  if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
+    for i in /dev/md[0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong root partition:${BR_NORM} $BRroot"
       BRSTOP=y
@@ -131,7 +131,7 @@ check_input() {
   if [ -n "$BRswap" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
-    for i in $(ls /dev/md/*); do  if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
+    for i in /dev/md[0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong swap partition:${BR_NORM} $BRswap"
       BRSTOP=y
@@ -148,7 +148,7 @@ check_input() {
   if [ -n "$BRhome" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
-    for i in $(ls /dev/md/*); do  if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
+    for i in /dev/md[0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
     if [ ! "$BRhomecheck" = "true" ]; then
       echo -e "${BR_RED}Wrong home partition:${BR_NORM} $BRhome"
       BRSTOP=y
@@ -168,7 +168,7 @@ check_input() {
   if [ -n "$BRboot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
-    for i in $(ls /dev/md/*); do  if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
+    for i in /dev/md[0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     if [ ! "$BRbootcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong boot partition:${BR_NORM} $BRboot"
       BRSTOP=y

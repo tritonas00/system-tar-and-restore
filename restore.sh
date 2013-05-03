@@ -339,27 +339,62 @@ generate_fstab() {
   fi
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-    echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  compress=lzo,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
+    if [[ "$BRroot" == *md* ]]; then
+      echo "$BRroot  /  btrfs  compress=lzo,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
+    else
+      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  compress=lzo,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
+    fi
   elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ]; then
-    echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  defaults,noatime  0  0" >> /mnt/target/etc/fstab
+    if [[ "$BRroot" == *md* ]]; then
+      echo "$BRroot  /  btrfs  defaults,noatime  0  0" >> /mnt/target/etc/fstab
+    else
+      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  defaults,noatime  0  0" >> /mnt/target/etc/fstab
+    fi
   else
-    echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  $BRfsystem  defaults,noatime  0  1" >> /mnt/target/etc/fstab
+    if [[ "$BRroot" == *md* ]]; then
+      echo "$BRroot  /  $BRfsystem  defaults,noatime  0  1" >> /mnt/target/etc/fstab
+    else
+      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  $BRfsystem  defaults,noatime  0  1" >> /mnt/target/etc/fstab
+    fi
   fi
 
   if [ -n "$BRhome" ]; then
-    echo "UUID=$(lsblk -d -n -o uuid $BRhome)  /home  $BRhomefsystem  defaults,noatime  0  2" >> /mnt/target/etc/fstab
+    if [[ "$BRhome" == *md* ]]; then
+      echo "$BRhome  /home  $BRhomefsystem  defaults,noatime  0  2" >> /mnt/target/etc/fstab
+    else
+      echo "UUID=$(lsblk -d -n -o uuid $BRhome)  /home  $BRhomefsystem  defaults,noatime  0  2" >> /mnt/target/etc/fstab
+    fi
   fi
 
   if [ -n "$BRboot" ]; then
-    echo "UUID=$(lsblk -d -n -o uuid $BRboot)  /boot  $BRbootfsystem  defaults  0  1" >> /mnt/target/etc/fstab
+    if [[ "$BRboot" == *md* ]]; then
+      echo "$BRboot  /boot  $BRbootfsystem  defaults  0  1" >> /mnt/target/etc/fstab
+    else
+      echo "UUID=$(lsblk -d -n -o uuid $BRboot)  /boot  $BRbootfsystem  defaults  0  1" >> /mnt/target/etc/fstab
+    fi
   fi
 
   if [ -n "$BRswap" ]; then
-    echo "UUID=$(lsblk -d -n -o uuid $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
+    if [[ "$BRswap" == *md* ]]; then
+      echo "$BRswap  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
+    else
+      echo "UUID=$(lsblk -d -n -o uuid $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
+    fi
   fi
 }
 
 build_initramfs() {
+  if [[ "$BRroot" == *md* ]] || [[ "$BRhome" == *md* ]] || [[ "$BRswap" == *md* ]] || [[ "$BRboot" == *md* ]]; then
+    if [ -f /mnt/target/etc/mdadm.conf ]; then
+      mv /mnt/target/etc/mdadm.conf /mnt/target/etc/mdadm.conf-old
+    fi
+    echo "Generating mdadm.conf..."
+    mdadm --examine --scan > /mnt/target/etc/mdadm.conf
+    cat /mnt/target/etc/mdadm.conf
+  fi
+
+  echo " "
+
   if [ $BRdistro = Arch ]; then
     for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
      chroot /mnt/target mkinitcpio -p $BRinitrd  2>&1 && echo SUCCESS  || echo WARNING

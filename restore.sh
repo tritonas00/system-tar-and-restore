@@ -1081,7 +1081,7 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
   bootloader_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f";  done
-                      for f in /dev/md[0-9]*; do echo -e "$f";  done`)
+                    for f in /dev/md[0-9]*; do echo -e "$f";  done`)
   editorlist=(nano vi)
   update_list
 

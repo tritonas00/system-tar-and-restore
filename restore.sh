@@ -66,13 +66,18 @@ run_rsync() {
 part_list_dialog() {
   for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
   for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"`  -e `echo /dev/mapper/"${BRboot##*/}"`
-  for f in /dev/md[0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
+  for f in /dev/md[0-9]*; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
+}
+
+disk_list_dialog() {
+  for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
+  for f in /dev/md[0-9]*; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
 }
 
 update_list() {
   list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")
          for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e $(echo /dev/mapper/"${BRroot##*/}") -e $(echo /dev/mapper/"${BRswap##*/}") -e $(echo /dev/mapper/"${BRhome##*/}") -e $(echo /dev/mapper/"${BRboot##*/}")
-         for f in /dev/md[0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")` )
+         for f in /dev/md[0-9]*; do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")` )
 }
 
 check_input() {
@@ -115,7 +120,7 @@ check_input() {
   if [ -n "$BRroot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
-    for i in /dev/md[0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
+    for i in /dev/md[0-9]*; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong root partition:${BR_NORM} $BRroot"
       BRSTOP=y
@@ -131,7 +136,7 @@ check_input() {
   if [ -n "$BRswap" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
-    for i in /dev/md[0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
+    for i in /dev/md[0-9]*; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong swap partition:${BR_NORM} $BRswap"
       BRSTOP=y
@@ -148,7 +153,7 @@ check_input() {
   if [ -n "$BRhome" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
-    for i in /dev/md[0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
+    for i in /dev/md[0-9]*; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
     if [ ! "$BRhomecheck" = "true" ]; then
       echo -e "${BR_RED}Wrong home partition:${BR_NORM} $BRhome"
       BRSTOP=y
@@ -168,7 +173,7 @@ check_input() {
   if [ -n "$BRboot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
-    for i in /dev/md[0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
+    for i in /dev/md[0-9]*; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     if [ ! "$BRbootcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong boot partition:${BR_NORM} $BRboot"
       BRSTOP=y
@@ -187,6 +192,7 @@ check_input() {
 
   if [ -n "$BRgrub" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
+    for i in /dev/md[0-9]*; do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong disk for grub:${BR_NORM} $BRgrub"
       BRSTOP=y
@@ -195,6 +201,7 @@ check_input() {
 
   if [ -n "$BRsyslinux" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
+    for i in /dev/md[0-9]*; do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
     if [ ! "$BRsyslinuxcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong disk for syslinux:${BR_NORM} $BRsyslinux"
       BRSTOP=y
@@ -298,10 +305,18 @@ show_summary() {
 
   if [ -n "$BRgrub" ]; then
     echo "$BRbootloader"
-    echo "Location: $BRgrub"
+    if [[ "$BRgrub" == *md* ]]; then
+      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z]'))"
+    else
+      echo "Location: $BRgrub"
+    fi
   elif [ -n "$BRsyslinux" ]; then
     echo "$BRbootloader"
-    echo "Location: $BRsyslinux"
+    if [[ "$BRsyslinux" == *md* ]]; then
+      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z]'))"
+    else
+      echo "Location: $BRsyslinux"
+    fi
   else
     echo "None (WARNING)"
   fi
@@ -385,12 +400,21 @@ generate_fstab() {
 
 build_initramfs() {
   if [[ "$BRroot" == *md* ]] || [[ "$BRhome" == *md* ]] || [[ "$BRswap" == *md* ]] || [[ "$BRboot" == *md* ]]; then
-    if [ -f /mnt/target/etc/mdadm.conf ]; then
-      mv /mnt/target/etc/mdadm.conf /mnt/target/etc/mdadm.conf-old
+    if [ $BRdistro = Debian ]; then
+      if [ -f /mnt/target/etc/mdadm/mdadm.conf ]; then
+        mv /mnt/target/etc/mdadm/mdadm.conf /mnt/target/etc/mdadm/mdadm.conf-old
+      fi
+      echo "Generating mdadm.conf..."
+      mdadm --examine --scan > /mnt/target/etc/mdadm/mdadm.conf
+      cat /mnt/target/etc/mdadm/mdadm.conf
+    else
+      if [ -f /mnt/target/etc/mdadm.conf ]; then
+        mv /mnt/target/etc/mdadm.conf /mnt/target/etc/mdadm.conf-old
+      fi
+      echo "Generating mdadm.conf..."
+      mdadm --examine --scan > /mnt/target/etc/mdadm.conf
+      cat /mnt/target/etc/mdadm.conf
     fi
-    echo "Generating mdadm.conf..."
-    mdadm --examine --scan > /mnt/target/etc/mdadm.conf
-    cat /mnt/target/etc/mdadm.conf
   fi
 
   echo " "
@@ -425,10 +449,22 @@ install_bootloader() {
   if [ -n "$BRgrub" ]; then
     echo -e "\n==>INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [ $BRdistro = Arch ]; then
-      chroot /mnt/target grub-install --target=i386-pc  $BRgrub
-      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED
+      if [[ "$BRgrub" == *md* ]]; then
+        for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
+          chroot /mnt/target grub-install --target=i386-pc  /dev/$f
+        done
+      else 
+        chroot /mnt/target grub-install --target=i386-pc  $BRgrub
+      fi 
+     chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED
     elif [ $BRdistro = Debian ]; then
-      chroot /mnt/target grub-install  $BRgrub
+      if [[ "$BRgrub" == *md* ]]; then
+        for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
+          chroot /mnt/target grub-install  /dev/$f
+        done 
+      else
+        chroot /mnt/target grub-install  $BRgrub
+      fi
       chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED
     elif [ $BRdistro = Fedora ]; then
       if [ -f /mnt/target/etc/default/grub ]; then
@@ -439,7 +475,14 @@ install_bootloader() {
       echo 'GRUB_CMDLINE_LINUX="vconsole.keymap=us rhgb quiet"' >> /mnt/target/etc/default/grub
       echo 'GRUB_DISABLE_RECOVERY="true"' >> /mnt/target/etc/default/grub
       echo 'GRUB_THEME="/boot/grub2/themes/system/theme.txt"' >> /mnt/target/etc/default/grub
-      chroot /mnt/target grub2-install $BRgrub
+
+      if [[ "$BRgrub" == *md* ]]; then
+        for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
+          chroot /mnt/target grub2-install /dev/$f
+        done
+      else
+        chroot /mnt/target grub2-install $BRgrub
+      fi
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg 2>&1 && echo SUCCESS  || echo FAILED
     fi
 
@@ -470,17 +513,36 @@ install_bootloader() {
       fi
 
     elif [ $BRdistro = Debian ]; then
-      chroot /mnt/target extlinux -i /boot/syslinux
-      if [ -n "$BRboot" ]; then
-        BRdev=`echo $BRboot | cut -c -8`
-        BRpart=`echo $BRboot | cut -c 9-`
-        sfdisk $BRdev -A $BRpart
+      if [[ "$BRsyslinux" == *md* ]]; then
+        chroot /mnt/target extlinux --raid -i /boot/syslinux
+        if [ -n "$BRboot" ]; then
+          for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
+            BRdev=`echo $f | cut -c -3`
+            BRpart=`echo $f | cut -c 4-`
+            sfdisk /dev/$BRdev -A $BRpart
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=/dev/$f
+          done 
+        else
+          for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
+            BRdev=`echo $f | cut -c -3`
+            BRpart=`echo $f | cut -c 4-`
+            sfdisk /dev/$BRdev -A $BRpart
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=/dev/$f
+          done
+        fi       
       else
-        BRdev=`echo $BRroot | cut -c -8`
-        BRpart=`echo $BRroot | cut -c 9-`
-        sfdisk $BRdev -A $BRpart
-      fi
-      dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux
+        chroot /mnt/target extlinux -i /boot/syslinux
+        if [ -n "$BRboot" ]; then
+          BRdev=`echo $BRboot | cut -c -8`
+          BRpart=`echo $BRboot | cut -c 9-`
+          sfdisk $BRdev -A $BRpart
+        else
+          BRdev=`echo $BRroot | cut -c -8`
+          BRpart=`echo $BRroot | cut -c 9-`
+          sfdisk $BRdev -A $BRpart
+        fi
+      dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux  
+      fi  
       cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
       echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT debian" >> /mnt/target/boot/syslinux/syslinux.cfg
@@ -495,17 +557,36 @@ install_bootloader() {
       fi
 
     elif [ $BRdistro = Fedora ]; then
-      chroot /mnt/target extlinux -i /boot/syslinux
-      if [ -n "$BRboot" ]; then
-        BRdev=`echo $BRboot | cut -c -8`
-        BRpart=`echo $BRboot | cut -c 9-`
-        sfdisk $BRdev -A $BRpart
+      if [[ "$BRsyslinux" == *md* ]]; then
+        chroot /mnt/target extlinux --raid -i /boot/syslinux
+        if [ -n "$BRboot" ]; then
+          for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
+            BRdev=`echo $f | cut -c -3`
+            BRpart=`echo $f | cut -c 4-`
+            sfdisk /dev/$BRdev -A $BRpart
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=/dev/$f
+          done 
+        else
+          for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
+            BRdev=`echo $f | cut -c -3`
+            BRpart=`echo $f | cut -c 4-`
+            sfdisk /dev/$BRdev -A $BRpart
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=/dev/$f
+          done
+        fi       
       else
-        BRdev=`echo $BRroot | cut -c -8`
-        BRpart=`echo $BRroot | cut -c 9-`
-        sfdisk $BRdev -A $BRpart
-      fi
+        chroot /mnt/target extlinux -i /boot/syslinux
+        if [ -n "$BRboot" ]; then
+          BRdev=`echo $BRboot | cut -c -8`
+          BRpart=`echo $BRboot | cut -c 9-`
+          sfdisk $BRdev -A $BRpart
+        else
+          BRdev=`echo $BRroot | cut -c -8`
+          BRpart=`echo $BRroot | cut -c 9-`
+          sfdisk $BRdev -A $BRpart
+        fi
       dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRsyslinux
+      fi  
       cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
       echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT fedora" >> /mnt/target/boot/syslinux/syslinux.cfg
@@ -999,7 +1080,8 @@ if [ $BRinterface = "CLI" ]; then
     clear
   fi
 
-  bootloader_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f\r";  done`)
+  bootloader_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f";  done
+                                   for f in /dev/md[0-9]*; do echo -e "$f";  done`)
   editorlist=(nano vi)
   update_list
 
@@ -1095,7 +1177,7 @@ if [ $BRinterface = "CLI" ]; then
 
         while [ -z "$BRgrub" ]; do
           echo -e "\n${BR_CYAN}Where to install GRUB? Enter Q to quit${BR_NORM}"
-	  select c in /dev/[hs]d[a-z]; do
+	  select c in ${bootloader_list[@]}; do
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
@@ -1113,7 +1195,7 @@ if [ $BRinterface = "CLI" ]; then
 
         while [ -z "$BRsyslinux" ]; do
           echo -e "\n${BR_CYAN}Where to install Syslinux? Enter Q to quit${BR_NORM}"
-	  select c in /dev/[hs]d[a-z]; do
+	  select c in ${bootloader_list[@]}; do
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
@@ -1687,7 +1769,7 @@ Press OK to continue."  25 80
     fi
     if [ $REPLY = "Grub" ]; then
       while [ -z "$BRgrub" ]; do
-        BRgrub=$(dialog --cancel-label Quit  --menu "Select disk for Grub:" 0 0 0 `for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+        BRgrub=$(dialog --cancel-label Quit  --menu "Select disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
         if [ $? = "1" ]; then
           BRgrub=" "
           exit
@@ -1695,7 +1777,7 @@ Press OK to continue."  25 80
       done
     elif [ $REPLY = "Syslinux" ]; then
       while [ -z "$BRsyslinux" ]; do
-        BRsyslinux=$(dialog --cancel-label Quit  --menu "Select disk for Syslinux:" 0 0 0 `for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done` 2>&1 1>&3)
+        BRsyslinux=$(dialog --cancel-label Quit  --menu "Select disk for Syslinux:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
         if [ $? = "1" ]; then
           BRsyslinux=" "
           exit

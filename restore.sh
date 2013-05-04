@@ -306,14 +306,14 @@ show_summary() {
   if [ -n "$BRgrub" ]; then
     echo "$BRbootloader"
     if [[ "$BRgrub" == *md* ]]; then
-      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z]'))"
+      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'))"
     else
       echo "Location: $BRgrub"
     fi
   elif [ -n "$BRsyslinux" ]; then
     echo "$BRbootloader"
     if [[ "$BRsyslinux" == *md* ]]; then
-      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z]'))"
+      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) |  grep -oP '[hs]d[a-z]'))"
     else
       echo "Location: $BRsyslinux"
     fi
@@ -450,7 +450,7 @@ install_bootloader() {
     echo -e "\n==>INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [ $BRdistro = Arch ]; then
       if [[ "$BRgrub" == *md* ]]; then
-        for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
+        for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
           chroot /mnt/target grub-install --target=i386-pc  /dev/$f
         done
       else 
@@ -459,7 +459,7 @@ install_bootloader() {
      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED
     elif [ $BRdistro = Debian ]; then
       if [[ "$BRgrub" == *md* ]]; then
-        for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
+        for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
           chroot /mnt/target grub-install  /dev/$f
         done 
       else
@@ -477,7 +477,7 @@ install_bootloader() {
       echo 'GRUB_THEME="/boot/grub2/themes/system/theme.txt"' >> /mnt/target/etc/default/grub
 
       if [[ "$BRgrub" == *md* ]]; then
-        for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
+        for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
           chroot /mnt/target grub2-install /dev/$f
         done
       else

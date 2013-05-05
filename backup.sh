@@ -460,7 +460,7 @@ Press Yes to continue or No to abort." 0 0
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
   if [ -f /tmp/b_error ]; then
-    dialog --title "Info" --msgbox  "An error occurred.\n\nCheck "$BRFOLDER"/errors for details." 8 80
+    dialog --title "Error" --msgbox  "An error occurred.\n\nCheck "$BRFOLDER"/errors for details." 8 80
   else
     dialog --title "Info" --msgbox  "Completed.\n\nBackup image and logs saved in $BRFOLDER" 8 80
   fi

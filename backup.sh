@@ -48,9 +48,15 @@ run_tar() {
   echo "==>Creating archive..."
   sleep 1
   if [ ${BRcompression} = "GZIP" ]; then
-     tar cvpzf  "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+     tar cvpzf  "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" /
+     if [ $? -gt 0 ]; then
+       touch /tmp/b_error       
+     fi
   elif [ ${BRcompression} = "XZ" ]; then
-     tar cvpJf  "$BRFile".tar.xz  ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
+     tar cvpJf  "$BRFile".tar.xz  ${BR_TAROPTS} --exclude="$BRFOLDER" /
+     if [ $? -gt 0 ]; then
+       touch /tmp/b_error
+     fi
   fi
 }
 
@@ -343,11 +349,15 @@ if [ $BRinterface = "CLI" ]; then
     BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%A-%d-%m-%Y-%T)
     sleep 1
 
-    run_tar
+    run_tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
 
     echo "==>Setting permissions"
     chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
-    echo -e "${BR_CYAN}Completed. Backup image and logs saved in $BRFOLDER${BR_NORM}"
+    if [ -f /tmp/b_error ]; then
+      echo -e "${BR_RED}An error occurred. Check "$BRFOLDER"/errors for details.${BR_NORM}"
+    else  
+      echo -e "${BR_CYAN}Completed. Backup image and logs saved in $BRFOLDER${BR_NORM}"
+    fi
   fi
 
 elif [ $BRinterface = "Dialog" ]; then
@@ -446,12 +456,20 @@ Press Yes to continue or No to abort." 0 0
 
   BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%A-%d-%m-%Y-%T)
 
-  run_tar | dialog --title "Creating backup image" --progressbox  30 90
+  run_tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log | dialog --title "Creating backup image" --progressbox  30 90
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
-  dialog --title "Info" --msgbox  "Completed. Backup image and logs saved in $BRFOLDER" 8 50
+  if [ -f /tmp/b_error ]; then
+    dialog --title "Info" --msgbox  "An error occurred.\n\nCheck "$BRFOLDER"/errors for details." 8 80
+  else
+    dialog --title "Info" --msgbox  "Completed.\n\nBackup image and logs saved in $BRFOLDER" 8 80
+  fi
 fi
 
 if [ -f /tmp/list ]; then
   rm  /tmp/list
+fi
+
+if [ -f /tmp/b_error ]; then
+  rm /tmp/b_error
 fi

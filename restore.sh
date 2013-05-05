@@ -520,14 +520,14 @@ install_bootloader() {
             BRdev=`echo $f | cut -c -3`
             BRpart=`echo $f | cut -c 4-`
             sfdisk /dev/$BRdev -A $BRpart
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=/dev/$f
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRdev
           done 
         else
           for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
             BRdev=`echo $f | cut -c -3`
             BRpart=`echo $f | cut -c 4-`
             sfdisk /dev/$BRdev -A $BRpart
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=/dev/$f
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRdev
           done
         fi       
       else
@@ -564,14 +564,14 @@ install_bootloader() {
             BRdev=`echo $f | cut -c -3`
             BRpart=`echo $f | cut -c 4-`
             sfdisk /dev/$BRdev -A $BRpart
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=/dev/$f
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRdev
           done 
         else
           for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
             BRdev=`echo $f | cut -c -3`
             BRpart=`echo $f | cut -c 4-`
             sfdisk /dev/$BRdev -A $BRpart
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=/dev/$f
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRdev
           done
         fi       
       else

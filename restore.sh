@@ -541,7 +541,7 @@ install_bootloader() {
           BRpart=`echo $BRroot | cut -c 9-`
           sfdisk $BRdev -A $BRpart
         fi
-      dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux  
+        dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux  
       fi  
       cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
@@ -585,7 +585,7 @@ install_bootloader() {
           BRpart=`echo $BRroot | cut -c 9-`
           sfdisk $BRdev -A $BRpart
         fi
-      dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRsyslinux
+        dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRsyslinux
       fi  
       cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg

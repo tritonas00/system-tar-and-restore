@@ -282,7 +282,7 @@ show_summary() {
 
   if [ -n "$BRswap" ]; then
     echo "Swap Partition: $BRswap"
-  fi  
+  fi
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo -e "\nSUBVOLUMES:"
@@ -300,7 +300,7 @@ show_summary() {
       echo "Usr  Subvolume: Yes"
     fi
   fi
-  
+
   echo -e "\nBOOTLOADER:"
 
   if [ -n "$BRgrub" ]; then
@@ -453,15 +453,15 @@ install_bootloader() {
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
           chroot /mnt/target grub-install --target=i386-pc  /dev/$f
         done
-      else 
+      else
         chroot /mnt/target grub-install --target=i386-pc  $BRgrub
-      fi 
+      fi
      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED
     elif [ $BRdistro = Debian ]; then
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
           chroot /mnt/target grub-install  /dev/$f
-        done 
+        done
       else
         chroot /mnt/target grub-install  $BRgrub
       fi
@@ -495,7 +495,7 @@ install_bootloader() {
       mv /mnt/target/boot/syslinux /mnt/target/boot/syslinux-old
     fi
     mkdir -p /mnt/target/boot/syslinux
-    touch /mnt/target/boot/syslinux/syslinux.cfg    
+    touch /mnt/target/boot/syslinux/syslinux.cfg
 
     if [ $BRdistro = Arch ]; then
       chroot /mnt/target syslinux-install_update -i -a -m
@@ -521,7 +521,7 @@ install_bootloader() {
             BRpart=`echo $f | cut -c 4-`
             sfdisk /dev/$BRdev -A $BRpart
             dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=/dev/$BRdev
-          done 
+          done
         else
           for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
             BRdev=`echo $f | cut -c -3`
@@ -529,7 +529,7 @@ install_bootloader() {
             sfdisk /dev/$BRdev -A $BRpart
             dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=/dev/$BRdev
           done
-        fi       
+        fi
       else
         chroot /mnt/target extlinux -i /boot/syslinux
         if [ -n "$BRboot" ]; then
@@ -541,8 +541,8 @@ install_bootloader() {
           BRpart=`echo $BRroot | cut -c 9-`
           sfdisk $BRdev -A $BRpart
         fi
-        dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux  
-      fi  
+        dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux
+      fi
       cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
       echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT debian" >> /mnt/target/boot/syslinux/syslinux.cfg
@@ -565,7 +565,7 @@ install_bootloader() {
             BRpart=`echo $f | cut -c 4-`
             sfdisk /dev/$BRdev -A $BRpart
             dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=/dev/$BRdev
-          done 
+          done
         else
           for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
             BRdev=`echo $f | cut -c -3`
@@ -573,7 +573,7 @@ install_bootloader() {
             sfdisk /dev/$BRdev -A $BRpart
             dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=/dev/$BRdev
           done
-        fi       
+        fi
       else
         chroot /mnt/target extlinux -i /boot/syslinux
         if [ -n "$BRboot" ]; then
@@ -586,7 +586,7 @@ install_bootloader() {
           sfdisk $BRdev -A $BRpart
         fi
         dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRsyslinux
-      fi  
+      fi
       cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
       echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT fedora" >> /mnt/target/boot/syslinux/syslinux.cfg

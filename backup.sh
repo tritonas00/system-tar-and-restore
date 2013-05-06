@@ -50,7 +50,7 @@ run_tar() {
   if [ ${BRcompression} = "GZIP" ]; then
      tar cvpzf  "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" /
      if [ $? -gt 0 ]; then
-       touch /tmp/b_error       
+       touch /tmp/b_error
      fi
   elif [ ${BRcompression} = "XZ" ]; then
      tar cvpJf  "$BRFile".tar.xz  ${BR_TAROPTS} --exclude="$BRFOLDER" /
@@ -355,7 +355,7 @@ if [ $BRinterface = "CLI" ]; then
     chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
     if [ -f /tmp/b_error ]; then
       echo -e "${BR_RED}An error occurred. Check "$BRFOLDER"/errors for details.${BR_NORM}"
-    else  
+    else
       echo -e "${BR_CYAN}Completed. Backup image and logs saved in $BRFOLDER${BR_NORM}"
     fi
   fi

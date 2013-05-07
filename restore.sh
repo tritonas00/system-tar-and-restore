@@ -71,7 +71,7 @@ part_list_dialog() {
 
 disk_list_dialog() {
   for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
-  for f in $(find /dev -name md[0-9] -o -name md[0-9][0-9] -o -name md[0-9][0-9][0-9]); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
+  for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
 }
 
 update_list() {
@@ -1081,7 +1081,7 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
   bootloader_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f";  done
-                    for f in $(find /dev -name md[0-9] -o -name md[0-9][0-9] -o -name md[0-9][0-9][0-9]); do echo -e "$f";  done`)
+                    for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f";  done`)
   editorlist=(nano vi)
   update_list
 

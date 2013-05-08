@@ -120,7 +120,7 @@ check_input() {
   if [ -n "$BRroot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
-    for i in $(find /dev -name md[0-9]*); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
+    for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong root partition:${BR_NORM} $BRroot"
       BRSTOP=y
@@ -136,7 +136,7 @@ check_input() {
   if [ -n "$BRswap" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
-    for i in $(find /dev -name md[0-9]*); do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
+    for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong swap partition:${BR_NORM} $BRswap"
       BRSTOP=y
@@ -153,7 +153,7 @@ check_input() {
   if [ -n "$BRhome" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
-    for i in $(find /dev -name md[0-9]*); do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
+    for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
     if [ ! "$BRhomecheck" = "true" ]; then
       echo -e "${BR_RED}Wrong home partition:${BR_NORM} $BRhome"
       BRSTOP=y
@@ -173,7 +173,7 @@ check_input() {
   if [ -n "$BRboot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
-    for i in $(find /dev -name md[0-9]*); do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
+    for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     if [ ! "$BRbootcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong boot partition:${BR_NORM} $BRboot"
       BRSTOP=y
@@ -192,7 +192,7 @@ check_input() {
 
   if [ -n "$BRgrub" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
-    for i in $(find /dev -name md[0-9]*); do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
+    for i in $(find /dev -regex "/dev/md[0-9]+"); do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong disk for grub:${BR_NORM} $BRgrub"
       BRSTOP=y
@@ -201,7 +201,7 @@ check_input() {
 
   if [ -n "$BRsyslinux" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
-    for i in $(find /dev -name md[0-9]*); do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
+    for i in $(find /dev -regex "/dev/md[0-9]+"); do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
     if [ ! "$BRsyslinuxcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong disk for syslinux:${BR_NORM} $BRsyslinux"
       BRSTOP=y

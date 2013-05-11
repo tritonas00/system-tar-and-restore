@@ -354,11 +354,13 @@ if [ $BRinterface = "CLI" ]; then
     echo "==>Setting permissions"
     chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
     if [ -f /tmp/b_error ]; then
-      echo -e "${BR_RED}An error occurred. Check "$BRFOLDER"/errors for details.${BR_NORM}"
+      echo -e "${BR_RED}An error occurred. Check "$BRFOLDER"/errors for details. Press ENTER to exit.${BR_NORM}"
     else
-      echo -e "${BR_CYAN}Completed. Backup image and logs saved in $BRFOLDER${BR_NORM}"
+      echo -e "${BR_CYAN}Completed. Backup archive and logs saved in $BRFOLDER. Press ENTER to exit.${BR_NORM}"
     fi
   fi
+
+  read -s a
 
 elif [ $BRinterface = "Dialog" ]; then
   if [ -z $(which dialog 2> /dev/null) ];then
@@ -462,7 +464,7 @@ Press Yes to continue or No to abort." 0 0
   if [ -f /tmp/b_error ]; then
     dialog --title "Error" --msgbox  "An error occurred.\n\nCheck "$BRFOLDER"/errors for details." 8 80
   else
-    dialog --title "Info" --msgbox  "Completed.\n\nBackup image and logs saved in $BRFOLDER" 8 80
+    dialog --title "Info" --msgbox  "Completed.\n\nBackup archive and logs saved in $BRFOLDER." 8 80
   fi
 fi
 

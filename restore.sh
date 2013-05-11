@@ -249,7 +249,7 @@ mount_all() {
       echo SUCCESS
     fi
     if [ "$(ls -A /mnt/target/home  | grep -vw "lost+found")" ]; then
-      touch /tmp/not-empty
+      echo "Home partition not empty"
     fi
   fi
 
@@ -263,7 +263,7 @@ mount_all() {
       echo SUCCESS
     fi
     if [ "$(ls -A /mnt/target/boot  | grep -vw "lost+found")" ]; then
-      touch /tmp/not-empty
+      echo "Boot partition not empty"
     fi
   fi
 }
@@ -1285,8 +1285,8 @@ if [ $BRinterface = "CLI" ]; then
   fi
   if [ -f /tmp/not-empty ]; then
     rm  /tmp/not-empty
-    echo -e "${BR_RED}Partition not empty, refusing to use it${BR_NORM}"
-    echo -e "${BR_YELLOW}Target partitions must be formatted and cleaned${BR_NORM}"
+    echo -e "${BR_RED}Root partition not empty, refusing to use it${BR_NORM}"
+    echo -e "${BR_YELLOW}Root partition must be formatted and cleaned${BR_NORM}"
     clean_unmount_error
   fi
 
@@ -1837,8 +1837,8 @@ Press OK to continue."  25 80
   fi
   if [ -f /tmp/not-empty ]; then
     rm  /tmp/not-empty
-    echo -e "${BR_RED}Partition not empty, refusing to use it${BR_NORM}"
-    echo -e "${BR_YELLOW}Target partitions must be formatted and cleaned${BR_NORM}"
+    echo -e "${BR_RED}Root partition not empty, refusing to use it${BR_NORM}"
+    echo -e "${BR_YELLOW}Root partition must be formatted and cleaned${BR_NORM}"
     clean_unmount_error
   fi
 

@@ -337,7 +337,7 @@ if [ $BRinterface = "CLI" ]; then
   done
 
   if [  "x$BRcontinue" = "xy" ]; then
-    BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
+    BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%d-%m-%Y-%T) | sed 's://*:/:g'`)
     BRFOLDER="${BRFOLDER_IN[@]}"
 
     echo "==>Preparing..."
@@ -346,7 +346,7 @@ if [ $BRinterface = "CLI" ]; then
     touch "$BRFOLDER"/errors
     sleep 1
 
-    BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%A-%d-%m-%Y-%T)
+    BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
     sleep 1
 
     run_tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
@@ -448,7 +448,7 @@ Press Yes to continue or No to abort." 0 0
     exit
   fi
 
-  BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%A-%d-%m-%Y) | sed 's://*:/:g'`)
+  BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%d-%m-%Y-%T) | sed 's://*:/:g'`)
   BRFOLDER="${BRFOLDER_IN[@]}"
 
   mkdir -p "$BRFOLDER"
@@ -456,7 +456,7 @@ Press Yes to continue or No to abort." 0 0
   touch "$BRFOLDER"/errors
   sleep 1
 
-  BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%A-%d-%m-%Y-%T)
+  BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
 
   run_tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log | dialog --title "Creating backup image" --progressbox  30 90
 

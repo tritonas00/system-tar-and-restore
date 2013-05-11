@@ -337,7 +337,7 @@ if [ $BRinterface = "CLI" ]; then
   done
 
   if [  "x$BRcontinue" = "xy" ]; then
-    BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%d-%m-%Y-%T) | sed 's://*:/:g'`)
+    BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
     BRFOLDER="${BRFOLDER_IN[@]}"
 
     echo "==>Preparing..."
@@ -448,7 +448,7 @@ Press Yes to continue or No to abort." 0 0
     exit
   fi
 
-  BRFOLDER_IN=(`echo ${BRFOLDER}/$(date +%d-%m-%Y-%T) | sed 's://*:/:g'`)
+  BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
   BRFOLDER="${BRFOLDER_IN[@]}"
 
   mkdir -p "$BRFOLDER"

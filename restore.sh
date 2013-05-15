@@ -50,12 +50,23 @@ run_tar() {
   fi
 }
 
+run_calc() {
+  if [ ${BRhidden} = "n" ]; then
+    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs} --dry-run 2>> /dev/null | tee /tmp/filelist
+  elif [ ${BRhidden} = "y" ]; then
+    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/*} --dry-run 2>> /dev/null | tee /tmp/filelist
+    sleep 1
+    for dir in `ls /home` ; do
+      rsync -av /home/$dir/.[^.]* /mnt/target/home/$dir/  --exclude=.gvfs --dry-run 2>> /dev/null | tee -a /tmp/filelist
+    done
+  fi
+}
+
 run_rsync() {
   if [ ${BRhidden} = "n" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs} 2>&1 && echo SUCCESS  || echo WARNING
+    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs}
   elif [ ${BRhidden} = "y" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/*} 2>&1 && echo SUCCESS  || echo WARNING
-    echo "==>Transfering /home's hidden files and folders"
+    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/*}
     sleep 1
     for dir in `ls /home` ; do
       rsync -aAXv /home/$dir/.[^.]* /mnt/target/home/$dir/  --exclude=.gvfs
@@ -1610,8 +1621,11 @@ if [ $BRinterface = "CLI" ]; then
       echo " "
     elif [ $BRmode = "Transfer" ]; then
       echo -e "\n==>TRANSFERING"
+      run_calc  | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done
+      total=$(cat /tmp/filelist | wc -l)
       sleep 1
-      run_rsync
+      echo " "
+      run_rsync | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done
     fi
 
     detect_distro
@@ -2147,10 +2161,12 @@ Press Yes to continue, or No to abort." 0 0
   if [ $BRmode = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
-    run_tar 2>&1 | while read ln; do b=$(( b + 1 )) && echo -en "\rDecompressing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox  3 50
+    run_tar 2>&1 | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))%"; done | dialog  --progressbox  3 50
     sleep 2
   elif [ $BRmode = "Transfer" ]; then
-    run_rsync  2>&1 | dialog --title  "TRANSFERING" --progressbox 30 90
+    run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done | dialog  --progressbox  3 40
+    total=$(cat /tmp/filelist | wc -l)
+    run_rsync | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox 3 50
     sleep 2
   fi
 

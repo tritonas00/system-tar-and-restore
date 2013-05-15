@@ -44,9 +44,9 @@ detect_distro() {
 
 run_tar() {
   if [ ${BRfiletype} = "gz" ]; then
-    tar xvpfz /mnt/target/fullbackup -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING
+    tar xvpfz /mnt/target/fullbackup -C /mnt/target
   elif [ ${BRfiletype} = "xz" ]; then
-    tar xvpfJ /mnt/target/fullbackup -C /mnt/target   2>&1 && echo SUCCESS  || echo WARNING
+    tar xvpfJ /mnt/target/fullbackup -C /mnt/target
   fi
 }
 
@@ -744,6 +744,9 @@ clean_unmount_in() {
   if [ -f /mnt/target/fullbackup ]; then
     rm /mnt/target/fullbackup
   fi
+  if [ -f /tmp/filelist ]; then
+    rm  /tmp/filelist
+  fi
 
   echo "Unmounting $BRroot"
   umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED
@@ -763,6 +766,9 @@ clean_unmount_out() {
   cd ~
   if [ -f /mnt/target/fullbackup ]; then
     rm /mnt/target/fullbackup
+  fi
+  if [ -f /tmp/filelist ]; then
+    rm  /tmp/filelist
   fi
   umount /mnt/target/dev/pts
   umount /mnt/target/proc
@@ -1450,7 +1456,7 @@ if [ $BRinterface = "CLI" ]; then
     fi
     if [ -f /mnt/target/fullbackup ]; then
       echo "Checking archive..."
-      tar tf /mnt/target/fullbackup 1>/dev/null
+      tar tf /mnt/target/fullbackup 1>/tmp/filelist
       if [ "$?" = "0" ]; then
         echo -e "${BR_GREEN}Archive appears OK${BR_NORM}"
       else
@@ -1550,7 +1556,7 @@ if [ $BRinterface = "CLI" ]; then
       done
       if [ -f /mnt/target/fullbackup ]; then
         echo "Checking archive..."
-        tar tf /mnt/target/fullbackup 1>/dev/null
+        tar tf /mnt/target/fullbackup 1>/tmp/filelist
         if [ "$?" = "0" ]; then
           echo -e "${BR_GREEN}Archive appears OK${BR_NORM}"
         else
@@ -1598,8 +1604,10 @@ if [ $BRinterface = "CLI" ]; then
   elif [  "x$BRcontinue" = "xy" ]; then
     if [ $BRmode = "Restore" ]; then
       echo -e "\n==>EXTRACTING"
+      total=$(cat /tmp/filelist | wc -l)
       sleep 1
-      run_tar
+      run_tar | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))%"; done
+      echo " "
     elif [ $BRmode = "Transfer" ]; then
       echo -e "\n==>TRANSFERING"
       sleep 1
@@ -2001,7 +2009,7 @@ Press OK to continue."  25 80
     fi
     if [ -f /mnt/target/fullbackup ]; then
       ( echo "Checking archive..."
-        tar tf /mnt/target/fullbackup > /dev/null 2>&1
+        tar tf /mnt/target/fullbackup > /tmp/filelist 2>&1
         if [ "$?" = "0" ]; then
           echo  "Archive appears OK"
           sleep 2
@@ -2097,7 +2105,7 @@ Press OK to continue."  25 80
       fi
       if [ -f /mnt/target/fullbackup ]; then
         ( echo "Checking archive..."
-          tar tf /mnt/target/fullbackup > /dev/null 2>&1
+          tar tf /mnt/target/fullbackup > /tmp/filelist 2>&1
           if [ "$?" = "0" ]; then
             echo  "Archive appears OK"
             sleep 2
@@ -2137,7 +2145,9 @@ Press Yes to continue, or No to abort." 0 0
   fi
 
   if [ $BRmode = "Restore" ]; then
-    run_tar 2>&1 | dialog --title "EXTRACTING" --progressbox  30 90
+    total=$(cat /tmp/filelist | wc -l)
+    sleep 1
+    run_tar 2>&1 | while read ln; do b=$(( b + 1 )) && echo -en "\rDecompressing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox  3 50
     sleep 2
   elif [ $BRmode = "Transfer" ]; then
     run_rsync  2>&1 | dialog --title  "TRANSFERING" --progressbox 30 90

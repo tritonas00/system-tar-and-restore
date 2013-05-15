@@ -31,7 +31,7 @@ show_summary() {
   fi
 }
 
-run_tar() {
+set_tar_options() {
   BR_TAROPTS="--sparse $BR_USER_OPTS --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
 
   if [ ${BRhome} = "No" ] &&  [ ${BRhidden} = "No" ] ; then
@@ -44,9 +44,14 @@ run_tar() {
   if [ ${BRtar} = "y" ]; then
     BR_TAROPTS="${BR_TAROPTS} --acls --selinux --xattrs"
   fi
+}
 
-  echo "==>Creating archive..."
-  sleep 1
+run_calc() {
+  echo > "$BRFOLDER"/log
+  tar cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>> /dev/null | tee "$BRFOLDER"/log | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done
+}
+
+run_tar() {
   if [ ${BRcompression} = "GZIP" ]; then
      tar cvpzf  "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" /
      if [ $? -gt 0 ]; then
@@ -347,10 +352,13 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
 
     BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
+    set_tar_options
+    run_calc
+    total=$(cat "$BRFOLDER"/log | wc -l)
     sleep 1
-
-    run_tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log
-
+    echo " "
+    run_tar 2>>"$BRFOLDER"/errors | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $b of $total $(($b*100/$total))%"; done
+    echo " "
     echo "==>Setting permissions"
     chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
     if [ -f /tmp/b_error ]; then
@@ -457,8 +465,11 @@ Press Yes to continue or No to abort." 0 0
   sleep 1
 
   BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
-
-  run_tar 2>>"$BRFOLDER"/errors | tee "$BRFOLDER"/log | dialog --title "Creating backup image" --progressbox  30 90
+  set_tar_options
+  run_calc | dialog  --progressbox  3 40
+  total=$(cat "$BRFOLDER"/log | wc -l)
+  sleep 1
+  run_tar 2>>"$BRFOLDER"/errors | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox  3 50
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
   if [ -f /tmp/b_error ]; then

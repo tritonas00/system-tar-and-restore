@@ -1626,6 +1626,7 @@ if [ $BRinterface = "CLI" ]; then
       sleep 1
       echo " "
       run_rsync | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done
+      echo " "
     fi
 
     detect_distro

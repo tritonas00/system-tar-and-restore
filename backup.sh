@@ -48,7 +48,7 @@ set_tar_options() {
 
 run_calc() {
   echo > "$BRFOLDER"/log
-  tar cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>> /dev/null | tee "$BRFOLDER"/log | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done
+  tar cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2> /dev/null | tee "$BRFOLDER"/log | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done
 }
 
 run_tar() {

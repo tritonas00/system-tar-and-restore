@@ -52,9 +52,9 @@ run_tar() {
 
 run_calc() {
   if [ ${BRhidden} = "n" ]; then
-    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} --dry-run 2>> /dev/null | tee /tmp/filelist
+    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} --dry-run 2> /dev/null | tee /tmp/filelist
   elif [ ${BRhidden} = "y" ]; then
-    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} --dry-run 2>> /dev/null | tee /tmp/filelist
+    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} --dry-run 2> /dev/null | tee /tmp/filelist
   fi
 }
 
@@ -1623,10 +1623,6 @@ if [ $BRinterface = "CLI" ]; then
 
     detect_distro
 
-    echo -e "\n==>PREPARING CHROOT ENVIROMENT"
-    prepare_chroot
-    sleep 1
-
     echo -e "\n==>GENERATING FSTAB"
     generate_fstab
     cat /mnt/target/etc/fstab
@@ -1665,6 +1661,10 @@ if [ $BRinterface = "CLI" ]; then
         done
       done
     fi
+
+    echo -e "\n==>PREPARING CHROOT ENVIROMENT"
+    prepare_chroot
+    sleep 1
 
     echo -e "\n==>REBUILDING INITRAMFS IMAGE"
     build_initramfs
@@ -1967,11 +1967,11 @@ Press OK to continue."  25 80
     if [ -n "$BRfile" ]; then
      (if [ "x$BRomitcopy" = "xy" ]; then
         echo "Symlinking file..."
-        ln -s "${BRfile[@]}" "/mnt/target/fullbackup"
+        ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2>&1
         sleep 2
       else
         echo "Copying file..."
-        cp "${BRfile[@]}" "/mnt/target/fullbackup"
+        cp "${BRfile[@]}" "/mnt/target/fullbackup" 2>&1
       fi)  | dialog  --progressbox  4 30
     fi
 
@@ -2054,11 +2054,11 @@ Press OK to continue."  25 80
             done
            (if [ $BRomitcopy = "y" ]; then
               echo "Symlinking file..."
-              ln -s "${BRfile[@]}" "/mnt/target/fullbackup"
+              ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2>&1
               sleep 2
             else
               echo "Copying file..."
-              cp "${BRfile[@]}" "/mnt/target/fullbackup"
+              cp "${BRfile[@]}" "/mnt/target/fullbackup" 2>&1
             fi) | dialog  --progressbox 4 30
           else
             echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
@@ -2154,29 +2154,33 @@ Press Yes to continue, or No to abort." 0 0
   if [ $BRmode = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
-    run_tar 2>&1 | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))%"; done | dialog  --progressbox  3 50
+    run_tar 2> /tmp/br_error | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))%"; done | dialog  --progressbox  3 50
     sleep 2
   elif [ $BRmode = "Transfer" ]; then
     run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done | dialog  --progressbox  3 40
     total=$(cat /tmp/filelist | wc -l)
-    run_rsync | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox 3 50
+    run_rsync 2> /tmp/br_error | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox 3 50
     sleep 2
   fi
 
+  if [ -s "/tmp/br_error" ]; then
+    dialog --no-ok --title "Error" --msgbox "`cat /tmp/br_error`" 0 0
+  fi
+
+  if [ -f /tmp/br_error ]; then
+    rm  /tmp/br_error
+  fi
+
   detect_distro
-
-  prepare_chroot 2>&1 | dialog --title "PREPARING CHROOT ENVIROMENT" --progressbox  15 70
-  sleep 2
-
   generate_fstab
 
   if [ -n "$BRedit" ]; then
-    cat /mnt/target/etc/fstab  | dialog --title "GENERATING FSTAB" --progressbox  30 100
+    cat /mnt/target/etc/fstab  | dialog --title "GENERATING FSTAB" --progressbox  20 100
     sleep 2
   else
     dialog --title "GENERATING FSTAB" --yesno "`cat /mnt/target/etc/fstab`
 
-Edit fstab ?" 0 0
+Edit fstab ?" 20 100
 
     if [ $? = "0" ]; then
       while [ -z "$BRdeditor" ]; do
@@ -2186,11 +2190,10 @@ Edit fstab ?" 0 0
     fi
   fi
 
-  build_initramfs 2>&1 | dialog --title "REBUILDING INITRAMFS IMAGE" --progressbox  30 101
-  sleep 2
-
-  generate_locales 2>&1 | dialog --title "GENERATING LOCALES" --progressbox  30 70
-  sleep 2
+( prepare_chroot
+  build_initramfs
+  generate_locales 
+  sleep 2) 2>&1 | dialog --title "PROCESSING" --progressbox  30 100
 
   if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
     echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49

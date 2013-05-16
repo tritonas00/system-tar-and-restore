@@ -52,25 +52,17 @@ run_tar() {
 
 run_calc() {
   if [ ${BRhidden} = "n" ]; then
-    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs} --dry-run 2>> /dev/null | tee /tmp/filelist
+    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} --dry-run 2>> /dev/null | tee /tmp/filelist
   elif [ ${BRhidden} = "y" ]; then
-    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/*} --dry-run 2>> /dev/null | tee /tmp/filelist
-    sleep 1
-    for dir in `ls /home` ; do
-      rsync -av /home/$dir/.[^.]* /mnt/target/home/$dir/  --exclude=.gvfs --dry-run 2>> /dev/null | tee -a /tmp/filelist
-    done
+    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} --dry-run 2>> /dev/null | tee /tmp/filelist
   fi
 }
 
 run_rsync() {
   if [ ${BRhidden} = "n" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/.gvfs}
+    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs}
   elif [ ${BRhidden} = "y" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,/lost+found,/home/*/*}
-    sleep 1
-    for dir in `ls /home` ; do
-      rsync -aAXv /home/$dir/.[^.]* /mnt/target/home/$dir/  --exclude=.gvfs
-    done
+    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*}
   fi
 }
 

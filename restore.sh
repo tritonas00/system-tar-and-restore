@@ -2,6 +2,8 @@
 
 clear
 
+BR_VERSION="System Tar & Restore 3.1"
+
 color_variables() {
   BR_NORM='\e[00m'
   BR_RED='\e[00;31m'
@@ -998,7 +1000,6 @@ done
 if [ -z "$BRnocolor" ]; then
   color_variables
 fi
-
 DEFAULTIFS=$IFS
 IFS=$'\n'
 
@@ -1076,6 +1077,8 @@ done
 
 if [ $BRinterface = "CLI" ]; then
   clear
+  echo "$BR_VERSION"
+  echo " "
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     echo -e "This script will restore a backup image of your system\nor transfer this system in user defined partitions."
@@ -1722,7 +1725,7 @@ elif [ $BRinterface = "Dialog" ]; then
   fi
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
-    dialog --no-ok --title "Info" --msgbox "This script will restore a backup image of your system or transfer this system in user defined partitions.
+    dialog --no-ok --title "$BR_VERSION" --msgbox "This script will restore a backup image of your system or transfer this system in user defined partitions.
 
 ==>Make sure you have created and formatted at least one partition
    for root (/) and optionally partitions for /home and /boot.
@@ -1832,7 +1835,7 @@ Press OK to continue."  25 80
 
   if [ $BRmode = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      dialog --title "Message"  --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 9 50
+      dialog  --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 9 50
       if [ $? = "0" ]; then
         BRhidden="n"
       else
@@ -1874,7 +1877,7 @@ Press OK to continue."  25 80
 
   if [  "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
-      dialog --title "Message"  --yesno "BTRFS root file system detected.\nCreate subvolume for root (/) ?" 7 40
+      dialog  --yesno "BTRFS root file system detected.\nCreate subvolume for root (/) ?" 7 40
 
       if [ "$?" = "0" ]; then
         btrfsdef="y"
@@ -1899,7 +1902,7 @@ Press OK to continue."  25 80
       done
 
       while [ -z "$BRhomesubvol" ]; do
-        dialog --title "Message"  --yesno "Create subvolume for /home inside $BRrootsubvolname ?" 7 50
+        dialog  --yesno "Create subvolume for /home inside $BRrootsubvolname ?" 7 50
 
         if [ "$?" = "0" ]; then
           btrfsdef="y"
@@ -1915,7 +1918,7 @@ Press OK to continue."  25 80
       done
 
       while [ -z "$BRvarsubvol" ]; do
-        dialog --title "Message"  --yesno "Create subvolume for /var inside $BRrootsubvolname ?" 7 50
+        dialog  --yesno "Create subvolume for /var inside $BRrootsubvolname ?" 7 50
 
         if [ "$?" = "0" ]; then
           btrfsdef="y"
@@ -1931,7 +1934,7 @@ Press OK to continue."  25 80
       done
 
       while [ -z "$BRusrsubvol" ]; do
-        dialog --title "Message"  --yesno "Create subvolume for /usr inside $BRrootsubvolname ?" 7 50
+        dialog  --yesno "Create subvolume for /usr inside $BRrootsubvolname ?" 7 50
 
         if [ "$?" = "0" ]; then
           btrfsdef="y"
@@ -2059,7 +2062,7 @@ Press OK to continue."  25 80
           detect_filetype
           if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
             while [ -z "$BRomitcopy" ]; do
-              dialog --title "Message" --yesno "Copy backup file in root partition?\n\n(If no, it will be symlinked)" 8 40
+              dialog  --yesno "Copy backup file in root partition?\n\n(If no, it will be symlinked)" 8 40
               if [ $? = "0" ]; then
                 BRomitcopy="n"
               else

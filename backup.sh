@@ -1,5 +1,7 @@
 #!/bin/bash
 
+BR_VERSION="System Tar & Restore 3.1"
+
 color_variables() {
   BR_NORM='\e[00m'
   BR_RED='\e[00;31m'
@@ -194,6 +196,8 @@ done
 
 if [ $BRinterface = "CLI" ]; then
   clear
+  echo "$BR_VERSION"
+  echo " "
   DEFAULTIFS=$IFS
   IFS=$'\n'
 
@@ -377,7 +381,7 @@ elif [ $BRinterface = "Dialog" ]; then
   fi
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --no-ok --title "Info" --msgbox  "This script will make a tar backup image of your entire system.
+    dialog --no-ok --title "$BR_VERSION" --msgbox  "This script will make a tar backup image of your entire system.
 
 ==>Make sure you have enough free space.
 
@@ -397,7 +401,7 @@ Press OK to continue." 22 70
   fi
 
   while [ -z "$BRFOLDER" ]; do
-    dialog --title "Message" --yesno "The default folder for creating the backup image is / (root).\nSave in the default folder?" 8 65
+    dialog  --yesno "The default folder for creating the backup image is / (root).\nSave in the default folder?" 8 65
     if [ $? = "0" ]; then
       BRFOLDER="/"
     else
@@ -413,7 +417,7 @@ Press OK to continue." 22 70
   done
 
   while [ -z "$BRhome" ]; do
-    dialog --title "Message"  --yesno "Include /home directory?" 6 35
+    dialog  --yesno "Include /home directory?" 6 35
     if [ $? = "0" ]; then
       BRhome="Yes"
     else
@@ -423,7 +427,7 @@ Press OK to continue." 22 70
 
   if [ $BRhome = "No" ]; then
     while [ -z "$BRhidden" ] ; do
-      dialog --title "Message"  --yesno "Keep hidden files and folders inside /home?" 6 50
+      dialog   --yesno "Keep hidden files and folders inside /home?" 6 50
       if [ $? = "0" ]; then
         BRhidden="Yes"
       else
@@ -435,7 +439,7 @@ Press OK to continue." 22 70
   exec 3>&1
 
   while [ -z "$BRuseroptions" ]; do
-    dialog --title "Message"  --yesno "Specify additional tar options?" 6 35
+    dialog   --yesno "Specify additional tar options?" 6 35
     if [ $? = "0" ]; then
       BRuseroptions="Yes"
       BR_USER_OPTS=$(dialog  --no-cancel --inputbox "Enter additional tar options: (See tar --help)" 8 70 2>&1 1>&3)

@@ -2237,7 +2237,7 @@ Edit fstab ?" 20 100
   if [ -s "/tmp/r_error" ]; then
     BR_errors="$(cat /tmp/r_error | wc -l) Check /tmp/r_error for details"
   else
-   BR_errors=0
+    BR_errors="0"
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then

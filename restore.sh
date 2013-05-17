@@ -454,19 +454,19 @@ install_bootloader() {
     if [ $BRdistro = Arch ]; then
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
-          chroot /mnt/target grub-install --target=i386-pc  /dev/$f
+          chroot /mnt/target grub-install --target=i386-pc  /dev/$f 2> >(tee -a /tmp/r_error)
         done
       else
-        chroot /mnt/target grub-install --target=i386-pc  $BRgrub
+        chroot /mnt/target grub-install --target=i386-pc  $BRgrub 2> >(tee -a /tmp/r_error)
       fi
      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
     elif [ $BRdistro = Debian ]; then
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
-          chroot /mnt/target grub-install  /dev/$f
+          chroot /mnt/target grub-install  /dev/$f 2> >(tee -a /tmp/r_error)
         done
       else
-        chroot /mnt/target grub-install  $BRgrub
+        chroot /mnt/target grub-install  $BRgrub 2> >(tee -a /tmp/r_error)
       fi
       chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
     elif [ $BRdistro = Fedora ]; then
@@ -481,10 +481,10 @@ install_bootloader() {
 
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
-          chroot /mnt/target grub2-install /dev/$f
+          chroot /mnt/target grub2-install /dev/$f 2> >(tee -a /tmp/r_error)
         done
       else
-        chroot /mnt/target grub2-install $BRgrub
+        chroot /mnt/target grub2-install $BRgrub 2> >(tee -a /tmp/r_error)
       fi
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
     fi
@@ -998,6 +998,8 @@ done
 if [ -z "$BRnocolor" ]; then
   color_variables
 fi
+
+echo > /tmp/r_error
 
 DEFAULTIFS=$IFS
 IFS=$'\n'
@@ -2179,8 +2181,6 @@ Press Yes to continue, or No to abort." 0 0
     clean_unmount_in
   fi
 
-  echo > /tmp/r_error
-
   if [ $BRmode = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
@@ -2230,7 +2230,7 @@ Edit fstab ?" 20 100
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    install_bootloader 2>> /tmp/r_error | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
+    install_bootloader 2>&1 | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
     sleep 2
   fi
 

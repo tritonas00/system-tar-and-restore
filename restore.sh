@@ -1612,7 +1612,7 @@ if [ $BRinterface = "CLI" ]; then
       echo -e "\n==>EXTRACTING"
       total=$(cat /tmp/filelist | wc -l)
       sleep 1
-      run_tar | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))%"; done
+      run_tar 2>/tmp/restore.log | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))% $(tail -n 1 /tmp/restore.log)"; done
       echo " "
     elif [ $BRmode = "Transfer" ]; then
       echo -e "\n==>TRANSFERING"
@@ -1620,7 +1620,7 @@ if [ $BRinterface = "CLI" ]; then
       total=$(cat /tmp/filelist | wc -l)
       sleep 1
       echo " "
-      run_rsync | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done
+      run_rsync 2>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))% $(tail -n 1 /tmp/restore.log)"; done
       echo " "
     fi
 
@@ -1666,15 +1666,15 @@ if [ $BRinterface = "CLI" ]; then
     fi
 
     echo -e "\n==>PREPARING CHROOT ENVIROMENT"
-    prepare_chroot
+    prepare_chroot 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log)
     sleep 1
 
     echo -e "\n==>REBUILDING INITRAMFS IMAGE"
-    build_initramfs
+    build_initramfs 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log)
     sleep 1
 
     echo -e "\n==>GENERATING LOCALES"
-    generate_locales
+    generate_locales 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log)
     sleep 1
 
     if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
@@ -1689,25 +1689,27 @@ if [ $BRinterface = "CLI" ]; then
       BRbootloadercheck="fail"
     fi
 
-    install_bootloader
+    install_bootloader 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log)
     sleep 1
 
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-      echo -e "${BR_CYAN}Completed. Press ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
+      echo -e "${BR_CYAN}Completed. Log: /tmp/restore.log\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
     elif [ -n "$BRbootloadercheck" ]; then
-      echo -e "\n$BRbootloader not found, so this is the right time to\ninstall and update a bootloader. To do so:"
+      echo -e "${BR_CYAN}Completed. Log: /tmp/restore.log"
+      echo -e "\n${BR_YELLOW}$BRbootloader not found, so this is the right time to install and\nupdate a bootloader. To do so:"
       echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
       echo -e "\n==>Then chroot into the restored system: chroot /mnt/target"
       echo -e "\n==>Install and update a bootloader"
       echo -e "\n==>When done, leave chroot: exit"
-      echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices."
+      echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices.${BR_NORM}"
     else
-      echo -e "\nSince you haven't chosen a bootloader, this is the right\ntime to install (or update an existing) one. To do so:"
+      echo -e "${BR_CYAN}Completed. Log: /tmp/restore.log"
+      echo -e "\n${BR_YELLOW}Since you haven't chosen a bootloader, this is the right time to\ninstall (or update an existing) one. To do so:"
       echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
       echo -e "\n==>Then chroot into the restored/transferred system: chroot /mnt/target"
       echo -e "\n==>Install or update your bootloader"
       echo -e "\n==>When done, leave chroot: exit"
-      echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices."
+      echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices.${BR_NORM}"
     fi
     read -s a
 

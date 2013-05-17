@@ -424,18 +424,18 @@ build_initramfs() {
 
   if [ $BRdistro = Arch ]; then
     for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
-     chroot /mnt/target mkinitcpio -p $BRinitrd  2>&1 && echo SUCCESS  || echo WARNING
+     chroot /mnt/target mkinitcpio -p $BRinitrd
     done
 
   elif [ $BRdistro = Debian ]; then
     for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
-      chroot /mnt/target update-initramfs -u -k $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
+      chroot /mnt/target update-initramfs -u -k $BRinitrd
     done
 
   elif [ $BRdistro = Fedora ]; then
     for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
       echo "Building image for $BRinitrd..."
-      chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd 2>&1 && echo SUCCESS  || echo WARNING
+      chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd
     done
  fi
 }
@@ -459,7 +459,7 @@ install_bootloader() {
       else
         chroot /mnt/target grub-install --target=i386-pc  $BRgrub
       fi
-     chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED
+     chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
     elif [ $BRdistro = Debian ]; then
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
@@ -468,7 +468,7 @@ install_bootloader() {
       else
         chroot /mnt/target grub-install  $BRgrub
       fi
-      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  2>&1 && echo SUCCESS  || echo FAILED
+      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
     elif [ $BRdistro = Fedora ]; then
       if [ -f /mnt/target/etc/default/grub ]; then
         mv /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old
@@ -486,7 +486,7 @@ install_bootloader() {
       else
         chroot /mnt/target grub2-install $BRgrub
       fi
-      chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg 2>&1 && echo SUCCESS  || echo FAILED
+      chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
     fi
 
   elif [ -n "$BRsyslinux" ]; then
@@ -608,9 +608,9 @@ install_bootloader() {
 
 generate_locales() {
   if [ $BRdistro = Fedora ]; then
-    chroot /mnt/target localedef -f UTF-8 -i en_US en_US.UTF-8 2>&1 && echo SUCCESS || echo WARNING
+    chroot /mnt/target localedef -f UTF-8 -i en_US en_US.UTF-8
   else
-    chroot /mnt/target  locale-gen   2>&1 && echo SUCCESS || echo WARNING
+    chroot /mnt/target  locale-gen
   fi
 }
 
@@ -1967,11 +1967,25 @@ Press OK to continue."  25 80
     if [ -n "$BRfile" ]; then
      (if [ "x$BRomitcopy" = "xy" ]; then
         echo "Symlinking file..."
-        ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2>&1
-        sleep 2
+        ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null
+        if [ "$?" = "0" ]; then
+          echo  "Done"
+          sleep 2
+        else
+          echo  "Error"
+          sleep 2
+        fi 
       else
         echo "Copying file..."
-        cp "${BRfile[@]}" "/mnt/target/fullbackup" 2>&1
+        cp "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null
+        if [ "$?" = "0" ]; then
+          echo  "Done"
+          sleep 2
+        else
+          echo  "Error"
+          sleep 2
+          rm /mnt/target/fullbackup 2>&1
+        fi 
       fi)  | dialog  --progressbox  4 30
     fi
 
@@ -2054,11 +2068,25 @@ Press OK to continue."  25 80
             done
            (if [ $BRomitcopy = "y" ]; then
               echo "Symlinking file..."
-              ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2>&1
-              sleep 2
+              ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null
+              if [ "$?" = "0" ]; then
+                echo  "Done"
+                sleep 2
+              else
+                echo  "Error"
+                sleep 2
+              fi 
             else
               echo "Copying file..."
-              cp "${BRfile[@]}" "/mnt/target/fullbackup" 2>&1
+              cp "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null
+              if [ "$?" = "0" ]; then
+                echo  "Done"
+                sleep 2
+              else
+                echo  "Error"
+                sleep 2
+                rm /mnt/target/fullbackup 2>&1
+              fi 
             fi) | dialog  --progressbox 4 30
           else
             echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
@@ -2151,24 +2179,18 @@ Press Yes to continue, or No to abort." 0 0
     clean_unmount_in
   fi
 
+  echo > /tmp/r_error
+
   if [ $BRmode = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
-    run_tar 2> /tmp/br_error | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))%"; done | dialog  --progressbox  3 50
+    run_tar 2> /tmp/r_error | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))%"; done | dialog  --progressbox  3 50
     sleep 2
   elif [ $BRmode = "Transfer" ]; then
     run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done | dialog  --progressbox  3 40
     total=$(cat /tmp/filelist | wc -l)
-    run_rsync 2> /tmp/br_error | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox 3 50
+    run_rsync 2> /tmp/r_error | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox 3 50
     sleep 2
-  fi
-
-  if [ -s "/tmp/br_error" ]; then
-    dialog --no-ok --title "Error" --msgbox "`cat /tmp/br_error`" 0 0
-  fi
-
-  if [ -f /tmp/br_error ]; then
-    rm  /tmp/br_error
   fi
 
   detect_distro
@@ -2190,10 +2212,10 @@ Edit fstab ?" 20 100
     fi
   fi
 
-( prepare_chroot
+( prepare_chroot 
   build_initramfs
-  generate_locales 
-  sleep 2) 2>&1 | dialog --title "PROCESSING" --progressbox  30 100
+  generate_locales
+  sleep 2) 2>> /tmp/r_error | dialog --title "PROCESSING" --progressbox  30 100
 
   if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
     echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49
@@ -2208,14 +2230,24 @@ Edit fstab ?" 20 100
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    install_bootloader 2>&1 | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
+    install_bootloader 2>> /tmp/r_error | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
     sleep 2
   fi
 
+  if [ -s "/tmp/r_error" ]; then
+    BR_errors="$(cat /tmp/r_error | wc -l) Check /tmp/r_error for details"
+  else
+   BR_errors=0
+  fi
+
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    dialog --title "Info" --msgbox  "Completed. Press OK to unmount all remaining (engaged) devices, then reboot your system."  7 50
+    dialog --title "Info" --msgbox  "Completed (Warnings:$BR_errors).
+
+Press OK to unmount all remaining (engaged) devices, then reboot your system."  8 90
   elif  [ -n "$BRbootloadercheck" ]; then
-    dialog --title "Info" --msgbox  "$BRbootloader not found, so this is the right time to install and
+    dialog --title "Info" --msgbox  "Completed (Warnings:$BR_errors).
+
+$BRbootloader not found, so this is the right time to install and 
 update a bootloader. To do so:
 
 ==>For internet connection to work, on a new terminal with root
@@ -2228,10 +2260,12 @@ update a bootloader. To do so:
 ==>When done, leave chroot: exit
 
 ==>Finally, return to this window and press OK to unmount
-   all remaining (engaged) devices."  19 80
+   all remaining (engaged) devices."  22 80
   else
-    dialog --title "Info" --msgbox  "Since you haven't chosen a bootloader, this is the right time
-to install (or update an existing) one. To do so:
+    dialog --title "Info" --msgbox  "Completed (Warnings:$BR_errors). 
+
+Since you haven't chosen  a bootloader, this is the right time to 
+install (or update an existing) one. To do so:
 
 ==>For internet connection to work, on a new terminal with root
    access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf
@@ -2243,7 +2277,7 @@ to install (or update an existing) one. To do so:
 ==>When done, leave chroot: exit
 
 ==>Finally, return to this window and press OK to unmount
-   all remaining (engaged) devices."  19 80
+   all remaining (engaged) devices."  22 80
   fi
 
   sleep 2

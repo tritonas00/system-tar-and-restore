@@ -454,19 +454,19 @@ install_bootloader() {
     if [ $BRdistro = Arch ]; then
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
-          chroot /mnt/target grub-install --target=i386-pc  /dev/$f 2> >(tee -a /tmp/r_error)
+          chroot /mnt/target grub-install --target=i386-pc  /dev/$f
         done
       else
-        chroot /mnt/target grub-install --target=i386-pc  $BRgrub 2> >(tee -a /tmp/r_error)
+        chroot /mnt/target grub-install --target=i386-pc  $BRgrub
       fi
      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
     elif [ $BRdistro = Debian ]; then
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
-          chroot /mnt/target grub-install  /dev/$f 2> >(tee -a /tmp/r_error)
+          chroot /mnt/target grub-install  /dev/$f
         done
       else
-        chroot /mnt/target grub-install  $BRgrub 2> >(tee -a /tmp/r_error)
+        chroot /mnt/target grub-install  $BRgrub
       fi
       chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
     elif [ $BRdistro = Fedora ]; then
@@ -481,10 +481,10 @@ install_bootloader() {
 
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
-          chroot /mnt/target grub2-install /dev/$f 2> >(tee -a /tmp/r_error)
+          chroot /mnt/target grub2-install /dev/$f
         done
       else
-        chroot /mnt/target grub2-install $BRgrub 2> >(tee -a /tmp/r_error)
+        chroot /mnt/target grub2-install $BRgrub
       fi
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
     fi
@@ -998,8 +998,6 @@ done
 if [ -z "$BRnocolor" ]; then
   color_variables
 fi
-
-echo > /tmp/r_error
 
 DEFAULTIFS=$IFS
 IFS=$'\n'
@@ -2181,15 +2179,17 @@ Press Yes to continue, or No to abort." 0 0
     clean_unmount_in
   fi
 
+  echo > /tmp/restore.log
+
   if [ $BRmode = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
-    run_tar 2> /tmp/r_error | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))%"; done | dialog  --progressbox  3 50
+    run_tar 2> >(tee -a /tmp/restore.log) | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))%"; done | dialog  --progressbox  3 50
     sleep 2
   elif [ $BRmode = "Transfer" ]; then
     run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done | dialog  --progressbox  3 40
     total=$(cat /tmp/filelist | wc -l)
-    run_rsync 2> /tmp/r_error | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox 3 50
+    run_rsync 2> >(tee -a /tmp/restore.log) | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox 3 50
     sleep 2
   fi
 
@@ -2215,7 +2215,7 @@ Edit fstab ?" 20 100
 ( prepare_chroot 
   build_initramfs
   generate_locales
-  sleep 2) 2>> /tmp/r_error | dialog --title "PROCESSING" --progressbox  30 100
+  sleep 2)  2> >(tee -a /tmp/restore.log) | dialog --title "PROCESSING" --progressbox  30 100
 
   if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
     echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49
@@ -2230,22 +2230,16 @@ Edit fstab ?" 20 100
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    install_bootloader 2>&1 | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
+    install_bootloader 2> >(tee -a /tmp/restore.log) | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
     sleep 2
   fi
 
-  if [ -s "/tmp/r_error" ]; then
-    BR_errors="$(cat /tmp/r_error | wc -l) Check /tmp/r_error for details"
-  else
-    BR_errors="0"
-  fi
-
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    dialog --title "Info" --msgbox  "Completed (Warnings:$BR_errors).
+    dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log
 
 Press OK to unmount all remaining (engaged) devices, then reboot your system."  8 90
   elif  [ -n "$BRbootloadercheck" ]; then
-    dialog --title "Info" --msgbox  "Completed (Warnings:$BR_errors).
+    dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log
 
 $BRbootloader not found, so this is the right time to install and 
 update a bootloader. To do so:
@@ -2262,7 +2256,7 @@ update a bootloader. To do so:
 ==>Finally, return to this window and press OK to unmount
    all remaining (engaged) devices."  22 80
   else
-    dialog --title "Info" --msgbox  "Completed (Warnings:$BR_errors). 
+    dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log 
 
 Since you haven't chosen  a bootloader, this is the right time to 
 install (or update an existing) one. To do so:

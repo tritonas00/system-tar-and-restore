@@ -1974,7 +1974,7 @@ Press OK to continue."  25 80
         else
           echo  "Error"
           sleep 2
-        fi 
+        fi
       else
         echo "Copying file..."
         cp "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null
@@ -1985,7 +1985,7 @@ Press OK to continue."  25 80
           echo  "Error"
           sleep 2
           rm /mnt/target/fullbackup 2>&1
-        fi 
+        fi
       fi)  | dialog  --progressbox  4 30
     fi
 
@@ -2075,7 +2075,7 @@ Press OK to continue."  25 80
               else
                 echo  "Error"
                 sleep 2
-              fi 
+              fi
             else
               echo "Copying file..."
               cp "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null
@@ -2086,7 +2086,7 @@ Press OK to continue."  25 80
                 echo  "Error"
                 sleep 2
                 rm /mnt/target/fullbackup 2>&1
-              fi 
+              fi
             fi) | dialog  --progressbox 4 30
           else
             echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
@@ -2210,7 +2210,7 @@ Edit fstab ?" 20 100
     fi
   fi
 
-( prepare_chroot 
+( prepare_chroot
   build_initramfs
   generate_locales
   sleep 2) 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log) | dialog --title "PROCESSING" --progressbox  30 100
@@ -2239,7 +2239,7 @@ Press OK to unmount all remaining (engaged) devices, then reboot your system."  
   elif  [ -n "$BRbootloadercheck" ]; then
     dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log
 
-$BRbootloader not found, so this is the right time to install and 
+$BRbootloader not found, so this is the right time to install and
 update a bootloader. To do so:
 
 ==>For internet connection to work, on a new terminal with root
@@ -2254,9 +2254,9 @@ update a bootloader. To do so:
 ==>Finally, return to this window and press OK to unmount
    all remaining (engaged) devices."  22 80
   else
-    dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log 
+    dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log
 
-Since you haven't chosen  a bootloader, this is the right time to 
+Since you haven't chosen  a bootloader, this is the right time to
 install (or update an existing) one. To do so:
 
 ==>For internet connection to work, on a new terminal with root

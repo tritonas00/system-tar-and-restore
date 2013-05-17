@@ -2213,7 +2213,7 @@ Edit fstab ?" 20 100
 ( prepare_chroot 
   build_initramfs
   generate_locales
-  sleep 2)  2> >(tee -a /tmp/restore.log) | dialog --title "PROCESSING" --progressbox  30 100
+  sleep 2) 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log) | dialog --title "PROCESSING" --progressbox  30 100
 
   if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
     echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49
@@ -2228,7 +2228,7 @@ Edit fstab ?" 20 100
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    install_bootloader 2> >(tee -a /tmp/restore.log) | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
+    install_bootloader 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log) | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
     sleep 2
   fi
 

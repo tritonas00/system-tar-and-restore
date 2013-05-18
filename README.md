@@ -24,7 +24,7 @@ Supported distributions: Arch, Debian, Fedora
 ###BACKUP###
 
 Backup script makes a tar backup of / in a given location. It will make a folder in that location which 
-contains the archive, the "errors" file (usefull for tracking tar errors/warnings) and the "log" file which contains the standard tar output.
+contains the archive and the "backup.log" file (usefull for tracking tar errors/warnings).
 
 The script will ask for:
 
@@ -85,6 +85,7 @@ In **Transfer Mode**, the script uses rsync to transfer the root filesystem (/) 
 Then generates fstab using uuids, rebuilds initramfs image for every available kernel, re-generates locales, 
 installs and auto-configures Grub or Syslinux in MBR of given device and finally unmounts and cleans everything.
 
+
 The script will ask for:
 
 - Interface to use  
@@ -116,6 +117,7 @@ The script will ask for:
 
 - At the end, if you didn't choose a bootloader or the selected bootloader not found in the target system, the script will help you to chroot and install a bootloader manually.
 
+Log file is saved as /tmp/restore.log
 
 The script also supports all input as arguments:
 

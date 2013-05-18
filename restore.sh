@@ -341,6 +341,7 @@ show_summary() {
 }
 
 prepare_chroot() {
+  echo -e "\n==>PREPARING CHROOT ENVIROMENT"
   echo -e "Binding /dev"
   mount --bind /dev /mnt/target/dev
   echo -e "Binding /dev/pts"
@@ -352,8 +353,7 @@ prepare_chroot() {
 }
 
 generate_fstab() {
-  cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
-  echo > /mnt/target/etc/fstab
+  mv /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   if [ $BRdistro = Arch ]; then
     echo  "tmpfs  /tmp  tmpfs  nodev,nosuid  0  0" >> /mnt/target/etc/fstab
   fi
@@ -404,6 +404,7 @@ generate_fstab() {
 }
 
 build_initramfs() {
+  echo -e "\n==>REBUILDING INITRAMFS IMAGE"
   if [[ "$BRroot" == *md* ]] || [[ "$BRhome" == *md* ]] || [[ "$BRswap" == *md* ]] || [[ "$BRboot" == *md* ]]; then
     if [ $BRdistro = Debian ]; then
       if [ -f /mnt/target/etc/mdadm/mdadm.conf ]; then
@@ -420,9 +421,8 @@ build_initramfs() {
       mdadm --examine --scan > /mnt/target/etc/mdadm.conf
       cat /mnt/target/etc/mdadm.conf
     fi
+    echo " "
   fi
-
-  echo " "
 
   if [ $BRdistro = Arch ]; then
     for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
@@ -609,9 +609,8 @@ install_bootloader() {
 }
 
 generate_locales() {
-  if [ $BRdistro = Fedora ]; then
-    chroot /mnt/target localedef -f UTF-8 -i en_US en_US.UTF-8
-  else
+  if [ $BRdistro = Arch ] ||  [ $BRdistro = Debian ]; then
+    echo -e "\n==>GENERATING LOCALES"
     chroot /mnt/target  locale-gen
   fi
 }
@@ -1665,16 +1664,13 @@ if [ $BRinterface = "CLI" ]; then
       done
     fi
 
-    echo -e "\n==>PREPARING CHROOT ENVIROMENT"
-    prepare_chroot 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log)
+    prepare_chroot 1> >(tee -a /tmp/restore.log) 2>&1
     sleep 1
 
-    echo -e "\n==>REBUILDING INITRAMFS IMAGE"
-    build_initramfs 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log)
+    build_initramfs 1> >(tee -a /tmp/restore.log) 2>&1
     sleep 1
 
-    echo -e "\n==>GENERATING LOCALES"
-    generate_locales 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log)
+    generate_locales 1> >(tee -a /tmp/restore.log) 2>&1
     sleep 1
 
     if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
@@ -1689,7 +1685,7 @@ if [ $BRinterface = "CLI" ]; then
       BRbootloadercheck="fail"
     fi
 
-    install_bootloader 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log)
+    install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1
     sleep 1
 
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
@@ -2218,7 +2214,7 @@ Edit fstab ?" 20 100
 ( prepare_chroot
   build_initramfs
   generate_locales
-  sleep 2) 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log) | dialog --title "PROCESSING" --progressbox  30 100
+  sleep 2) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox  30 100
 
   if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
     echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49
@@ -2233,7 +2229,7 @@ Edit fstab ?" 20 100
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    install_bootloader 1> >(tee -a /tmp/restore.log) 2> >(tee -a /tmp/restore.log) | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
+    install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
     sleep 2
   fi
 

@@ -49,7 +49,6 @@ set_tar_options() {
 }
 
 run_calc() {
-  echo > "$BRFOLDER"/log
   tar cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2> /dev/null | tee "$BRFOLDER"/log | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done
 }
 
@@ -350,25 +349,24 @@ if [ $BRinterface = "CLI" ]; then
     BRFOLDER="${BRFOLDER_IN[@]}"
 
     echo "==>Preparing..."
-    mkdir -p "$BRFOLDER"
-    touch "$BRFOLDER"/log
-    touch "$BRFOLDER"/errors
+    mkdir -p "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
+    echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
     sleep 1
-
     BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
     set_tar_options
     run_calc
     total=$(cat "$BRFOLDER"/log | wc -l)
     sleep 1
     echo " "
-    run_tar 2>>"$BRFOLDER"/errors | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $b of $total $(($b*100/$total))%"; done
+    run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $b of $total $(($b*100/$total))%"; done
     echo " "
     echo "==>Setting permissions"
-    chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
+    chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
+    rm "$BRFOLDER"/log 2>> "$BRFOLDER"/backup.log
     if [ -f /tmp/b_error ]; then
-      echo -e "${BR_RED}An error occurred. Check "$BRFOLDER"/errors for details. Press ENTER to exit.${BR_NORM}"
+      echo -e "${BR_RED}An error occurred. Check "$BRFOLDER"/backup.log for details. Press ENTER to exit.${BR_NORM}"
     else
-      echo -e "${BR_CYAN}Completed. Backup archive and logs saved in $BRFOLDER. Press ENTER to exit.${BR_NORM}"
+      echo -e "${BR_CYAN}Completed. Backup archive and log saved in $BRFOLDER. Press ENTER to exit.${BR_NORM}"
     fi
   fi
 
@@ -463,9 +461,8 @@ Press Yes to continue or No to abort." 0 0
   BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
   BRFOLDER="${BRFOLDER_IN[@]}"
 
-  mkdir -p "$BRFOLDER"
-  touch "$BRFOLDER"/log
-  touch "$BRFOLDER"/errors
+  mkdir -p "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
+  echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
   sleep 1
 
   BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
@@ -473,13 +470,14 @@ Press Yes to continue or No to abort." 0 0
   run_calc | dialog  --progressbox  3 40
   total=$(cat "$BRFOLDER"/log | wc -l)
   sleep 1
-  run_tar 2>>"$BRFOLDER"/errors | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox  3 50
+  run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox  3 50
 
-  chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/errors
+  chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
+  rm "$BRFOLDER"/log 2>> "$BRFOLDER"/backup.log
   if [ -f /tmp/b_error ]; then
-    dialog --title "Error" --msgbox  "An error occurred.\n\nCheck "$BRFOLDER"/errors for details." 8 80
+    dialog --title "Error" --msgbox  "An error occurred.\n\nCheck "$BRFOLDER"/backup.log for details." 8 80
   else
-    dialog --title "Info" --msgbox  "Completed.\n\nBackup archive and logs saved in $BRFOLDER." 8 80
+    dialog --title "Info" --msgbox  "Completed.\n\nBackup archive and log saved in $BRFOLDER." 8 80
   fi
 fi
 

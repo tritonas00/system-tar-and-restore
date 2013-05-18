@@ -24,7 +24,7 @@ Supported distributions: Arch, Debian, Fedora
 ###BACKUP###
 
 Backup script makes a tar backup of / in a given location. It will make a folder in that location which 
-contains the archive and the log file *backup.log* (usefull for tracking tar errors/warnings).
+contains the archive and the log file "backup.log" (usefull for tracking tar errors/warnings).
 
 The script will ask for:
 

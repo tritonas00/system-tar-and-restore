@@ -401,6 +401,7 @@ generate_fstab() {
       echo "UUID=$(lsblk -d -n -o uuid $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
     fi
   fi
+  echo -e "\n==>GENERATED FSTAB" >> /tmp/restore.log
   cat /mnt/target/etc/fstab >> /tmp/restore.log
 }
 
@@ -481,7 +482,9 @@ install_bootloader() {
       echo 'GRUB_CMDLINE_LINUX="vconsole.keymap=us rhgb quiet"' >> /mnt/target/etc/default/grub
       echo 'GRUB_DISABLE_RECOVERY="true"' >> /mnt/target/etc/default/grub
       echo 'GRUB_THEME="/boot/grub2/themes/system/theme.txt"' >> /mnt/target/etc/default/grub
+      echo -e "\n==>Generated grub2 config" >> /tmp/restore.log
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
+      
 
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
@@ -607,6 +610,7 @@ install_bootloader() {
         done
       fi
     fi
+    echo -e "\n==>GENERATED SYSLINUX CONFIG" >> /tmp/restore.log
     cat /mnt/target/boot/syslinux/syslinux.cfg >> /tmp/restore.log
   fi
 }
@@ -1611,7 +1615,7 @@ if [ $BRinterface = "CLI" ]; then
     clean_unmount_in
   elif [  "x$BRcontinue" = "xy" ]; then
     echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
-
+    echo " " >> /tmp/restore.log
     if [ $BRmode = "Restore" ]; then
       echo -e "\n==>EXTRACTING"
       total=$(cat /tmp/filelist | wc -l)
@@ -2186,7 +2190,7 @@ Press Yes to continue, or No to abort." 0 0
   fi
 
   echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
-
+  echo " " >> /tmp/restore.log
   if [ $BRmode = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1

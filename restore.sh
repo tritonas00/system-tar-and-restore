@@ -484,7 +484,7 @@ install_bootloader() {
       echo 'GRUB_THEME="/boot/grub2/themes/system/theme.txt"' >> /mnt/target/etc/default/grub
       echo -e "\n==>Generated grub2 config" >> /tmp/restore.log
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
-      
+
 
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do

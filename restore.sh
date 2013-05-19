@@ -401,6 +401,7 @@ generate_fstab() {
       echo "UUID=$(lsblk -d -n -o uuid $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
     fi
   fi
+  cat /mnt/target/etc/fstab >> /tmp/restore.log
 }
 
 build_initramfs() {
@@ -413,6 +414,7 @@ build_initramfs() {
       echo "Generating mdadm.conf..."
       mdadm --examine --scan > /mnt/target/etc/mdadm/mdadm.conf
       cat /mnt/target/etc/mdadm/mdadm.conf
+      cat /mnt/target/etc/mdadm/mdadm.conf >> /tmp/restore.log
     else
       if [ -f /mnt/target/etc/mdadm.conf ]; then
         mv /mnt/target/etc/mdadm.conf /mnt/target/etc/mdadm.conf-old
@@ -420,6 +422,7 @@ build_initramfs() {
       echo "Generating mdadm.conf..."
       mdadm --examine --scan > /mnt/target/etc/mdadm.conf
       cat /mnt/target/etc/mdadm.conf
+      cat /mnt/target/etc/mdadm.conf >> /tmp/restore.log
     fi
     echo " "
   fi
@@ -480,6 +483,7 @@ install_bootloader() {
       echo 'GRUB_CMDLINE_LINUX="vconsole.keymap=us rhgb quiet"' >> /mnt/target/etc/default/grub
       echo 'GRUB_DISABLE_RECOVERY="true"' >> /mnt/target/etc/default/grub
       echo 'GRUB_THEME="/boot/grub2/themes/system/theme.txt"' >> /mnt/target/etc/default/grub
+      cat /mnt/target/etc/default/grub >> /tmp/restore.log
 
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
@@ -605,6 +609,7 @@ install_bootloader() {
         done
       fi
     fi
+    cat /mnt/target/boot/syslinux/syslinux.cfg >> /tmp/restore.log
   fi
 }
 

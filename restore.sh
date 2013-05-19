@@ -414,12 +414,14 @@ build_initramfs() {
       fi
       echo "Generating mdadm.conf..."
       mdadm --examine --scan > /mnt/target/etc/mdadm/mdadm.conf
+      cat /mnt/target/etc/mdadm/mdadm.conf
     else
       if [ -f /mnt/target/etc/mdadm.conf ]; then
         mv /mnt/target/etc/mdadm.conf /mnt/target/etc/mdadm.conf-old
       fi
       echo "Generating mdadm.conf..."
       mdadm --examine --scan > /mnt/target/etc/mdadm.conf
+      cat /mnt/target/etc/mdadm.conf
     fi
     echo " "
   fi

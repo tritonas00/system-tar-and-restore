@@ -1728,7 +1728,7 @@ elif [ $BRinterface = "Dialog" ]; then
   fi
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
-    dialog --no-ok --title "$BR_VERSION" --msgbox "This script will restore a backup image of your system or transfer this system in user defined partitions.
+    dialog --title "$BR_VERSION" --msgbox "This script will restore a backup image of your system or transfer this system in user defined partitions.
 
 ==>Make sure you have created and formatted at least one partition
    for root (/) and optionally partitions for /home and /boot.

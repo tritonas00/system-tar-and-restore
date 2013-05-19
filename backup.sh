@@ -379,7 +379,7 @@ elif [ $BRinterface = "Dialog" ]; then
   fi
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --no-ok --title "$BR_VERSION" --msgbox  "This script will make a tar backup image of your entire system.
+    dialog --title "$BR_VERSION" --msgbox  "This script will make a tar backup image of your entire system.
 
 ==>Make sure you have enough free space.
 

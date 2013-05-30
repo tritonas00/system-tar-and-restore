@@ -1620,7 +1620,7 @@ if [ $BRinterface = "CLI" ]; then
       echo -e "\n==>EXTRACTING"
       total=$(cat /tmp/filelist | wc -l)
       sleep 1
-      run_tar 2>>/tmp/restore.log | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))%"; done
+      run_tar 2>>/tmp/restore.log | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $(($a*100/$total))%"; done
       echo " "
     elif [ $BRmode = "Transfer" ]; then
       echo -e "\n==>TRANSFERING"
@@ -1628,7 +1628,7 @@ if [ $BRinterface = "CLI" ]; then
       total=$(cat /tmp/filelist | wc -l)
       sleep 1
       echo " "
-      run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done
+      run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $(($b*100/$total))%"; done
       echo " "
     fi
 

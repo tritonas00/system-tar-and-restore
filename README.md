@@ -71,7 +71,7 @@ show all arguments
 
 ###RESTORE###
 
-User must create partitions using his favorite partition manager before running the script.
+User must create and format partitions using his favorite partition manager before running the script.
 At least one / (root) partition is required and optionally a seperate partition for /home, /boot and a swap partition.
 
 In case of LVM, make sure that the target volume group is activated.  

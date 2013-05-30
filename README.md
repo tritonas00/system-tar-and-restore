@@ -74,15 +74,13 @@ show all arguments
 User must create and format partitions using his favorite partition manager before running the script.
 At least one / (root) partition is required and optionally a seperate partition for /home, /boot and a swap partition.
 
-In case of LVM, make sure that the target volume group is activated.  
-
 Restore script contains two modes: **Restore** and **Transfer**.
 
 In **Restore Mode**, the script uses the above created archive to extract it in user defined partitions.
 
 In **Transfer Mode**, the script uses rsync to transfer the root filesystem (/) in user defined partitions.
 
-Then generates fstab using uuids, rebuilds initramfs image for every available kernel, re-generates locales, 
+Then generates fstab, rebuilds initramfs image for every available kernel, re-generates locales, 
 installs and auto-configures Grub or Syslinux in MBR of given device and finally unmounts and cleans everything.
 
 

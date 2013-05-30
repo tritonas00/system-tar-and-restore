@@ -1624,7 +1624,7 @@ if [ $BRinterface = "CLI" ]; then
       echo " "
     elif [ $BRmode = "Transfer" ]; then
       echo -e "\n==>TRANSFERING"
-      run_calc  | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done
+      run_calc  | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
       total=$(cat /tmp/filelist | wc -l)
       sleep 1
       echo " "
@@ -2197,7 +2197,7 @@ Press Yes to continue, or No to abort." 0 0
     run_tar 2>>/tmp/restore.log | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $a of $total $(($a*100/$total))%"; done | dialog  --progressbox  3 50
     sleep 2
   elif [ $BRmode = "Transfer" ]; then
-    run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done | dialog  --progressbox  3 40
+    run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done | dialog  --progressbox  3 40
     total=$(cat /tmp/filelist | wc -l)
     run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox 3 50
     sleep 2

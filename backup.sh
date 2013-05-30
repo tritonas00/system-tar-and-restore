@@ -358,7 +358,7 @@ if [ $BRinterface = "CLI" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     echo " "
-    run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $b of $total $(($b*100/$total))%"; done
+    run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
     echo " "
     echo "==>Setting permissions"
     chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log

@@ -49,7 +49,7 @@ set_tar_options() {
 }
 
 run_calc() {
-  tar cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2> /dev/null | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a"; done
+  tar cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2> /dev/null | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
 }
 
 run_tar() {
@@ -470,7 +470,7 @@ Press Yes to continue or No to abort." 0 0
   run_calc | dialog  --progressbox  3 40
   total=$(cat /tmp/filelist | wc -l)
   sleep 1
-  run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $b of $total $(($b*100/$total))%"; done | dialog  --progressbox  3 50
+  run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -e "\r$(($b*100/$total))"; done | dialog --gauge "Compressing..." 0 50
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 

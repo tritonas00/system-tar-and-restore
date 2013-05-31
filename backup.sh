@@ -54,15 +54,9 @@ run_calc() {
 
 run_tar() {
   if [ ${BRcompression} = "GZIP" ]; then
-     tar cvpzf  "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" /
-     if [ $? -gt 0 ]; then
-       touch /tmp/b_error
-     fi
+     tar cvpzf  "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" / || touch /tmp/b_error
   elif [ ${BRcompression} = "XZ" ]; then
-     tar cvpJf  "$BRFile".tar.xz  ${BR_TAROPTS} --exclude="$BRFOLDER" /
-     if [ $? -gt 0 ]; then
-       touch /tmp/b_error
-     fi
+     tar cvpJf  "$BRFile".tar.xz  ${BR_TAROPTS} --exclude="$BRFOLDER" / || touch /tmp/b_error
   fi
 }
 

@@ -230,29 +230,20 @@ check_input() {
 
 mount_all() {
   echo -e "\n==>MAKING WORKING DIRECTORY"
-  mkdir /mnt/target 2>&1 && echo SUCCESS || echo WARNING
+  mkdir /mnt/target && echo SUCCESS || echo WARNING
   sleep 1
 
   echo -e "\n==>MOUNTING $BRroot (/)"
-  mount $BRroot /mnt/target
-  if [ "$?" -ne "0" ]; then
-    touch /tmp/stop
-  else
-    echo SUCCESS
-  fi
+  mount $BRroot /mnt/target && echo SUCCESS || touch /tmp/stop
+
   if [ "$(ls -A /mnt/target  | grep -vw "lost+found")" ]; then
     touch /tmp/not-empty
   fi
 
   if [ -n "$BRhome" ]; then
     echo -e "\n==>MOUNTING $BRhome (/home)"
-    mkdir /mnt/target/home 2>&1
-    mount $BRhome /mnt/target/home
-    if [ "$?" -ne "0" ]; then
-      touch /tmp/stop
-    else
-      echo SUCCESS
-    fi
+    mkdir /mnt/target/home
+    mount $BRhome /mnt/target/home && echo SUCCESS || touch /tmp/stop
     if [ "$(ls -A /mnt/target/home  | grep -vw "lost+found")" ]; then
       echo "Home partition not empty"
     fi
@@ -260,13 +251,8 @@ mount_all() {
 
   if [ -n "$BRboot" ]; then
     echo -e "\n==>MOUNTING $BRboot (/boot)"
-    mkdir /mnt/target/boot 2>&1
-    mount $BRboot /mnt/target/boot
-    if [ "$?" -ne "0" ]; then
-      touch /tmp/stop
-    else
-      echo SUCCESS
-    fi
+    mkdir /mnt/target/boot
+    mount $BRboot /mnt/target/boot && echo SUCCESS || touch /tmp/stop
     if [ "$(ls -A /mnt/target/boot  | grep -vw "lost+found")" ]; then
       echo "Boot partition not empty"
     fi
@@ -648,7 +634,7 @@ remount_delete_subvols() {
 
   echo -e "\n==>CLEANING AND UNMOUNTING"
   echo "Unmounting $BRroot"
-  umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED
+  umount $BRroot && echo SUCCESS
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
   elif [ "$(ls -A /mnt/target)" ]; then
@@ -688,12 +674,7 @@ unmount_only_in_subvol() {
     fi
   fi
   echo "Unmounting subvolume $BRrootsubvolname"
-  umount $BRroot
-    if [ "$?" -ne "0" ]; then
-      echo "Error unmounting volume"
-    else
-      echo "SUCCESS"
-    fi
+  umount $BRroot && echo "SUCCESS" || echo "Error unmounting volume"
 }
 
 clean_unmount_error() {
@@ -721,7 +702,7 @@ clean_unmount_error() {
     echo "/mnt/target is not empty"
   else
     sleep 1
-    rm -r /mnt/target 2>&1 && echo SUCCESS || echo FAILED
+    rm -r /mnt/target && echo SUCCESS || echo FAILED
   fi
   exit
 }
@@ -760,7 +741,7 @@ clean_unmount_in() {
   fi
 
   echo "Unmounting $BRroot"
-  umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED
+  umount $BRroot && echo SUCCESS
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
   elif [ "$(ls -A /mnt/target)" ]; then
@@ -794,7 +775,7 @@ clean_unmount_out() {
     umount  $BRboot
   fi
   echo "Unmounting $BRroot"
-  umount $BRroot 2>&1 && echo SUCCESS  || echo FAILED
+  umount $BRroot && echo SUCCESS
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
   elif [ "$(ls -A /mnt/target)" ]; then
@@ -846,28 +827,23 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
     fi
   fi
   echo "Unmounting $BRroot"
-  umount $BRroot
-  if [ "$?" -ne "0" ]; then
-    echo "Error unmounting volume"
-  else
-    echo "SUCCESS"
-  fi
+  umount $BRroot && echo "SUCCESS" || echo "Error unmounting volume"
 
   echo -e "\n==>MOUNTING SUBVOLUME $BRrootsubvolname AS ROOT (/)"
-  mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1 && echo SUCCESS  || echo WARNING
+  mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target && echo SUCCESS  || echo WARNING
 
   if [   -n "$BRhome" ]; then
     echo -e "\n==>MOUNTING $BRhome (/home)"
     if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
       mkdir /mnt/target/home
     fi
-    mount $BRhome /mnt/target/home  2>&1 && echo SUCCESS  || echo WARNING
+    mount $BRhome /mnt/target/home && echo SUCCESS  || echo WARNING
   fi
 
   if [   -n "$BRboot" ]; then
     echo -e "\n==>MOUNTING $BRboot (/boot)"
     mkdir /mnt/target/boot
-    mount $BRboot /mnt/target/boot  2>&1 && echo SUCCESS  || echo WARNING
+    mount $BRboot /mnt/target/boot && echo SUCCESS  || echo WARNING
   fi
 }
 
@@ -2001,10 +1977,10 @@ Press OK to continue."  25 80
 
     if [ -n "$BRurl" ]; then
       if [ -n "$BRusername" ]; then
-        ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 2>&1
+        ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2
         if [ "$?" -ne "0" ]; then
           touch /tmp/wget_error
-        fi ) | dialog --title "Downloading" --progressbox  30 70
+        fi ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
           echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
@@ -2019,10 +1995,10 @@ Press OK to continue."  25 80
           fi
         fi
       else
-        ( wget -O /mnt/target/fullbackup $BRurl --tries=2 2>&1
+        ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
         if [ "$?" -ne "0" ]; then
           touch /tmp/wget_error
-        fi ) | dialog --title "Downloading" --progressbox  30 70
+        fi ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
           echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
@@ -2110,10 +2086,10 @@ Press OK to continue."  25 80
         if [  $REPLY = "Protected" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-          ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup $BRurl --tries=2 2>&1
+          ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup $BRurl --tries=2
           if [ "$?" -ne "0" ]; then
             touch /tmp/wget_error
-          fi ) | dialog --title "Downloading" --progressbox  30 70
+          fi ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
             echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
@@ -2129,10 +2105,10 @@ Press OK to continue."  25 80
           fi
 
         elif [ $REPLY = "URL" ]; then
-          ( wget -O /mnt/target/fullbackup $BRurl --tries=2 2>&1
+          ( wget -O /mnt/target/fullbackup $BRurl --tries=2
           if [ "$?" -ne "0" ]; then
             touch /tmp/wget_error
-          fi ) | dialog --title "Downloading" --progressbox  30 70
+          fi ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
             echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57

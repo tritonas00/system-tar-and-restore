@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.1"
+BR_VERSION="System Tar & Restore 3.2"
 
 color_variables() {
   BR_NORM='\e[00m'

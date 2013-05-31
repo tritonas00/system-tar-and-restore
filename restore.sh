@@ -847,7 +847,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   fi
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoON" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,omit-copy,no-color" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoN" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,no-color" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -936,10 +936,6 @@ while true; do
       BRhidden="y"
       shift
     ;;
-    -O|--omit-copy)
-      BRomitcopy="y"
-      shift
-    ;;
     -N|--no-color)
       BRnocolor="y"
       shift
@@ -957,7 +953,6 @@ while true; do
 -g,  --grub            disk for grub
 -S,  --syslinux        disk for syslinux
 -f,  --file            backup file path
--O,  --omit-copy       dont copy backup file, just symlink it
 -u,  --url             url
 -n,  --username        username
 -p,  --password        password
@@ -1404,13 +1399,7 @@ if [ $BRinterface = "CLI" ]; then
     echo -e "\n==>GETTING TAR IMAGE"
 
     if [ -n "$BRfile" ]; then
-      if [ "x$BRomitcopy" = "xy" ]; then
-        echo "Symlinking file..."
-        ln -s $BRfile "/mnt/target/fullbackup"
-      else
-        echo "Copying file..."
-        cp $BRfile "/mnt/target/fullbackup"
-      fi
+      ln -s $BRfile "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo "Symlinking file: Error"
     fi
 
     if [ -n "$BRurl" ]; then
@@ -1443,13 +1432,13 @@ if [ $BRinterface = "CLI" ]; then
       fi
     fi
     if [ -f /mnt/target/fullbackup ]; then
-      (tar tf /mnt/target/fullbackup || touch /tmp/tar_error
-      ) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+      (tar tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
       if [ -f /tmp/tar_error ]; then
         rm /tmp/tar_error
         echo -e "${BR_RED}Error reading archive${BR_NORM}"
         rm /mnt/target/fullbackup
       fi
+      echo " "
     fi
 
     while [ ! -f /mnt/target/fullbackup ]; do
@@ -1471,31 +1460,7 @@ if [ $BRinterface = "CLI" ]; then
       	  else
             detect_filetype
             if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
-              while [ -z "$BRomitcopy" ]; do
-                echo -e "\n${BR_CYAN}Copy backup file in root partition? (If no, it will be symlinked)${BR_NORM}"
-                read -p "(Y/n):" an
-
-                if [ -n "$an" ]; then
-                  def=$an
-                else
-                  def="y"
-                fi
-
-                if [ $def = "y" ] || [ $def = "Y" ]; then
-                  BRomitcopy="n"
-                elif [ $def = "n" ] || [ $def = "N" ]; then
-                  BRomitcopy="y"
-                else
-                  echo -e "${BR_RED}Please select a valid option${BR_NORM}"
-                fi
-              done
-              if [ $BRomitcopy = "y" ]; then
-                echo "Symlinking file..."
-                ln -s $BRfile "/mnt/target/fullbackup"
-              else
-                echo "Copying file..."
-                cp $BRfile "/mnt/target/fullbackup"
-              fi
+              ln -s $BRfile "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo "Symlinking file: Error"
             else
               echo -e "${BR_RED}Invalid file type${BR_NORM}"
             fi
@@ -1542,13 +1507,13 @@ if [ $BRinterface = "CLI" ]; then
         fi
       done
       if [ -f /mnt/target/fullbackup ]; then
-        (tar tf /mnt/target/fullbackup || touch /tmp/tar_error
-        ) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+        (tar tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
         if [ -f /tmp/tar_error ]; then
           rm /tmp/tar_error
           echo -e "${BR_RED}Error reading archive${BR_NORM}"
           rm /mnt/target/fullbackup
         fi
+        echo " "
       fi
     done
   fi
@@ -1949,28 +1914,8 @@ Press OK to continue."  25 80
 
   if [ $BRmode = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-     (if [ "x$BRomitcopy" = "xy" ]; then
-        echo "Symlinking file..."
-        ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null
-        if [ "$?" = "0" ]; then
-          echo  "Done"
-          sleep 2
-        else
-          echo  "Error"
-          sleep 2
-        fi
-      else
-        echo "Copying file..."
-        cp "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null
-        if [ "$?" = "0" ]; then
-          echo  "Done"
-          sleep 2
-        else
-          echo  "Error"
-          sleep 2
-          rm /mnt/target/fullbackup 2>&1
-        fi
-      fi)  | dialog  --progressbox  4 30
+      ( ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog  --progressbox  3 30
+      sleep 2
     fi
 
     if [ -n "$BRurl" ]; then
@@ -2036,36 +1981,8 @@ Press OK to continue."  25 80
         else
           detect_filetype
           if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
-            while [ -z "$BRomitcopy" ]; do
-              dialog  --yesno "Copy backup file in root partition?\n\n(If no, it will be symlinked)" 8 40
-              if [ $? = "0" ]; then
-                BRomitcopy="n"
-              else
-                BRomitcopy="y"
-              fi
-            done
-           (if [ $BRomitcopy = "y" ]; then
-              echo "Symlinking file..."
-              ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null
-              if [ "$?" = "0" ]; then
-                echo  "Done"
-                sleep 2
-              else
-                echo  "Error"
-                sleep 2
-              fi
-            else
-              echo "Copying file..."
-              cp "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null
-              if [ "$?" = "0" ]; then
-                echo  "Done"
-                sleep 2
-              else
-                echo  "Error"
-                sleep 2
-                rm /mnt/target/fullbackup 2>&1
-              fi
-            fi) | dialog  --progressbox 4 30
+            ( ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog  --progressbox  3 30
+            sleep 2 
           else
             echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
             sleep 2

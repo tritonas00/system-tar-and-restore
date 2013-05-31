@@ -1443,11 +1443,10 @@ if [ $BRinterface = "CLI" ]; then
       fi
     fi
     if [ -f /mnt/target/fullbackup ]; then
-      echo "Checking archive..."
-      tar tf /mnt/target/fullbackup 1>/tmp/filelist
-      if [ "$?" = "0" ]; then
-        echo -e "${BR_GREEN}Archive appears OK${BR_NORM}"
-      else
+      (tar tf /mnt/target/fullbackup || touch /tmp/tar_error
+      ) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+      if [ -f /tmp/tar_error ]; then
+        rm /tmp/tar_error
         echo -e "${BR_RED}Error reading archive${BR_NORM}"
         rm /mnt/target/fullbackup
       fi
@@ -1543,11 +1542,10 @@ if [ $BRinterface = "CLI" ]; then
         fi
       done
       if [ -f /mnt/target/fullbackup ]; then
-        echo "Checking archive..."
-        tar tf /mnt/target/fullbackup 1>/tmp/filelist
-        if [ "$?" = "0" ]; then
-          echo -e "${BR_GREEN}Archive appears OK${BR_NORM}"
-        else
+        (tar tf /mnt/target/fullbackup || touch /tmp/tar_error
+        ) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+        if [ -f /tmp/tar_error ]; then
+          rm /tmp/tar_error
           echo -e "${BR_RED}Error reading archive${BR_NORM}"
           rm /mnt/target/fullbackup
         fi
@@ -2011,16 +2009,14 @@ Press OK to continue."  25 80
       fi
     fi
     if [ -f /mnt/target/fullbackup ]; then
-      ( echo "Checking archive..."
-        tar tf /mnt/target/fullbackup > /tmp/filelist 2>&1
-        if [ "$?" = "0" ]; then
-          echo  "Archive appears OK"
-          sleep 2
-        else
-          echo  "Error reading archive"
-          sleep 2
-          rm /mnt/target/fullbackup 2>&1
-        fi ) | dialog  --progressbox 4 30
+      ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error
+      ) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog  --progressbox 3 40
+      ( if [ -f /tmp/tar_error ]; then
+        rm /tmp/tar_error
+        echo -e "Error reading archive"
+        rm /mnt/target/fullbackup
+        sleep 2
+      fi ) | dialog  --progressbox 3 30
     fi
 
     while [ ! -f /mnt/target/fullbackup ]; do
@@ -2117,16 +2113,14 @@ Press OK to continue."  25 80
         fi
       fi
       if [ -f /mnt/target/fullbackup ]; then
-        ( echo "Checking archive..."
-          tar tf /mnt/target/fullbackup > /tmp/filelist 2>&1
-          if [ "$?" = "0" ]; then
-            echo  "Archive appears OK"
-            sleep 2
-          else
-            echo  "Error reading archive"
-            sleep 2
-            rm /mnt/target/fullbackup 2>&1
-          fi ) | dialog  --progressbox 4 30
+        ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error
+        ) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog  --progressbox 3 40
+        ( if [ -f /tmp/tar_error ]; then
+          rm /tmp/tar_error
+          echo -e "Error reading archive"
+          rm /mnt/target/fullbackup
+          sleep 2
+        fi ) | dialog  --progressbox 3 30
       fi
     done
   fi

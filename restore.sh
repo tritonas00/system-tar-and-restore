@@ -1977,10 +1977,8 @@ Press OK to continue."  25 80
 
     if [ -n "$BRurl" ]; then
       if [ -n "$BRusername" ]; then
-        ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2
-        if [ "$?" -ne "0" ]; then
-          touch /tmp/wget_error
-        fi ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+        ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
+        ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
           echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
@@ -1996,9 +1994,7 @@ Press OK to continue."  25 80
         fi
       else
         ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
-        if [ "$?" -ne "0" ]; then
-          touch /tmp/wget_error
-        fi ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+        ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
           echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
@@ -2086,10 +2082,8 @@ Press OK to continue."  25 80
         if [  $REPLY = "Protected" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-          ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup $BRurl --tries=2
-          if [ "$?" -ne "0" ]; then
-            touch /tmp/wget_error
-          fi ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+          ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
+          ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
             echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
@@ -2105,10 +2099,8 @@ Press OK to continue."  25 80
           fi
 
         elif [ $REPLY = "URL" ]; then
-          ( wget -O /mnt/target/fullbackup $BRurl --tries=2
-          if [ "$?" -ne "0" ]; then
-            touch /tmp/wget_error
-          fi ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+          ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
+          ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
             echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57

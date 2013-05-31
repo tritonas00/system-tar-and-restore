@@ -106,8 +106,7 @@ The script will ask for:
    subvolumes for /home, /usr and /var inside root subvolume.  
 
 - If Restore Mode is selected it will ask for the backup archive. This can be obtained locally (by entering the full path of the file), or remotelly (by entering the url of the file).
-   Also protected url is supported, which will ask for server's username and password. If local file selected, you will also be asked if you want to copy the backup file in root 
-   partition or symlink it.  
+   Also protected url is supported, which will ask for server's username and password.  
 
 - If Transfer Mode is selected, it will ask you if you want to transfer entire /home directory or only it's hidden files and folders.    
 
@@ -151,9 +150,6 @@ disk for syslinux
 
 **-f, --file**      
 backup file path
-
-**-O,  --omit-copy**  
-dont copy backup file, just symlink it
 
 **-u, --url**     
 url
@@ -257,7 +253,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 
 - root = /dev/md1
 - boot = /dev/md0
-- local file (symlink)
+- local file  
 - syslinux  
 
-<code>sudo ./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -O -S /dev/md0</code>
+<code>sudo ./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0</code>

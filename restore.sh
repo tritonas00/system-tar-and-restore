@@ -68,6 +68,17 @@ run_rsync() {
   fi
 }
 
+count_gauge() {
+  while read ln; do
+    b=$(( b + 1 ))
+    per=$(($b*100/$total))
+    if [[ $per -gt $lastper ]]; then
+      lastper=$per
+      echo $lastper
+    fi
+  done
+}
+
 part_list_dialog() {
   for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
   for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"`  -e `echo /dev/mapper/"${BRboot##*/}"`
@@ -2073,12 +2084,12 @@ Press Yes to continue, or No to abort." 0 0
   if [ $BRmode = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
-    run_tar 2>>/tmp/restore.log | while read ln; do a=$(( a + 1 )) && echo -e "\r$(($a*100/$total))"; done | dialog --gauge "Decompressing..." 0 50
+    run_tar 2>>/tmp/restore.log | count_gauge | dialog --gauge "Decompressing..." 0 50
     sleep 2
   elif [ $BRmode = "Transfer" ]; then
     run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done | dialog  --progressbox  3 40
     total=$(cat /tmp/filelist | wc -l)
-    run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && echo -e "\r$(($b*100/$total))"; done | dialog --gauge "Syncing..." 0 50
+    run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Syncing..." 0 50
     sleep 2
   fi
 

@@ -464,7 +464,15 @@ Press Yes to continue or No to abort." 0 0
   run_calc | dialog  --progressbox  3 40
   total=$(cat /tmp/filelist | wc -l)
   sleep 1
-  run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -e "\r$(($b*100/$total))"; done | dialog --gauge "Compressing..." 0 50
+  run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do
+    b=$(( b + 1 ))
+    per=$(($b*100/$total))
+
+    if [[ $per -gt $lastper ]]; then
+      lastper=$per
+      echo $lastper
+    fi
+  done | dialog --gauge "Compressing..." 0 50
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 

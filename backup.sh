@@ -2,6 +2,8 @@
 
 BR_VERSION="System Tar & Restore 3.2"
 
+clear
+
 color_variables() {
   BR_NORM='\e[00m'
   BR_RED='\e[00;31m'
@@ -12,7 +14,20 @@ color_variables() {
   BR_CYAN='\e[00;36m'
 }
 
-clear
+info_screen() {
+    echo "This script will make a tar backup image of your entire system."
+    echo -e "\n==>Make sure you have enough free space."
+    echo -e "\n==>Also make sure you have GRUB or SYSLINUX packages installed."
+    echo -e "\n${BR_YELLOW}GRUB Packages:${BR_NORM}"
+    echo "Arch: grub-bios"
+    echo "Debian: grub-pc"
+    echo "Fedora: grub2"
+    echo -e "\n${BR_YELLOW}SYSLINUX Packages:${BR_NORM}"
+    echo "Arch: syslinux"
+    echo "Debian: syslinux extlinux"
+    echo "Fedora: syslinux syslinux-extlinux"
+    echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
+}
 
 show_summary() {
   echo "DESTINATION: $BRFOLDER"
@@ -195,18 +210,7 @@ if [ $BRinterface = "CLI" ]; then
   IFS=$'\n'
 
   if [ -z "$BRFOLDER" ]; then
-    echo "This script will make a tar backup image of your entire system."
-    echo -e "\n==>Make sure you have enough free space."
-    echo -e "\n==>Also make sure you have GRUB or SYSLINUX packages installed."
-    echo -e "\n${BR_YELLOW}GRUB Packages:${BR_NORM}"
-    echo "Arch: grub-bios"
-    echo "Debian: grub-pc"
-    echo "Fedora: grub2"
-    echo -e "\n${BR_YELLOW}SYSLINUX Packages:${BR_NORM}"
-    echo "Arch: syslinux"
-    echo "Debian: syslinux extlinux"
-    echo "Fedora: syslinux syslinux-extlinux"
-    echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
+    info_screen
     read -s a
     clear
   fi
@@ -372,24 +376,10 @@ elif [ $BRinterface = "Dialog" ]; then
     exit
   fi
 
+  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN
+
   if [ -z "$BRFOLDER" ]; then
-    dialog --title "$BR_VERSION" --msgbox  "This script will make a tar backup image of your entire system.
-
-==>Make sure you have enough free space.
-
-==>Make sure you have GRUB or SYSLINUX packages installed.
-
-GRUB Packages:
--->Arch: grub-bios
--->Debian: grub-pc
--->Fedora: grub2
-
-SYSLINUX Packages:
--->Arch: syslinux
--->Debian: syslinux extlinux
--->Fedora: syslinux syslinux-extlinux
-
-Press OK to continue." 22 70
+    dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 22 70
   fi
 
   while [ -z "$BRFOLDER" ]; do

@@ -1646,6 +1646,7 @@ if [ $BRinterface = "CLI" ]; then
 
     install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1
     sleep 1
+    echo " "
 
     if [ -f /tmp/bl_error ]; then
       rm /tmp/bl_error

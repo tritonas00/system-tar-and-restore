@@ -1954,7 +1954,7 @@ elif [ $BRinterface = "Dialog" ]; then
     if [ -f /mnt/target/fullbackup ]; then
       ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
       tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog  --progressbox 3 40
-      sleep 2
+      sleep 1
       ( if [ -f /tmp/tar_error ]; then
         rm /tmp/tar_error
         echo -e "Error reading archive"
@@ -2031,7 +2031,7 @@ elif [ $BRinterface = "Dialog" ]; then
       if [ -f /mnt/target/fullbackup ]; then
         ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
         tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog  --progressbox 3 40
-        sleep 2
+        sleep 1
         ( if [ -f /tmp/tar_error ]; then
           rm /tmp/tar_error
           echo -e "Error reading archive"

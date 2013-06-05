@@ -256,13 +256,13 @@ Restore system in /dev/sdb1 partition, using \fBGRUB\fR as bootloader and use
 .RE
 .sp
 Restore system in /dev/sdb1 (root partition), /dev/sdb2 (home partition), /dev/sdb3 (swap partition) 
-using \fBsyslinux\fR s bootloader and downloading backup file from ftp server:
+using \fBsyslinux\fR as bootloader and downloading backup file from ftp server:
 .RS 4
 \fBsudo ./restore.sh \-r /dev/sdb1 \-h /dev/sdb2 \-s /dev/sdb3 \-S /dev/sdb \-u ftp://server/data/backup.tar.xz\fR
 .RE
 .sp
 Restore system in /dev/sdb2 (root partition), /dev/sdb1 (boot partition), /dev/sdb3 (home partition)
-using \fBsyslinux\fR as bootloader and downloading backup file from protected http server.
+using \fBsyslinux\fR as bootloader and downloading backup file from protected http server:
 .RS 4
 \fBsudo ./restore.sh \-r /dev/sdb2 \-b /dev/sdb1 \-h /dev/sdb3 \-S /dev/sdb \-u http://server/data/backup.tar.gz \-n user \-p pass\fR
 .RE
@@ -280,7 +280,7 @@ partition,
 .sp
 Transfer running system using 
 \fBRSYNC\fR.
-The root partition partition will be /dev/sda2 which is a \fBBTRFS\fR filesystem, /dev/sda1 for /boot partition using \fBSYSLINUX\fR as bootloader.
+The root partition will be /dev/sda2 which is a \fBBTRFS\fR filesystem, /dev/sda1 for /boot partition using \fBSYSLINUX\fR as bootloader.
 The root will be in __active subvolume and /usr, /var, /home will be also be in subvolumes:
 .RS 4
 \fBsudo ./restore.sh \-t \-b /dev/sda1 \-r /dev/sda2 \-S /dev/sda \-R __active \-V \-U \-H\fR

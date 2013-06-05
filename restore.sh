@@ -14,6 +14,16 @@ color_variables() {
   BR_CYAN='\e[00;36m'
 }
 
+info_screen() {
+  echo -e "This script will restore a backup image of your system or transfer this\nsystem in user defined partitions."
+  echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
+  echo -e "\n==>Make sure that target LVM volume groups are activated and target\n   RAID arrays are properly assembled."
+  echo -e "\n==>If you didn't include /home directory in the backup\n   and you already have a seperate /home partition,\n   simply enter it when prompted."
+  echo -e "\n==>Also make sure that this system and the system you want\n   to restore have the same architecture (for chroot to work)."
+  echo -e "\n==>Fedora backups can only be restored from a Fedora enviroment,\n   due to extra tar options."
+  echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
+}
+
 detect_filetype() {
   if file $BRfile  |  grep -w gzip  > /dev/null; then
     BRfiletype="gz"
@@ -1069,13 +1079,7 @@ if [ $BRinterface = "CLI" ]; then
   echo " "
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
-    echo -e "This script will restore a backup image of your system\nor transfer this system in user defined partitions."
-    echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
-    echo -e "\n==>Make sure that target LVM volume groups are activated and target\n   RAID arrays are properly assembled."
-    echo -e "\n==>If you didn't include /home directory in the backup\n   and you already have a seperate /home partition,\n   simply enter it when prompted."
-    echo -e "\n==>Also make sure that this system and the system you want\n   to restore have the same architecture (for chroot to work)."
-    echo -e "\n==>Fedora backups can only be restored from a Fedora enviroment,\n   due to extra tar options."
-    echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
+    info_screen
     read -s a
     clear
   fi
@@ -1686,26 +1690,10 @@ elif [ $BRinterface = "Dialog" ]; then
     exit
   fi
 
+  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN
+
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
-    dialog --title "$BR_VERSION" --msgbox "This script will restore a backup image of your system or transfer this system in user defined partitions.
-
-==>Make sure you have created and formatted at least one partition
-   for root (/) and optionally partitions for /home and /boot.
-
-==>Make sure that target LVM volume groups are activated and target
-   RAID arrays are properly assembled.
-
-==>If you didn't include /home directory in the backup
-   and you already have a seperate /home partition,
-   simply enter it when prompted.
-
-==>Also make sure that this system and the system you want
-   to restore have the same architecture (for chroot to work).
-
-==>Fedora backups can only be restored from a Fedora enviroment,
-   due to extra tar options.
-
-Press OK to continue."  25 80
+    dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 25 80
   fi
 
   exec 3>&1
@@ -1936,8 +1924,8 @@ Press OK to continue."  25 80
 
     if [ -n "$BRurl" ]; then
       if [ -n "$BRusername" ]; then
-        ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
-        ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+        ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
+        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
           echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
@@ -1952,8 +1940,8 @@ Press OK to continue."  25 80
           fi
         fi
       else
-        ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
-        ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+        ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
+        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
           echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
@@ -1970,8 +1958,8 @@ Press OK to continue."  25 80
       fi
     fi
     if [ -f /mnt/target/fullbackup ]; then
-      ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error
-      ) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog  --progressbox 3 40
+      ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
+      tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog  --progressbox 3 40
       ( if [ -f /tmp/tar_error ]; then
         rm /tmp/tar_error
         echo -e "Error reading archive"
@@ -2011,8 +1999,8 @@ Press OK to continue."  25 80
         if [  $REPLY = "Protected" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-          ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
-          ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+          ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 | 
+          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
             echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
@@ -2028,8 +2016,8 @@ Press OK to continue."  25 80
           fi
 
         elif [ $REPLY = "URL" ]; then
-          ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
-          ) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+          ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
+          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
             echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
@@ -2046,8 +2034,8 @@ Press OK to continue."  25 80
         fi
       fi
       if [ -f /mnt/target/fullbackup ]; then
-        ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error
-        ) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog  --progressbox 3 40
+        ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
+        tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog  --progressbox 3 40
         ( if [ -f /tmp/tar_error ]; then
           rm /tmp/tar_error
           echo -e "Error reading archive"
@@ -2065,9 +2053,7 @@ Press OK to continue."  25 80
   fi
 
   if [ -z $BRcontinue ]; then
-    dialog --title "Summary"  --yesno "`show_summary`
-
-Press Yes to continue, or No to abort." 0 0
+    dialog --title "Summary"  --yesno "$(show_summary) $(echo -e "\n\nPress Yes to continue, or No to abort.")" 0 0
 
     if [ $? = "0" ]; then
       def="y"

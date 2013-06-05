@@ -434,9 +434,7 @@ elif [ $BRinterface = "Dialog" ]; then
     BRcompression=$(dialog --no-cancel  --menu "Select compression type:" 12 35 12  GZIP "Fast, big file" XZ "Slow, smaller file" 2>&1 1>&3)
   done
 
-  dialog --title "Summary"  --yesno "`show_summary`
-
-Press Yes to continue or No to abort." 0 0
+  dialog --title "Summary"  --yesno "$(show_summary) $(echo -e "\n\nPress Yes to continue or No to abort.")" 0 0
 
   if [ $? = "1" ]; then
     exit

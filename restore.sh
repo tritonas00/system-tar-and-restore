@@ -1631,6 +1631,7 @@ if [ $BRinterface = "CLI" ]; then
 
     generate_locales 1> >(tee -a /tmp/restore.log) 2>&1
     sleep 1
+    echo " "
 
     if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
       echo -e "${BR_RED}Grub not found${BR_NORM}"

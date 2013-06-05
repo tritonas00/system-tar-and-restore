@@ -24,6 +24,16 @@ info_screen() {
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
+instruct_screen(){
+  echo -e "${BR_CYAN}Completed. Log: /tmp/restore.log"
+  echo -e "\n${BR_YELLOW}No bootloader found, so this is the right time to install and\nupdate one. To do so:"
+  echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
+  echo -e "\n==>Then chroot into the restored system: chroot /mnt/target"
+  echo -e "\n==>Install and update a bootloader"
+  echo -e "\n==>When done, leave chroot: exit"
+  echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices.${BR_NORM}"
+}
+
 detect_filetype() {
   if file $BRfile  |  grep -w gzip  > /dev/null; then
     BRfiletype="gz"
@@ -1641,12 +1651,10 @@ if [ $BRinterface = "CLI" ]; then
       echo -e "${BR_RED}Grub not found${BR_NORM}"
       echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
       unset BRgrub
-      BRbootloadercheck="fail"
     elif [ $BRmode = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
       echo -e "${BR_RED}Syslinux not found${BR_NORM}"
       echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
       unset BRsyslinux
-      BRbootloadercheck="fail"
     fi
 
     install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1
@@ -1658,22 +1666,8 @@ if [ $BRinterface = "CLI" ]; then
       echo -e "${BR_RED}Error installing $BRbootloader. Check /tmp/restore.log for details.\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
     elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
       echo -e "${BR_CYAN}Completed. Log: /tmp/restore.log\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
-    elif [ -n "$BRbootloadercheck" ]; then
-      echo -e "${BR_CYAN}Completed. Log: /tmp/restore.log"
-      echo -e "\n${BR_YELLOW}$BRbootloader not found, so this is the right time to install and\nupdate a bootloader. To do so:"
-      echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
-      echo -e "\n==>Then chroot into the restored system: chroot /mnt/target"
-      echo -e "\n==>Install and update a bootloader"
-      echo -e "\n==>When done, leave chroot: exit"
-      echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices.${BR_NORM}"
     else
-      echo -e "${BR_CYAN}Completed. Log: /tmp/restore.log"
-      echo -e "\n${BR_YELLOW}Since you haven't chosen a bootloader, this is the right time to\ninstall (or update an existing) one. To do so:"
-      echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
-      echo -e "\n==>Then chroot into the restored/transferred system: chroot /mnt/target"
-      echo -e "\n==>Install or update your bootloader"
-      echo -e "\n==>When done, leave chroot: exit"
-      echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices.${BR_NORM}"
+      instruct_screen
     fi
     read -s a
 
@@ -2112,12 +2106,10 @@ Edit fstab ?" 20 100
     echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49
     sleep 2
     unset BRgrub
-    BRbootloadercheck="fail"
   elif [ $BRmode = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
     echo -e "Syslinux not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 53
     sleep 2
     unset BRsyslinux
-    BRbootloadercheck="fail"
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
@@ -2127,48 +2119,11 @@ Edit fstab ?" 20 100
 
   if [ -f /tmp/bl_error ]; then
     rm /tmp/bl_error
-    dialog --title "Info" --msgbox  "Error installing $BRbootloader. Check /tmp/restore.log for details.
-
-Press OK to unmount all remaining (engaged) devices."  8 70
-
+    dialog --title "Info" --msgbox  "Error installing $BRbootloader. Check /tmp/restore.log for details.\n\nPress OK to unmount all remaining (engaged) devices."  8 70
   elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log
-
-Press OK to unmount all remaining (engaged) devices, then reboot your system."  8 90
-  elif  [ -n "$BRbootloadercheck" ]; then
-    dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log
-
-$BRbootloader not found, so this is the right time to install and
-update a bootloader. To do so:
-
-==>For internet connection to work, on a new terminal with root
-   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf
-
-==>Then chroot into the restored system: chroot /mnt/target
-
-==>Install and update a bootloader.
-
-==>When done, leave chroot: exit
-
-==>Finally, return to this window and press OK to unmount
-   all remaining (engaged) devices."  22 80
+    dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log\n\nPress OK to unmount all remaining (engaged) devices, then reboot your system."  8 90
   else
-    dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log
-
-Since you haven't chosen  a bootloader, this is the right time to
-install (or update an existing) one. To do so:
-
-==>For internet connection to work, on a new terminal with root
-   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf
-
-==>Then chroot into the restored/transferred system: chroot /mnt/target
-
-==>Install or update your bootloader.
-
-==>When done, leave chroot: exit
-
-==>Finally, return to this window and press OK to unmount
-   all remaining (engaged) devices."  22 80
+    dialog --title "Info" --msgbox  "$(instruct_screen)"  22 80
   fi
 
   sleep 2

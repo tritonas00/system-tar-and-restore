@@ -362,9 +362,9 @@ if [ $BRinterface = "CLI" ]; then
     chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 
     if [ -f /tmp/b_error ]; then
-      echo -e "${BR_RED}An error occurred. Check "$BRFOLDER"/backup.log for details. Press ENTER to exit.${BR_NORM}"
+      echo -e "${BR_RED}An error occurred. Check "$BRFOLDER"/backup.log for details.\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
     else
-      echo -e "${BR_CYAN}Completed. Backup archive and log saved in $BRFOLDER. Press ENTER to exit.${BR_NORM}"
+      echo -e "${BR_CYAN}Completed. Backup archive and log saved in $BRFOLDER.\nPress ENTER to exit.${BR_NORM}"
     fi
   fi
 
@@ -465,9 +465,9 @@ elif [ $BRinterface = "Dialog" ]; then
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 
   if [ -f /tmp/b_error ]; then
-    dialog --title "Error" --msgbox  "An error occurred.\n\nCheck "$BRFOLDER"/backup.log for details." 8 80
+    dialog --title "Error" --msgbox  "An error occurred.\n\nCheck "$BRFOLDER"/backup.log for details.\n\nPress ENTER to exit." 9 80
   else
-    dialog --title "Info" --msgbox  "Completed.\n\nBackup archive and log saved in $BRFOLDER." 8 80
+    dialog --title "Info" --msgbox  "Completed.\n\nBackup archive and log saved in $BRFOLDER.\n\nPress ENTER to exit." 9 80
   fi
 fi
 

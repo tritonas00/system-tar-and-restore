@@ -1996,7 +1996,7 @@ Press OK to continue."  25 80
           detect_filetype
           if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
             ( ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog  --progressbox  3 30
-            sleep 2 
+            sleep 2
           else
             echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
             sleep 2

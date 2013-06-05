@@ -455,19 +455,19 @@ install_bootloader() {
     if [ $BRdistro = Arch ]; then
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
-          chroot /mnt/target grub-install --target=i386-pc  /dev/$f
+          chroot /mnt/target grub-install --target=i386-pc  /dev/$f || touch /tmp/bl_error
         done
       else
-        chroot /mnt/target grub-install --target=i386-pc  $BRgrub
+        chroot /mnt/target grub-install --target=i386-pc  $BRgrub || touch /tmp/bl_error
       fi
      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
     elif [ $BRdistro = Debian ]; then
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
-          chroot /mnt/target grub-install  /dev/$f
+          chroot /mnt/target grub-install  /dev/$f || touch /tmp/bl_error
         done
       else
-        chroot /mnt/target grub-install  $BRgrub
+        chroot /mnt/target grub-install  $BRgrub || touch /tmp/bl_error
       fi
       chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
     elif [ $BRdistro = Fedora ]; then
@@ -485,10 +485,10 @@ install_bootloader() {
 
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
-          chroot /mnt/target grub2-install /dev/$f
+          chroot /mnt/target grub2-install /dev/$f || touch /tmp/bl_error
         done
       else
-        chroot /mnt/target grub2-install $BRgrub
+        chroot /mnt/target grub2-install $BRgrub || touch /tmp/bl_error
       fi
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
     fi
@@ -505,7 +505,7 @@ install_bootloader() {
     touch /mnt/target/boot/syslinux/syslinux.cfg
 
     if [ $BRdistro = Arch ]; then
-      chroot /mnt/target syslinux-install_update -i -a -m
+      chroot /mnt/target syslinux-install_update -i -a -m || touch /tmp/bl_error
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /mnt/target/boot/syslinux/syslinux.cfg
       if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
         for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
@@ -521,7 +521,7 @@ install_bootloader() {
 
     elif [ $BRdistro = Debian ]; then
       if [[ "$BRsyslinux" == *md* ]]; then
-        chroot /mnt/target extlinux --raid -i /boot/syslinux
+        chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
         if [ -n "$BRboot" ]; then
           for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
             BRdev=`echo $f | cut -c -3`
@@ -538,7 +538,7 @@ install_bootloader() {
           done
         fi
       else
-        chroot /mnt/target extlinux -i /boot/syslinux
+        chroot /mnt/target extlinux -i /boot/syslinux || touch /tmp/bl_error
         if [ -n "$BRboot" ]; then
           BRdev=`echo $BRboot | cut -c -8`
           BRpart=`echo $BRboot | cut -c 9-`
@@ -565,7 +565,7 @@ install_bootloader() {
 
     elif [ $BRdistro = Fedora ]; then
       if [[ "$BRsyslinux" == *md* ]]; then
-        chroot /mnt/target extlinux --raid -i /boot/syslinux
+        chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
         if [ -n "$BRboot" ]; then
           for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
             BRdev=`echo $f | cut -c -3`
@@ -582,7 +582,7 @@ install_bootloader() {
           done
         fi
       else
-        chroot /mnt/target extlinux -i /boot/syslinux
+        chroot /mnt/target extlinux -i /boot/syslinux || touch /tmp/bl_error
         if [ -n "$BRboot" ]; then
           BRdev=`echo $BRboot | cut -c -8`
           BRpart=`echo $BRboot | cut -c 9-`
@@ -1647,7 +1647,10 @@ if [ $BRinterface = "CLI" ]; then
     install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1
     sleep 1
 
-    if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+    if [ -f /tmp/bl_error ]; then
+      rm /tmp/bl_error
+      echo -e "${BR_RED}Error installing $BRbootloader. Check /tmp/restore.log for details.\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
+    elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
       echo -e "${BR_CYAN}Completed. Log: /tmp/restore.log\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
     elif [ -n "$BRbootloadercheck" ]; then
       echo -e "${BR_CYAN}Completed. Log: /tmp/restore.log"
@@ -2134,7 +2137,13 @@ Edit fstab ?" 20 100
     sleep 2
   fi
 
-  if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+  if [ -f /tmp/bl_error ]; then
+    rm /tmp/bl_error
+    dialog --title "Info" --msgbox  "Error installing $BRbootloader. Check /tmp/restore.log for details.
+
+Press OK to unmount all remaining (engaged) devices."  8 90
+
+  elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
     dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log
 
 Press OK to unmount all remaining (engaged) devices, then reboot your system."  8 90

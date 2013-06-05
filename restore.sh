@@ -2141,7 +2141,7 @@ Edit fstab ?" 20 100
     rm /tmp/bl_error
     dialog --title "Info" --msgbox  "Error installing $BRbootloader. Check /tmp/restore.log for details.
 
-Press OK to unmount all remaining (engaged) devices."  8 90
+Press OK to unmount all remaining (engaged) devices."  8 70
 
   elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
     dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log

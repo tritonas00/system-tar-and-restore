@@ -277,7 +277,7 @@ Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be
 \fI/dev/sda2\fR which is in \fBBTRFS\fR filesystem\&, \fI/dev/sda1\fR for
 \fI/boot\fR partition\&, using \fBsyslinux\fR as bootloader\&.
 The root will be in __active subvolume and \fI/usr\fR\&, \fI/var\fR\&,
-\fI/home\fR will be also be in subvolumes:
+\fI/home\fR will also be in subvolumes:
 .RS 4
 \fBsudo ./restore.sh \-t \-b /dev/sda1 \-r /dev/sda2 \-S /dev/sda \-R __active \-V \-U \-H\fR
 .RE

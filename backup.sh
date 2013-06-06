@@ -459,7 +459,8 @@ elif [ $BRinterface = "Dialog" ]; then
   run_calc | dialog  --progressbox  3 40
   total=$(cat /tmp/filelist | wc -l)
   sleep 1
-  run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do
+  run_tar 2>>"$BRFOLDER"/backup.log | 
+  while read ln; do
     b=$(( b + 1 ))
     per=$(($b*100/$total))
     if [[ $per -gt $lastper ]]; then

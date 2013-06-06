@@ -1639,7 +1639,7 @@ if [ $BRinterface = "CLI" ]; then
     (prepare_chroot
      build_initramfs
      generate_locales
-    sleep 1) 1> >(tee -a /tmp/restore.log) 2>&1
+     sleep 1) 1> >(tee -a /tmp/restore.log) 2>&1
 
     if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
       echo -e "\n${BR_RED}Grub not found${BR_NORM}"
@@ -1987,7 +1987,7 @@ elif [ $BRinterface = "Dialog" ]; then
         if [  $REPLY = "Protected" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-          ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 | 
+          ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
           sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error

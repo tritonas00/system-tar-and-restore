@@ -30,7 +30,7 @@ info_screen() {
 }
 
 show_summary() {
-  echo "DESTINATION:" 
+  echo "DESTINATION:"
   echo "$BRFOLDER"
 
   echo -e "\nCOMPRESSION:"

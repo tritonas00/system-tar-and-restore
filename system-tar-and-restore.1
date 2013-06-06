@@ -1,19 +1,17 @@
 '\" t
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
-.\"      Date: 2013-06-05
+.\"      Date: 2013-06-06
 .\"    Manual: system-tar-and-restore Manual
 .\"    Source: system-tar-and-restore 3.2
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "05 june 2013" "3\&.2" "General Manual"
+.TH "system-tar-and-restore" "1" "06 june 2013" "3\&.2" "system-tar-and-restore Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
 .\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.\" http://github.com/tritonas00/system-tar-and-restore
+.\" http://github.com/tritonas00/system-tar-aand-restore
 .\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.ie \n(.g .ds Aq \(aq
-.el       .ds Aq '
 .\" -----------------------------------------------------------------
 .\" * set default formatting 
 .\" -----------------------------------------------------------------
@@ -25,21 +23,18 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH NAME
-System tar & restore \- Backup and Restore your system using tar or Transfer it with rsync
+System tar & restore \- Backup and Restore your system using tar or Transfer it with rsync\&.
 .SH SYNOPSIS
 .sp
-backup.sh  [options]
+\fIbackup.sh\fR [options]
 .sp
-restore.sh [options]
+\fIrestore.sh\fR [options]
 .SH DESCRIPTION
 .sp
-System tar & restore contains two bash scripts, 
-backup.sh
-and 
-restore.sh.
+System tar & restore contains two bash scripts, \fIbackup.sh\fR and \fIrestore.sh\fR\&.
 .sp
-The purpose is to make the process of backing up and restoring a full GNU/Linux installation easier,
-using tar or transfer an existing installation using rsync.
+The purpose is to make the process of backing up and restoring a full GNU/Linux installation 
+easier, using tar or transfer an existing installation using rsync.
 .sp
 Supported distributions: 
 .B Arch, 
@@ -47,8 +42,9 @@ Supported distributions:
 .B Fedora
 .SH BACKUP DESCRIPTION
 .sp
-Backup script makes a tar backup of / in a given location. It will make a folder in that location which contains the archive and the log file 
-"backup.log" (usefull for tracking tar errors/warnings).
+Backup script makes a tar backup of \fI/\fR in a given location\&. It will make a folder 
+in that location which contains the \fBarchive\fR and the \fBlog\fR file "backup.log" 
+(usefull for tracking tar errors/warnings)\&.
 .SH BACKUP OPERATIONS
 .PP
 \fB\-i, \-\-interface\fR
@@ -63,14 +59,12 @@ disable colors
 .PP
 \fB\-d, \-\-directory\fR
 .RS 4
-path for backup file. Default path is /
+path for backup file\&. Default path is \fI/\fR
 .RE
 .PP
 \fB\-h, \-\-exclude-home\fR
 .RS 4
-exclude 
-home
-directory
+exclude \fI/home\fR directory
 .RE
 .PP
 \fB\-n, \-\-no-hidden\fR
@@ -80,7 +74,7 @@ dont keep home's hidden files and folders
 .PP
 \fB\-c, \-\-compression\fR
 .RS 4
-compression type. GZIP and XZ are supported
+compression type\&. GZIP and XZ are supported
 .RE
 .PP
 \fB\-u, \-\-user-options\fR
@@ -94,17 +88,18 @@ show all arguments
 .RE
 .SH RESTORE DESCRIPTION
 .sp
-User must create and format partitions using his favorite partition manager before running the script.
-At least one root partition is required and optionally a seperate partition for /home, /boot and a swap partition.
+User must create and format partitions using his favorite partition manager 
+before running the script. At least one \fI/\fR \fB(root)\fR partition is 
+required and optionally a seperate partition for \fI/home\fR, \fI/boot\fR
+and a \fIswap\fR partition\&.
 .sp
-Restore script contains two modes: \fBRestore\fR and \fBTransfer\fR
-
-In Restore Mode, the script uses the above created archive to extract it in user defined partitions. 
-
-In Transfer Mode, the script uses \fBRSYNC\fR to transfer the root filesystem in user defined partitions.
-
-Then generates fstab, rebuilds initramfs image for every available kernel, re-generates locales, installs and 
-auto-configures Grub or Syslinux in MBR of given device and finally unmounts and cleans everything.
+Restore script contains two modes: \fBRestore\fR and \fBTransfer\fR\&.In 
+\fBRestore Mode\fR\&, the script uses the above created archive to extract it 
+in user defined partitions\&. In \fBTransfer Mode\fR\&, the script uses 
+\fBRSYNC\fR to transfer the root filesystem \fI/\fR in user defined partitions\&.
+Then generates fstab\&, rebuilds initramfs image for every available kernel\&, 
+re-generates locales, installs and auto-configures Grub or Syslinux in MBR 
+of given device and finally unmounts and cleans everything\&.
 .sp
 log file is saved as /tmp/restore.log
 .SH RESTORE OPERATIONS
@@ -191,17 +186,18 @@ subvolume name for root
 .PP
 \fB\-H, \-\-homesubvol\fR
 .RS 4
-make subvolume for /home
+make subvolume for 
+\fI/home\fR
 .RE
 .PP
 \fB\-V, \-\-varsubvol\fR
 .RS 4
-make subvolume for /var
+make subvolume for \fI/var\fR
 .RE
 .PP
 \fB\-U, \-\-usrsubvol\fR
 .RS 4
-make subvolume for /usr
+make subvolume for \fI/usr\fR
 .RE
 .PP
 \fB\-\-help\fR
@@ -210,90 +206,91 @@ show all arguments
 .RE
 .SH NOTES
 .sp
-The system that runs the restore script and the target system (the one you want to restore),
-must have the same architecture (for chroot to work).
+The system that runs the restore script and the target system (the one you 
+want to restore)\&, must have the same architecture (for \fIchroot\fR to work)\&.
 .sp
-For booting a 
-\fBBTRFS\fR 
-subvolumed root successfully with 
-\fBSyslinux\fR,
-it is recommended to have a seperate /boot partition.
-Recommended subvolume name is: __active
+For booting a \fBBTRFS\fR subvolumed root successfully with \fBSyslinux\fR\&,
+it is recommended to have a seperate \fI/boot\fR partition\&. Recommended 
+subvolume name is: __active. 
 .sp
-When using \fBLVM\fR, it is also recommended to have a seperate /boot partition. 
+When using \fBLVM\fR\&, it is also recommended to have a seperate 
+\fI/boot\fR partition\&. 
 .sp
-When using \fBRAID\fR, it is recommended to create a seperate raid1 array with metadata=1.0 as your /boot partition. 
+When using  \fBRAID\fR\&, it is recommended to create a seperate raid1 array with 
+metadata=1.0 as your \fI/boot\fR partition\&. 
 .sp
-In the target system, in case of \fBSyslinux\fR, old directory /boot/syslinux is saved as /boot/syslinux-old. 
+In the target system, in case of \fBSyslinux\fR\&, old directory /boot/syslinux 
+is saved as /boot/syslinux\-old\&.
 .sp
-In the target system, if distribution is \fBFedora\fR and \fBGRUB\fR is selected, old /etc/default/grub is 
-saved as /etc/default/grub-old.
+In the target system, if distribution is \fBFedora\fR\& and \fBGrub\fR\& is selected\&, old 
+/etc/default/grub is saved as /etc/default/grub-old\&.
 .SH EXAMPLES USING ARGUMENTS
 .sp
-Backup system in the directory /home/john and use 
-\fBGZIP\fR 
+Backup system in the directory \fI/home/john/\fR and use \fBGZIP\fR 
 compression:
 .RS 4
 \fBsudo ./backup.sh \-d /home/john/ \-c GZIP\fR 
 .RE
 .sp
-Backup system in the directory /home/john, use compression \fBXZ\fR 
-and exclude /home directory from backup tarball:
+Backup system in the directory \fI/home/john/\fR\&, use \fBXZ\fR compression
+and exclude \fI/home/\fR directory from backup tarball:
 .RS 4
 \fBsudo ./backup.sh \-d /home/john/ \-c XZ \-h \-n\fR 
 .RE
 .sp
-Backup system in the directory /home/john, use \fBGZIP\fR for compression 
-and keep only hidden files and folders from /home: 
+Backup system in the directory \fI/home/john/\fR\&, use \fBGZIP\fR compression 
+and keep only hidden files and folders from \fI/home/\fR: 
 .RS 4
 \fBsudo ./backup.sh \-d /home/john/ \-c GZIP \-h\fR 
 .RE
 .sp
-Restore system in /dev/sdb1 partition, using \fBGRUB\fR as bootloader and use
-/home/john/Downloads/backup.tar.gz as backup file:
+Restore system in  \fI/dev/sdb1\fR partition, using \fBgrub\fR as bootloader 
+and use \fI/home/john/Downloads/backup.tar.gz\fR as local backup file:
 .RS 4
 \fBsudo ./restore.sh \-r /dev/sdb1 \-g /dev/sdb \-f /home/john/Downloads/backup.tar.gz\fR
 .RE
 .sp
-Restore system in /dev/sdb1 (root partition), /dev/sdb2 (home partition), /dev/sdb3 (swap partition) 
-using \fBsyslinux\fR as bootloader and downloading backup file from ftp server:
+Restore system in \fI/dev/sdb1\fR for \fI/\fR (root) partition\&, \fI/dev/sdb2\fR
+for \fI/home\fR partition\&, \fI/dev/sdb3\fR for \fIswap\fR\&, using \fBsyslinux\fR 
+as bootloader and downloading backup file from ftp server:
 .RS 4
-\fBsudo ./restore.sh \-r /dev/sdb1 \-h /dev/sdb2 \-s /dev/sdb3 \-S /dev/sdb \-u ftp://server/data/backup.tar.xz\fR
+\fBsudo ./restore.sh \-r /dev/sdb1 \-h /dev/sdb2 \-s /dev/sdb3 \-S /dev/sdb \-u 
+ftp://server/data/backup.tar.xz\fR
 .RE
 .sp
-Restore system in /dev/sdb2 (root partition), /dev/sdb1 (boot partition), /dev/sdb3 (home partition)
-using \fBsyslinux\fR as bootloader and downloading backup file from protected http server:
+Restore system in  \fI/dev/sdb2\fR for \fI/\fR (root) partition, \fI/dev/sdb1\fR
+for \fI/boot\fR partition, \fI/dev/sdb3\fR for \fI/home\fR\&, using \fBsyslinux\fR 
+as bootloader and downloading backup file from protected http server\&.
 .RS 4
-\fBsudo ./restore.sh \-r /dev/sdb2 \-b /dev/sdb1 \-h /dev/sdb3 \-S /dev/sdb \-u http://server/data/backup.tar.gz \-n user \-p pass\fR
+\fBsudo ./restore.sh \-r /dev/sdb2 \-b /dev/sdb1 \-h /dev/sdb3 \-S /dev/sdb \-u 
+http://server/data/backup.tar.gz \-n user \-p pass\fR
 .RE
 .sp
-Transfer running  system using 
-\fBRSYNC\fR.
-The root partition partition will be /dev/mapper/debian-root which is a
-\fBLVM\fR
-partition,
-/dev/sdb1 for /boot partition and using
-\fBGRUB\fR as bootloader:
+Transfer running  system using \fBrsync\fR\&. The \fI/\fR partition will be
+\fI/dev/mapper/debian-root\fR which is a \fBLVM\fR partition\&, \fI/dev/sdb1\fR
+for \fI/boot\fR partition using \fBgrub\fR as bootloader:
 .RS 4
 \fBsudo ./restore.sh \-r /dev/mapper/debian\-root \-b /dev/sdb1 \-g /dev/sdb \-t\fR
 .RE
 .sp
-Transfer running system using 
-\fBRSYNC\fR.
-The root partition will be /dev/sda2 which is a \fBBTRFS\fR filesystem, /dev/sda1 for /boot partition using \fBSYSLINUX\fR as bootloader.
-The root will be in __active subvolume and /usr, /var, /home will be also be in subvolumes:
+Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be
+\fI/dev/sda2\fR which is in \fBBTRFS\fR filesystem\&, \fI/dev/sda1\fR for
+\fI/boot\fR partition\&, using \fBsyslinux\fR as bootloader\&.
+The root will be in __active subvolume and \fI/usr\fR\&, \fI/var\fR\&,
+\fI/home\fR will be also be in subvolumes:
 .RS 4
 \fBsudo ./restore.sh \-t \-b /dev/sda1 \-r /dev/sda2 \-S /dev/sda \-R __active \-V \-U \-H\fR
 .RE
 .sp
-Restore system in \fBRAID\fR partitions. The boot partition will be /dev/md0 and the root partition will be /dev/md1.
-The backup will be the local file /home/john/Downloads/backup.tar.gz:
+Restore system in \fBRAID\fR partitions\&. The boot partition will be \fI/dev/md0\fR
+and the root partition will be \fI/dev/md1\fR\&. The backup will be the local file
+\fI/home/john/Downloads/backup.tar.gz\fR:
 .RS 4
 \fBsudo ./restore.sh \-r /dev/md1 \-b /dev/md0 \-f /home/john/Downloads/backup.tar.gz \-S /dev/md0\fR
 .RE
 .SH LIMITATIONS
 \fBUEFI\fR not supported - not tested
 .SH BUGS
- The only known bug is me
+The only known bug is me
 .SH AUTHOR
- tritonas00 at gmail dot com
+tritonas00 at gmail dot com

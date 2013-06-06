@@ -267,7 +267,9 @@ mount_all() {
   echo -e "\n==>MOUNTING $BRroot (/)"
   mount $BRroot /mnt/target && echo Success || touch /tmp/stop
 
-
+  if [ "$(ls -A /mnt/target  | grep -vw "lost+found")" ]; then
+    touch /tmp/not-empty
+  fi
 
   if [ -n "$BRhome" ]; then
     echo -e "\n==>MOUNTING $BRhome (/home)"

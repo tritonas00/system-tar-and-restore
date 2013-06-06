@@ -354,7 +354,7 @@ if [ $BRinterface = "CLI" ]; then
     BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
     BRFOLDER="${BRFOLDER_IN[@]}"
 
-    echo "==>CREATING ARCHIVE"
+    echo -e "\n==>CREATING ARCHIVE"
     mkdir -p "$BRFOLDER"
     echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
     sleep 1
@@ -365,13 +365,13 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
     echo " "
     run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
-    echo -e "\n==>SETTING PERMISSIONS"
-    chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
+    echo -e "\n\n==>SETTING PERMISSIONS"
+    chmod ugo+rw -R "$BRFOLDER" && echo Success || echo Failed
 
     if [ -f /tmp/b_error ]; then
-      echo -e "${BR_RED}An error occurred. Check "$BRFOLDER"/backup.log for details.\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
+      echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details.\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
     else
-      echo -e "${BR_CYAN}Completed. Backup archive and log saved in $BRFOLDER.\nPress ENTER to exit.${BR_NORM}"
+      echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER.\nPress ENTER to exit.${BR_NORM}"
     fi
   fi
 

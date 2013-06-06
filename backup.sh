@@ -12,6 +12,7 @@ color_variables() {
   BR_BLUE='\e[00;34m'
   BR_MAGENTA='\e[00;35m'
   BR_CYAN='\e[00;36m'
+  BR_BOLD='\033[1m'
 }
 
 info_screen() {
@@ -30,21 +31,29 @@ info_screen() {
 }
 
 show_summary() {
-  echo "DESTINATION: $BRFOLDER"
-  echo "COMPRESSION: $BRcompression"
+  echo "DESTINATION:" 
+  echo "$BRFOLDER"
 
+  echo -e "\nCOMPRESSION:"
+  echo $BRcompression
+
+  echo -e "\nHOME DIRECTORY:"
   if [ "$BRhome" = "Yes" ]; then
-    echo "HOME DIR: Include"
+    echo "Include"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
-    echo "HOME DIR: Only hidden files and folders"
+    echo "Only hidden files and folders"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
-    echo "HOME DIR: Exclude"
+    echo "Exclude"
   fi
+
   if [ $BRtar = "y" ]; then
-    echo "EXTRA OPTIONS: --acls --selinux --xattrs"
+    echo -e "\nEXTRA OPTIONS:"
+    echo "--acls --selinux --xattrs"
   fi
+
   if [ -n "$BR_USER_OPTS" ]; then
-    echo "USER OPTIONS: $BR_USER_OPTS"
+    echo -e "\nUSER OPTIONS:"
+    echo "$BR_USER_OPTS"
   fi
 }
 
@@ -318,7 +327,7 @@ if [ $BRinterface = "CLI" ]; then
 
   IFS=$DEFAULTIFS
 
-  echo -e "\n${BR_GREEN}SUMMARY${BR_NORM}"
+  echo -e "\n${BR_BOLD}==>SUMMARY${BR_NORM}"
   show_summary
 
   while [ -z "$BRcontinue" ]; do
@@ -346,7 +355,7 @@ if [ $BRinterface = "CLI" ]; then
     BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
     BRFOLDER="${BRFOLDER_IN[@]}"
 
-    echo "==>Preparing..."
+    echo -e "${BR_BOLD}==>CREATING ARCHIVE${BR_NORM}"
     mkdir -p "$BRFOLDER"
     echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
     sleep 1
@@ -358,7 +367,7 @@ if [ $BRinterface = "CLI" ]; then
     echo " "
     run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
     echo " "
-    echo "==>Setting permissions"
+    echo -e "${BR_BOLD}==>SETTING PERMISSIONS${BR_NORM}"
     chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 
     if [ -f /tmp/b_error ]; then
@@ -376,7 +385,7 @@ elif [ $BRinterface = "Dialog" ]; then
     exit
   fi
 
-  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN
+  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRFOLDER" ]; then
     dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 22 70
@@ -455,7 +464,6 @@ elif [ $BRinterface = "Dialog" ]; then
   run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do
     b=$(( b + 1 ))
     per=$(($b*100/$total))
-
     if [[ $per -gt $lastper ]]; then
       lastper=$per
       echo $lastper

@@ -35,9 +35,9 @@ instruct_screen(){
 }
 
 detect_filetype() {
-  if file $BRfile  |  grep -w gzip  > /dev/null; then
+  if file $BRfile | grep -w gzip  > /dev/null; then
     BRfiletype="gz"
-  elif file $BRfile   |  grep -w XZ  > /dev/null; then
+  elif file $BRfile | grep -w XZ  > /dev/null; then
     BRfiletype="xz"
   else
     BRfiletype="wrong"
@@ -45,9 +45,9 @@ detect_filetype() {
 }
 
 detect_filetype_url() {
-  if file /mnt/target/fullbackup  |  grep -w gzip  > /dev/null; then
+  if file /mnt/target/fullbackup | grep -w gzip  > /dev/null; then
     BRfiletype="gz"
-  elif file /mnt/target/fullbackup  |  grep -w XZ  > /dev/null; then
+  elif file /mnt/target/fullbackup | grep -w XZ  > /dev/null; then
     BRfiletype="xz"
   else
     BRfiletype="wrong"
@@ -2092,7 +2092,7 @@ Edit fstab ?" 20 100
     fi
   fi
 
-( prepare_chroot
+ (prepare_chroot
   build_initramfs
   generate_locales
   sleep 2) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox  30 100

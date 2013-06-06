@@ -26,7 +26,7 @@ info_screen() {
 }
 
 instruct_screen(){
-  echo -e "${BR_CYAN}Completed. Log: /tmp/restore.log"
+  echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log"
   echo -e "\n${BR_YELLOW}No bootloader found, so this is the right time to install and\nupdate one. To do so:"
   echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
   echo -e "\n==>Then chroot into the restored system: chroot /mnt/target"
@@ -816,6 +816,7 @@ clean_unmount_out() {
     sleep 1
     rm  -r /mnt/target
   fi
+  sed -e "s/\x1b\[.\{1,5\}m//g" -i /tmp/restore.log
   exit
 }
 
@@ -1646,27 +1647,25 @@ if [ $BRinterface = "CLI" ]; then
 
     generate_locales 1> >(tee -a /tmp/restore.log) 2>&1
     sleep 1
-    echo " "
 
     if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
-      echo -e "${BR_RED}Grub not found${BR_NORM}"
+      echo -e "\n${BR_RED}Grub not found${BR_NORM}"
       echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
       unset BRgrub
     elif [ $BRmode = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
-      echo -e "${BR_RED}Syslinux not found${BR_NORM}"
+      echo -e "\n${BR_RED}Syslinux not found${BR_NORM}"
       echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
       unset BRsyslinux
     fi
 
     install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1
     sleep 1
-    echo " "
 
     if [ -f /tmp/bl_error ]; then
       rm /tmp/bl_error
-      echo -e "${BR_RED}Error installing $BRbootloader. Check /tmp/restore.log for details.\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
+      echo -e "\n${BR_RED}Error installing $BRbootloader. Check /tmp/restore.log for details.\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
     elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-      echo -e "${BR_CYAN}Completed. Log: /tmp/restore.log\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
+      echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
     else
       instruct_screen
     fi

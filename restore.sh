@@ -1604,12 +1604,12 @@ if [ $BRinterface = "CLI" ]; then
 
     while [ -z "$BRedit" ] ; do
       echo -e "\n${BR_CYAN}Edit fstab ?${BR_NORM}"
-      read -p "(Y/n):" an
+      read -p "(y/N):" an
 
       if [ -n "$an" ]; then
         def=$an
       else
-        def="y"
+        def="n"
       fi
 
       if [ $def = "y" ] || [ $def = "Y" ]; then
@@ -1636,9 +1636,10 @@ if [ $BRinterface = "CLI" ]; then
       done
     fi
 
-    prepare_chroot 1> >(tee -a /tmp/restore.log) 2>&1
-    build_initramfs 1> >(tee -a /tmp/restore.log) 2>&1
-    generate_locales 1> >(tee -a /tmp/restore.log) 2>&1
+    (prepare_chroot
+     build_initramfs
+     generate_locales
+    sleep 1) 1> >(tee -a /tmp/restore.log) 2>&1
 
     if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
       echo -e "\n${BR_RED}Grub not found${BR_NORM}"
@@ -1651,6 +1652,7 @@ if [ $BRinterface = "CLI" ]; then
     fi
 
     install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1
+    sleep 1
 
     if [ -f /tmp/bl_error ]; then
       rm /tmp/bl_error

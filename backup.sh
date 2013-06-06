@@ -12,7 +12,6 @@ color_variables() {
   BR_BLUE='\e[00;34m'
   BR_MAGENTA='\e[00;35m'
   BR_CYAN='\e[00;36m'
-  BR_BOLD='\033[1m'
 }
 
 info_screen() {
@@ -327,7 +326,7 @@ if [ $BRinterface = "CLI" ]; then
 
   IFS=$DEFAULTIFS
 
-  echo -e "\n${BR_BOLD}==>SUMMARY${BR_NORM}"
+  echo -e "\n==>SUMMARY"
   show_summary
 
   while [ -z "$BRcontinue" ]; do
@@ -355,7 +354,7 @@ if [ $BRinterface = "CLI" ]; then
     BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
     BRFOLDER="${BRFOLDER_IN[@]}"
 
-    echo -e "${BR_BOLD}==>CREATING ARCHIVE${BR_NORM}"
+    echo "==>CREATING ARCHIVE"
     mkdir -p "$BRFOLDER"
     echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
     sleep 1
@@ -366,8 +365,7 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
     echo " "
     run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
-    echo " "
-    echo -e "${BR_BOLD}==>SETTING PERMISSIONS${BR_NORM}"
+    echo -e "\n==>SETTING PERMISSIONS"
     chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 
     if [ -f /tmp/b_error ]; then
@@ -385,7 +383,7 @@ elif [ $BRinterface = "Dialog" ]; then
     exit
   fi
 
-  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
+  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN
 
   if [ -z "$BRFOLDER" ]; then
     dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 22 70

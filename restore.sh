@@ -12,7 +12,6 @@ color_variables() {
   BR_BLUE='\e[00;34m'
   BR_MAGENTA='\e[00;35m'
   BR_CYAN='\e[00;36m'
-  BR_BOLD='\033[1m'
 }
 
 info_screen() {
@@ -261,30 +260,28 @@ check_input() {
 }
 
 mount_all() {
-  echo -e "\n${BR_BOLD}==>MAKING WORKING DIRECTORY${BR_NORM}"
-  mkdir /mnt/target && echo SUCCESS || echo WARNING
+  echo -e "\n==>MAKING WORKING DIRECTORY"
+  mkdir /mnt/target && echo Success || echo Warning
   sleep 1
 
-  echo -e "\n${BR_BOLD}==>MOUNTING $BRroot (/)${BR_NORM}"
-  mount $BRroot /mnt/target && echo SUCCESS || touch /tmp/stop
+  echo -e "\n==>MOUNTING $BRroot (/)"
+  mount $BRroot /mnt/target && echo Success || touch /tmp/stop
 
-  if [ "$(ls -A /mnt/target  | grep -vw "lost+found")" ]; then
-    touch /tmp/not-empty
-  fi
+
 
   if [ -n "$BRhome" ]; then
-    echo -e "\n${BR_BOLD}==>MOUNTING $BRhome (/home)${BR_NORM}"
+    echo -e "\n==>MOUNTING $BRhome (/home)"
     mkdir /mnt/target/home
-    mount $BRhome /mnt/target/home && echo SUCCESS || touch /tmp/stop
+    mount $BRhome /mnt/target/home && echo Success || touch /tmp/stop
     if [ "$(ls -A /mnt/target/home  | grep -vw "lost+found")" ]; then
       echo "Home partition not empty"
     fi
   fi
 
   if [ -n "$BRboot" ]; then
-    echo -e "\n${BR_BOLD}==>MOUNTING $BRboot (/boot)${BR_NORM}"
+    echo -e "\n==>MOUNTING $BRboot (/boot)"
     mkdir /mnt/target/boot
-    mount $BRboot /mnt/target/boot && echo SUCCESS || touch /tmp/stop
+    mount $BRboot /mnt/target/boot && echo Success || touch /tmp/stop
     if [ "$(ls -A /mnt/target/boot  | grep -vw "lost+found")" ]; then
       echo "Boot partition not empty"
     fi
@@ -359,7 +356,7 @@ show_summary() {
 }
 
 prepare_chroot() {
-  echo -e "\n${BR_BOLD}==>PREPARING CHROOT ENVIROMENT${BR_NORM}"
+  echo -e "\n==>PREPARING CHROOT ENVIROMENT"
   echo -e "Binding /dev"
   mount --bind /dev /mnt/target/dev
   echo -e "Binding /dev/pts"
@@ -424,7 +421,7 @@ generate_fstab() {
 }
 
 build_initramfs() {
-  echo -e "\n${BR_BOLD}==>REBUILDING INITRAMFS IMAGE${BR_NORM}"
+  echo -e "\n==>REBUILDING INITRAMFS IMAGE"
   if [[ "$BRroot" == *md* ]] || [[ "$BRhome" == *md* ]] || [[ "$BRswap" == *md* ]] || [[ "$BRboot" == *md* ]]; then
     if [ $BRdistro = Debian ]; then
       if [ -f /mnt/target/etc/mdadm/mdadm.conf ]; then
@@ -472,7 +469,7 @@ detect_syslinux_root() {
 
 install_bootloader() {
   if [ -n "$BRgrub" ]; then
-    echo -e "\n${BR_BOLD}==>INSTALLING AND UPDATING GRUB2 IN $BRgrub${BR_NORM}"
+    echo -e "\n==>INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [ $BRdistro = Arch ]; then
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
@@ -515,7 +512,7 @@ install_bootloader() {
     fi
 
   elif [ -n "$BRsyslinux" ]; then
-    echo -e "\n${BR_BOLD}==>INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux${BR_NORM}"
+    echo -e "\n==>INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
     if [ -d /mnt/target/boot/syslinux-old ]; then
       rm -r /mnt/target/boot/syslinux-old
     fi
@@ -635,13 +632,13 @@ install_bootloader() {
 
 generate_locales() {
   if [ $BRdistro = Arch ] ||  [ $BRdistro = Debian ]; then
-    echo -e "\n${BR_BOLD}==>GENERATING LOCALES${BR_NORM}"
+    echo -e "\n==>GENERATING LOCALES"
     chroot /mnt/target  locale-gen
   fi
 }
 
 remount_delete_subvols() {
-  echo -e "\n${BR_BOLD}==>RE-MOUNTING AND DELETING SUBVOLUMES${BR_NORM}"
+  echo -e "\n==>RE-MOUNTING AND DELETING SUBVOLUMES"
   cd ~
   mount  $BRroot /mnt/target
 
@@ -664,9 +661,9 @@ remount_delete_subvols() {
     rm /mnt/target/fullbackup
   fi
 
-  echo -e "\n${BR_BOLD}==>CLEANING AND UNMOUNTING${BR_NORM}"
+  echo -e "\n==>CLEANING AND UNMOUNTING"
   echo "Unmounting $BRroot"
-  umount $BRroot && echo SUCCESS
+  umount $BRroot && echo Success
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
   elif [ "$(ls -A /mnt/target)" ]; then
@@ -679,7 +676,7 @@ remount_delete_subvols() {
 }
 
 unmount_only_in_subvol() {
-  echo -e "\n${BR_BOLD}==>UNMOUNTING${BR_NORM}"
+  echo -e "\n==>UNMOUNTING"
   cd ~
   if [ -n "$BRhome" ]; then
     echo "Unmounting $BRhome"
@@ -706,11 +703,11 @@ unmount_only_in_subvol() {
     fi
   fi
   echo "Unmounting subvolume $BRrootsubvolname"
-  umount $BRroot && echo "SUCCESS" || echo "Error unmounting volume"
+  umount $BRroot && echo "Success" || echo "Error unmounting volume"
 }
 
 clean_unmount_error() {
-  echo -e "\n${BR_BOLD}==>CLEANING AND UNMOUNTING${BR_NORM}"
+  echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~
   sleep 1
   if [ -n "$BRhome" ]; then
@@ -734,13 +731,13 @@ clean_unmount_error() {
     echo "/mnt/target is not empty"
   else
     sleep 1
-    rm -r /mnt/target && echo SUCCESS || echo FAILED
+    rm -r /mnt/target && echo Success || echo Failed
   fi
   exit
 }
 
 clean_unmount_in() {
-  echo -e "\n${BR_BOLD}==>CLEANING AND UNMOUNTING${BR_NORM}"
+  echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~
   if [ -n "$BRhome" ]; then
     echo "Unmounting $BRhome"
@@ -773,7 +770,7 @@ clean_unmount_in() {
   fi
 
   echo "Unmounting $BRroot"
-  umount $BRroot && echo SUCCESS
+  umount $BRroot && echo Success
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
   elif [ "$(ls -A /mnt/target)" ]; then
@@ -786,7 +783,7 @@ clean_unmount_in() {
 }
 
 clean_unmount_out() {
-  echo -e "\n${BR_BOLD}==>CLEANING AND UNMOUNTING${BR_NORM}"
+  echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~
   if [ -f /mnt/target/fullbackup ]; then
     rm /mnt/target/fullbackup
@@ -807,7 +804,7 @@ clean_unmount_out() {
     umount  $BRboot
   fi
   echo "Unmounting $BRroot"
-  umount $BRroot && echo SUCCESS
+  umount $BRroot && echo Success
   if [ "$?" -ne "0" ]; then
     echo "Error unmounting volume"
   elif [ "$(ls -A /mnt/target)" ]; then
@@ -816,12 +813,11 @@ clean_unmount_out() {
     sleep 1
     rm  -r /mnt/target
   fi
-  sed -e "s/\x1b\[.\{1,5\}m//g" -i /tmp/restore.log
   exit
 }
 
 create_subvols() {
-  echo -e "\n${BR_BOLD}==>CREATING SUBVOLUMES${BR_NORM}"
+  echo -e "\n==>CREATING SUBVOLUMES"
   btrfs subvolume create /mnt/target/$BRrootsubvolname
   if [ "x$BRhomesubvol" = "xy" ]; then
     btrfs subvolume create /mnt/target/$BRrootsubvolname/home
@@ -835,7 +831,7 @@ create_subvols() {
     btrfs subvolume create /mnt/target/$BRrootsubvolname/usr
   fi
 
-echo -e "\n${BR_BOLD}==>CLEANING AND UNMOUNTING${BR_NORM}"
+echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~
   if [ -n "$BRhome" ]; then
     echo "Unmounting $BRhome"
@@ -860,23 +856,23 @@ echo -e "\n${BR_BOLD}==>CLEANING AND UNMOUNTING${BR_NORM}"
     fi
   fi
   echo "Unmounting $BRroot"
-  umount $BRroot && echo "SUCCESS" || echo "Error unmounting volume"
+  umount $BRroot && echo "Success" || echo "Error unmounting volume"
 
-  echo -e "\n${BR_BOLD}==>MOUNTING SUBVOLUME $BRrootsubvolname AS ROOT (/)${BR_NORM}"
-  mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target && echo SUCCESS  || echo WARNING
+  echo -e "\n==>MOUNTING SUBVOLUME $BRrootsubvolname AS ROOT (/)"
+  mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target && echo Success  || echo Warning
 
   if [   -n "$BRhome" ]; then
-    echo -e "\n${BR_BOLD}==>MOUNTING $BRhome (/home)${BR_NORM}"
+    echo -e "\n==>MOUNTING $BRhome (/home)"
     if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
       mkdir /mnt/target/home
     fi
-    mount $BRhome /mnt/target/home && echo SUCCESS  || echo WARNING
+    mount $BRhome /mnt/target/home && echo Success  || echo Warning
   fi
 
   if [   -n "$BRboot" ]; then
-    echo -e "\n${BR_BOLD}==>MOUNTING $BRboot (/boot)${BR_NORM}"
+    echo -e "\n==>MOUNTING $BRboot (/boot)"
     mkdir /mnt/target/boot
-    mount $BRboot /mnt/target/boot && echo SUCCESS  || echo WARNING
+    mount $BRboot /mnt/target/boot && echo Success  || echo Warning
   fi
 }
 
@@ -1423,7 +1419,7 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
   if [ $BRmode = "Restore" ]; then
-    echo -e "\n${BR_BOLD}==>GETTING TAR IMAGE${BR_NORM}"
+    echo -e "\n==>GETTING TAR IMAGE"
 
     if [ -n "$BRfile" ]; then
       ln -s $BRfile "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo "Symlinking file: Error"
@@ -1550,7 +1546,7 @@ if [ $BRinterface = "CLI" ]; then
   elif [ -n "$BRsyslinux" ]; then
     BRbootloader=Syslinux
   fi
-  echo -e "\n==>${BR_BOLD}SUMMARY${BR_NORM}"
+  echo -e "\n==>SUMMARY"
   show_summary
 
   while [ -z "$BRcontinue" ]; do
@@ -1583,13 +1579,13 @@ if [ $BRinterface = "CLI" ]; then
     echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
     echo " " >> /tmp/restore.log
     if [ $BRmode = "Restore" ]; then
-      echo -e "\n${BR_BOLD}==>EXTRACTING${BR_NORM}"
+      echo -e "\n==>EXTRACTING"
       total=$(cat /tmp/filelist | wc -l)
       sleep 1
       run_tar 2>>/tmp/restore.log | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $(($a*100/$total))%"; done
       echo " "
     elif [ $BRmode = "Transfer" ]; then
-      echo -e "\n${BR_BOLD}==>TRANSFERING${BR_NORM}"
+      echo -e "\n==>TRANSFERING"
       run_calc  | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
       total=$(cat /tmp/filelist | wc -l)
       sleep 1
@@ -1600,10 +1596,9 @@ if [ $BRinterface = "CLI" ]; then
 
     detect_distro
 
-    echo -e "\n${BR_BOLD}==>GENERATING FSTAB${BR_NORM}"
+    echo -e "\n==>GENERATING FSTAB"
     generate_fstab
     cat /mnt/target/etc/fstab
-    sleep 1
 
     while [ -z "$BRedit" ] ; do
       echo -e "\n${BR_CYAN}Edit fstab ?${BR_NORM}"
@@ -1640,13 +1635,8 @@ if [ $BRinterface = "CLI" ]; then
     fi
 
     prepare_chroot 1> >(tee -a /tmp/restore.log) 2>&1
-    sleep 1
-
     build_initramfs 1> >(tee -a /tmp/restore.log) 2>&1
-    sleep 1
-
     generate_locales 1> >(tee -a /tmp/restore.log) 2>&1
-    sleep 1
 
     if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
       echo -e "\n${BR_RED}Grub not found${BR_NORM}"
@@ -1659,7 +1649,6 @@ if [ $BRinterface = "CLI" ]; then
     fi
 
     install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1
-    sleep 1
 
     if [ -f /tmp/bl_error ]; then
       rm /tmp/bl_error
@@ -1671,7 +1660,7 @@ if [ $BRinterface = "CLI" ]; then
     fi
     read -s a
 
-    sleep 2
+    sleep 1
     clean_unmount_out
   fi
 
@@ -1684,7 +1673,7 @@ elif [ $BRinterface = "Dialog" ]; then
     exit
   fi
 
-  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
+  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 25 80
@@ -2128,6 +2117,6 @@ Edit fstab ?" 20 100
     dialog --title "Info" --msgbox  "$(instruct_screen)"  22 80
   fi
 
-  sleep 2
+  sleep 1
   clean_unmount_out
 fi

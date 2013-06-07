@@ -2065,12 +2065,13 @@ elif [ $BRinterface = "Dialog" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     run_tar 2>>/tmp/restore.log | count_gauge | dialog --gauge "Decompressing..." 0 50
-    sleep 2
+    sleep 1
   elif [ $BRmode = "Transfer" ]; then
     run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done | dialog  --progressbox  3 40
     total=$(cat /tmp/filelist | wc -l)
+    sleep 1
     run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Syncing..." 0 50
-    sleep 2
+    sleep 1
   fi
 
   detect_distro

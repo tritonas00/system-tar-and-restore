@@ -251,7 +251,7 @@ and use \fI/home/john/Downloads/backup.tar.gz\fR as local backup file:
 .RE
 .sp
 Restore system in \fI/dev/sdb1\fR for \fI/\fR (root) partition\&, \fI/dev/sdb2\fR
-for \fI/home\fR partition\&, \fI/dev/sdb3\fR for \fIswap\fR\&, using \fBsyslinux\fR 
+for \fI/home\fR partition\&, \fI/dev/sdb3\fR for \fIswap\fR\& partition, using \fBsyslinux\fR 
 as bootloader and downloading backup file from ftp server:
 .RS 4
 \fBsudo ./restore.sh \-r /dev/sdb1 \-h /dev/sdb2 \-s /dev/sdb3 \-S /dev/sdb \-u 
@@ -284,7 +284,7 @@ The root will be in __active subvolume and \fI/usr\fR\&, \fI/var\fR\&,
 .sp
 Restore system in \fBRAID\fR partitions\&. The boot partition will be \fI/dev/md0\fR
 and the root partition will be \fI/dev/md1\fR\&. The backup will be the local file
-\fI/home/john/Downloads/backup.tar.gz\fR:
+\fI/home/john/Downloads/backup.tar.gz\fR and \fBsyslinux\fR will be installed in all disks that array \fI/dev/md0\fR\ contains:
 .RS 4
 \fBsudo ./restore.sh \-r /dev/md1 \-b /dev/md0 \-f /home/john/Downloads/backup.tar.gz \-S /dev/md0\fR
 .RE

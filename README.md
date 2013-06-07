@@ -1,6 +1,6 @@
 ###ABOUT###
 
-System tar & restore contains two bash scripts, backup.sh and restore.sh.
+System tar & restore contains two bash scripts, **backup.sh** and **restore.sh**.
 
 The purpose is to make the process of backing up and restoring a full GNU/Linux installation easier, 
 using tar or transfer an existing installation using rsync.

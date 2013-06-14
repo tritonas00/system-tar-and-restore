@@ -1,8 +1,8 @@
 #!/bin/bash
 
-clear
-
 BR_VERSION="System Tar & Restore 3.2"
+
+clear
 
 color_variables() {
   BR_NORM='\e[00m'
@@ -54,9 +54,18 @@ detect_filetype_url() {
   fi
 }
 
-detect_partition_table() {
-  if parted $BRsyslinux print | grep -w gpt > /dev/null; then
+set_partition_flags() {
+  if dd if="$BRsyslinux" skip=64 bs=8 count=1 2>/dev/null | grep -w "EFI PART" > /dev/null; then
     BRpartitiontable="gpt"
+  else
+    BRpartitiontable="mbr"
+  fi
+  if [ "$BRpartitiontable" = "gpt" ]; then
+    sgdisk $BRdev --attributes=$BRpart:set:2
+    BRsyslinuxmbr="gptmbr.bin"
+  else
+    sfdisk $BRdev -A $BRpart
+    BRsyslinuxmbr="mbr.bin"
   fi
 }
 
@@ -508,7 +517,6 @@ install_bootloader() {
       echo -e "\n==>Generated grub2 config" >> /tmp/restore.log
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
 
-
       if [[ "$BRgrub" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
           chroot /mnt/target grub2-install /dev/$f || touch /tmp/bl_error
@@ -550,17 +558,17 @@ install_bootloader() {
         chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
         if [ -n "$BRboot" ]; then
           for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
-            BRdev=`echo $f | cut -c -3`
-            BRpart=`echo $f | cut -c 4-`
-            sfdisk /dev/$BRdev -A $BRpart
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=/dev/$BRdev
+            BRdev=`echo /dev/$f | cut -c -8`
+            BRpart=`echo /dev/$f | cut -c 9-`
+            set_partition_flags
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/$BRsyslinuxmbr of=$BRdev
           done
         else
           for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
-            BRdev=`echo $f | cut -c -3`
-            BRpart=`echo $f | cut -c 4-`
-            sfdisk /dev/$BRdev -A $BRpart
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=/dev/$BRdev
+            BRdev=`echo /dev/$f | cut -c -8`
+            BRpart=`echo /dev/$f | cut -c 9-`
+            set_partition_flags
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/$BRsyslinuxmbr of=$BRdev
           done
         fi
       else
@@ -568,13 +576,13 @@ install_bootloader() {
         if [ -n "$BRboot" ]; then
           BRdev=`echo $BRboot | cut -c -8`
           BRpart=`echo $BRboot | cut -c 9-`
-          sfdisk $BRdev -A $BRpart
+          set_partition_flags
         else
           BRdev=`echo $BRroot | cut -c -8`
           BRpart=`echo $BRroot | cut -c 9-`
-          sfdisk $BRdev -A $BRpart
+          set_partition_flags
         fi
-        dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/mbr.bin of=$BRsyslinux
+        dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/$BRsyslinuxmbr of=$BRsyslinux
       fi
       cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
@@ -594,17 +602,17 @@ install_bootloader() {
         chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
         if [ -n "$BRboot" ]; then
           for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
-            BRdev=`echo $f | cut -c -3`
-            BRpart=`echo $f | cut -c 4-`
-            sfdisk /dev/$BRdev -A $BRpart
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=/dev/$BRdev
+            BRdev=`echo /dev/$f | cut -c -8`
+            BRpart=`echo /dev/$f | cut -c 9-`
+            set_partition_flags
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/$BRsyslinuxmbr of=$BRdev
           done
         else
           for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
-            BRdev=`echo $f | cut -c -3`
-            BRpart=`echo $f | cut -c 4-`
-            sfdisk /dev/$BRdev -A $BRpart
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=/dev/$BRdev
+            BRdev=`echo /dev/$f | cut -c -8`
+            BRpart=`echo /dev/$f | cut -c 9-`
+            set_partition_flags
+            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/$BRsyslinuxmbr of=$BRdev
           done
         fi
       else
@@ -612,13 +620,13 @@ install_bootloader() {
         if [ -n "$BRboot" ]; then
           BRdev=`echo $BRboot | cut -c -8`
           BRpart=`echo $BRboot | cut -c 9-`
-          sfdisk $BRdev -A $BRpart
+          set_partition_flags
         else
           BRdev=`echo $BRroot | cut -c -8`
           BRpart=`echo $BRroot | cut -c 9-`
-          sfdisk $BRdev -A $BRpart
+          set_partition_flags
         fi
-        dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/mbr.bin of=$BRsyslinux
+        dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/$BRsyslinuxmbr of=$BRsyslinux
       fi
       cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/
       echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg

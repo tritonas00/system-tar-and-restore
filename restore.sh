@@ -54,7 +54,25 @@ detect_filetype_url() {
   fi
 }
 
-set_partition_flags() {
+detect_distro() {
+  if [ -f /mnt/target/etc/yum.conf ]; then
+    BRdistro="Fedora"
+  elif [ -f /mnt/target/etc/pacman.conf ]; then
+    BRdistro="Arch"
+  elif [ -f /mnt/target/etc/apt/sources.list ]; then
+    BRdistro="Debian"
+  fi
+}
+
+detect_syslinux_root() {
+  if [[ "$BRroot" == *mapper* ]]; then
+    echo "root=$BRroot"
+  else
+    echo "root=UUID=$(lsblk -d -n -o uuid $BRroot)"
+  fi
+}
+
+set_syslinux_flags_and_paths() {
   if dd if="$BRsyslinux" skip=64 bs=8 count=1 2>/dev/null | grep -w "EFI PART" > /dev/null; then
     BRpartitiontable="gpt"
   else
@@ -67,16 +85,40 @@ set_partition_flags() {
     sfdisk $BRdev -A $BRpart || touch /tmp/bl_error
     BRsyslinuxmbr="mbr.bin"
   fi
+  if [ $BRdistro = Debian ]; then
+    BRsyslinuxpath="/mnt/target/usr/lib/syslinux"
+    BRmenuc32path="/mnt/target/usr/lib/syslinux/menu.c32"
+  elif [ $BRdistro = Fedora ]; then
+    BRsyslinuxpath="/mnt/target/usr/share/syslinux"
+    BRmenuc32path="/mnt/target/usr/share/syslinux/menu.c32"
+  fi
 }
 
-detect_distro() {
-  if [ -f /mnt/target/etc/yum.conf ]; then
-    BRdistro="Fedora"
-  elif [ -f /mnt/target/etc/pacman.conf ]; then
-    BRdistro="Arch"
-  elif [ -f /mnt/target/etc/apt/sources.list ]; then
-    BRdistro="Debian"
-  fi
+generate_syslinux_cfg() {
+  echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
+  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
+      if [ $BRdistro = Arch ]; then
+        echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      elif [ $BRdistro = Debian ]; then
+        echo -e "LABEL debian\n\tMENU LABEL Debian-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+      elif [ $BRdistro = Fedora ]; then
+        echo -e "LABEL fedora\n\tMENU LABEL Fedora-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      fi
+    done  
+  else
+    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
+      if [ $BRdistro = Arch ]; then
+        echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root)  ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) ro\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      elif [ $BRdistro = Debian ]; then
+        echo -e "LABEL debian\n\tMENU LABEL Debian-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+      elif [ $BRdistro = Fedora ]; then
+        echo -e "LABEL fedora\n\tMENU LABEL Fedora-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      fi
+    done  
+  fi  
 }
 
 run_tar() {
@@ -476,36 +518,29 @@ build_initramfs() {
  fi
 }
 
-detect_syslinux_root() {
-  if [[ "$BRroot" == *mapper* ]]; then
-    echo "root=$BRroot"
-  else
-    echo "root=UUID=$(lsblk -d -n -o uuid $BRroot)"
-  fi
-}
-
 install_bootloader() {
   if [ -n "$BRgrub" ]; then
     echo -e "\n==>INSTALLING AND UPDATING GRUB2 IN $BRgrub"
-    if [ $BRdistro = Arch ]; then
-      if [[ "$BRgrub" == *md* ]]; then
-        for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
+    if [[ "$BRgrub" == *md* ]]; then
+      for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
+        if [ $BRdistro = Arch ]; then
           chroot /mnt/target grub-install --target=i386-pc  /dev/$f || touch /tmp/bl_error
-        done
-      else
-        chroot /mnt/target grub-install --target=i386-pc  $BRgrub || touch /tmp/bl_error
-      fi
-     chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
-    elif [ $BRdistro = Debian ]; then
-      if [[ "$BRgrub" == *md* ]]; then
-        for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
+        elif [ $BRdistro = Debian ]; then
           chroot /mnt/target grub-install  /dev/$f || touch /tmp/bl_error
-        done
-      else
+        elif [ $BRdistro = Fedora ]; then
+          chroot /mnt/target grub2-install /dev/$f || touch /tmp/bl_error
+        fi 
+      done
+    else
+      if [ $BRdistro = Arch ]; then 
+        chroot /mnt/target grub-install --target=i386-pc  $BRgrub || touch /tmp/bl_error
+      elif [ $BRdistro = Debian ]; then
         chroot /mnt/target grub-install  $BRgrub || touch /tmp/bl_error
+      elif [ $BRdistro = Fedora ]; then
+        chroot /mnt/target grub2-install $BRgrub || touch /tmp/bl_error
       fi
-      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
-    elif [ $BRdistro = Fedora ]; then
+    fi
+    if [ $BRdistro = Fedora ]; then
       if [ -f /mnt/target/etc/default/grub ]; then
         mv /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old
       fi
@@ -516,59 +551,40 @@ install_bootloader() {
       echo 'GRUB_THEME="/boot/grub2/themes/system/theme.txt"' >> /mnt/target/etc/default/grub
       echo -e "\n==>Generated grub2 config" >> /tmp/restore.log
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
-
-      if [[ "$BRgrub" == *md* ]]; then
-        for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
-          chroot /mnt/target grub2-install /dev/$f || touch /tmp/bl_error
-        done
-      else
-        chroot /mnt/target grub2-install $BRgrub || touch /tmp/bl_error
-      fi
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
-    fi
+    else
+      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  
+    fi 
 
   elif [ -n "$BRsyslinux" ]; then
     echo -e "\n==>INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
-    if [ -d /mnt/target/boot/syslinux-old ]; then
-      rm -r /mnt/target/boot/syslinux-old
-    fi
     if [ -d /mnt/target/boot/syslinux ]; then
-      mv /mnt/target/boot/syslinux /mnt/target/boot/syslinux-old
+      mv /mnt/target/boot/syslinux/syslinux.cfg /mnt/target/boot/syslinux.cfg-old
+      chattr -i /mnt/target/boot/syslinux/* 2> /dev/null
+      rm -r /mnt/target/boot/syslinux/*
+    else
+      mkdir -p /mnt/target/boot/syslinux
     fi
-    mkdir -p /mnt/target/boot/syslinux
     touch /mnt/target/boot/syslinux/syslinux.cfg
 
     if [ $BRdistro = Arch ]; then
       chroot /mnt/target syslinux-install_update -i -a -m || touch /tmp/bl_error
-      echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50\nDEFAULT arch" > /mnt/target/boot/syslinux/syslinux.cfg
-      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-        for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
-          echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-          echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) rootflags=subvol=$BRrootsubvolname ro\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-        done
-      else
-        for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
-          echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root)  ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-          echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) ro\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-        done
-      fi
-
-    elif [ $BRdistro = Debian ]; then
+    else
       if [[ "$BRsyslinux" == *md* ]]; then
         chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
         if [ -n "$BRboot" ]; then
           for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
             BRdev=`echo /dev/$f | cut -c -8`
             BRpart=`echo /dev/$f | cut -c 9-`
-            set_partition_flags
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/$BRsyslinuxmbr of=$BRdev
+            set_syslinux_flags_and_paths
+            dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev
           done
         else
           for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
             BRdev=`echo /dev/$f | cut -c -8`
             BRpart=`echo /dev/$f | cut -c 9-`
-            set_partition_flags
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/$BRsyslinuxmbr of=$BRdev
+            set_syslinux_flags_and_paths
+            dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev
           done
         fi
       else
@@ -576,71 +592,16 @@ install_bootloader() {
         if [ -n "$BRboot" ]; then
           BRdev=`echo $BRboot | cut -c -8`
           BRpart=`echo $BRboot | cut -c 9-`
-          set_partition_flags
         else
           BRdev=`echo $BRroot | cut -c -8`
           BRpart=`echo $BRroot | cut -c 9-`
-          set_partition_flags
         fi
-        dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/lib/syslinux/$BRsyslinuxmbr of=$BRsyslinux
+        set_syslinux_flags_and_paths
+        dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRsyslinux
       fi
-      cp /mnt/target/usr/lib/syslinux/menu.c32 /mnt/target/boot/syslinux/
-      echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
-      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT debian" >> /mnt/target/boot/syslinux/syslinux.cfg
-      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-        for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
-          echo -e "LABEL debian\n\tMENU LABEL Debian-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
-        done
-      else
-        for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
-          echo -e "LABEL debian\n\tMENU LABEL Debian-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
-        done
-      fi
-
-    elif [ $BRdistro = Fedora ]; then
-      if [[ "$BRsyslinux" == *md* ]]; then
-        chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
-        if [ -n "$BRboot" ]; then
-          for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
-            BRdev=`echo /dev/$f | cut -c -8`
-            BRpart=`echo /dev/$f | cut -c 9-`
-            set_partition_flags
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/$BRsyslinuxmbr of=$BRdev
-          done
-        else
-          for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
-            BRdev=`echo /dev/$f | cut -c -8`
-            BRpart=`echo /dev/$f | cut -c 9-`
-            set_partition_flags
-            dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/$BRsyslinuxmbr of=$BRdev
-          done
-        fi
-      else
-        chroot /mnt/target extlinux -i /boot/syslinux || touch /tmp/bl_error
-        if [ -n "$BRboot" ]; then
-          BRdev=`echo $BRboot | cut -c -8`
-          BRpart=`echo $BRboot | cut -c 9-`
-          set_partition_flags
-        else
-          BRdev=`echo $BRroot | cut -c -8`
-          BRpart=`echo $BRroot | cut -c 9-`
-          set_partition_flags
-        fi
-        dd bs=440 count=1 conv=notrunc if=/mnt/target/usr/share/syslinux/$BRsyslinuxmbr of=$BRsyslinux
-      fi
-      cp /mnt/target/usr/share/syslinux/menu.c32 /mnt/target/boot/syslinux/
-      echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
-      echo -e "PROMPT 1\nTIMEOUT 50\nDEFAULT fedora" >> /mnt/target/boot/syslinux/syslinux.cfg
-      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-        for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
-          echo -e "LABEL fedora\n\tMENU LABEL Fedora-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) rootflags=subvol=$BRrootsubvolname ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-        done
-      else
-        for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
-          echo -e "LABEL fedora\n\tMENU LABEL Fedora-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-        done
-      fi
+      cp $BRmenuc32path /mnt/target/boot/syslinux/   
     fi
+    generate_syslinux_cfg
     echo -e "\n==>GENERATED SYSLINUX CONFIG" >> /tmp/restore.log
     cat /mnt/target/boot/syslinux/syslinux.cfg >> /tmp/restore.log
   fi
@@ -1076,6 +1037,10 @@ fi
 if [ $(id -u) -gt 0 ]; then
   echo -e "${BR_RED}Script must run as root${BR_NORM}"
   exit
+fi
+
+if [ -f /etc/pacman.conf ]; then
+  PATH="$PATH:/usr/sbin:/bin"
 fi
 
 PS3="Choice: "

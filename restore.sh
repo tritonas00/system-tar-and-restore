@@ -54,6 +54,12 @@ detect_filetype_url() {
   fi
 }
 
+detect_partition_table() {
+  if parted $BRsyslinux print | grep -w gpt > /dev/null; then
+    BRpartitiontable="gpt"
+  fi
+}
+
 detect_distro() {
   if [ -f /mnt/target/etc/yum.conf ]; then
     BRdistro="Fedora"

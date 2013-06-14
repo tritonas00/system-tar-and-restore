@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.2"
+BR_VERSION="System Tar & Restore 3.3"
 
 clear
 
@@ -61,10 +61,10 @@ set_partition_flags() {
     BRpartitiontable="mbr"
   fi
   if [ "$BRpartitiontable" = "gpt" ]; then
-    sgdisk $BRdev --attributes=$BRpart:set:2
+    sgdisk $BRdev --attributes=$BRpart:set:2 || touch /tmp/bl_error
     BRsyslinuxmbr="gptmbr.bin"
   else
-    sfdisk $BRdev -A $BRpart
+    sfdisk $BRdev -A $BRpart || touch /tmp/bl_error
     BRsyslinuxmbr="mbr.bin"
   fi
 }

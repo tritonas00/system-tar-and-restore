@@ -72,6 +72,14 @@ detect_syslinux_root() {
   fi
 }
 
+detect_fstab_root() {
+  if [[ "$BRroot" == *md* ]]; then
+    echo "$BRroot"
+  else
+    echo "UUID=$(lsblk -d -n -o uuid $BRroot)"
+  fi
+}
+
 set_syslinux_flags_and_paths() {
   if [[ "$BRsyslinux" == *md* ]]; then
     BRsyslinuxdisk="$BRdev"
@@ -433,23 +441,11 @@ generate_fstab() {
   fi
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-    if [[ "$BRroot" == *md* ]]; then
-      echo "$BRroot  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
-    else
-      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
-    fi
+    echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
   elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ]; then
-    if [[ "$BRroot" == *md* ]]; then
-      echo "$BRroot  /  btrfs  $BR_MOUNT_OPTS,noatime  0  0" >> /mnt/target/etc/fstab
-    else
-      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  $BR_MOUNT_OPTS,noatime  0  0" >> /mnt/target/etc/fstab
-    fi
+    echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,noatime  0  0" >> /mnt/target/etc/fstab
   else
-    if [[ "$BRroot" == *md* ]]; then
-      echo "$BRroot  /  $BRfsystem  $BR_MOUNT_OPTS,noatime  0  1" >> /mnt/target/etc/fstab
-    else
-      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  $BRfsystem  $BR_MOUNT_OPTS,noatime  0  1" >> /mnt/target/etc/fstab
-    fi
+    echo "$(detect_fstab_root)  /  $BRfsystem  $BR_MOUNT_OPTS,noatime  0  1" >> /mnt/target/etc/fstab
   fi
 
   if [ -n "$BRhome" ]; then

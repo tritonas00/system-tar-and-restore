@@ -1095,7 +1095,7 @@ if [ $BRinterface = "CLI" ]; then
   update_list
 
   while [ -z "$BRroot" ]; do
-    echo -e "\n${BR_CYAN}Select the number of your root partition or enter Q to quit${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select target root partition number or enter Q to quit${BR_NORM}"
     select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1133,29 +1133,8 @@ if [ $BRinterface = "CLI" ]; then
 
   update_list
 
-  if [ -z "$BRswap" ]; then
-    echo -e "\n${BR_CYAN}Select the number of your swap partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
-    select c in ${list[@]}; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-        exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
-        BRswap=(`echo $c | awk '{ print $1 }'`)
-        echo -e "${BR_GREEN}You selected $BRswap as your swap partition${BR_NORM}"
-        break
-      elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-        echo  -e "${BR_GREEN}No swap${BR_NORM}"
-        break
-      else
-        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
-      fi
-    done
-  fi
-
-  update_list
-
   if [ -z "$BRhome" ]; then
-    echo -e "\n${BR_CYAN}Select the number of your home partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select target home partition number or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1176,7 +1155,7 @@ if [ $BRinterface = "CLI" ]; then
   update_list
 
   if [ -z "$BRboot" ]; then
-    echo -e "\n${BR_CYAN}Select the number of your boot partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select target boot partition number or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1194,8 +1173,29 @@ if [ $BRinterface = "CLI" ]; then
     done
   fi
 
+  update_list
+
+  if [ -z "$BRswap" ]; then
+    echo -e "\n${BR_CYAN}Select swap partition number or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    select c in ${list[@]}; do
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+        exit
+      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+        BRswap=(`echo $c | awk '{ print $1 }'`)
+        echo -e "${BR_GREEN}You selected $BRswap as your swap partition${BR_NORM}"
+        break
+      elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
+        echo  -e "${BR_GREEN}No swap${BR_NORM}"
+        break
+      else
+        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+      fi
+    done
+  fi
+
   if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
-    echo -e "\n${BR_CYAN}Select the number of your bootloader or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select bootloader number or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in Grub Syslinux; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1206,7 +1206,7 @@ if [ $BRinterface = "CLI" ]; then
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
 
         while [ -z "$BRgrub" ]; do
-          echo -e "\n${BR_CYAN}Where to install GRUB? Enter Q to quit${BR_NORM}"
+          echo -e "\n${BR_CYAN}Where to install Grub? Enter Q to quit${BR_NORM}"
 	  select c in ${bootloader_list[@]}; do
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1702,7 +1702,7 @@ elif [ $BRinterface = "Dialog" ]; then
   exec 3>&1
 
   while [ -z "$BRroot" ]; do
-    BRroot=$(dialog --cancel-label Quit --menu "Select root partition:" 0 0 0 `part_list_dialog ` 2>&1 1>&3)
+    BRroot=$(dialog --cancel-label Quit --menu "Select target root partition:" 0 35 0 `part_list_dialog` 2>&1 1>&3)
     if [ $? = "1" ]; then
       BRroot=" "
       exit
@@ -1720,16 +1720,8 @@ elif [ $BRinterface = "Dialog" ]; then
      fi
    done
 
-  if [ -z "$BRswap" ]; then
-    BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select swap partition:" 0 0 0 `part_list_dialog ` 2>&1 1>&3)
-    if [ $? = "3" ]; then
-      BRswap=" "
-      exit
-    fi
-  fi
-
   if [ -z "$BRhome" ]; then
-    BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+    BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select target home partition:" 0 35 0 `part_list_dialog` 2>&1 1>&3)
     if [ $? = "3" ]; then
       BRhome=" "
       exit
@@ -1737,9 +1729,17 @@ elif [ $BRinterface = "Dialog" ]; then
   fi
 
   if [ -z "$BRboot" ]; then
-    BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+    BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select target boot partition:" 0 35 0 `part_list_dialog` 2>&1 1>&3)
     if [ $? = "3" ]; then
       BRboot=" "
+      exit
+    fi
+  fi
+
+  if [ -z "$BRswap" ]; then
+    BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select swap partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+    if [ $? = "3" ]; then
+      BRswap=" "
       exit
     fi
   fi

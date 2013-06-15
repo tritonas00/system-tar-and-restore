@@ -322,7 +322,7 @@ mount_all() {
   sleep 1
 
   echo -e "\n==>MOUNTING $BRroot (/)"
-  mount $BRroot /mnt/target && echo Success || touch /tmp/stop
+  mount -o $BR_MOUNT_OPTS $BRroot /mnt/target && echo Success || touch /tmp/stop
 
   if [ "$(ls -A /mnt/target  | grep -vw "lost+found")" ]; then
     touch /tmp/not-empty
@@ -380,6 +380,11 @@ show_summary() {
     fi
   fi
 
+  if [ "$BRmountoptions" = "Yes" ]; then
+    echo -e "\nROOT MOUNT OPTIONS:"
+    echo $BR_MOUNT_OPTS
+  fi
+
   echo -e "\nBOOTLOADER:"
 
   if [ -n "$BRgrub" ]; then
@@ -434,21 +439,21 @@ generate_fstab() {
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     if [[ "$BRroot" == *md* ]]; then
-      echo "$BRroot  /  btrfs  compress=lzo,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
+      echo "$BRroot  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
     else
-      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  compress=lzo,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
+      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
     fi
   elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ]; then
     if [[ "$BRroot" == *md* ]]; then
-      echo "$BRroot  /  btrfs  defaults,noatime  0  0" >> /mnt/target/etc/fstab
+      echo "$BRroot  /  btrfs  $BR_MOUNT_OPTS,noatime  0  0" >> /mnt/target/etc/fstab
     else
-      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  defaults,noatime  0  0" >> /mnt/target/etc/fstab
+      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  btrfs  $BR_MOUNT_OPTS,noatime  0  0" >> /mnt/target/etc/fstab
     fi
   else
     if [[ "$BRroot" == *md* ]]; then
-      echo "$BRroot  /  $BRfsystem  defaults,noatime  0  1" >> /mnt/target/etc/fstab
+      echo "$BRroot  /  $BRfsystem  $BR_MOUNT_OPTS,noatime  0  1" >> /mnt/target/etc/fstab
     else
-      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  $BRfsystem  defaults,noatime  0  1" >> /mnt/target/etc/fstab
+      echo "UUID=$(lsblk -d -n -o uuid $BRroot)  /  $BRfsystem  $BR_MOUNT_OPTS,noatime  0  1" >> /mnt/target/etc/fstab
     fi
   fi
 
@@ -836,7 +841,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   umount $BRroot && echo "Success" || echo "Error unmounting volume"
 
   echo -e "\n==>MOUNTING SUBVOLUME $BRrootsubvolname AS ROOT (/)"
-  mount -t btrfs -o compress=lzo,subvol=$BRrootsubvolname $BRroot /mnt/target && echo Success  || echo Warning
+  mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target && echo Success  || echo Warning
 
   if [   -n "$BRhome" ]; then
     echo -e "\n==>MOUNTING $BRhome (/home)"
@@ -853,7 +858,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   fi
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoN" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,no-color" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoNm:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,no-color,mount-options:" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -946,6 +951,11 @@ while true; do
       BRnocolor="y"
       shift
     ;;
+    -m|--mount-options)
+      BRmountoptions="Yes"
+      BR_MOUNT_OPTS=$2
+      shift 2
+    ;;
     --help)
       echo "
 -i,  --interface       interface to use (CLI Dialog)
@@ -967,6 +977,7 @@ while true; do
 -H,  --homesubvol      make subvolume for /home (btrfs only)
 -V,  --varsubvol       make subvolume for /var  (btrfs only)
 -U,  --usrsubvol       make subvolume for /usr  (btrfs only)
+-m,  --mount-options   comma-separated list of mount options (root partition)
 
 --help  print this page
 "
@@ -991,6 +1002,11 @@ check_input
 if [ -n "$BRroot" ]; then
   if [ -z "$BRrootsubvolname" ]; then
     BRrootsubvol="n"
+  fi
+
+  if [ -z "$BRmountoptions" ]; then
+    BRmountoptions="No"
+    BR_MOUNT_OPTS="defaults"
   fi
 
   if [ -z "$BRswap" ]; then
@@ -1092,6 +1108,27 @@ if [ $BRinterface = "CLI" ]; then
         echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
       fi
     done
+  done
+
+  while [ -z "$BRmountoptions" ]; do
+    echo -e "\n${BR_CYAN}Enter additional mount options?${BR_NORM}"
+    read -p "(y/N):" an
+
+    if [ -n "$an" ]; then
+      def=$an
+    else
+      def="n"
+    fi
+
+    if [ $def = "y" ] || [ $def = "Y" ]; then
+      BRmountoptions="Yes"
+      read -p "Enter options (comma-separated list of mount options):" BR_MOUNT_OPTS
+    elif [ $def = "n" ] || [ $def = "N" ]; then
+      BRmountoptions="No"
+      BR_MOUNT_OPTS="defaults"
+    else
+      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+    fi
   done
 
   update_list
@@ -1671,6 +1708,17 @@ elif [ $BRinterface = "Dialog" ]; then
       exit
     fi
   done
+
+  while [ -z "$BRmountoptions" ]; do
+     dialog   --yesno "Specify additional mount options?" 6 40
+     if [ $? = "0" ]; then
+       BRmountoptions="Yes"
+       BR_MOUNT_OPTS=$(dialog  --no-cancel --inputbox "Enter options: (comma-separated list of mount options)" 8 70 2>&1 1>&3)
+     else
+       BRmountoptions="No"
+       BR_MOUNT_OPTS="defaults"
+     fi
+   done
 
   if [ -z "$BRswap" ]; then
     BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select swap partition:" 0 0 0 `part_list_dialog ` 2>&1 1>&3)

@@ -73,7 +73,12 @@ detect_syslinux_root() {
 }
 
 set_syslinux_flags_and_paths() {
-  if dd if="$BRsyslinux" skip=64 bs=8 count=1 2>/dev/null | grep -w "EFI PART" > /dev/null; then
+  if [[ "$BRsyslinux" == *md* ]]; then
+    BRsyslinuxdisk="$BRdev"
+  else
+    BRsyslinuxdisk="$BRsyslinux"
+  fi
+  if dd if="$BRsyslinuxdisk" skip=64 bs=8 count=1 2>/dev/null | grep -w "EFI PART" > /dev/null; then
     BRpartitiontable="gpt"
   else
     BRpartitiontable="mbr"
@@ -1085,7 +1090,7 @@ if [ $BRinterface = "CLI" ]; then
   update_list
 
   while [ -z "$BRroot" ]; do
-    echo -e "\n${BR_CYAN}Select target root partition number or enter Q to quit${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select target root partition or enter Q to quit${BR_NORM}"
     select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1124,7 +1129,7 @@ if [ $BRinterface = "CLI" ]; then
   update_list
 
   if [ -z "$BRhome" ]; then
-    echo -e "\n${BR_CYAN}Select target home partition number or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select target home partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1145,7 +1150,7 @@ if [ $BRinterface = "CLI" ]; then
   update_list
 
   if [ -z "$BRboot" ]; then
-    echo -e "\n${BR_CYAN}Select target boot partition number or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select target boot partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1166,7 +1171,7 @@ if [ $BRinterface = "CLI" ]; then
   update_list
 
   if [ -z "$BRswap" ]; then
-    echo -e "\n${BR_CYAN}Select swap partition number or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select swap partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1185,7 +1190,7 @@ if [ $BRinterface = "CLI" ]; then
   fi
 
   if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
-    echo -e "\n${BR_CYAN}Select bootloader number or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select bootloader or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in Grub Syslinux; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"

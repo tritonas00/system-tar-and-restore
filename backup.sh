@@ -301,7 +301,6 @@ if [ $BRinterface = "CLI" ]; then
     if [ $def = "y" ] || [ $def = "Y" ]; then
       BRuseroptions="Yes"
       read -p "Enter options (See tar --help):" BR_USER_OPTS
-      echo "Options: $BR_USER_OPTS"
     elif [ $def = "n" ] || [ $def = "N" ]; then
       BRuseroptions="No"
     else

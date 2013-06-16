@@ -535,20 +535,20 @@ install_bootloader() {
     if [[ "$BRgrub" == *md* ]]; then
       for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
         if [ $BRdistro = Arch ]; then
-          chroot /mnt/target grub-install --target=i386-pc  /dev/$f || touch /tmp/bl_error
+          chroot /mnt/target grub-install --target=i386-pc --recheck  /dev/$f || touch /tmp/bl_error
         elif [ $BRdistro = Debian ]; then
-          chroot /mnt/target grub-install  /dev/$f || touch /tmp/bl_error
+          chroot /mnt/target grub-install  --recheck /dev/$f || touch /tmp/bl_error
         elif [ $BRdistro = Fedora ]; then
-          chroot /mnt/target grub2-install /dev/$f || touch /tmp/bl_error
+          chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/bl_error
         fi 
       done
     else
       if [ $BRdistro = Arch ]; then 
-        chroot /mnt/target grub-install --target=i386-pc  $BRgrub || touch /tmp/bl_error
+        chroot /mnt/target grub-install --target=i386-pc  --recheck $BRgrub || touch /tmp/bl_error
       elif [ $BRdistro = Debian ]; then
-        chroot /mnt/target grub-install  $BRgrub || touch /tmp/bl_error
+        chroot /mnt/target grub-install  --recheck $BRgrub || touch /tmp/bl_error
       elif [ $BRdistro = Fedora ]; then
-        chroot /mnt/target grub2-install $BRgrub || touch /tmp/bl_error
+        chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
       fi
     fi
     if [ $BRdistro = Fedora ]; then

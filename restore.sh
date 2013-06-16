@@ -319,11 +319,9 @@ check_input() {
       fi
     fi
     detect_partition_table
-    if [ "$BRpartitiontable" = "gpt" ]; then
-      if [ -z $(which sgdisk 2> /dev/null) ];then
-        echo -e "${BR_RED}Package gptfdisk/gdisk is not installed\n${BR_CYAN}Install the package and re-run the script${BR_NORM}"
-        BRSTOP=y
-      fi
+    if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2> /dev/null) ]; then
+      echo -e "${BR_RED}Package gptfdisk/gdisk is not installed\n${BR_CYAN}Install the package and re-run the script${BR_NORM}"
+      BRSTOP=y
     fi
   fi
 

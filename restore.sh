@@ -308,15 +308,9 @@ check_input() {
       BRSTOP=y
     fi
     if [[ "$BRsyslinux" == *md* ]]; then
-      if [ -n "$BRboot" ]; then
-        for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
-          BRdev=`echo /dev/$f | cut -c -8`
-        done
-      else
-        for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
-          BRdev=`echo /dev/$f | cut -c -8`
-        done
-      fi
+      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
+        BRdev=`echo /dev/$f | cut -c -8`
+      done
     fi
     detect_partition_table
     if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2> /dev/null) ]; then
@@ -589,8 +583,7 @@ install_bootloader() {
     else
       if [[ "$BRsyslinux" == *md* ]]; then
         chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
-        if [ -n "$BRboot" ]; then
-          for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
+          for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
             BRdev=`echo /dev/$f | cut -c -8`
             BRpart=`echo /dev/$f | cut -c 9-`
             detect_partition_table
@@ -598,16 +591,6 @@ install_bootloader() {
             echo "Installing $BRsyslinuxmbr in $BRdev ($BRpartitiontable)"
             dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/bl_error
           done
-        else
-          for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
-            BRdev=`echo /dev/$f | cut -c -8`
-            BRpart=`echo /dev/$f | cut -c 9-`
-            detect_partition_table
-            set_syslinux_flags_and_paths
-            echo "Installing $BRsyslinuxmbr in $BRdev ($BRpartitiontable)"
-            dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/bl_error
-          done
-        fi
       else
         chroot /mnt/target extlinux -i /boot/syslinux || touch /tmp/bl_error
         if [ -n "$BRboot" ]; then

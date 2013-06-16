@@ -80,7 +80,7 @@ detect_fstab_root() {
   fi
 }
 
-set_syslinux_flags_and_paths() {
+detect_partition_table() {
   if [[ "$BRsyslinux" == *md* ]]; then
     BRsyslinuxdisk="$BRdev"
   else
@@ -91,6 +91,9 @@ set_syslinux_flags_and_paths() {
   else
     BRpartitiontable="mbr"
   fi
+}
+
+set_syslinux_flags_and_paths() {
   if [ "$BRpartitiontable" = "gpt" ]; then
     sgdisk $BRdev --attributes=$BRpart:set:2 || touch /tmp/bl_error
     BRsyslinuxmbr="gptmbr.bin"
@@ -302,6 +305,24 @@ check_input() {
       echo -e "${BR_RED}Wrong disk for syslinux:${BR_NORM} $BRsyslinux"
       BRSTOP=y
     fi
+    if [[ "$BRsyslinux" == *md* ]]; then
+      if [ -n "$BRboot" ]; then
+        for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
+          BRdev=`echo /dev/$f | cut -c -8`
+        done
+      else
+        for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
+          BRdev=`echo /dev/$f | cut -c -8`
+        done
+      fi
+    fi
+    detect_partition_table
+    if [ "$BRpartitiontable" = "gpt" ]; then
+      if [ -z $(which sgdisk 2> /dev/null) ];then
+        echo -e "${BR_RED}Package gptfdisk/gdisk is not installed\n${BR_CYAN}Install the package and re-run the script${BR_NORM}"
+        BRSTOP=y
+      fi
+    fi
   fi
 
   if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
@@ -327,9 +348,9 @@ mount_all() {
   echo -e "\n==>MOUNTING $BRroot (/)"
   mount -o $BR_MOUNT_OPTS $BRroot /mnt/target && echo Success || touch /tmp/stop
 
-  if [ "$(ls -A /mnt/target  | grep -vw "lost+found")" ]; then
-    touch /tmp/not-empty
-  fi
+#  if [ "$(ls -A /mnt/target  | grep -vw "lost+found")" ]; then
+ #   touch /tmp/not-empty
+#  fi
 
   if [ -n "$BRhome" ]; then
     echo -e "\n==>MOUNTING $BRhome (/home)"
@@ -572,6 +593,7 @@ install_bootloader() {
           for f in `cat /proc/mdstat | grep $(echo "$BRboot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
             BRdev=`echo /dev/$f | cut -c -8`
             BRpart=`echo /dev/$f | cut -c 9-`
+            detect_partition_table
             set_syslinux_flags_and_paths
             dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev
           done
@@ -579,6 +601,7 @@ install_bootloader() {
           for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
             BRdev=`echo /dev/$f | cut -c -8`
             BRpart=`echo /dev/$f | cut -c 9-`
+            detect_partition_table
             set_syslinux_flags_and_paths
             dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev
           done
@@ -592,6 +615,7 @@ install_bootloader() {
           BRdev=`echo $BRroot | cut -c -8`
           BRpart=`echo $BRroot | cut -c 9-`
         fi
+        detect_partition_table
         set_syslinux_flags_and_paths
         dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRsyslinux
       fi

@@ -95,10 +95,12 @@ detect_partition_table() {
 
 set_syslinux_flags_and_paths() {
   if [ "$BRpartitiontable" = "gpt" ]; then
-    sgdisk $BRdev --attributes=$BRpart:set:2 || touch /tmp/bl_error
+    echo "Setting legacy_boot flag on $BRdev$BRpart"
+    sgdisk $BRdev --attributes=$BRpart:set:2 1> /dev/null || touch /tmp/bl_error
     BRsyslinuxmbr="gptmbr.bin"
   else
-    sfdisk $BRdev -A $BRpart || touch /tmp/bl_error
+    echo "Setting boot flag on $BRdev$BRpart"
+    sfdisk $BRdev -A $BRpart 1> /dev/null || touch /tmp/bl_error
     BRsyslinuxmbr="mbr.bin"
   fi
   if [ $BRdistro = Debian ]; then
@@ -348,9 +350,9 @@ mount_all() {
   echo -e "\n==>MOUNTING $BRroot (/)"
   mount -o $BR_MOUNT_OPTS $BRroot /mnt/target && echo Success || touch /tmp/stop
 
-#  if [ "$(ls -A /mnt/target  | grep -vw "lost+found")" ]; then
- #   touch /tmp/not-empty
-#  fi
+  if [ "$(ls -A /mnt/target  | grep -vw "lost+found")" ]; then
+    touch /tmp/not-empty
+  fi
 
   if [ -n "$BRhome" ]; then
     echo -e "\n==>MOUNTING $BRhome (/home)"
@@ -595,7 +597,8 @@ install_bootloader() {
             BRpart=`echo /dev/$f | cut -c 9-`
             detect_partition_table
             set_syslinux_flags_and_paths
-            dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev
+            echo "Installing $BRsyslinuxmbr in $BRdev ($BRpartitiontable)"
+            dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/bl_error
           done
         else
           for f in `cat /proc/mdstat | grep $(echo "$BRroot" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
@@ -603,7 +606,8 @@ install_bootloader() {
             BRpart=`echo /dev/$f | cut -c 9-`
             detect_partition_table
             set_syslinux_flags_and_paths
-            dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev
+            echo "Installing $BRsyslinuxmbr in $BRdev ($BRpartitiontable)"
+            dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/bl_error
           done
         fi
       else
@@ -617,7 +621,8 @@ install_bootloader() {
         fi
         detect_partition_table
         set_syslinux_flags_and_paths
-        dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRsyslinux
+        echo "Installing $BRsyslinuxmbr in $BRsyslinux ($BRpartitiontable)"
+        dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/bl_error
       fi
       cp $BRmenuc32path /mnt/target/boot/syslinux/   
     fi

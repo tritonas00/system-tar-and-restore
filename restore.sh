@@ -1706,7 +1706,7 @@ elif [ $BRinterface = "Dialog" ]; then
   exec 3>&1
 
   while [ -z "$BRroot" ]; do
-    BRroot=$(dialog --cancel-label Quit --menu "Select target root partition:" 0 35 0 `part_list_dialog` 2>&1 1>&3)
+    BRroot=$(dialog --cancel-label Quit --menu "Select target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
     if [ $? = "1" ]; then
       BRroot=" "
       exit
@@ -1725,7 +1725,7 @@ elif [ $BRinterface = "Dialog" ]; then
    done
 
   if [ -z "$BRhome" ]; then
-    BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select target home partition:" 0 35 0 `part_list_dialog` 2>&1 1>&3)
+    BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
     if [ $? = "3" ]; then
       BRhome=" "
       exit
@@ -1733,7 +1733,7 @@ elif [ $BRinterface = "Dialog" ]; then
   fi
 
   if [ -z "$BRboot" ]; then
-    BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select target boot partition:" 0 35 0 `part_list_dialog` 2>&1 1>&3)
+    BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select target boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
     if [ $? = "3" ]; then
       BRboot=" "
       exit

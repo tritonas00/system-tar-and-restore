@@ -439,6 +439,8 @@ show_summary() {
 
 prepare_chroot() {
   echo -e "\n==>PREPARING CHROOT ENVIROMENT"
+  echo -e "Binding /run"
+  mount --bind /run /mnt/target/run
   echo -e "Binding /dev"
   mount --bind /dev /mnt/target/dev
   echo -e "Binding /dev/pts"
@@ -583,14 +585,14 @@ install_bootloader() {
     else
       if [[ "$BRsyslinux" == *md* ]]; then
         chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
-          for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
-            BRdev=`echo /dev/$f | cut -c -8`
-            BRpart=`echo /dev/$f | cut -c 9-`
-            detect_partition_table
-            set_syslinux_flags_and_paths
-            echo "Installing $BRsyslinuxmbr in $BRdev ($BRpartitiontable)"
-            dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/bl_error
-          done
+        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
+          BRdev=`echo /dev/$f | cut -c -8`
+          BRpart=`echo /dev/$f | cut -c 9-`
+          detect_partition_table
+          set_syslinux_flags_and_paths
+          echo "Installing $BRsyslinuxmbr in $BRdev ($BRpartitiontable)"
+          dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/bl_error
+        done
       else
         chroot /mnt/target extlinux -i /boot/syslinux || touch /tmp/bl_error
         if [ -n "$BRboot" ]; then
@@ -778,6 +780,7 @@ clean_unmount_out() {
   umount /mnt/target/proc
   umount /mnt/target/dev
   umount /mnt/target/sys
+  umount /mnt/target/run
   if [ -n "$BRhome" ]; then
     echo "Unmounting $BRhome"
     umount  $BRhome

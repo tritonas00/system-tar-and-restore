@@ -1704,7 +1704,7 @@ elif [ $BRinterface = "Dialog" ]; then
   fi
 
   exec 3>&1
-  invspace=$(echo "                             " )
+  invspace=$(echo -e "\t\t\t\t" )
 
   while [ -z "$BRroot" ]; do
     BRroot=$(dialog --title "$invspace" --cancel-label Quit --menu "Select target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)

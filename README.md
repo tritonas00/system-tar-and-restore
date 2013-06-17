@@ -187,7 +187,9 @@ Recommended subvolume name is: *__active*
 
 When using LVM, it is also recommended to have a seperate /boot partition.  
 
-When using raid, it is recommended to create a seperate raid1 array with metadata=1.0 as your /boot partition.  
+When using RAID, it is recommended to create a seperate raid1 array with metadata=1.0 as your /boot partition.  
+
+When using GRUB with BIOS and GPT you must create a BIOS Boot Partition: ~1 MiB unformatted partition with bios_grub flag on (0xEF02 for gdisk).  
 
 In the target system, in case of Syslinux, old directory */boot/syslinux* is saved as */boot/syslinux-old*.  
 

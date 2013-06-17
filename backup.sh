@@ -84,10 +84,6 @@ run_tar() {
   fi
 }
 
-if [ -z "$BRnocolor" ]; then
-  color_variables
-fi
-
 BRargs=`getopt -o "i:d:c:u:hnN" -l "interface:,directory:,compression:,user-options:,exclude-home,no-hidden,no-color,help" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ]; then
@@ -129,6 +125,8 @@ while true; do
       shift
     ;;
     --help)
+      BR_BOLD='\033[1m'
+      BR_NORM='\e[00m'
       echo -e "
 ${BR_BOLD}$BR_VERSION
 
@@ -149,6 +147,7 @@ ${BR_BOLD}Tar Options:${BR_NORM}
 
 --help	print this page
 "
+      unset BR_BOLD BR_NORM
       exit
       shift
     ;;
@@ -158,6 +157,10 @@ ${BR_BOLD}Tar Options:${BR_NORM}
     ;;
   esac
 done
+
+if [ -z "$BRnocolor" ]; then
+  color_variables
+fi
 
 if [ $(id -u) -gt 0 ]; then
   echo -e "${BR_RED}Script must run as root${BR_NORM}"

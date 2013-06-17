@@ -861,10 +861,6 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   fi
 }
 
-if [ -z "$BRnocolor" ]; then
-  color_variables
-fi
-
 BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoNm:k:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,no-color,mount-options:,kernel-options:" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
@@ -968,7 +964,9 @@ while true; do
       shift 2
     ;;
     --help)
-      echo -e "
+    BR_BOLD='\033[1m'
+    BR_NORM='\e[00m'
+    echo -e "
 ${BR_BOLD}$BR_VERSION
 
 Interface:${BR_NORM}
@@ -1006,6 +1004,7 @@ ${BR_BOLD}Btrfs Subvolumes:${BR_NORM}
 
 --help  print this page
 "
+      unset BR_BOLD BR_NORM
       exit
       shift
     ;;
@@ -1015,6 +1014,10 @@ ${BR_BOLD}Btrfs Subvolumes:${BR_NORM}
     ;;
   esac
 done
+
+if [ -z "$BRnocolor" ]; then
+  color_variables
+fi
 
 DEFAULTIFS=$IFS
 IFS=$'\n'

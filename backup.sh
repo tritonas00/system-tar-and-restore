@@ -12,6 +12,7 @@ color_variables() {
   BR_BLUE='\e[00;34m'
   BR_MAGENTA='\e[00;35m'
   BR_CYAN='\e[00;36m'
+  BR_BOLD='\033[1m'
 }
 
 info_screen() {
@@ -83,6 +84,10 @@ run_tar() {
   fi
 }
 
+if [ -z "$BRnocolor" ]; then
+  color_variables
+fi
+
 BRargs=`getopt -o "i:d:c:u:hnN" -l "interface:,directory:,compression:,user-options:,exclude-home,no-hidden,no-color,help" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ]; then
@@ -124,14 +129,23 @@ while true; do
       shift
     ;;
     --help)
-      echo "
--i, --interface         interface to use (CLI Dialog)
--N, --no-color          disable colors
--d, --directory		path for backup folder
--h, --exclude-home	exclude /home
--n  --no-hidden         dont keep home's hidden files and folders
--c, --compression       compression type (GZIP XZ)
--u, --user-options      additional tar options (See tar --help)
+      echo -e "
+${BR_BOLD}$BR_VERSION
+
+Interface:${BR_NORM}
+  -i, --interface         interface to use (CLI Dialog)
+  -N, --no-color          disable colors
+
+${BR_BOLD}Destination:${BR_NORM}
+  -d, --directory         path for backup folder
+
+${BR_BOLD}Home Directory:${BR_NORM}
+  -h, --exclude-home	  exclude /home
+  -n  --no-hidden         dont keep home's hidden files and folders
+
+${BR_BOLD}Tar Options:${BR_NORM}
+  -c, --compression       compression type (GZIP XZ)
+  -u, --user-options      additional tar options (See tar --help)
 
 --help	print this page
 "
@@ -144,10 +158,6 @@ while true; do
     ;;
   esac
 done
-
-if [ -z "$BRnocolor" ]; then
-  color_variables
-fi
 
 if [ $(id -u) -gt 0 ]; then
   echo -e "${BR_RED}Script must run as root${BR_NORM}"
@@ -212,7 +222,7 @@ done
 
 if [ $BRinterface = "CLI" ]; then
   clear
-  echo "$BR_VERSION"
+  echo -e "${BR_BOLD}$BR_VERSION${BR_NORM}"
   echo " "
   DEFAULTIFS=$IFS
   IFS=$'\n'
@@ -382,7 +392,7 @@ elif [ $BRinterface = "Dialog" ]; then
     exit
   fi
 
-  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN
+  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRFOLDER" ]; then
     dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 22 70

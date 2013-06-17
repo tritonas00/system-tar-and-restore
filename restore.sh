@@ -12,6 +12,7 @@ color_variables() {
   BR_BLUE='\e[00;34m'
   BR_MAGENTA='\e[00;35m'
   BR_CYAN='\e[00;36m'
+  BR_BOLD='\033[1m'
 }
 
 info_screen() {
@@ -119,12 +120,12 @@ generate_syslinux_cfg() {
   fi
   for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
     if [ $BRdistro = Arch ]; then
-      echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-      echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol ro\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
     elif [ $BRdistro = Debian ]; then
-      echo -e "LABEL debian\n\tMENU LABEL Debian-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+      echo -e "LABEL debian\n\tMENU LABEL Debian-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
     elif [ $BRdistro = Fedora ]; then
-      echo -e "LABEL fedora\n\tMENU LABEL Fedora-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      echo -e "LABEL fedora\n\tMENU LABEL Fedora-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
     fi
   done
 }
@@ -418,6 +419,9 @@ show_summary() {
       echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) |  grep -oP '[hs]d[a-z]'))"
     else
       echo "Location: $BRsyslinux"
+    fi
+    if [ -n "$BR_KERNEL_OPTS" ]; then
+      echo "Kernel Options: $BR_KERNEL_OPTS"
     fi
   else
     echo "None (WARNING)"
@@ -862,7 +866,11 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   fi
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoNm:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,no-color,mount-options:" -n "$1" -- "$@"`
+if [ -z "$BRnocolor" ]; then
+  color_variables
+fi
+
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoNm:k:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,no-color,mount-options:,kernel-options:" -n "$1" -- "$@"`
 
 if [ $? -ne 0 ];
 then
@@ -960,28 +968,46 @@ while true; do
       BR_MOUNT_OPTS=$2
       shift 2
     ;;
+    -k|--kernel-options)
+      BR_KERNEL_OPTS=$2
+      shift 2
+    ;;
     --help)
-      echo "
--i,  --interface       interface to use (CLI Dialog)
--N,  --no-color        disable colors
--t,  --transfer        activate transfer mode
--o,  --only-hidden     transfer /home's hidden files and folders only
--r,  --root            root partition
--s,  --swap            swap partition
--b,  --boot            boot partition
--h,  --home            home partition
--g,  --grub            disk for grub
--S,  --syslinux        disk for syslinux
--f,  --file            backup file path
--u,  --url             url
--n,  --username        username
--p,  --password        password
--q,  --quiet           dont ask, just run
--R,  --rootsubvolname  subvolume name for /     (btrfs only)
--H,  --homesubvol      make subvolume for /home (btrfs only)
--V,  --varsubvol       make subvolume for /var  (btrfs only)
--U,  --usrsubvol       make subvolume for /usr  (btrfs only)
--m,  --mount-options   comma-separated list of mount options (root partition)
+      echo -e "
+${BR_BOLD}$BR_VERSION
+
+Interface:${BR_NORM}
+  -i,  --interface       interface to use (CLI Dialog)
+  -N,  --no-color        disable colors
+  -q,  --quiet           dont ask, just run
+
+${BR_BOLD}Mode:${BR_NORM}
+  -t,  --transfer        activate transfer mode
+  -o,  --only-hidden     transfer /home's hidden files and folders only
+
+${BR_BOLD}Partitions:${BR_NORM}
+  -r,  --root            root partition
+  -s,  --swap            swap partition
+  -b,  --boot            boot partition
+  -h,  --home            home partition
+  -m,  --mount-options   comma-separated list of mount options (root partition)
+
+${BR_BOLD}Bootloader:${BR_NORM}
+  -g,  --grub            disk for grub
+  -S,  --syslinux        disk for syslinux
+  -k,  --kernel-options  additional kernel options (syslinux)
+
+${BR_BOLD}Backup File:${BR_NORM}
+  -f,  --file            backup file path
+  -u,  --url             url
+  -n,  --username        username
+  -p,  --password        password
+
+${BR_BOLD}Btrfs Subvolumes:${BR_NORM}
+  -R,  --rootsubvolname  subvolume name for /
+  -H,  --homesubvol      make subvolume for /home
+  -V,  --varsubvol       make subvolume for /var
+  -U,  --usrsubvol       make subvolume for /usr
 
 --help  print this page
 "
@@ -995,9 +1021,6 @@ while true; do
   esac
 done
 
-if [ -z "$BRnocolor" ]; then
-  color_variables
-fi
 DEFAULTIFS=$IFS
 IFS=$'\n'
 
@@ -1028,6 +1051,15 @@ if [ -n "$BRroot" ]; then
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
     BRgrub=-1
     BRsyslinux=-1
+    if [ -n "$BR_KERNEL_OPTS" ]; then
+      echo -e "${BR_YELLOW}No bootloader selected, skipping kernel options${BR_NORM}"
+      sleep 1
+    fi
+  fi
+
+  if [ -n "$BRgrub" ] && [ -z "$BRsyslinux" ] && [ -n "$BR_KERNEL_OPTS" ]; then
+    echo -e "${BR_YELLOW}Grub selected, skipping kernel options${BR_NORM}"
+    sleep 1
   fi
 
   if [ -z "$BRfile" ] && [ -z "$BRurl" ] && [ -z "$BRrestore"  ]; then
@@ -1084,7 +1116,7 @@ done
 
 if [ $BRinterface = "CLI" ]; then
   clear
-  echo "$BR_VERSION"
+  echo -e "${BR_BOLD}$BR_VERSION${BR_NORM}"
   echo " "
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
@@ -1697,7 +1729,7 @@ elif [ $BRinterface = "Dialog" ]; then
     exit
   fi
 
-  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN
+  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 25 80

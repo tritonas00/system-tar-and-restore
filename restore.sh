@@ -976,7 +976,7 @@ Interface:${BR_NORM}
   -N,  --no-color        disable colors
   -q,  --quiet           dont ask, just run
 
-${BR_BOLD}Mode:${BR_NORM}
+${BR_BOLD}Transfer Mode:${BR_NORM}
   -t,  --transfer        activate transfer mode
   -o,  --only-hidden     transfer /home's hidden files and folders only
 

@@ -368,7 +368,7 @@ mount_all() {
 
 show_summary() {
   echo  "PARTITIONS:"
-  echo -e "Root Partition: $BRroot $BRfsystem $BRfsize"
+  echo -e "Root Partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
 
   if [ -n "$BRboot" ]; then
     echo "Boot Partition: $BRboot $BRbootfsystem $BRbootfsize"
@@ -397,11 +397,6 @@ show_summary() {
     if [ "x$BRusrsubvol" = "xy" ]; then
       echo "Usr  Subvolume: Yes"
     fi
-  fi
-
-  if [ "$BRmountoptions" = "Yes" ]; then
-    echo -e "\nROOT MOUNT OPTIONS:"
-    echo $BR_MOUNT_OPTS
   fi
 
   echo -e "\nBOOTLOADER:"
@@ -1268,7 +1263,23 @@ if [ $BRinterface = "CLI" ]; then
 	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#bootloader_list[@]} ]; then
 	      BRsyslinux=(`echo $c | awk '{ print $1 }'`)
               echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}"
-	      break
+	      echo -e "\n${BR_CYAN}Enter additional kernel options?${BR_NORM}"
+              read -p "(y/N):" an
+
+              if [ -n "$an" ]; then
+                def=$an
+              else
+                def="n"
+              fi
+
+              if [ $def = "y" ] || [ $def = "Y" ]; then
+                read -p "Enter options:" BR_KERNEL_OPTS
+                break
+              elif [ $def = "n" ] || [ $def = "N" ]; then
+                break
+              else
+                echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+              fi
 	    else
               echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
 	    fi
@@ -1801,6 +1812,13 @@ elif [ $BRinterface = "Dialog" ]; then
           exit
         fi
       done
+    fi
+  fi
+
+  if [ -n "$BRsyslinux" ] && [ -z "$BR_KERNEL_OPTS" ]; then
+    dialog   --yesno "Specify additional kernel options?" 6 40
+    if [ $? = "0" ]; then
+      BR_KERNEL_OPTS=$(dialog  --no-cancel --inputbox "Enter additional kernel options:" 8 70 2>&1 1>&3)
     fi
   fi
 

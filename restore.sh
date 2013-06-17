@@ -368,7 +368,7 @@ mount_all() {
 
 show_summary() {
   echo  "PARTITIONS:"
-  echo -e "Root Partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
+  echo -e "Root Partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS,noatime"
 
   if [ -n "$BRboot" ]; then
     echo "Boot Partition: $BRboot $BRbootfsystem $BRbootfsize"
@@ -1813,15 +1813,13 @@ elif [ $BRinterface = "Dialog" ]; then
         if [ $? = "1" ]; then
           BRsyslinux=" "
           exit
+        else
+          dialog   --yesno "Specify additional kernel options?" 6 40
+          if [ $? = "0" ]; then
+            BR_KERNEL_OPTS=$(dialog  --no-cancel --inputbox "Enter additional kernel options:" 8 70 2>&1 1>&3)
+          fi
         fi
       done
-    fi
-  fi
-
-  if [ -n "$BRsyslinux" ] && [ -z "$BR_KERNEL_OPTS" ]; then
-    dialog   --yesno "Specify additional kernel options?" 6 40
-    if [ $? = "0" ]; then
-      BR_KERNEL_OPTS=$(dialog  --no-cancel --inputbox "Enter additional kernel options:" 8 70 2>&1 1>&3)
     fi
   fi
 

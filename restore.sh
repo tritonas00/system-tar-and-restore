@@ -542,10 +542,10 @@ install_bootloader() {
           chroot /mnt/target grub-install  --recheck /dev/$f || touch /tmp/bl_error
         elif [ $BRdistro = Fedora ]; then
           chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/bl_error
-        fi 
+        fi
       done
     else
-      if [ $BRdistro = Arch ]; then 
+      if [ $BRdistro = Arch ]; then
         chroot /mnt/target grub-install --target=i386-pc  --recheck $BRgrub || touch /tmp/bl_error
       elif [ $BRdistro = Debian ]; then
         chroot /mnt/target grub-install  --recheck $BRgrub || touch /tmp/bl_error
@@ -566,8 +566,8 @@ install_bootloader() {
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
     else
-      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg  
-    fi 
+      chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
+    fi
 
   elif [ -n "$BRsyslinux" ]; then
     echo -e "\n==>INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
@@ -607,7 +607,7 @@ install_bootloader() {
         echo "Installing $BRsyslinuxmbr in $BRsyslinux ($BRpartitiontable)"
         dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/bl_error
       fi
-      cp $BRmenuc32path /mnt/target/boot/syslinux/   
+      cp $BRmenuc32path /mnt/target/boot/syslinux/
     fi
     generate_syslinux_cfg
     echo -e "\n==>GENERATED SYSLINUX CONFIG" >> /tmp/restore.log

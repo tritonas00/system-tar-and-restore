@@ -106,10 +106,8 @@ set_syslinux_flags_and_paths() {
   fi
   if [ $BRdistro = Debian ]; then
     BRsyslinuxpath="/mnt/target/usr/lib/syslinux"
-    BRmenuc32path="/mnt/target/usr/lib/syslinux/menu.c32"
   elif [ $BRdistro = Fedora ]; then
     BRsyslinuxpath="/mnt/target/usr/share/syslinux"
-    BRmenuc32path="/mnt/target/usr/share/syslinux/menu.c32"
   fi
 }
 
@@ -606,7 +604,7 @@ install_bootloader() {
         echo "Installing $BRsyslinuxmbr in $BRsyslinux ($BRpartitiontable)"
         dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/bl_error
       fi
-      cp $BRmenuc32path /mnt/target/boot/syslinux/
+      cp $BRsyslinuxpath/menu.c32 /mnt/target/boot/syslinux/
     fi
     generate_syslinux_cfg
     echo -e "\n==>GENERATED SYSLINUX CONFIG" >> /tmp/restore.log

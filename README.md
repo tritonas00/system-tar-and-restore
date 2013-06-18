@@ -95,7 +95,7 @@ The script will ask for:
 
 - (Optional) Target boot partition    
 
-- (Optional) Target swap partition   
+- (Optional) Swap partition   
 
 - (Optional) Bootloader and target disk (MBR). Grub2 and Syslinux are both supported.
    If Syslinux is selected, it will ask for additional kernel options which will be written in syslinux.cfg.

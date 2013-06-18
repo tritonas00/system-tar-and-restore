@@ -89,13 +89,13 @@ The script will ask for:
 
 - Interface to use  
 
-- Root partition  and additional mount options  
+- Target root partition  and additional mount options  
 
-- (Optional) Swap partition   
+- (Optional) Target home partition   
 
-- (Optional) Home partition   
+- (Optional) Target boot partition    
 
-- (Optional) Boot partition    
+- (Optional) Target swap partition   
 
 - (Optional) Bootloader and target disk (MBR). Grub2 and Syslinux are both supported.
    If Syslinux is selected, it will ask for additional kernel options which will be written in syslinux.cfg.

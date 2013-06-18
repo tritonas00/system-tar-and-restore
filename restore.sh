@@ -1218,7 +1218,7 @@ if [ $BRinterface = "CLI" ]; then
         echo -e "${BR_GREEN}You selected $BRswap as your swap partition${BR_NORM}"
         break
       elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-        echo  -e "${BR_GREEN}No swap${BR_NORM}"
+        echo  -e "${BR_GREEN}No swap partition${BR_NORM}"
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
@@ -1233,7 +1233,7 @@ if [ $BRinterface = "CLI" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
        	exit
       elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
-        echo -e "\n${BR_YELLOW}--->WARNING! NO BOOTLOADER SELECTED<---\n${BR_NORM}"
+        echo -e "\n${BR_YELLOW}--->WARNING! NO BOOTLOADER SELECTED<---${BR_NORM}"
         break
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
 

@@ -252,14 +252,14 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 
 <code>sudo ./restore.sh -r /dev/mapper/debian-root -b /dev/sdb1 -g /dev/sdb -t</code>  
 
-- root = /dev/sda2 (btrfs)
+- root = /dev/sda2 (btrfs) with compression
 - boot = /dev/sda1
 - root subvolume = __active
 - /var, /usr and /home subvolumes
 - syslinux  
 - transfer mode  
 
-<code>sudo ./restore.sh -t -b /dev/sda1 -r /dev/sda2 -S /dev/sda -R __active -V -U -H </code>  
+<code>sudo ./restore.sh -t -b /dev/sda1 -r /dev/sda2 -m compress=lzo -S /dev/sda -R __active -V -U -H </code>  
 
 - root = /dev/md1
 - boot = /dev/md0

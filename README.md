@@ -89,7 +89,7 @@ The script will ask for:
 
 - Interface to use  
 
-- Root partition  
+- Root partition  and additional mount and fstab options for it  
 
 - (Optional) Swap partition   
 
@@ -98,6 +98,7 @@ The script will ask for:
 - (Optional) Boot partition    
 
 - (Optional) Bootloader and target disk (MBR). Grub2 and Syslinux are both supported.
+   If Syslinux is selected, it will ask for additional kernel options which will be written in syslinux.cfg.
    If a raid array is selected, the script will install the bootloader in all disks that the array contains.  
 
 - Select Mode
@@ -125,6 +126,9 @@ interface to use
 **-N, --no-color**   
 disable colors
 
+**-q,  --quiet**  
+dont ask, just run  
+
 **-t, --transfer**   
 activate tranfer mode  
 
@@ -143,11 +147,17 @@ boot partition
 **-h, --home**     
 home partition
 
+**-m, --mount-options**     
+comma-separated list of mount options (root partition)
+
 **-g, --grub**    
 disk for grub
 
 **-S, --syslinux**      
 disk for syslinux
+
+**-k, --kernel-options**      
+additional kernel options (syslinux)
 
 **-f, --file**      
 backup file path
@@ -160,9 +170,6 @@ username
 
 **-p, --password**     
 password
-
-**-q,  --quiet**  
-dont ask, just run  
 
 **-R, --rootsubvolname**   
 subvolume name for root

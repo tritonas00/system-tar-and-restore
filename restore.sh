@@ -978,8 +978,8 @@ ${BR_BOLD}Transfer Mode:${BR_NORM}
 
 ${BR_BOLD}Partitions:${BR_NORM}
   -r,  --root            target root partition
-  -b,  --boot            target boot partition
   -h,  --home            target home partition
+  -b,  --boot            target boot partition
   -s,  --swap            swap partition
   -m,  --mount-options   comma-separated list of mount options (root partition)
 

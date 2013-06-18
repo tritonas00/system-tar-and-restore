@@ -977,10 +977,10 @@ ${BR_BOLD}Transfer Mode:${BR_NORM}
   -o,  --only-hidden     transfer /home's hidden files and folders only
 
 ${BR_BOLD}Partitions:${BR_NORM}
-  -r,  --root            root partition
+  -r,  --root            target root partition
+  -b,  --boot            target boot partition
+  -h,  --home            target home partition
   -s,  --swap            swap partition
-  -b,  --boot            boot partition
-  -h,  --home            home partition
   -m,  --mount-options   comma-separated list of mount options (root partition)
 
 ${BR_BOLD}Bootloader:${BR_NORM}

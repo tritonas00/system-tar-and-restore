@@ -984,8 +984,8 @@ ${BR_BOLD}Partitions:${BR_NORM}
   -m,  --mount-options   comma-separated list of mount options (root partition)
 
 ${BR_BOLD}Bootloader:${BR_NORM}
-  -g,  --grub            disk for grub
-  -S,  --syslinux        disk for syslinux
+  -g,  --grub            target disk for grub
+  -S,  --syslinux        target disk for syslinux
   -k,  --kernel-options  additional kernel options (syslinux)
 
 ${BR_BOLD}Backup File:${BR_NORM}

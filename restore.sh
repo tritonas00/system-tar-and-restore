@@ -368,7 +368,7 @@ mount_all() {
 
 show_summary() {
   echo  "PARTITIONS:"
-  echo -e "Root Partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS,noatime"
+  echo -e "Root Partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
 
   if [ -n "$BRboot" ]; then
     echo "Boot Partition: $BRboot $BRbootfsystem $BRbootfsize"

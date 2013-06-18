@@ -263,6 +263,12 @@ and use \fI/home/john/Downloads/backup.tar.gz\fR as local backup file:
 \fBsudo ./restore.sh \-r /dev/sdb1 \-g /dev/sdb \-f /home/john/Downloads/backup.tar.gz\fR
 .RE
 .sp
+Transfer running  system using \fBrsync\fR\& in \fBssd disk\fR\&. The \fI/\fR partition will be
+\fI/dev/sda1\fR, using \fBsyslinux\fR\& and \fBnomodeset\fR\& kernel option will be enabled:
+.RS 4
+\fBsudo ./restore.sh \-r /dev/sda1 \-S /dev/sda \-m discard,errors=remount-ro -S /dev/sda -k nomodeset -t\fR
+.RE
+.sp
 Restore system in \fI/dev/sdb1\fR for \fI/\fR (root) partition\&, \fI/dev/sdb2\fR
 for \fI/home\fR partition\&, \fI/dev/sdb3\fR for \fIswap\fR\& partition, using \fBsyslinux\fR 
 as bootloader and downloading backup file from ftp server:

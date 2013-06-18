@@ -227,7 +227,14 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - grub  
 - local file
 
-<code>sudo ./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz</code>
+<code>sudo ./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz</code>  
+
+- root = /dev/sda1 (ssd)
+- syslinux  
+- kernel options: nomodeset
+- local file  
+
+<code>sudo ./restore.sh -r /dev/sda1 -m discard,errors=remount-ro -S /dev/sdb -k nomodeset -f /home/john/Downloads/backup.tar.gz</code>  
 
 - root = /dev/sdb1
 - home = /dev/sdb2

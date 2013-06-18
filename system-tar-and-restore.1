@@ -131,22 +131,22 @@ transfer /home's hidden files and folders only
 .PP
 \fB\-r, \-\-root\fR
 .RS 4
-root partition
+target root partition
+.RE
+.PP
+\fB\-b, \-\-boot\fR
+.RS 4
+target boot partition
+.RE
+.PP
+\fB\-h, \-\-home\fR
+.RS 4
+target home partition
 .RE
 .PP
 \fB\-s, \-\-swap\fR
 .RS 4
 swap partition
-.RE
-.PP
-\fB\-b, \-\-boot\fR
-.RS 4
-boot partition
-.RE
-.PP
-\fB\-h, \-\-home\fR
-.RS 4
-home partition
 .RE
 .PP
 \fB\-m, \-\-mount-options\fR
@@ -156,12 +156,12 @@ comma-separated list of mount options (root partition)
 .PP
 \fB\-g, \-\-grub\fR
 .RS 4
-disk for grub
+target disk for grub
 .RE
 .PP
 \fB\-S, \-\-syslinux\fR
 .RS 4
-disk for syslinux
+target disk for syslinux
 .RE
 .PP
 \fB\-k, \-\-kernel-options\fR

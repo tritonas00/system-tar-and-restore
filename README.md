@@ -193,15 +193,15 @@ The system that runs the restore script and the target system (the one you want 
 For booting a btrfs subvolumed root successfully with Syslinux, it is recommended to have a seperate /boot partition.  
 Recommended subvolume name is: *__active*  
 
-When using **LVM**, it is also recommended to have a seperate /boot partition.  
+When using LVM, it is also recommended to have a seperate /boot partition.  
 
-When using **RAID**, it is recommended to create a seperate raid1 array with metadata=1.0 as your /boot partition.  
+When using RAID, it is recommended to create a seperate raid1 array with metadata=1.0 as your /boot partition.  
 
-When using **GRUB with BIOS and GPT** you must create a BIOS Boot Partition: ~1 MiB unformatted partition with bios_grub flag enabled (0xEF02 for gdisk).  
+When using GRUB with BIOS and GPT you must create a BIOS Boot Partition: ~1 MiB unformatted partition with bios_grub flag enabled (0xEF02 for gdisk).  
 
-In the target system, in case of **Syslinux**, old */boot/syslinux/syslinux.cfg* is saved as */boot/syslinux.cfg-old*.  
+In the target system, in case of Syslinux, old */boot/syslinux/syslinux.cfg* is saved as */boot/syslinux.cfg-old*.  
 
-In the target system, if distribution is **Fedora and Grub** is selected, old */etc/default/grub* is saved as */etc/default/grub-old*.  
+In the target system, if distribution is Fedora and Grub is selected, old */etc/default/grub* is saved as */etc/default/grub-old*.  
 
 
 ###EXAMPLES USING ARGUMENTS###

@@ -234,7 +234,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - kernel options: nomodeset
 - transfer mode  
 
-<code>sudo ./restore.sh -r /dev/sda1 -m discard,errors=remount-ro -S /dev/sdb -k nomodeset -t</code>  
+<code>sudo ./restore.sh -r /dev/sda1 -m discard,errors=remount-ro -S /dev/sda -k nomodeset -t</code>  
 
 - root = /dev/sdb1
 - home = /dev/sdb2

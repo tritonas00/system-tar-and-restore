@@ -289,10 +289,10 @@ for \fI/boot\fR partition using \fBgrub\fR as bootloader:
 Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be
 \fI/dev/sda2\fR which is in \fBBTRFS\fR filesystem\&, \fI/dev/sda1\fR for
 \fI/boot\fR partition\&, using \fBsyslinux\fR as bootloader\&.
-The root will be in __active subvolume and \fI/usr\fR\&, \fI/var\fR\&,
-\fI/home\fR will also be in subvolumes:
+The root will be in __active subvolume, \fI/usr\fR\&, \fI/var\fR\&,
+\fI/home\fR will also be in subvolumes and btrfs compression will be enabled:
 .RS 4
-\fBsudo ./restore.sh \-t \-b /dev/sda1 \-r /dev/sda2 \-S /dev/sda \-R __active \-V \-U \-H\fR
+\fBsudo ./restore.sh \-t \-b /dev/sda1 \-r /dev/sda2 \-m compress=lzo \-S /dev/sda \-R __active \-V \-U \-H\fR
 .RE
 .sp
 Restore system in \fBRAID\fR partitions\&. The boot partition will be \fI/dev/md0\fR

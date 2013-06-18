@@ -1238,7 +1238,7 @@ if [ $BRinterface = "CLI" ]; then
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
 
         while [ -z "$BRgrub" ]; do
-          echo -e "\n${BR_CYAN}Where to install Grub? Enter Q to quit${BR_NORM}"
+          echo -e "\n${BR_CYAN}Select target disk for Grub or enter Q to quit${BR_NORM}"
 	  select c in ${bootloader_list[@]}; do
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1256,7 +1256,7 @@ if [ $BRinterface = "CLI" ]; then
       elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
 
         while [ -z "$BRsyslinux" ]; do
-          echo -e "\n${BR_CYAN}Where to install Syslinux? Enter Q to quit${BR_NORM}"
+          echo -e "\n${BR_CYAN}Select target disk Syslinux or enter Q to quit${BR_NORM}"
 	  select c in ${bootloader_list[@]}; do
 	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1799,7 +1799,7 @@ elif [ $BRinterface = "Dialog" ]; then
     fi
     if [ $REPLY = "Grub" ]; then
       while [ -z "$BRgrub" ]; do
-        BRgrub=$(dialog --cancel-label Quit  --menu "Select disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
+        BRgrub=$(dialog --cancel-label Quit  --menu "Select target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
         if [ $? = "1" ]; then
           BRgrub=" "
           exit
@@ -1807,7 +1807,7 @@ elif [ $BRinterface = "Dialog" ]; then
       done
     elif [ $REPLY = "Syslinux" ]; then
       while [ -z "$BRsyslinux" ]; do
-        BRsyslinux=$(dialog --cancel-label Quit  --menu "Select disk for Syslinux:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
+        BRsyslinux=$(dialog --cancel-label Quit  --menu "Select target disk for Syslinux:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
         if [ $? = "1" ]; then
           BRsyslinux=" "
           exit

@@ -44,17 +44,14 @@ The script will ask for:
 
 The script also supports all input as arguments:
 
-**-i, --interface**   
-interface to use
+**-i, --interface**  interface to use  
 
-**-N, --no-color**   
-disable colors
+**-N, --no-color**  disable colors   
 
-**-d, --directory**  
-path for backup folder
+**-d, --directory**  path for backup folder  
 
-**-h, --exclude-home**  
-exclude /home directory
+**-h, --exclude-home**  exclude /home directory  
+
 
 **-n, --no-hidden**       
 dont keep home's hidden files and folders

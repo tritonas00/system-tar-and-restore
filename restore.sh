@@ -1245,7 +1245,7 @@ if [ $BRinterface = "CLI" ]; then
 	      exit
 	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#bootloader_list[@]} ]; then
 	      BRgrub=(`echo $c | awk '{ print $1 }'`)
-              echo -e "${BR_GREEN}You selected $BRgrub to install GRUB${BR_NORM}"
+              echo -e "${BR_GREEN}You selected $BRgrub to install Grub${BR_NORM}"
 	      break
 	    else
               echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"

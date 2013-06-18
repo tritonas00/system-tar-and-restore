@@ -89,7 +89,7 @@ The script will ask for:
 
 - Interface to use  
 
-- Root partition  and additional mount options for it  
+- Root partition  and additional mount options  
 
 - (Optional) Swap partition   
 

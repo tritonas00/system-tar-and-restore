@@ -1,0 +1,123 @@
+#!/bin/bash
+
+if [ -z $(which zenity 2> /dev/null) ];then
+  echo -e "Package zenity is not installed\nInstall the package and re-run the script"
+  exit
+fi
+
+if [ -z $(which xterm 2> /dev/null) ];then
+  echo -e "Package xterm is not installed\nInstall the package and re-run the script"
+  exit
+fi
+
+if [ -z $(which sudo 2> /dev/null) ];then
+  BRauth="su -c"
+else
+  BRauth="sudo"
+fi
+
+BRreldir=`dirname $0`
+cd $BRreldir
+BRdir=`pwd`
+
+if [ -z $(which backup.sh 2> /dev/null) ];then
+  BRscript="$BRdir/./backup.sh"
+else
+  BRscript="backup.sh"
+fi
+
+update_options() {
+  BR_BACKUP_OPTS="${BR_BACKUP_DEST} ${BR_BACKUP_HOME} ${BR_BACKUP_COMP} ${BR_TAR_OPTIONS}"
+
+  options=("Change Destination Folder " "$BRFOLDER"  \
+"(Optional) Exclude /home directory" "$BRHOME" \
+"(Optional) Set additional tar options" "$BRtaroptions" \
+"Set Compression Type" "$BRcompression" \
+"Done" "> $BRauth $BRscript $BR_BACKUP_OPTS")
+}
+
+BRinfo="This script will make a tar backup image of your entire system.
+
+==>Make sure you have enough free space.
+==>Make sure you have GRUB or SYSLINUX packages installed.
+
+GRUB Packages:
+-->Arch: grub-bios
+-->Debian: grub-pc
+-->Fedora: grub2
+
+SYSLINUX Packages:
+-->Arch: syslinux
+-->Debian: syslinux extlinux
+-->Fedora: syslinux syslinux-extlinux
+
+Choose an option:"
+
+BRFOLDER="/"
+BR_BACKUP_DEST="-d /"
+BRHOME="Include"
+
+update_options
+
+while [ -z "$BRcompression" ]; do
+
+  while opt=$(zenity  --width 550 --height 550 --cancel-label="Quit" --list  --title "Backup" --text "$BRinfo"  --column="Options" --column="Selection"  "${options[@]}" ); if [ $? = "1" ]; then exit; fi; do
+
+    case "$opt" in
+      "${options[0]}" )
+          BRFOLDER=$(zenity --title "Select destination folder" --file-selection --directory)
+          if [ $? = "0" ]; then
+            BR_BACKUP_DEST="-d '$BRFOLDER'"
+          else
+            BRFOLDER="/"
+            BR_BACKUP_DEST="-d /"
+          fi
+          update_options;;
+      "${options[2]}" )
+          BRHOME=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Options"  "Only hidden files and folders"  "Exclude" --text "Select an option:")
+          if [ "$BRHOME" = "Only hidden files and folders" ]; then
+            BR_BACKUP_HOME="-h"
+          elif [ "$BRHOME" = "Exclude" ]; then
+            BR_BACKUP_HOME="-h -n"
+          else
+            BRHOME="Include"
+            unset BR_BACKUP_HOME
+          fi
+          update_options;;
+      "${options[4]}" )
+          BRuseroptions=$(zenity --width 550 --title "Backup" --cancel-label="Reset" --entry --entry-text="$BRuseroptions" --text "Enter additional tar options: (See tar --help)")
+          if [ -n "$BRuseroptions" ] && [ $? = "0" ]; then
+            BR_TAR_OPTIONS="-u '$BRuseroptions'"
+            BRtaroptions=Activated
+          else
+           unset BRtaroptions BR_TAR_OPTIONS
+          fi
+          update_options;;
+      "${options[6]}" )
+          BRcompression=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Compressors" --column="Info" GZIP "Fast, big file" XZ "Slow, smaller file" --text "Select compression type:")
+          if [  -n "$BRcompression" ] && [ $? = "0" ]; then
+             BR_BACKUP_COMP="-c $BRcompression"
+          else
+            unset BR_BACKUP_COMP
+          fi
+          update_options;;
+      "${options[8]}" )
+          break ;;
+      *) zenity --error --no-wrap  --text="Select an option first.";;
+      esac
+  done
+
+  if [ -z "$BRcompression" ]; then
+    zenity --error --no-wrap --text="You must specify compression type!"
+  fi
+done
+
+if [ "$BRauth" = "su -c" ]; then
+  xterm -T Backup -e su -c "
+  ${BRscript} -i CLI -N ${BR_BACKUP_OPTS}
+  sleep 2"
+elif [ "$BRauth" = "sudo" ]; then
+  xterm -T Backup -e "
+  sudo ${BRscript} -i CLI -N ${BR_BACKUP_OPTS}
+  sleep 2"
+fi

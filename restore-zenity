@@ -1,0 +1,255 @@
+#!/bin/bash
+
+if [ -z $(which zenity 2> /dev/null) ];then
+  echo -e "Package zenity is not installed\nInstall the package and re-run the script"
+  exit
+fi
+
+if [ -z $(which xterm 2> /dev/null) ];then
+  echo -e "Package xterm is not installed\nInstall the package and re-run the script"
+  exit
+fi
+
+if [ -z $(which sudo 2> /dev/null) ];then
+  BRauth="su -c"
+else
+  BRauth="sudo"
+fi
+
+BRreldir=`dirname $0`
+cd $BRreldir
+BRdir=`pwd`
+
+if [ -z $(which restore.sh 2> /dev/null) ];then
+  BRscript="$BRdir/./restore.sh"
+else
+  BRscript="restore.sh"
+fi
+
+partition_list() {
+  for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
+  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)"; done  | grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"`  -e `echo /dev/mapper/"${BRboot##*/}"`
+  for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
+}
+
+disk_list() {
+  for f in /dev/[hs]d[a-z]; do echo -e "$f"; done
+  for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f";  done
+}
+
+update_options() {
+  BR_RESTORE_OPTS="${BR_ROOT} ${BR_MOUNT_OPTIONS} ${BR_SWAP} ${BR_HOME} ${BR_BOOT} ${BR_BOOTLOADER} ${BR_KERN_OPTIONS} ${BR_ROOT_SUBVOL} ${BR_HOME_SUBVOL} ${BR_VAR_SUBVOL} ${BR_USR_SUBVOL} ${BR_FILE} ${BR_URL} ${BR_PROTECTED_URL} ${BR_TRANSFER}"
+
+  options=("Set target root partition" "$BRroot  $BRuseroptions"  \
+"(Optional) Set swap partition" "$BRswap" \
+"(Optional) Set target home partition" "$BRhome" \
+"(Optional) Set target boot partition" "$BRboot" \
+"(Optional) Set btrfs subvolumes" "$BRrootsubvol $BR_HOME_SUBVOL $BR_VAR_SUBVOL $BR_USR_SUBVOL" \
+"(Optional) Set bootloader" "$BRbootloader $BRbootloader_disk $BRkerneloptions" \
+"Choose Backup File" "$BRfile" \
+"Enter URL" "$BRurl" \
+"Enter Protected URL" "$BRprotectedurl $BRusername" \
+"Enable Transfer Mode" "$BR_TR_EN $BR_OH" \
+"Done" "> $BRauth $BRscript $BR_RESTORE_OPTS")
+}
+
+BRinfo="This script will restore a backup image of your system or transfer this system in user defined partitions.
+
+==>Make sure you have created and formatted at least one partition
+       for root (/) and optionally partitions for /home and /boot.
+
+==>Make sure that target LVM volume groups are activated and target
+       RAID arrays are properly assembled.
+
+==>If you didn't include /home directory in the backup
+       and you already have a seperate /home partition,
+       simply enter it in the options below.
+
+==>Also make sure that this system and the system you want
+       to restore have the same architecture (for chroot to work).
+
+==>Fedora backups can only be restored from a Fedora enviroment,
+       due to extra tar options.
+
+Choose an option:"
+
+update_options
+
+
+while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
+
+  while opt=$(zenity  --width 550 --height 650 --cancel-label="Quit" --list  --title "Restore" --text "$BRinfo"  --column="Options" --column="Selection"  "${options[@]}" ); if [ $? = "1" ]; then exit; fi; do
+
+    case "$opt" in
+      "${options[0]}" )
+          BRroot=$(zenity --width 500 --height 300 --list --title "Restore" --cancel-label="Reset" --text "Select target root partition:" --column="Partitions" --column="Size" $(partition_list))
+          if [ -n "$BRroot" ] && [ $? = "0" ]; then
+            BR_ROOT="-r $BRroot"
+            BRrootckeck="ok"
+            BRuseroptions=$(zenity --width 550 --title "Restore" --cancel-label="Skip" --entry --entry-text="$BRuseroptions" --text "Enter additional mount options: (comma-separated list of mount options)")
+            if [ -n "$BRuseroptions" ] && [ $? = "0" ]; then
+              BR_MOUNT_OPTIONS="-m '$BRuseroptions'"
+            else
+              unset BRuseroptions BR_MOUNT_OPTIONS
+            fi
+          else
+            unset BRrootckeck BR_ROOT BRuseroptions BR_MOUNT_OPTIONS
+          fi
+          update_options;;
+      "${options[2]}" )
+          BRswap=$(zenity --width 500 --height 300 --list --title "Restore" --cancel-label="Reset" --text "Select swap partition:" --column="Partitions" --column="Size" $(partition_list))
+          if [ -n "$BRswap" ] && [ $? = "0" ]; then
+            BR_SWAP="-s $BRswap"
+          else
+            unset BR_SWAP
+          fi
+          update_options;;
+      "${options[4]}" )
+          BRhome=$(zenity --width 500 --height 300 --list --title "Restore" --cancel-label="Reset" --text "Select target home partition:" --column="Partitions" --column="Size" $(partition_list))
+          if [ -n "$BRhome" ] && [ $? = "0" ]; then
+            BR_HOME="-h $BRhome"
+          else
+            unset BR_HOME
+          fi
+          update_options;;
+      "${options[6]}" )
+          BRboot=$(zenity --width 500 --height 300 --list --title "Restore" --cancel-label="Reset" --text "Select target boot partition:" --column="Partitions" --column="Size" $(partition_list))
+          if [ -n "$BRboot" ] && [ $? = "0" ]; then
+            BR_BOOT="-b $BRboot"
+          else
+            unset BR_BOOT
+          fi
+          update_options;;
+      "${options[8]}" )
+          BRrootsubvol=$(zenity --title "Restore" --cancel-label="Reset" --entry --entry-text="$BRrootsubvol" --text "Enter root subvolume name:")
+          if [ -n "$BRrootsubvol" ] && [ $? = "0" ]; then
+            BR_ROOT_SUBVOL="-R $BRrootsubvol"
+            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /home ?"
+            if [ $? = "0" ]; then
+              BR_HOME_SUBVOL="-H"
+            else
+              unset BR_HOME_SUBVOL
+            fi
+            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /var ?"
+            if [ $? = "0" ]; then
+              BR_VAR_SUBVOL="-V"
+            else
+              unset BR_VAR_SUBVOL
+            fi
+            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /usr ?"
+            if [ $? = "0" ]; then
+              BR_USR_SUBVOL="-U"
+            else
+              unset BR_USR_SUBVOL
+            fi
+          else
+            unset BRrootsubvol BR_ROOT_SUBVOL BR_HOME_SUBVOL BR_VAR_SUBVOL BR_USR_SUBVOL
+          fi
+          update_options;;
+      "${options[10]}" )
+          BRbootloader=$(zenity --title "Restore" --cancel-label="Reset" --text="Select bootloader:" --list --column "Bootloaders" Grub Syslinux)
+          if [ "x$BRbootloader" = "xGrub" ]; then
+            BRbootloader_disk=$(zenity --title "Restore" --cancel-label="Reset" --text="Select target disk for Grub:" --list --column "Disks" $(disk_list))
+            if [ -n "$BRbootloader_disk" ] && [ $? = "0" ]; then
+              BR_BOOTLOADER="-g $BRbootloader_disk"
+              unset BRkerneloptions BR_KERN_OPTIONS
+            else
+              unset BR_BOOTLOADER BRbootloader BRkerneloptions BR_KERN_OPTIONS
+            fi
+          elif [ "x$BRbootloader" = "xSyslinux" ]; then
+            BRbootloader_disk=$(zenity --title "Restore" --cancel-label="Reset" --text="Select target disk for Syslinux:" --list --column "Disks" $(disk_list))
+            if [ -n "$BRbootloader_disk" ] && [ $? = "0" ]; then
+              BR_BOOTLOADER="-S $BRbootloader_disk"
+              BRkerneloptions=$(zenity --width 550 --title "Restore" --cancel-label="Skip" --entry --entry-text="$BRkerneloptions" --text "Enter additional kernel options:")
+              if [ -n "$BRkerneloptions" ] && [ $? = "0" ]; then
+                BR_KERN_OPTIONS="-k '$BRkerneloptions'"
+              else
+                unset BRkerneloptions BR_KERN_OPTIONS
+              fi
+            else
+              unset BR_BOOTLOADER BRbootloader BRkerneloptions BR_KERN_OPTIONS
+            fi
+          else
+            unset BRbootloader BRbootloader_disk  BR_BOOTLOADER BRkerneloptions BR_KERN_OPTIONS
+          fi
+          update_options;;
+      "${options[12]}" )
+          BRfile=$(zenity --title "Select backup file" --file-selection --file-filter="GZIP Compressed Archive *.gz"  --file-filter="XZ Compressed Archive *.xz")
+          if [ $? = "0" ]; then
+            BR_FILE="-f '$BRfile'"
+            BRsourceckeck="ok"
+            unset BRurl BRprotected BRprotectedurl BRusername BRpassword BR_URL BR_PROTECTED_URL BR_TRANSFER BR_OH BR_TR_EN
+          elif [ -z "$BR_URL" ] && [ -z "$BR_TRANSFER" ] && [ -z "$BR_PROTECTED_URL" ]; then
+            unset BRsourceckeck BR_FILE
+          else
+            unset BR_FILE
+          fi
+          update_options;;
+      "${options[14]}" )
+          BRurl=$(zenity --width 550 --title "Restore" --cancel-label="Reset" --entry --entry-text="$BRurl" --text "Enter URL:")
+          if [ -n "$BRurl" ] && [ $? = "0" ]; then
+            BR_URL="-u '$BRurl'"
+            BRsourceckeck=ok
+            unset BRfile BRprotected BRprotectedurl BRusername BRpassword BR_PROTECTED_URL BR_FILE BR_TRANSFER BR_OH BR_TR_EN
+          elif [ -z "$BR_FILE" ] && [ -z "$BR_TRANSFER" ] && [ -z "$BR_PROTECTED_URL" ]; then
+            unset BRsourceckeck BR_URL
+          else
+            unset BR_URL
+          fi
+          update_options;;
+      "${options[16]}" )
+          BRprotectedurl=$(zenity --width 550 --title "Restore" --cancel-label="Reset" --entry --entry-text="$BRprotectedurl" --text "Enter URL:")
+          if [ -n "$BRprotectedurl" ] && [ $? = "0" ]; then
+            BRprotected=$(zenity --title "Restore" --cancel-label="Reset" --password --username)
+            BRusername=$(echo $BRprotected | cut -d'|' -f1)
+            BRpassword=$(echo $BRprotected | cut -d'|' -f2)
+            if [ -n "$BRusername" ] && [ -n "$BRpassword" ] && [ $? = "0" ]; then
+              BR_PROTECTED_URL="-u '$BRprotectedurl' -n $BRusername -p $BRpassword"
+              BRsourceckeck=ok
+              unset BRurl BRfile BR_URL BR_FILE BR_TRANSFER BR_OH BR_TR_EN
+            else
+              unset BR_PROTECTED_URL BRprotectedurl BRusername BRpassword
+            fi
+          elif [ -z "$BR_FILE" ] && [ -z "$BR_URL" ] && [ -z "$BR_TRANSFER" ]; then
+            unset BRsourceckeck BRusername BR_PROTECTED_URL
+          else
+            unset BR_PROTECTED_URL BRusername
+          fi
+          update_options;;
+      "${options[18]}" )
+          BR_TR_EN=Enabled
+          BRsourceckeck=ok
+          unset BRfile BRprotected BRprotectedurl BRusername BRpassword BRurl BR_FILE BR_URL BR_PROTECTED_URL
+          zenity --title "Restore" --question --no-wrap --text "Transfer entire home directory?\n\nIf No, only hidden files and folders will be transferred"
+          if [ $? = "0" ]; then
+            BR_TRANSFER="-t"
+            BR_OH=", Home: Include"
+          elif [ $? = "1" ]; then
+            BR_TRANSFER="-t -o"
+            BR_OH=", Home: Only hidden files and folders"
+          elif [ -z "$BR_TRANSFER" ] && [ -z "$BR_FILE" ] && [ -z "$BR_URL" ] && [ -z "$BR_PROTECTED_URL" ]; then
+            unset BRsourceckeck
+          fi
+          update_options;;
+      "${options[20]}" )
+          break ;;
+      *) zenity --error --no-wrap  --text="Select an option first.";;
+      esac
+  done
+
+  if [ -z "$BRrootckeck" ]; then
+    zenity --error --no-wrap --text="You must specify a root partition!"
+  elif [ -z "$BRsourceckeck" ]; then
+    zenity --error --no-wrap --text="You must specify a backup file or enable transfer mode."
+  fi
+done
+
+if [ "$BRauth" = "su -c" ]; then
+  xterm -T Restore -e su -c "
+  ${BRscript} -i CLI -N ${BR_RESTORE_OPTS}
+  sleep 2"
+elif [ "$BRauth" = "sudo" ]; then
+  xterm -T Restore -e "
+  sudo ${BRscript} -i CLI -N ${BR_RESTORE_OPTS}
+  sleep 2"
+fi

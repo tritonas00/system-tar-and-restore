@@ -2074,7 +2074,6 @@ elif [ $BRinterface = "Dialog" ]; then
             BRfile=$(echo ${BRfile#*/})
             detect_filetype
             if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
-              BRfileok=ok
               ( ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog  --progressbox  3 30
               sleep 2
             else

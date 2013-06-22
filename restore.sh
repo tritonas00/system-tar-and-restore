@@ -35,10 +35,25 @@ instruct_screen(){
   echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices.${BR_NORM}"
 }
 
+item_type() {
+  if [ -d  "$BRpath/$f" ]; then
+    echo dir
+  else
+    echo -
+  fi
+}
+
+file_list() {
+  DEFAULTIFS=$IFS
+  IFS=$'\n'
+  for f in $(ls --group-directories-first "$BRpath"); do echo "${f// /\\}" $(item_type); done
+  IFS=$DEFAULTIFS
+}
+
 detect_filetype() {
-  if file $BRfile | grep -w gzip  > /dev/null; then
+  if file "$BRfile" | grep -w gzip  > /dev/null; then
     BRfiletype="gz"
-  elif file $BRfile | grep -w XZ  > /dev/null; then
+  elif file "$BRfile" | grep -w XZ  > /dev/null; then
     BRfiletype="xz"
   else
     BRfiletype="wrong"
@@ -181,7 +196,7 @@ update_list() {
 }
 
 check_input() {
-  if [ -n "$BRfile" ] && [ ! -f $BRfile ]; then
+  if [ -n "$BRfile" ] && [ ! -f "$BRfile" ]; then
     echo -e "${BR_RED}File not found:${BR_NORM} $BRfile"
     BRSTOP=y
   elif [ -n "$BRfile" ]; then
@@ -1488,7 +1503,7 @@ if [ $BRinterface = "CLI" ]; then
     echo -e "\n==>GETTING TAR IMAGE"
 
     if [ -n "$BRfile" ]; then
-      ln -s $BRfile "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo "Symlinking file: Error"
+      ln -s "$BRfile" "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo "Symlinking file: Error"
     fi
 
     if [ -n "$BRurl" ]; then
@@ -1544,7 +1559,7 @@ if [ $BRinterface = "CLI" ]; then
           unset BRurl
           echo -e "\n${BR_CYAN}Enter the path of the backup file${BR_NORM}"
           read -p "Path:" BRfile
-          if [ ! -f $BRfile ] || [ -z $BRfile ]; then
+          if [ ! -f "$BRfile" ] || [ -z "$BRfile" ]; then
             echo -e "${BR_RED}File not found${BR_NORM}"
       	  else
             detect_filetype
@@ -2046,20 +2061,37 @@ elif [ $BRinterface = "Dialog" ]; then
         clean_unmount_in
       elif [ $REPLY = "File" ]; then
         unset BRurl
-        BRfile=$(dialog  --no-cancel --inputbox "Enter the path of the backup file:" 8 50 2>&1 1>&3)
-        if [ ! -f $BRfile ] || [ -z $BRfile ]; then
-          echo "File not found" | dialog --title "Error" --progressbox  3 18
-          sleep 2
-        else
-          detect_filetype
-          if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
-            ( ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog  --progressbox  3 30
-            sleep 2
-          else
-            echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
-            sleep 2
+        BRpath=/
+        IFS=$DEFAULTIFS
+        while [ -z "$BRfile" ]; do
+          BRselect=$(dialog  --menu  "Select backup archive:" 0 0 0 "<--UP" .. $(file_list) 2>&1 1>&3)
+          if [ $? = "1" ]; then
+            break
           fi
-        fi
+
+          if [ -f "$BRpath/${BRselect//\\/ }" ]; then
+            BRfile="$BRpath/${BRselect//\\/ }"
+            BRfile=$(echo ${BRfile#*/})
+            detect_filetype
+            if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
+              BRfileok=ok
+              ( ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog  --progressbox  3 30
+              sleep 2
+            else
+              echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
+              sleep 2
+              unset BRfile BRselect
+            fi 
+          fi
+
+          if [ "$BRselect" = "<--UP" ]; then
+            BRpath=$(echo "$BRpath" | sed -e "s/<--UP//")
+            BRpath=$(echo $(dirname "$BRpath"))
+          else
+            BRpath="$BRpath/$BRselect"
+            BRpath=$(echo "${BRpath//\\/ }")
+          fi
+        done
 
       elif [ $REPLY = "URL" ] || [ $REPLY = "Protected" ]; then
         unset BRfile

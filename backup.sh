@@ -64,6 +64,13 @@ dir_list() {
   IFS=$DEFAULTIFS
 }
 
+show_path() {
+  BRcurrentpath="$BRpath"
+  if [[ "$BRcurrentpath" == *//* ]]; then
+    BRcurrentpath="${BRcurrentpath#*/}"
+  fi
+}
+
 set_tar_options() {
   BR_TAROPTS="--sparse $BR_USER_OPTS --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
 
@@ -416,7 +423,8 @@ elif [ $BRinterface = "Dialog" ]; then
     else
       BRpath=/
       while [ -z "$BRFOLDER" ]; do
-        BRselect=$(dialog --no-cancel --extra-button --extra-label Set --menu  "Set destination folder:\n(Highlight a directory and press Set)" 30 45 30 "<--UP" .. $(dir_list) 2>&1 1>&3)
+        show_path
+        BRselect=$(dialog --title "$BRcurrentpath" --no-cancel --extra-button --extra-label Set --menu  "Set destination folder: (Highlight a directory and press Set)" 30 90 30 "<--UP" .. $(dir_list) 2>&1 1>&3)
         if [ $? = "3" ]; then
           if [ "$BRselect" = "<--UP" ]; then
             BRpath="$BRpath"

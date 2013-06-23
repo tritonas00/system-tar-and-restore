@@ -2073,7 +2073,7 @@ elif [ $BRinterface = "Dialog" ]; then
         IFS=$DEFAULTIFS
         while [ -z "$BRfile" ]; do
           show_path
-          BRselect=$(dialog  --title "$BRcurrentpath" --menu  "Select backup archive:" 30 90 30 "<--UP" .. $(file_list) 2>&1 1>&3)
+          BRselect=$(dialog --title "$BRcurrentpath" --menu  "Select backup archive:" 30 90 30 "<--UP" .. $(file_list) 2>&1 1>&3)
           if [ $? = "1" ]; then
             break
           fi

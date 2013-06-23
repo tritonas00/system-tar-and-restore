@@ -2071,7 +2071,7 @@ elif [ $BRinterface = "Dialog" ]; then
 
           if [ -f "$BRpath/${BRselect//\\/ }" ]; then
             BRfile="$BRpath/${BRselect//\\/ }"
-            BRfile=$(echo ${BRfile#*/})
+            BRfile="${BRfile#*/}"
             detect_filetype
             if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
               ( ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog  --progressbox  3 30
@@ -2084,11 +2084,10 @@ elif [ $BRinterface = "Dialog" ]; then
           fi
 
           if [ "$BRselect" = "<--UP" ]; then
-            BRpath=$(echo "$BRpath" | sed -e "s/<--UP//")
-            BRpath=$(echo $(dirname "$BRpath"))
+            BRpath=$(dirname "$BRpath")
           else
             BRpath="$BRpath/$BRselect"
-            BRpath=$(echo "${BRpath//\\/ }")
+            BRpath="${BRpath//\\/ }"
           fi
         done
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.3"
+BR_VERSION="System Tar & Restore 3.3.1"
 
 clear
 

@@ -50,6 +50,14 @@ file_list() {
   IFS=$DEFAULTIFS
 }
 
+show_path() {
+  if [ "$BRpath" = "/" ]; then
+    BRcurrentpath=/
+  else
+    BRcurrentpath="${BRpath#*/}/"
+  fi
+}
+
 detect_filetype() {
   if file "$BRfile" | grep -w gzip  > /dev/null; then
     BRfiletype="gz"
@@ -2064,13 +2072,16 @@ elif [ $BRinterface = "Dialog" ]; then
         BRpath=/
         IFS=$DEFAULTIFS
         while [ -z "$BRfile" ]; do
-          BRselect=$(dialog  --menu  "Select backup archive:" 0 0 0 "<--UP" .. $(file_list) 2>&1 1>&3)
+          show_path
+          BRselect=$(dialog  --title "$BRcurrentpath" --menu  "Select backup archive:" 30 90 30 "<--UP" .. $(file_list) 2>&1 1>&3)
           if [ $? = "1" ]; then
             break
           fi
 
-          if [ -f "$BRpath/${BRselect//\\/ }" ]; then
-            BRfile="$BRpath/${BRselect//\\/ }"
+          BRselect="/$BRselect"
+
+          if [ -f "$BRpath${BRselect//\\/ }" ]; then
+            BRfile="$BRpath${BRselect//\\/ }"
             BRfile="${BRfile#*/}"
             detect_filetype
             if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
@@ -2083,10 +2094,10 @@ elif [ $BRinterface = "Dialog" ]; then
             fi
           fi
 
-          if [ "$BRselect" = "<--UP" ]; then
+          if [ "$BRselect" = "/<--UP" ]; then
             BRpath=$(dirname "$BRpath")
           else
-            BRpath="$BRpath/$BRselect"
+            BRpath="$BRpath$BRselect"
             BRpath="${BRpath//\\/ }"
           fi
         done

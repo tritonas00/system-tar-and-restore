@@ -417,7 +417,7 @@ elif [ $BRinterface = "Dialog" ]; then
       BRpath=/
       while [ -z "$BRFOLDER" ]; do
         BRselect=$(dialog --no-cancel --extra-button --extra-label Set --menu  "Set destination folder:\n(Highlight a directory and press Set)" 30 45 30 "<--UP" .. $(dir_list) 2>&1 1>&3)
-        if [ $? = "3" ]; then        
+        if [ $? = "3" ]; then
           if [ "$BRselect" = "<--UP" ]; then
             BRpath="$BRpath"
           else
@@ -435,7 +435,7 @@ elif [ $BRinterface = "Dialog" ]; then
           fi
         fi
       done
-    fi  
+    fi
   done
 
   while [ -z "$BRhome" ]; do

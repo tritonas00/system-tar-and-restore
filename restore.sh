@@ -2080,7 +2080,7 @@ elif [ $BRinterface = "Dialog" ]; then
               echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
               sleep 2
               unset BRfile BRselect
-            fi 
+            fi
           fi
 
           if [ "$BRselect" = "<--UP" ]; then

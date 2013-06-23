@@ -57,6 +57,13 @@ show_summary() {
   fi
 }
 
+dir_list() {
+  DEFAULTIFS=$IFS
+  IFS=$'\n'
+  for D in "$BRpath"*; do [ -d "${D}" ] && echo "$( basename ${D// /\\} ) dir"; done
+  IFS=$DEFAULTIFS
+}
+
 set_tar_options() {
   BR_TAROPTS="--sparse $BR_USER_OPTS --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
 
@@ -394,7 +401,8 @@ elif [ $BRinterface = "Dialog" ]; then
     echo -e "${BR_RED}Package dialog is not installed\n${BR_CYAN}Install the package and re-run the script${BR_NORM}"
     exit
   fi
-
+  
+  exec 3>&1
   unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRFOLDER" ]; then
@@ -406,15 +414,28 @@ elif [ $BRinterface = "Dialog" ]; then
     if [ $? = "0" ]; then
       BRFOLDER="/"
     else
-      while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-        exec 3>&1
-        BRFOLDER=$(dialog  --no-cancel --inputbox "Insert the folder path where the backup will be created" 8 50 2>&1 1>&3)
-        if [ ! -d "$BRFOLDER" ]; then
-          echo "Directory does not exist" | dialog --title "Error" --progressbox 3 28
-          sleep 2
+      BRpath=/
+      while [ -z "$BRFOLDER" ]; do
+        BRselect=$(dialog --no-cancel --extra-button --extra-label Set --menu  "Set destination folder:\n(Highlight a directory and press Set)" 50 45 50 "<--UP" .. $(dir_list) 2>&1 1>&3)
+        if [ $? = "3" ]; then        
+          if [ "$BRselect" = "<--UP" ]; then
+            BRpath="$BRpath"
+          else
+            BRFOLDER="$BRpath${BRselect//\\/ }/"
+            if [[ "$BRpath" == *//* ]]; then
+              BRFOLDER="${BRFOLDER#*/}"
+            fi
+          fi
+        else
+          if [ "$BRselect" = "<--UP" ]; then
+            BRpath="$(dirname "$BRpath")/"
+          else
+            BRpath="$BRpath$BRselect/"
+            BRpath="${BRpath//\\/ }"
+          fi
         fi
       done
-    fi
+    fi  
   done
 
   while [ -z "$BRhome" ]; do
@@ -436,8 +457,6 @@ elif [ $BRinterface = "Dialog" ]; then
       fi
     done
   fi
-
-  exec 3>&1
 
   while [ -z "$BRuseroptions" ]; do
     dialog   --yesno "Specify additional tar options?" 6 35

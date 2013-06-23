@@ -401,7 +401,7 @@ elif [ $BRinterface = "Dialog" ]; then
     echo -e "${BR_RED}Package dialog is not installed\n${BR_CYAN}Install the package and re-run the script${BR_NORM}"
     exit
   fi
-  
+
   exec 3>&1
   unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
@@ -416,7 +416,7 @@ elif [ $BRinterface = "Dialog" ]; then
     else
       BRpath=/
       while [ -z "$BRFOLDER" ]; do
-        BRselect=$(dialog --no-cancel --extra-button --extra-label Set --menu  "Set destination folder:\n(Highlight a directory and press Set)" 50 45 50 "<--UP" .. $(dir_list) 2>&1 1>&3)
+        BRselect=$(dialog --no-cancel --extra-button --extra-label Set --menu  "Set destination folder:\n(Highlight a directory and press Set)" 30 45 30 "<--UP" .. $(dir_list) 2>&1 1>&3)
         if [ $? = "3" ]; then        
           if [ "$BRselect" = "<--UP" ]; then
             BRpath="$BRpath"

@@ -2071,6 +2071,7 @@ elif [ $BRinterface = "Dialog" ]; then
           remount_delete_subvols
         fi
         clean_unmount_in
+
       elif [ "$REPLY" = "File" ]; then
         unset BRurl
         BRpath=/
@@ -2081,9 +2082,7 @@ elif [ $BRinterface = "Dialog" ]; then
           if [ $? = "1" ]; then
             break
           fi
-
           BRselect="/$BRselect"
-
           if [ -f "$BRpath${BRselect//\\/ }" ]; then
             BRfile="$BRpath${BRselect//\\/ }"
             BRfile="${BRfile#*/}"
@@ -2101,7 +2100,6 @@ elif [ $BRinterface = "Dialog" ]; then
               unset BRfile BRselect
             fi
           fi
-
           if [ "$BRselect" = "/<--UP" ]; then
             BRpath=$(dirname "$BRpath")
           else
@@ -2109,6 +2107,7 @@ elif [ $BRinterface = "Dialog" ]; then
             BRpath="${BRpath//\\/ }"
           fi
         done
+
       elif [ "$REPLY" = "URL" ] || [ "$REPLY" = "Protected URL" ]; then
         unset BRfile
         BRurl=$(dialog  --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 2>&1 1>&3)
@@ -2130,6 +2129,7 @@ elif [ $BRinterface = "Dialog" ]; then
               rm /mnt/target/fullbackup 2>/dev/null
             fi
           fi
+
         elif [ "$REPLY" = "URL" ]; then
           ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
           sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50

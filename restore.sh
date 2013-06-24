@@ -1816,11 +1816,11 @@ elif [ $BRinterface = "Dialog" ]; then
   fi
 
   if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
-    REPLY=$(dialog  --cancel-label Skip --extra-button --extra-label Quit  --menu "Select bootloader:" 12 35 12  Grub Bootloader Syslinux Bootloader 2>&1 1>&3)
+    REPLY=$(dialog --cancel-label Skip --extra-button --extra-label Quit  --menu "Select bootloader:" 10 0 10 1 Grub 2 Syslinux 2>&1 1>&3)
     if [ $? = "3" ]; then
       exit
     fi
-    if [ $REPLY = "Grub" ]; then
+    if [ $REPLY = "1" ]; then
       while [ -z "$BRgrub" ]; do
         BRgrub=$(dialog --cancel-label Quit  --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
         if [ $? = "1" ]; then
@@ -1828,7 +1828,7 @@ elif [ $BRinterface = "Dialog" ]; then
           exit
         fi
       done
-    elif [ $REPLY = "Syslinux" ]; then
+    elif [ $REPLY = "2" ]; then
       while [ -z "$BRsyslinux" ]; do
         BRsyslinux=$(dialog --cancel-label Quit  --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
         if [ $? = "1" ]; then

@@ -290,7 +290,7 @@ if [ $BRinterface = "CLI" ]; then
         BRhidden="No"
         break
       else
-        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
       fi
     done
   done

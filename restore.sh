@@ -1554,8 +1554,8 @@ if [ $BRinterface = "CLI" ]; then
     fi
 
     while [ ! -f /mnt/target/fullbackup ]; do
-      echo -e "\n${BR_CYAN}Select an option or enter Q to quit${BR_NORM}"
-      select c in "File" "URL" "Protected URL"; do
+      echo -e "\n${BR_CYAN}Select backup file. Choose an option or enter Q to quit${BR_NORM}"
+      select c in "Local File" "URL" "Protected URL"; do
         if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
           echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
           if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then

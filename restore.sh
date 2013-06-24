@@ -1335,7 +1335,7 @@ if [ $BRinterface = "CLI" ]; then
 
   while [ -z "$BRmode" ]; do
     echo -e "\n${BR_CYAN}Select Mode or enter Q to quit${BR_NORM}"
-    select c in "Restore system from a backup file" "Transfer this system with rsync"; do
+    select c in "Restore system from backup file" "Transfer this system with rsync"; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
@@ -1866,7 +1866,7 @@ elif [ $BRinterface = "Dialog" ]; then
   fi
 
   while [ -z "$BRmode" ]; do
-    BRmode=$(dialog --cancel-label Quit --menu "Select Mode:" 12 50 12   Restore "system from a backup file"  Transfer "this system with rsync" 2>&1 1>&3)
+    BRmode=$(dialog --cancel-label Quit --menu "Select Mode:" 12 50 12   Restore "system from backup file"  Transfer "this system with rsync" 2>&1 1>&3)
     if [ $? = "1" ]; then
       BRmode=" "
       exit

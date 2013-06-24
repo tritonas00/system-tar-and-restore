@@ -127,7 +127,7 @@ set_syslinux_flags_and_paths() {
     sfdisk $BRdev -A $BRpart &>> /tmp/restore.log || touch /tmp/bl_error
     BRsyslinuxmbr="mbr.bin"
   fi
-  if [ $BRdistro = Debian ]; then
+  if [ "$BRdistro" = Debian ]; then
     BRsyslinuxpath="/mnt/target/usr/lib/syslinux"
   elif [ $BRdistro = Fedora ]; then
     BRsyslinuxpath="/mnt/target/usr/share/syslinux"
@@ -152,25 +152,25 @@ generate_syslinux_cfg() {
 }
 
 run_tar() {
-  if [ ${BRfiletype} = "gz" ]; then
+  if [ "$BRfiletype" = "gz" ]; then
     tar xvpfz /mnt/target/fullbackup -C /mnt/target
-  elif [ ${BRfiletype} = "xz" ]; then
+  elif [ "$BRfiletype" = "xz" ]; then
     tar xvpfJ /mnt/target/fullbackup -C /mnt/target
   fi
 }
 
 run_calc() {
-  if [ ${BRhidden} = "n" ]; then
+  if [ "$BRhidden" = "n" ]; then
     rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} --dry-run 2> /dev/null | tee /tmp/filelist
-  elif [ ${BRhidden} = "y" ]; then
+  elif [ "$BRhidden" = "y" ]; then
     rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} --dry-run 2> /dev/null | tee /tmp/filelist
   fi
 }
 
 run_rsync() {
-  if [ ${BRhidden} = "n" ]; then
+  if [ "$BRhidden" = "n" ]; then
     rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs}
-  elif [ ${BRhidden} = "y" ]; then
+  elif [ "$BRhidden" = "y" ]; then
     rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*}
   fi
 }
@@ -445,13 +445,13 @@ show_summary() {
 
   echo -e "\nPROCESS:"
 
-  if [ $BRmode = "Restore" ]; then
+  if [ "$BRmode" = "Restore" ]; then
     echo "Mode: $BRmode"
     echo "File: $BRfiletype compressed archive"
-  elif [ $BRmode = "Transfer" ] && [ $BRhidden = "n" ]; then
+  elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "n" ]; then
     echo "Mode: $BRmode"
     echo "Home: Include"
-  elif [ $BRmode = "Transfer" ] && [ $BRhidden = "y" ]; then
+  elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "y" ]; then
     echo "Mode: $BRmode"
     echo "Home: Only hidden files and folders"
   fi
@@ -533,17 +533,17 @@ build_initramfs() {
     echo " "
   fi
 
-  if [ $BRdistro = Arch ]; then
+  if [ "$BRdistro" = "Arch" ]; then
     for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
      chroot /mnt/target mkinitcpio -p $BRinitrd
     done
 
-  elif [ $BRdistro = Debian ]; then
+  elif [ "$BRdistro" = "Debian" ]; then
     for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
       chroot /mnt/target update-initramfs -u -k $BRinitrd
     done
 
-  elif [ $BRdistro = Fedora ]; then
+  elif [ "$BRdistro" = "Fedora" ]; then
     for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
       echo "Building image for $BRinitrd..."
       chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd
@@ -556,24 +556,24 @@ install_bootloader() {
     echo -e "\n==>INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [[ "$BRgrub" == *md* ]]; then
       for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
-        if [ $BRdistro = Arch ]; then
+        if [ "$BRdistro" = "Arch" ]; then
           chroot /mnt/target grub-install --target=i386-pc --recheck  /dev/$f || touch /tmp/bl_error
-        elif [ $BRdistro = Debian ]; then
+        elif [ "$BRdistro" = "Debian" ]; then
           chroot /mnt/target grub-install  --recheck /dev/$f || touch /tmp/bl_error
-        elif [ $BRdistro = Fedora ]; then
+        elif [ "$BRdistro" = "Fedora" ]; then
           chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/bl_error
         fi
       done
     else
-      if [ $BRdistro = Arch ]; then
+      if [ "$BRdistro" = "Arch" ]; then
         chroot /mnt/target grub-install --target=i386-pc  --recheck $BRgrub || touch /tmp/bl_error
-      elif [ $BRdistro = Debian ]; then
+      elif [ "$BRdistro" = "Debian" ]; then
         chroot /mnt/target grub-install  --recheck $BRgrub || touch /tmp/bl_error
-      elif [ $BRdistro = Fedora ]; then
+      elif [ "$BRdistro" = "Fedora" ]; then
         chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
       fi
     fi
-    if [ $BRdistro = Fedora ]; then
+    if [ "$BRdistro" = "Fedora" ]; then
       if [ -f /mnt/target/etc/default/grub ]; then
         mv /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old
       fi
@@ -600,7 +600,7 @@ install_bootloader() {
     fi
     touch /mnt/target/boot/syslinux/syslinux.cfg
 
-    if [ $BRdistro = Arch ]; then
+    if [ "$BRdistro" = "Arch" ]; then
       chroot /mnt/target syslinux-install_update -i -a -m || touch /tmp/bl_error
     else
       if [[ "$BRsyslinux" == *md* ]]; then
@@ -636,7 +636,7 @@ install_bootloader() {
 }
 
 generate_locales() {
-  if [ $BRdistro = Arch ] ||  [ $BRdistro = Debian ]; then
+  if [ "$BRdistro" = "Arch" ] ||  [ "$BRdistro" = "Debian" ]; then
     echo -e "\n==>GENERATING LOCALES"
     chroot /mnt/target  locale-gen
   fi
@@ -1133,7 +1133,7 @@ while [ -z "$BRinterface" ]; do
   done
 done
 
-if [ $BRinterface = "CLI" ]; then
+if [ "$BRinterface" = "CLI" ]; then
   clear
   echo -e "${BR_BOLD}$BR_VERSION${BR_NORM}"
   echo " "
@@ -1152,10 +1152,10 @@ if [ $BRinterface = "CLI" ]; then
   while [ -z "$BRroot" ]; do
     echo -e "\n${BR_CYAN}Select target root partition or enter Q to quit${BR_NORM}"
     select c in ${list[@]}; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
         BRroot=(`echo $c | awk '{ print $1 }'`)
         echo -e "${BR_GREEN}You selected $BRroot as your root partition${BR_NORM}"
         break
@@ -1175,10 +1175,10 @@ if [ $BRinterface = "CLI" ]; then
       def="n"
     fi
 
-    if [ $def = "y" ] || [ $def = "Y" ]; then
+    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRmountoptions="Yes"
       read -p "Enter options (comma-separated list of mount options):" BR_MOUNT_OPTS
-    elif [ $def = "n" ] || [ $def = "N" ]; then
+    elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
       BRmountoptions="No"
       BR_MOUNT_OPTS="defaults"
     else
@@ -1191,14 +1191,14 @@ if [ $BRinterface = "CLI" ]; then
   if [ -z "$BRhome" ]; then
     echo -e "\n${BR_CYAN}Select target home partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in ${list[@]}; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
         BRhome=(`echo $c | awk '{ print $1 }'`)
         echo -e "${BR_GREEN}You selected $BRhome as your home partition${BR_NORM}"
         break
-      elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
+      elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
         echo  -e "${BR_GREEN}No seperate home partition${BR_NORM}"
         break
       else
@@ -1212,14 +1212,14 @@ if [ $BRinterface = "CLI" ]; then
   if [ -z "$BRboot" ]; then
     echo -e "\n${BR_CYAN}Select target boot partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in ${list[@]}; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
         BRboot=(`echo $c | awk '{ print $1 }'`)
         echo -e "${BR_GREEN}You selected $BRboot as your boot partition${BR_NORM}"
         break
-      elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
+      elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
         echo  -e "${BR_GREEN}No seperate boot partition${BR_NORM}"
         break
       else
@@ -1233,14 +1233,14 @@ if [ $BRinterface = "CLI" ]; then
   if [ -z "$BRswap" ]; then
     echo -e "\n${BR_CYAN}Select swap partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in ${list[@]}; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#list[@]} ]; then
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
         BRswap=(`echo $c | awk '{ print $1 }'`)
         echo -e "${BR_GREEN}You selected $BRswap as your swap partition${BR_NORM}"
         break
-      elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
+      elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
         echo  -e "${BR_GREEN}No swap partition${BR_NORM}"
         break
       else
@@ -1249,24 +1249,24 @@ if [ $BRinterface = "CLI" ]; then
     done
   fi
 
-  if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
+  if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
     echo -e "\n${BR_CYAN}Select bootloader or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
     select c in Grub Syslinux; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
        	exit
-      elif [ $REPLY = "c" ] || [ $REPLY = "C" ]; then
+      elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
         echo -e "\n${BR_YELLOW}--->WARNING! NO BOOTLOADER SELECTED<---${BR_NORM}"
         break
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
 
         while [ -z "$BRgrub" ]; do
           echo -e "\n${BR_CYAN}Select target disk for Grub or enter Q to quit${BR_NORM}"
 	  select c in ${bootloader_list[@]}; do
-	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
-	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#bootloader_list[@]} ]; then
+	    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#bootloader_list[@]} ]; then
 	      BRgrub=(`echo $c | awk '{ print $1 }'`)
               echo -e "${BR_GREEN}You selected $BRgrub to install Grub${BR_NORM}"
 	      break
@@ -1276,15 +1276,15 @@ if [ $BRinterface = "CLI" ]; then
 	  done
         done
         break
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
 
         while [ -z "$BRsyslinux" ]; do
           echo -e "\n${BR_CYAN}Select target disk Syslinux or enter Q to quit${BR_NORM}"
 	  select c in ${bootloader_list[@]}; do
-	    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
-	    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#bootloader_list[@]} ]; then
+	    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#bootloader_list[@]} ]; then
 	      BRsyslinux=(`echo $c | awk '{ print $1 }'`)
               echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}"
 	      echo -e "\n${BR_CYAN}Enter additional kernel options?${BR_NORM}"
@@ -1296,10 +1296,10 @@ if [ $BRinterface = "CLI" ]; then
                 def="n"
               fi
 
-              if [ $def = "y" ] || [ $def = "Y" ]; then
+              if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
                 read -p "Enter options:" BR_KERNEL_OPTS
                 break
-              elif [ $def = "n" ] || [ $def = "N" ]; then
+              elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
                 break
               else
                 echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
@@ -1336,14 +1336,14 @@ if [ $BRinterface = "CLI" ]; then
   while [ -z "$BRmode" ]; do
     echo -e "\n${BR_CYAN}Select Mode or enter Q to quit${BR_NORM}"
     select c in "Restore system from backup file" "Transfer this system with rsync"; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
         echo -e "${BR_GREEN}You selected Restore Mode${BR_NORM}"
         BRmode="Restore"
         break
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
         echo -e "${BR_GREEN}You selected Transfer Mode${BR_NORM}"
         BRmode="Transfer"
         break
@@ -1353,7 +1353,7 @@ if [ $BRinterface = "CLI" ]; then
     done
   done
 
-  if [ $BRmode = "Transfer" ]; then
+  if [ "$BRmode" = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
       echo -e "\n${BR_CYAN}Transfer entire /home directory?\n(If no, only hidden files and folders will be transferred)${BR_NORM}"
       read -p "(Y/n):" an
@@ -1364,10 +1364,10 @@ if [ $BRinterface = "CLI" ]; then
         def="y"
       fi
 
-      if [ $def = "y" ] || [ $def = "Y" ]; then
+      if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
         BRhidden="n"
         echo -e "${BR_GREEN}Entire /home directory will be transferred${BR_NORM}"
-      elif [ $def = "n" ] || [ $def = "N" ]; then
+      elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
         BRhidden="y"
          echo -e "${BR_GREEN}Only /home's hidden files and folders will be transferred${BR_NORM}"
       else
@@ -1416,9 +1416,9 @@ if [ $BRinterface = "CLI" ]; then
         btrfsdef="y"
       fi
 
-      if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+      if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
         BRrootsubvol="y"
-      elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+      elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
         BRrootsubvol="n"
       else
         echo -e "${BR_RED}Please select a valid option${BR_NORM}"
@@ -1444,9 +1444,9 @@ if [ $BRinterface = "CLI" ]; then
           btrfsdef="y"
         fi
 
-        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
           BRhomesubvol="y"
-        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
           BRhomesubvol="n"
         else
           echo -e "${BR_RED}Please select a valid option${BR_NORM}"
@@ -1463,9 +1463,9 @@ if [ $BRinterface = "CLI" ]; then
           btrfsdef="y"
         fi
 
-        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
           BRvarsubvol="y"
-        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
           BRvarsubvol="n"
         else
           echo -e "${BR_RED}Please select a valid option${BR_NORM}"
@@ -1482,9 +1482,9 @@ if [ $BRinterface = "CLI" ]; then
           btrfsdef="y"
         fi
 
-        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
           BRusrsubvol="y"
-        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
           BRusrsubvol="n"
         else
           echo -e "${BR_RED}Please select a valid option${BR_NORM}"
@@ -1507,7 +1507,7 @@ if [ $BRinterface = "CLI" ]; then
     sleep 1
   fi
 
-  if [ $BRmode = "Restore" ]; then
+  if [ "$BRmode" = "Restore" ]; then
     echo -e "\n==>GETTING TAR IMAGE"
 
     if [ -n "$BRfile" ]; then
@@ -1556,14 +1556,14 @@ if [ $BRinterface = "CLI" ]; then
     while [ ! -f /mnt/target/fullbackup ]; do
       echo -e "\n${BR_CYAN}Select backup file. Choose an option or enter Q to quit${BR_NORM}"
       select c in "Local File" "URL" "Protected URL"; do
-        if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
           echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
           if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
             unmount_only_in_subvol
             remount_delete_subvols
           fi
           clean_unmount_in
-        elif [ $REPLY = "1" ]; then
+        elif [ "$REPLY" = "1" ]; then
           unset BRurl
           echo -e "\n${BR_CYAN}Enter the path of the backup file${BR_NORM}"
           read -p "Path:" BRfile
@@ -1571,7 +1571,7 @@ if [ $BRinterface = "CLI" ]; then
             echo -e "${BR_RED}File not found${BR_NORM}"
       	  else
             detect_filetype
-            if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
+            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ]; then
               ln -s $BRfile "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo "Symlinking file: Error"
             else
               echo -e "${BR_RED}Invalid file type${BR_NORM}"
@@ -1579,12 +1579,12 @@ if [ $BRinterface = "CLI" ]; then
 	  fi
           break
 
-        elif [ $REPLY = "2" ] || [ $REPLY = "3" ]; then
+        elif [ "$REPLY" = "2" ] || [ "$REPLY" = "3" ]; then
           unset BRfile
           echo -e "\n${BR_CYAN}Enter the URL for the backup file${BR_NORM}"
           read -p "URL:" BRurl
           echo " "
-          if [ $REPLY = "3" ]; then
+          if [ "$REPLY" = "3" ]; then
 	    read -p "USERNAME: " BRusername
             read -p "PASSWORD: " BRpassword
 	    wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup $BRurl --tries=2
@@ -1648,9 +1648,9 @@ if [ $BRinterface = "CLI" ]; then
       def="y"
     fi
 
-    if [ $def = "y" ] || [ $def = "Y" ]; then
+    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRcontinue="y"
-    elif [ $def = "n" ] || [ $def = "N" ]; then
+    elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
       echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
       BRcontinue="n"
     else
@@ -1667,13 +1667,13 @@ if [ $BRinterface = "CLI" ]; then
   elif [  "x$BRcontinue" = "xy" ]; then
     echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
     echo " " >> /tmp/restore.log
-    if [ $BRmode = "Restore" ]; then
+    if [ "$BRmode" = "Restore" ]; then
       echo -e "\n==>EXTRACTING"
       total=$(cat /tmp/filelist | wc -l)
       sleep 1
       run_tar 2>>/tmp/restore.log | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $(($a*100/$total))%"; done
       echo " "
-    elif [ $BRmode = "Transfer" ]; then
+    elif [ "$BRmode" = "Transfer" ]; then
       echo -e "\n==>TRANSFERING"
       run_calc  | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
       total=$(cat /tmp/filelist | wc -l)
@@ -1699,20 +1699,20 @@ if [ $BRinterface = "CLI" ]; then
         def="n"
       fi
 
-      if [ $def = "y" ] || [ $def = "Y" ]; then
+      if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
         BRedit="y"
-      elif [ $def = "n" ] || [ $def = "N" ]; then
+      elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
         BRedit="n"
       else
         echo -e "${BR_RED}Please select a valid option${BR_NORM}"
       fi
     done
 
-    if [ $BRedit = "y" ]; then
+    if [ "$BRedit" = "y" ]; then
       while [ -z "$BReditor" ]; do
         echo -e "\n${BR_CYAN}Select editor${BR_NORM}"
         select c in ${editorlist[@]}; do
-          if [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#editorlist[@]} ]; then
+          if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#editorlist[@]} ]; then
             BReditor=$c
             $BReditor /mnt/target/etc/fstab
             break
@@ -1728,11 +1728,11 @@ if [ $BRinterface = "CLI" ]; then
      generate_locales
      sleep 1) 1> >(tee -a /tmp/restore.log) 2>&1
 
-    if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
+    if [ "$BRmode" = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
       echo -e "\n${BR_RED}Grub not found${BR_NORM}"
       echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
       unset BRgrub
-    elif [ $BRmode = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
+    elif [ "$BRmode" = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
       echo -e "\n${BR_RED}Syslinux not found${BR_NORM}"
       echo -e "${BR_YELLOW}Proceeding without bootloader${BR_NORM}"
       unset BRsyslinux
@@ -1755,7 +1755,7 @@ if [ $BRinterface = "CLI" ]; then
     clean_unmount_out
   fi
 
-elif [ $BRinterface = "Dialog" ]; then
+elif [ "$BRinterface" = "Dialog" ]; then
   clear
   IFS=$DEFAULTIFS
 
@@ -1815,12 +1815,12 @@ elif [ $BRinterface = "Dialog" ]; then
     fi
   fi
 
-  if [ -z $BRgrub ] && [ -z $BRsyslinux ]; then
+  if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
     REPLY=$(dialog --cancel-label Skip --extra-button --extra-label Quit  --menu "Select bootloader:" 10 0 10 1 Grub 2 Syslinux 2>&1 1>&3)
     if [ $? = "3" ]; then
       exit
     fi
-    if [ $REPLY = "1" ]; then
+    if [ "$REPLY" = "1" ]; then
       while [ -z "$BRgrub" ]; do
         BRgrub=$(dialog --cancel-label Quit  --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
         if [ $? = "1" ]; then
@@ -1828,7 +1828,7 @@ elif [ $BRinterface = "Dialog" ]; then
           exit
         fi
       done
-    elif [ $REPLY = "2" ]; then
+    elif [ "$REPLY" = "2" ]; then
       while [ -z "$BRsyslinux" ]; do
         BRsyslinux=$(dialog --cancel-label Quit  --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
         if [ $? = "1" ]; then
@@ -1873,7 +1873,7 @@ elif [ $BRinterface = "Dialog" ]; then
     fi
   done
 
-  if [ $BRmode = "Transfer" ]; then
+  if [ "$BRmode" = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
       dialog  --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 9 50
       if [ $? = "0" ]; then
@@ -1925,9 +1925,9 @@ elif [ $BRinterface = "Dialog" ]; then
         btrfsdef="n"
       fi
 
-      if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+      if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
         BRrootsubvol="y"
-      elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+      elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
         BRrootsubvol="n"
       fi
     done
@@ -1950,9 +1950,9 @@ elif [ $BRinterface = "Dialog" ]; then
           btrfsdef="n"
         fi
 
-        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
           BRhomesubvol="y"
-        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
           BRhomesubvol="n"
         fi
       done
@@ -1966,9 +1966,9 @@ elif [ $BRinterface = "Dialog" ]; then
           btrfsdef="n"
         fi
 
-        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
           BRvarsubvol="y"
-        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
           BRvarsubvol="n"
         fi
       done
@@ -1982,9 +1982,9 @@ elif [ $BRinterface = "Dialog" ]; then
           btrfsdef="n"
         fi
 
-        if [ $btrfsdef = "y" ] || [ $btrfsdef = "Y" ]; then
+        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
           BRusrsubvol="y"
-        elif [ $btrfsdef = "n" ] || [ $btrfsdef = "N" ]; then
+        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
           BRusrsubvol="n"
         fi
       done
@@ -2006,7 +2006,7 @@ elif [ $BRinterface = "Dialog" ]; then
     sleep 3
   fi
 
-  if [ $BRmode = "Restore" ]; then
+  if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRfile" ]; then
       ( ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || (echo "Symlinking file: Error" && touch /tmp/ln_error) ) | dialog  --progressbox  3 30
       if [ -f /tmp/ln_error ]; then
@@ -2087,7 +2087,7 @@ elif [ $BRinterface = "Dialog" ]; then
             BRfile="$BRpath${BRselect//\\/ }"
             BRfile="${BRfile#*/}"
             detect_filetype
-            if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
+            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ]; then
               ( ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || (echo "Symlinking file: Error" && touch /tmp/ln_error) ) | dialog  --progressbox  3 30
               if [ -f /tmp/ln_error ]; then
                 rm /tmp/ln_error
@@ -2168,7 +2168,7 @@ elif [ $BRinterface = "Dialog" ]; then
     BRbootloader=Syslinux
   fi
 
-  if [ -z $BRcontinue ]; then
+  if [ -z "$BRcontinue" ]; then
     dialog --title "Summary"  --yesno "$(show_summary) $(echo -e "\n\nPress Yes to continue, or No to abort.")" 0 0
 
     if [ $? = "0" ]; then
@@ -2188,11 +2188,11 @@ elif [ $BRinterface = "Dialog" ]; then
 
   echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
   echo " " >> /tmp/restore.log
-  if [ $BRmode = "Restore" ]; then
+  if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     run_tar 2>>/tmp/restore.log | count_gauge | dialog --gauge "Decompressing..." 0 50
-  elif [ $BRmode = "Transfer" ]; then
+  elif [ "$BRmode" = "Transfer" ]; then
     run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done | dialog  --progressbox  3 40
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
@@ -2223,11 +2223,11 @@ Edit fstab ?" 20 100
   generate_locales
   sleep 2) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox  30 100
 
-  if [ $BRmode = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
+  if [ "$BRmode" = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
     echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49
     sleep 2
     unset BRgrub
-  elif [ $BRmode = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
+  elif [ "$BRmode" = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
     echo -e "Syslinux not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 53
     sleep 2
     unset BRsyslinux

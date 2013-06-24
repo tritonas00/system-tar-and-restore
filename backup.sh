@@ -31,8 +31,8 @@ info_screen() {
 }
 
 show_summary() {
-  echo "DESTINATION:"
-  echo "$BRFOLDER"
+  echo -e "${BR_YELLOW}DESTINATION:"
+  echo  "$BRFOLDER"
 
   echo -e "\nCOMPRESSION:"
   echo $BRcompression
@@ -53,7 +53,7 @@ show_summary() {
 
   if [ -n "$BR_USER_OPTS" ]; then
     echo -e "\nUSER OPTIONS:"
-    echo "$BR_USER_OPTS"
+    echo -e "$BR_USER_OPTS"
   fi
 }
 

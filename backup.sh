@@ -53,7 +53,7 @@ show_summary() {
 
   if [ -n "$BR_USER_OPTS" ]; then
     echo -e "\nUSER OPTIONS:"
-    echo -e "$BR_USER_OPTS"
+    echo "$BR_USER_OPTS"
   fi
 }
 

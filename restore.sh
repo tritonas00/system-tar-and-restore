@@ -1918,16 +1918,9 @@ elif [ "$BRinterface" = "Dialog" ]; then
   if [  "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
       dialog  --yesno "BTRFS root file system detected.\nCreate subvolume for root (/) ?" 7 40
-
       if [ "$?" = "0" ]; then
-        btrfsdef="y"
-      elif [ "$?" = "1" ]; then
-        btrfsdef="n"
-      fi
-
-      if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
         BRrootsubvol="y"
-      elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
+      elif [ "$?" = "1" ]; then
         BRrootsubvol="n"
       fi
     done
@@ -1943,48 +1936,27 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
       while [ -z "$BRhomesubvol" ]; do
         dialog  --yesno "Create subvolume for /home inside $BRrootsubvolname ?" 7 50
-
         if [ "$?" = "0" ]; then
-          btrfsdef="y"
-        elif [ "$?" = "1" ]; then
-          btrfsdef="n"
-        fi
-
-        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
           BRhomesubvol="y"
-        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
+        elif [ "$?" = "1" ]; then
           BRhomesubvol="n"
         fi
       done
 
       while [ -z "$BRvarsubvol" ]; do
         dialog  --yesno "Create subvolume for /var inside $BRrootsubvolname ?" 7 50
-
         if [ "$?" = "0" ]; then
-          btrfsdef="y"
-        elif [ "$?" = "1" ]; then
-          btrfsdef="n"
-        fi
-
-        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
           BRvarsubvol="y"
-        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
+        elif [ "$?" = "1" ]; then
           BRvarsubvol="n"
         fi
       done
 
       while [ -z "$BRusrsubvol" ]; do
         dialog  --yesno "Create subvolume for /usr inside $BRrootsubvolname ?" 7 50
-
         if [ "$?" = "0" ]; then
-          btrfsdef="y"
-        elif [ "$?" = "1" ]; then
-          btrfsdef="n"
-        fi
-
-        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
           BRusrsubvol="y"
-        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
+        elif [ "$?" = "1" ]; then
           BRusrsubvol="n"
         fi
       done

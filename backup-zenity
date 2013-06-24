@@ -30,7 +30,7 @@ update_options() {
   BR_BACKUP_OPTS="${BR_BACKUP_DEST} ${BR_BACKUP_HOME} ${BR_BACKUP_COMP} ${BR_TAR_OPTIONS}"
 
   options=("Change Destination Folder " "$BRFOLDER"  \
-"(Optional) Exclude /home directory" "$BRHOME" \
+"(Optional) /home directory options:" "$BRHOME" \
 "(Optional) Set additional tar options" "$BRtaroptions" \
 "Set Compression Type" "$BRcompression" \
 "Done" "> $BRauth $BRscript $BR_BACKUP_OPTS")
@@ -74,7 +74,7 @@ while [ -z "$BRcompression" ]; do
           fi
           update_options;;
       "${options[2]}" )
-          BRHOME=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Options"  "Only hidden files and folders"  "Exclude" --text "Select an option:")
+          BRHOME=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Options"  "Include" "Only hidden files and folders"  "Exclude" --text "Select an option:")
           if [ "$BRHOME" = "Only hidden files and folders" ]; then
             BR_BACKUP_HOME="-h"
           elif [ "$BRHOME" = "Exclude" ]; then

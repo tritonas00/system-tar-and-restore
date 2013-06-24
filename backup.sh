@@ -46,7 +46,7 @@ show_summary() {
     echo "Exclude"
   fi
 
-  if [ $BRtar = "y" ]; then
+  if [ "$BRtar" = "y" ]; then
     echo -e "\nEXTRA OPTIONS:"
     echo "--acls --selinux --xattrs"
   fi
@@ -91,9 +91,9 @@ run_calc() {
 }
 
 run_tar() {
-  if [ ${BRcompression} = "GZIP" ]; then
+  if [ "$BRcompression" = "GZIP" ]; then
      tar cvpzf  "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" / || touch /tmp/b_error
-  elif [ ${BRcompression} = "XZ" ]; then
+  elif [ "$BRcompression" = "XZ" ]; then
      tar cvpJf  "$BRFile".tar.xz  ${BR_TAROPTS} --exclude="$BRFOLDER" / || touch /tmp/b_error
   fi
 }
@@ -237,7 +237,7 @@ while [ -z "$BRinterface" ]; do
   done
 done
 
-if [ $BRinterface = "CLI" ]; then
+if [ "$BRinterface" = "CLI" ]; then
   clear
   echo -e "${BR_BOLD}$BR_VERSION${BR_NORM}"
   echo " "
@@ -260,9 +260,9 @@ if [ $BRinterface = "CLI" ]; then
       def="y"
     fi
 
-    if [ $def = "y" ] || [ $def = "Y" ]; then
+    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRFOLDER="/"
-    elif [ $def = "n" ] || [ $def = "N" ]; then
+    elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
       while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
         echo -e "\n${BR_CYAN}Insert the folder path where the backup will be created${BR_NORM}"
         read -p "Path: " BRFOLDER
@@ -305,7 +305,7 @@ if [ $BRinterface = "CLI" ]; then
       def="n"
     fi
 
-    if [ $def = "y" ] || [ $def = "Y" ]; then
+    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRuseroptions="Yes"
       read -p "Enter options (See tar --help):" BR_USER_OPTS
     elif [ $def = "n" ] || [ $def = "N" ]; then
@@ -318,10 +318,10 @@ if [ $BRinterface = "CLI" ]; then
   while [ -z "$BRcompression" ]; do
     echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
     select c in "GZIP (Fast, big file)" "XZ   (Slow, smaller file)"; do
-      if [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 1 ]; then
+      if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
         BRcompression="GZIP"
         break
-      elif [[ $REPLY = [0-9]* ]] && [ $REPLY -eq 2 ]; then
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
         BRcompression="XZ"
         break
       else
@@ -345,9 +345,9 @@ if [ $BRinterface = "CLI" ]; then
       def="y"
     fi
 
-    if [ $def = "y" ] || [ $def = "Y" ]; then
+    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRcontinue="y"
-    elif [ $def = "n" ] || [ $def = "N" ]; then
+    elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
       BRcontinue="n"
       echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
       exit
@@ -383,7 +383,7 @@ if [ $BRinterface = "CLI" ]; then
 
   read -s a
 
-elif [ $BRinterface = "Dialog" ]; then
+elif [ "$BRinterface" = "Dialog" ]; then
   if [ -z $(which dialog 2> /dev/null) ];then
     echo -e "${BR_RED}Package dialog is not installed\n${BR_CYAN}Install the package and re-run the script${BR_NORM}"
     exit

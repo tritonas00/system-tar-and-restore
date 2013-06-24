@@ -2085,7 +2085,11 @@ elif [ $BRinterface = "Dialog" ]; then
             BRfile="${BRfile#*/}"
             detect_filetype
             if [ $BRfiletype = "gz" ] || [ $BRfiletype = "xz" ]; then
-              ( ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog  --progressbox  3 30
+              ( ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || (echo "Symlinking file: Error" && touch /tmp/ln_error) ) | dialog  --progressbox  3 30
+              if [ -f /tmp/ln_error ]; then
+                rm /tmp/ln_error
+                unset BRfile BRselect
+              fi
               sleep 2
             else
               echo "Invalid file type" | dialog --title "Error" --progressbox  3 21

@@ -276,44 +276,24 @@ if [ $BRinterface = "CLI" ]; then
   done
 
   while [ -z "$BRhome" ] ; do
-    echo -e "\n${BR_CYAN}Include /home directory?${BR_NORM}"
-    read -p "(Y/n):" an
-
-    if [ -n "$an" ]; then
-      def=$an
-    else
-      def="y"
-    fi
-
-    if [ $def = "y" ] || [ $def = "Y" ]; then
-      BRhome="Yes"
-    elif [ $def = "n" ] || [ $def = "N" ]; then
-      BRhome="No"
-    else
-      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
-    fi
-  done
-
-  if [ $BRhome = "No" ]; then
-    while [ -z "$BRhidden" ] ; do
-      echo -e "\n${BR_CYAN}Keep hidden files and folders inside /home?${BR_NORM}"
-      read -p "(Y/n):" an
-
-      if [ -n "$an" ]; then
-        def=$an
-      else
-        def="y"
-      fi
-
-      if [ $def = "y" ] || [ $def = "Y" ]; then
+    echo -e "\n${BR_CYAN}Home (/home) directory options:${BR_NORM}"
+    select c in "Include" "Only hidden files and folders" "Exclude"; do
+      if [ "$REPLY" = "1" ]; then
+        BRhome="Yes"
+        break
+      elif [ "$REPLY" = "2" ]; then
+        BRhome="No"
         BRhidden="Yes"
-      elif [ $def = "n" ] || [ $def = "N" ]; then
+        break
+      elif [ "$REPLY" = "3" ]; then
+        BRhome="No"
         BRhidden="No"
+        break
       else
-        echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
       fi
     done
-  fi
+  done
 
   while [ -z "$BRuseroptions" ]; do
     echo -e "\n${BR_CYAN}Enter additional tar options?${BR_NORM}"
@@ -447,24 +427,17 @@ elif [ $BRinterface = "Dialog" ]; then
   done
 
   while [ -z "$BRhome" ]; do
-    dialog  --yesno "Include /home directory?" 6 35
-    if [ $? = "0" ]; then
+    REPLY=$(dialog --no-cancel --menu "Home (/home) directory options:" 13 50 13  1 Include 2 "Only hidden files and folders" 3 Exclude  2>&1 1>&3)
+    if [ "$REPLY" = "1" ]; then
       BRhome="Yes"
-    else
+    elif [ "$REPLY" = "2" ]; then
       BRhome="No"
+      BRhidden="Yes"
+    elif [ "$REPLY" = "3" ]; then
+      BRhome="No"
+      BRhidden="No"
     fi
   done
-
-  if [ $BRhome = "No" ]; then
-    while [ -z "$BRhidden" ] ; do
-      dialog   --yesno "Keep hidden files and folders inside /home?" 6 50
-      if [ $? = "0" ]; then
-        BRhidden="Yes"
-      else
-        BRhidden="No"
-      fi
-    done
-  fi
 
   while [ -z "$BRuseroptions" ]; do
     dialog   --yesno "Specify additional tar options?" 6 35

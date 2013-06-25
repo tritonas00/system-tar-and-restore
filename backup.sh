@@ -100,7 +100,7 @@ run_tar() {
 
 BRargs=`getopt -o "i:d:c:u:hnN" -l "interface:,directory:,compression:,user-options:,exclude-home,no-hidden,no-color,help" -n "$1" -- "$@"`
 
-if [ $? -ne 0 ]; then
+if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
   exit
 fi
@@ -398,14 +398,14 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   while [ -z "$BRFOLDER" ]; do
     dialog  --yesno "The default folder for creating the backup image is / (root).\nSave in the default folder?" 8 65
-    if [ $? = "0" ]; then
+    if [ "$?" = "0" ]; then
       BRFOLDER="/"
     else
       BRpath=/
       while [ -z "$BRFOLDER" ]; do
         show_path
         BRselect=$(dialog --title "$BRcurrentpath" --no-cancel --extra-button --extra-label Set --menu  "Set destination folder: (Highlight a directory and press Set)" 30 90 30 "<--UP" .. $(dir_list) 2>&1 1>&3)
-        if [ $? = "3" ]; then
+        if [ "$?" = "3" ]; then
           if [ "$BRselect" = "<--UP" ]; then
             BRpath="$BRpath"
           else
@@ -441,7 +441,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   while [ -z "$BRuseroptions" ]; do
     dialog   --yesno "Specify additional tar options?" 6 35
-    if [ $? = "0" ]; then
+    if [ "$?" = "0" ]; then
       BRuseroptions="Yes"
       BR_USER_OPTS=$(dialog  --no-cancel --inputbox "Enter additional tar options: (See tar --help)" 8 70 2>&1 1>&3)
     else
@@ -455,7 +455,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   dialog --title "Summary"  --yesno "$(show_summary) $(echo -e "\n\nPress Yes to continue or No to abort.")" 0 0
 
-  if [ $? = "1" ]; then
+  if [ "$?" = "1" ]; then
     exit
   fi
 

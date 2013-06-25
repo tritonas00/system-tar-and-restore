@@ -32,7 +32,7 @@ info_screen() {
 
 show_summary() {
   echo -e "${BR_YELLOW}DESTINATION:"
-  echo  "$BRFOLDER"
+  echo "$BRFOLDER"
 
   echo -e "\nCOMPRESSION:"
   echo $BRcompression
@@ -74,10 +74,10 @@ show_path() {
 set_tar_options() {
   BR_TAROPTS="--sparse $BR_USER_OPTS --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
 
-  if [ "$BRhome" = "No" ] &&  [ "$BRhidden" = "No" ] ; then
+  if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
     BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
-  elif [ "$BRhome" = "No" ] &&  [ "$BRhidden" = "Yes" ] ; then
-    find /home/*/  -maxdepth 1 -iname ".*" -prune -o -print   > /tmp/excludelist
+  elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
+    find /home/*/ -maxdepth 1 -iname ".*" -prune -o -print > /tmp/excludelist
     BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/excludelist"
   fi
 
@@ -92,9 +92,9 @@ run_calc() {
 
 run_tar() {
   if [ "$BRcompression" = "GZIP" ]; then
-     tar cvpzf  "$BRFile".tar.gz  ${BR_TAROPTS} --exclude="$BRFOLDER" / || touch /tmp/b_error
+     tar cvpzf "$BRFile".tar.gz ${BR_TAROPTS} --exclude="$BRFOLDER" / || touch /tmp/b_error
   elif [ "$BRcompression" = "XZ" ]; then
-     tar cvpJf  "$BRFile".tar.xz  ${BR_TAROPTS} --exclude="$BRFOLDER" / || touch /tmp/b_error
+     tar cvpJf "$BRFile".tar.xz ${BR_TAROPTS} --exclude="$BRFOLDER" / || touch /tmp/b_error
   fi
 }
 
@@ -192,13 +192,13 @@ if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
   BRSTOP=y
 fi
 
-if  [ -n "$BRcompression" ] && [ ! "$BRcompression" =  "GZIP" ] && [ ! "$BRcompression" =  "XZ" ]; then
+if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "GZIP" ] && [ ! "$BRcompression" = "XZ" ]; then
   echo -e "${BR_RED}Wrong compression type:${BR_NORM} $BRcompression"
   echo -e "${BR_CYAN}Supported compressors: GZIP XZ${BR_NORM}"
   BRSTOP=y
 fi
 
-if  [ -n "$BRinterface" ] && [ ! "$BRinterface" =  "CLI" ] && [ ! "$BRinterface" =  "Dialog" ]; then
+if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "CLI" ] && [ ! "$BRinterface" = "Dialog" ]; then
   echo -e "${BR_RED}Wrong interface name:${BR_NORM} $BRinterface\n${BR_CYAN}Available options: CLI Dialog${BR_NORM}"
   BRSTOP=y
 fi
@@ -263,7 +263,7 @@ if [ "$BRinterface" = "CLI" ]; then
     if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRFOLDER="/"
     elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-      while [  -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
+      while [ -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
         echo -e "\n${BR_CYAN}Insert the folder path where the backup will be created${BR_NORM}"
         read -p "Path: " BRFOLDER
         if [ ! -d "$BRFOLDER" ]; then
@@ -390,21 +390,21 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   exec 3>&1
-  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
+  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRFOLDER" ]; then
     dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 22 70
   fi
 
   while [ -z "$BRFOLDER" ]; do
-    dialog  --yesno "The default folder for creating the backup image is / (root).\nSave in the default folder?" 8 65
+    dialog --yesno "The default folder for creating the backup image is / (root).\nSave in the default folder?" 8 65
     if [ "$?" = "0" ]; then
       BRFOLDER="/"
     else
       BRpath=/
       while [ -z "$BRFOLDER" ]; do
         show_path
-        BRselect=$(dialog --title "$BRcurrentpath" --no-cancel --extra-button --extra-label Set --menu  "Set destination folder: (Highlight a directory and press Set)" 30 90 30 "<--UP" .. $(dir_list) 2>&1 1>&3)
+        BRselect=$(dialog --title "$BRcurrentpath" --no-cancel --extra-button --extra-label Set --menu "Set destination folder: (Highlight a directory and press Set)" 30 90 30 "<--UP" .. $(dir_list) 2>&1 1>&3)
         if [ "$?" = "3" ]; then
           if [ "$BRselect" = "<--UP" ]; then
             BRpath="$BRpath"
@@ -427,7 +427,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   done
 
   while [ -z "$BRhome" ]; do
-    REPLY=$(dialog --no-cancel --menu "Home (/home) directory options:" 13 50 13  1 Include 2 "Only hidden files and folders" 3 Exclude  2>&1 1>&3)
+    REPLY=$(dialog --no-cancel --menu "Home (/home) directory options:" 13 50 13 1 Include 2 "Only hidden files and folders" 3 Exclude 2>&1 1>&3)
     if [ "$REPLY" = "1" ]; then
       BRhome="Yes"
     elif [ "$REPLY" = "2" ]; then
@@ -440,20 +440,20 @@ elif [ "$BRinterface" = "Dialog" ]; then
   done
 
   while [ -z "$BRuseroptions" ]; do
-    dialog   --yesno "Specify additional tar options?" 6 35
+    dialog --yesno "Specify additional tar options?" 6 35
     if [ "$?" = "0" ]; then
       BRuseroptions="Yes"
-      BR_USER_OPTS=$(dialog  --no-cancel --inputbox "Enter additional tar options: (See tar --help)" 8 70 2>&1 1>&3)
+      BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional tar options: (See tar --help)" 8 70 2>&1 1>&3)
     else
       BRuseroptions="No"
     fi
   done
 
   while [ -z "$BRcompression" ]; do
-    BRcompression=$(dialog --no-cancel  --menu "Select compression type:" 12 35 12  GZIP "Fast, big file" XZ "Slow, smaller file" 2>&1 1>&3)
+    BRcompression=$(dialog --no-cancel --menu "Select compression type:" 12 35 12 GZIP "Fast, big file" XZ "Slow, smaller file" 2>&1 1>&3)
   done
 
-  dialog --title "Summary"  --yesno "$(show_summary) $(echo -e "\n\nPress Yes to continue or No to abort.")" 0 0
+  dialog --title "Summary" --yesno "$(show_summary) $(echo -e "\n\nPress Yes to continue or No to abort.")" 0 0
 
   if [ "$?" = "1" ]; then
     exit
@@ -468,7 +468,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
   set_tar_options
-  run_calc | dialog  --progressbox  3 40
+  run_calc | dialog --progressbox 3 40
   total=$(cat /tmp/filelist | wc -l)
   sleep 1
   run_tar 2>>"$BRFOLDER"/backup.log |
@@ -484,14 +484,14 @@ elif [ "$BRinterface" = "Dialog" ]; then
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 
   if [ -f /tmp/b_error ]; then
-    dialog --title "Error" --msgbox  "An error occurred.\n\nCheck "$BRFOLDER"/backup.log for details.\n\nPress ENTER to exit." 9 80
+    dialog --title "Error" --msgbox "An error occurred.\n\nCheck "$BRFOLDER"/backup.log for details.\n\nPress ENTER to exit." 9 80
   else
-    dialog --title "Info" --msgbox  "Completed.\n\nBackup archive and log saved in $BRFOLDER.\n\nPress ENTER to exit." 9 80
+    dialog --title "Info" --msgbox "Completed.\n\nBackup archive and log saved in $BRFOLDER.\n\nPress ENTER to exit." 9 80
   fi
 fi
 
 if [ -f /tmp/excludelist ]; then
-  rm  /tmp/excludelist
+  rm /tmp/excludelist
 fi
 
 if [ -f /tmp/b_error ]; then

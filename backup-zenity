@@ -29,7 +29,7 @@ fi
 update_options() {
   BR_BACKUP_OPTS="${BR_BACKUP_DEST} ${BR_BACKUP_HOME} ${BR_BACKUP_COMP} ${BR_TAR_OPTIONS}"
 
-  options=("Change Destination Folder " "$BRFOLDER"  \
+  options=("Change Destination Folder " "$BRFOLDER" \
 "(Optional) /home directory options:" "$BRHOME" \
 "(Optional) Set additional tar options" "$BRtaroptions" \
 "Set Compression Type" "$BRcompression" \
@@ -61,7 +61,7 @@ update_options
 
 while [ -z "$BRcompression" ]; do
 
-  while opt=$(zenity  --width 550 --height 550 --cancel-label="Quit" --list  --title "Backup" --text "$BRinfo"  --column="Options" --column="Selection"  "${options[@]}" ); if [ $? = "1" ]; then exit; fi; do
+  while opt=$(zenity --width 550 --height 550 --cancel-label="Quit" --list --title "Backup" --text "$BRinfo" --column="Options" --column="Selection" "${options[@]}" ); if [ $? = "1" ]; then exit; fi; do
 
     case "$opt" in
       "${options[0]}" )
@@ -74,7 +74,7 @@ while [ -z "$BRcompression" ]; do
           fi
           update_options;;
       "${options[2]}" )
-          BRHOME=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Options"  "Include" "Only hidden files and folders"  "Exclude" --text "Select an option:")
+          BRHOME=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Options" "Include" "Only hidden files and folders" "Exclude" --text "Select an option:")
           if [ "$BRHOME" = "Only hidden files and folders" ]; then
             BR_BACKUP_HOME="-h"
           elif [ "$BRHOME" = "Exclude" ]; then
@@ -95,7 +95,7 @@ while [ -z "$BRcompression" ]; do
           update_options;;
       "${options[6]}" )
           BRcompression=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Compressors" --column="Info" GZIP "Fast, big file" XZ "Slow, smaller file" --text "Select compression type:")
-          if [  -n "$BRcompression" ] && [ $? = "0" ]; then
+          if [ -n "$BRcompression" ] && [ $? = "0" ]; then
              BR_BACKUP_COMP="-c $BRcompression"
           else
             unset BR_BACKUP_COMP
@@ -103,7 +103,7 @@ while [ -z "$BRcompression" ]; do
           update_options;;
       "${options[8]}" )
           break ;;
-      *) zenity --error --no-wrap  --text="Select an option first.";;
+      *) zenity --error --no-wrap --text="Select an option first.";;
       esac
   done
 

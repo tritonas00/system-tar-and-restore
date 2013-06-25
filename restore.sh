@@ -1407,7 +1407,7 @@ if [ "$BRinterface" = "CLI" ]; then
 
   if [  "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
-      echo -e "\nBTRFS root file system detected\n${BR_CYAN}Create subvolume for root (/) ?${BR_NORM}"
+      echo -e "\n${BR_CYAN}BTRFS root file system detected.\nCreate subvolume for root (/) ?${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -1917,7 +1917,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   if [  "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
-      dialog  --yesno "BTRFS root file system detected.Create subvolume for root (/) ?" 5 67
+      dialog  --yesno "BTRFS root file system detected. Create subvolume for root (/) ?" 5 68
       if [ "$?" = "0" ]; then
         BRrootsubvol="y"
       else

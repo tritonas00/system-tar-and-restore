@@ -2184,7 +2184,12 @@ Edit fstab ?" 20 100
 
     if [ "$?" = "0" ]; then
       while [ -z "$BRdeditor" ]; do
-        BRdeditor=$(dialog --no-cancel --menu "Select editor." 12 35 12 nano editor vi editor 2>&1 1>&3)
+        REPLY=$(dialog --no-cancel --menu "Select editor:" 10 25 10 1 nano 2 vi 2>&1 1>&3)
+        if [ "$REPLY" = "1" ]; then
+          BRdeditor="nano"
+        elif [ "$REPLY" = "2" ]; then
+          BRdeditor="vi"
+        fi
         $BRdeditor /mnt/target/etc/fstab
       done
     fi

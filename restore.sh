@@ -36,7 +36,7 @@ instruct_screen(){
 }
 
 item_type() {
-  if [ -d  "$BRpath/$f" ]; then
+  if [ -d "$BRpath/$f" ]; then
     echo dir
   else
     echo -
@@ -59,9 +59,9 @@ show_path() {
 }
 
 detect_filetype() {
-  if file "$BRfile" | grep -w gzip  > /dev/null; then
+  if file "$BRfile" | grep -w gzip > /dev/null; then
     BRfiletype="gz"
-  elif file "$BRfile" | grep -w XZ  > /dev/null; then
+  elif file "$BRfile" | grep -w XZ > /dev/null; then
     BRfiletype="xz"
   else
     BRfiletype="wrong"
@@ -69,9 +69,9 @@ detect_filetype() {
 }
 
 detect_filetype_url() {
-  if file /mnt/target/fullbackup | grep -w gzip  > /dev/null; then
+  if file /mnt/target/fullbackup | grep -w gzip > /dev/null; then
     BRfiletype="gz"
-  elif file /mnt/target/fullbackup | grep -w XZ  > /dev/null; then
+  elif file /mnt/target/fullbackup | grep -w XZ > /dev/null; then
     BRfiletype="xz"
   else
     BRfiletype="wrong"
@@ -139,7 +139,7 @@ generate_syslinux_cfg() {
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     syslinuxrootsubvol="rootflags=subvol=$BRrootsubvolname"
   fi
-  for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
+  for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
     if [ $BRdistro = Arch ]; then
       echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
       echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
@@ -187,9 +187,9 @@ count_gauge() {
 }
 
 part_list_dialog() {
-  for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
-  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"`  -e `echo /dev/mapper/"${BRboot##*/}"`
-  for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
+  for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"` -e `echo /dev/"${BRboot##*/}"`
+  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"` -e `echo /dev/mapper/"${BRboot##*/}"`
+  for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"` -e `echo /dev/"${BRboot##*/}"`
 }
 
 disk_list_dialog() {
@@ -198,9 +198,9 @@ disk_list_dialog() {
 }
 
 update_list() {
-  list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")
-         for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done  | grep -vw -e $(echo /dev/mapper/"${BRroot##*/}") -e $(echo /dev/mapper/"${BRswap##*/}") -e $(echo /dev/mapper/"${BRhome##*/}") -e $(echo /dev/mapper/"${BRboot##*/}")
-         for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)\r";  done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")` )
+  list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")
+         for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e $(echo /dev/mapper/"${BRroot##*/}") -e $(echo /dev/mapper/"${BRswap##*/}") -e $(echo /dev/mapper/"${BRhome##*/}") -e $(echo /dev/mapper/"${BRboot##*/}")
+         for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")` )
 }
 
 check_input() {
@@ -242,28 +242,28 @@ check_input() {
 
   if [ -n "$BRroot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
-    for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
+    for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong root partition:${BR_NORM} $BRroot"
       BRSTOP=y
-    elif  pvdisplay 2>&1 |  grep -w $BRroot > /dev/null; then
+    elif pvdisplay 2>&1 | grep -w $BRroot > /dev/null; then
       echo -e "${BR_YELLOW}$BRroot contains lvm physical volume, refusing to use it\nUse a logical volume instead${BR_NORM}"
       BRSTOP=y
-    elif [[ ! -z `lsblk -d -n -o mountpoint 2>  /dev/null $BRroot` ]]; then
-      echo -e "${BR_YELLOW}$BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRroot), refusing to use it${BR_NORM}"
+    elif [[ ! -z `lsblk -d -n -o mountpoint 2> /dev/null $BRroot` ]]; then
+      echo -e "${BR_YELLOW}$BRroot is already mounted as $(lsblk -d -n -o mountpoint 2> /dev/null $BRroot), refusing to use it${BR_NORM}"
       BRSTOP=y
     fi
   fi
 
   if [ -n "$BRswap" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
-    for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
+    for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong swap partition:${BR_NORM} $BRswap"
       BRSTOP=y
-    elif pvdisplay 2>&1 |  grep -w $BRswap > /dev/null; then
+    elif pvdisplay 2>&1 | grep -w $BRswap > /dev/null; then
       echo -e "${BR_YELLOW}$BRswap contains lvm physical volume, refusing to use it\nUse a logical volume instead${BR_NORM}"
       BRSTOP=y
     fi
@@ -275,16 +275,16 @@ check_input() {
 
   if [ -n "$BRhome" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
-    for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
+    for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
     for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
     if [ ! "$BRhomecheck" = "true" ]; then
       echo -e "${BR_RED}Wrong home partition:${BR_NORM} $BRhome"
       BRSTOP=y
-    elif pvdisplay 2>&1 |  grep -w $BRhome > /dev/null; then
+    elif pvdisplay 2>&1 | grep -w $BRhome > /dev/null; then
       echo -e "${BR_YELLOW}$BRhome contains lvm physical volume, refusing to use it\nUse a logical volume instead${BR_NORM}"
       BRSTOP=y
-    elif [[ ! -z `lsblk -d -n -o mountpoint 2>  /dev/null $BRhome` ]]; then
-      echo -e "${BR_YELLOW}$BRhome is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRhome), refusing to use it${BR_NORM}"
+    elif [[ ! -z `lsblk -d -n -o mountpoint 2> /dev/null $BRhome` ]]; then
+      echo -e "${BR_YELLOW}$BRhome is already mounted as $(lsblk -d -n -o mountpoint 2> /dev/null $BRhome), refusing to use it${BR_NORM}"
       BRSTOP=y
     fi
     if [ "$BRhome" == "$BRroot" ] || [ "$BRhome" == "$BRswap" ]; then
@@ -295,16 +295,16 @@ check_input() {
 
   if [ -n "$BRboot" ]; then
     for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
-    for i in $(find /dev/mapper/ | grep '-'); do  if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
+    for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
     if [ ! "$BRbootcheck" = "true" ]; then
       echo -e "${BR_RED}Wrong boot partition:${BR_NORM} $BRboot"
       BRSTOP=y
-    elif pvdisplay 2>&1 |  grep -w $BRboot > /dev/null; then
+    elif pvdisplay 2>&1 | grep -w $BRboot > /dev/null; then
       echo -e "${BR_YELLOW}$BRboot contains lvm physical volume, refusing to use it\nUse a logical volume instead${BR_NORM}"
       BRSTOP=y
-    elif [[ ! -z `lsblk -d -n -o mountpoint 2>  /dev/null $BRboot` ]]; then
-      echo -e "${BR_YELLOW}$BRboot is already mounted as $(lsblk -d -n -o mountpoint 2>  /dev/null $BRboot), refusing to use it${BR_NORM}"
+    elif [[ ! -z `lsblk -d -n -o mountpoint 2> /dev/null $BRboot` ]]; then
+      echo -e "${BR_YELLOW}$BRboot is already mounted as $(lsblk -d -n -o mountpoint 2> /dev/null $BRboot), refusing to use it${BR_NORM}"
       BRSTOP=y
     fi
     if [ "$BRboot" == "$BRroot" ] || [ "$BRboot" == "$BRswap" ] || [ "$BRboot" == "$BRhome" ]; then
@@ -330,7 +330,7 @@ check_input() {
       BRSTOP=y
     fi
     if [[ "$BRsyslinux" == *md* ]]; then
-      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
+      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z][0-9]'` ; do
         BRdev=`echo /dev/$f | cut -c -8`
       done
     fi
@@ -346,7 +346,7 @@ check_input() {
     BRSTOP=y
   fi
 
-  if  [ -n "$BRinterface" ] && [ ! "$BRinterface" =  "CLI" ] && [ ! "$BRinterface" =  "Dialog" ]; then
+  if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "CLI" ] && [ ! "$BRinterface" = "Dialog" ]; then
     echo -e "${BR_RED}Wrong interface name:${BR_NORM} $BRinterface\n${BR_CYAN}Available options: CLI Dialog${BR_NORM}"
     BRSTOP=y
   fi
@@ -364,7 +364,7 @@ mount_all() {
   echo -e "\n==>MOUNTING $BRroot (/)"
   mount -o $BR_MOUNT_OPTS $BRroot /mnt/target && echo Success || touch /tmp/stop
 
-  if [ "$(ls -A /mnt/target  | grep -vw "lost+found")" ]; then
+  if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
     touch /tmp/not-empty
   fi
 
@@ -372,7 +372,7 @@ mount_all() {
     echo -e "\n==>MOUNTING $BRhome (/home)"
     mkdir /mnt/target/home
     mount $BRhome /mnt/target/home && echo Success || touch /tmp/stop
-    if [ "$(ls -A /mnt/target/home  | grep -vw "lost+found")" ]; then
+    if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
       echo "Home partition not empty"
     fi
   fi
@@ -381,7 +381,7 @@ mount_all() {
     echo -e "\n==>MOUNTING $BRboot (/boot)"
     mkdir /mnt/target/boot
     mount $BRboot /mnt/target/boot && echo Success || touch /tmp/stop
-    if [ "$(ls -A /mnt/target/boot  | grep -vw "lost+found")" ]; then
+    if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
       echo "Boot partition not empty"
     fi
   fi
@@ -425,14 +425,14 @@ show_summary() {
   if [ -n "$BRgrub" ]; then
     echo "$BRbootloader"
     if [[ "$BRgrub" == *md* ]]; then
-      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'))"
+      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
     else
       echo "Location: $BRgrub"
     fi
   elif [ -n "$BRsyslinux" ]; then
     echo "$BRbootloader"
     if [[ "$BRsyslinux" == *md* ]]; then
-      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) |  grep -oP '[hs]d[a-z]'))"
+      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
     else
       echo "Location: $BRsyslinux"
     fi
@@ -464,7 +464,7 @@ prepare_chroot() {
   echo -e "Binding /dev"
   mount --bind /dev /mnt/target/dev
   echo -e "Binding /dev/pts"
-  mount --bind  /dev/pts /mnt/target/dev/pts
+  mount --bind /dev/pts /mnt/target/dev/pts
   echo -e "Mounting /proc"
   mount -t proc /proc /mnt/target/proc
   echo -e "Mounting /sys"
@@ -474,7 +474,7 @@ prepare_chroot() {
 generate_fstab() {
   mv /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   if [ $BRdistro = Arch ]; then
-    echo  "tmpfs  /tmp  tmpfs  nodev,nosuid  0  0" >> /mnt/target/etc/fstab
+    echo "tmpfs  /tmp  tmpfs  nodev,nosuid  0  0" >> /mnt/target/etc/fstab
   fi
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
@@ -534,17 +534,17 @@ build_initramfs() {
   fi
 
   if [ "$BRdistro" = "Arch" ]; then
-    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
+    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
      chroot /mnt/target mkinitcpio -p $BRinitrd
     done
 
   elif [ "$BRdistro" = "Debian" ]; then
-    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
+    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
       chroot /mnt/target update-initramfs -u -k $BRinitrd
     done
 
   elif [ "$BRdistro" = "Fedora" ]; then
-    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'`  ; do
+    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
       echo "Building image for $BRinitrd..."
       chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd
     done
@@ -555,20 +555,20 @@ install_bootloader() {
   if [ -n "$BRgrub" ]; then
     echo -e "\n==>INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [[ "$BRgrub" == *md* ]]; then
-      for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) |  grep -oP '[hs]d[a-z]'`  ; do
+      for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'` ; do
         if [ "$BRdistro" = "Arch" ]; then
-          chroot /mnt/target grub-install --target=i386-pc --recheck  /dev/$f || touch /tmp/bl_error
+          chroot /mnt/target grub-install --target=i386-pc --recheck /dev/$f || touch /tmp/bl_error
         elif [ "$BRdistro" = "Debian" ]; then
-          chroot /mnt/target grub-install  --recheck /dev/$f || touch /tmp/bl_error
+          chroot /mnt/target grub-install --recheck /dev/$f || touch /tmp/bl_error
         elif [ "$BRdistro" = "Fedora" ]; then
           chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/bl_error
         fi
       done
     else
       if [ "$BRdistro" = "Arch" ]; then
-        chroot /mnt/target grub-install --target=i386-pc  --recheck $BRgrub || touch /tmp/bl_error
+        chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/bl_error
       elif [ "$BRdistro" = "Debian" ]; then
-        chroot /mnt/target grub-install  --recheck $BRgrub || touch /tmp/bl_error
+        chroot /mnt/target grub-install --recheck $BRgrub || touch /tmp/bl_error
       elif [ "$BRdistro" = "Fedora" ]; then
         chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
       fi
@@ -605,7 +605,7 @@ install_bootloader() {
     else
       if [[ "$BRsyslinux" == *md* ]]; then
         chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
-        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) |  grep -oP '[hs]d[a-z][0-9]'`  ; do
+        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z][0-9]'` ; do
           BRdev=`echo /dev/$f | cut -c -8`
           BRpart=`echo /dev/$f | cut -c 9-`
           detect_partition_table
@@ -636,30 +636,30 @@ install_bootloader() {
 }
 
 generate_locales() {
-  if [ "$BRdistro" = "Arch" ] ||  [ "$BRdistro" = "Debian" ]; then
+  if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ]; then
     echo -e "\n==>GENERATING LOCALES"
-    chroot /mnt/target  locale-gen
+    chroot /mnt/target locale-gen
   fi
 }
 
 remount_delete_subvols() {
   echo -e "\n==>RE-MOUNTING AND DELETING SUBVOLUMES"
   cd ~
-  mount  $BRroot /mnt/target
+  mount $BRroot /mnt/target
 
-  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRhomesubvol" = "xy" ]; then
+  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRhomesubvol" = "xy" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname/home
   fi
 
-  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRvarsubvol" = "xy" ]; then
+  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRvarsubvol" = "xy" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname/var
   fi
 
-  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRusrsubvol" = "xy" ]; then
+  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRusrsubvol" = "xy" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname/usr
   fi
 
-  if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname
   fi
   if [ -f /mnt/target/fullbackup ]; then
@@ -675,7 +675,7 @@ remount_delete_subvols() {
       echo "/mnt/target is not empty"
   else
     sleep 1
-    rm  -r /mnt/target
+    rm -r /mnt/target
   fi
   exit
 }
@@ -685,7 +685,7 @@ unmount_only_in_subvol() {
   cd ~
   if [ -n "$BRhome" ]; then
     echo "Unmounting $BRhome"
-    umount  $BRhome
+    umount $BRhome
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
     elif [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
@@ -698,7 +698,7 @@ unmount_only_in_subvol() {
   fi
   if [ -n "$BRboot" ]; then
     echo "Unmounting $BRboot"
-    umount  $BRboot
+    umount $BRboot
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
     elif [ "$(ls -A /mnt/target/boot)" ]; then
@@ -746,7 +746,7 @@ clean_unmount_in() {
   cd ~
   if [ -n "$BRhome" ]; then
     echo "Unmounting $BRhome"
-    umount  $BRhome
+    umount $BRhome
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
     elif [ "$(ls -A /mnt/target/home)" ]; then
@@ -757,7 +757,7 @@ clean_unmount_in() {
   fi
   if [ -n "$BRboot" ]; then
     echo "Unmounting $BRboot"
-    umount  $BRboot
+    umount $BRboot
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
     elif [ "$(ls -A /mnt/target/boot)" ]; then
@@ -771,7 +771,7 @@ clean_unmount_in() {
     rm /mnt/target/fullbackup
   fi
   if [ -f /tmp/filelist ]; then
-    rm  /tmp/filelist
+    rm /tmp/filelist
   fi
 
   echo "Unmounting $BRroot"
@@ -782,7 +782,7 @@ clean_unmount_in() {
       echo "/mnt/target is not empty"
   else
     sleep 1
-    rm  -r /mnt/target
+    rm -r /mnt/target
   fi
   exit
 }
@@ -794,7 +794,7 @@ clean_unmount_out() {
     rm /mnt/target/fullbackup
   fi
   if [ -f /tmp/filelist ]; then
-    rm  /tmp/filelist
+    rm /tmp/filelist
   fi
   umount /mnt/target/dev/pts
   umount /mnt/target/proc
@@ -803,11 +803,11 @@ clean_unmount_out() {
   umount /mnt/target/run
   if [ -n "$BRhome" ]; then
     echo "Unmounting $BRhome"
-    umount  $BRhome
+    umount $BRhome
   fi
   if [ -n "$BRboot" ]; then
     echo "Unmounting $BRboot"
-    umount  $BRboot
+    umount $BRboot
   fi
   echo "Unmounting $BRroot"
   umount $BRroot && echo Success
@@ -817,7 +817,7 @@ clean_unmount_out() {
       echo "/mnt/target is not empty"
   else
     sleep 1
-    rm  -r /mnt/target
+    rm -r /mnt/target
   fi
   exit
 }
@@ -841,7 +841,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~
   if [ -n "$BRhome" ]; then
     echo "Unmounting $BRhome"
-    umount  $BRhome
+    umount $BRhome
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
     elif [ "$(ls -A /mnt/target/home)" ]; then
@@ -852,7 +852,7 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   fi
   if [ -n "$BRboot" ]; then
     echo "Unmounting $BRboot"
-    umount  $BRboot
+    umount $BRboot
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
     elif [ "$(ls -A /mnt/target/boot)" ]; then
@@ -865,20 +865,20 @@ echo -e "\n==>CLEANING AND UNMOUNTING"
   umount $BRroot && echo "Success" || echo "Error unmounting volume"
 
   echo -e "\n==>MOUNTING SUBVOLUME $BRrootsubvolname AS ROOT (/)"
-  mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target && echo Success  || echo Warning
+  mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target && echo Success || echo Warning
 
-  if [   -n "$BRhome" ]; then
+  if [ -n "$BRhome" ]; then
     echo -e "\n==>MOUNTING $BRhome (/home)"
     if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
       mkdir /mnt/target/home
     fi
-    mount $BRhome /mnt/target/home && echo Success  || echo Warning
+    mount $BRhome /mnt/target/home && echo Success || echo Warning
   fi
 
   if [   -n "$BRboot" ]; then
     echo -e "\n==>MOUNTING $BRboot (/boot)"
     mkdir /mnt/target/boot
-    mount $BRboot /mnt/target/boot && echo Success  || echo Warning
+    mount $BRboot /mnt/target/boot && echo Success || echo Warning
   fi
 }
 
@@ -1081,7 +1081,7 @@ if [ -n "$BRroot" ]; then
     sleep 1
   fi
 
-  if [ -z "$BRfile" ] && [ -z "$BRurl" ] && [ -z "$BRrestore"  ]; then
+  if [ -z "$BRfile" ] && [ -z "$BRurl" ] && [ -z "$BRrestore" ]; then
     echo -e "${BR_YELLOW}You must specify a backup file or enable transfer mode${BR_NORM}"
     exit
   fi
@@ -1144,8 +1144,8 @@ if [ "$BRinterface" = "CLI" ]; then
     clear
   fi
 
-  bootloader_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f";  done
-                    for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f";  done`)
+  bootloader_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f"; done
+                    for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f"; done`)
   editorlist=(nano vi)
   update_list
 
@@ -1199,7 +1199,7 @@ if [ "$BRinterface" = "CLI" ]; then
         echo -e "${BR_GREEN}You selected $BRhome as your home partition${BR_NORM}"
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
-        echo  -e "${BR_GREEN}No seperate home partition${BR_NORM}"
+        echo -e "${BR_GREEN}No seperate home partition${BR_NORM}"
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
@@ -1220,7 +1220,7 @@ if [ "$BRinterface" = "CLI" ]; then
         echo -e "${BR_GREEN}You selected $BRboot as your boot partition${BR_NORM}"
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
-        echo  -e "${BR_GREEN}No seperate boot partition${BR_NORM}"
+        echo -e "${BR_GREEN}No seperate boot partition${BR_NORM}"
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
@@ -1241,7 +1241,7 @@ if [ "$BRinterface" = "CLI" ]; then
         echo -e "${BR_GREEN}You selected $BRswap as your swap partition${BR_NORM}"
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
-        echo  -e "${BR_GREEN}No swap partition${BR_NORM}"
+        echo -e "${BR_GREEN}No swap partition${BR_NORM}"
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
@@ -1380,12 +1380,12 @@ if [ "$BRinterface" = "CLI" ]; then
   mount_all
 
   if [ -f /tmp/stop ]; then
-    rm  /tmp/stop
+    rm /tmp/stop
     echo -e "${BR_RED}Error while mounting partitions${BR_NORM}"
     clean_unmount_error
   fi
   if [ -f /tmp/not-empty ]; then
-    rm  /tmp/not-empty
+    rm /tmp/not-empty
     echo -e "${BR_RED}Root partition not empty, refusing to use it${BR_NORM}"
     echo -e "${BR_YELLOW}Root partition must be formatted and cleaned${BR_NORM}"
     clean_unmount_error
@@ -1405,7 +1405,7 @@ if [ "$BRinterface" = "CLI" ]; then
     BRbootfsize=(`lsblk -d -n -o size 2> /dev/null $BRboot`)
   fi
 
-  if [  "x$BRfsystem" = "xbtrfs" ]; then
+  if [ "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
       echo -e "\n${BR_CYAN}BTRFS root file system detected.\nCreate subvolume for root (/) ?${BR_NORM}"
       read -p "(Y/n):" an
@@ -1502,7 +1502,7 @@ if [ "$BRinterface" = "CLI" ]; then
       fi
       create_subvols
     fi
-  elif [  "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
+  elif [ "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
     echo -e "${BR_YELLOW}Not a btrfs root filesystem, proceeding without subvolumes...${BR_NORM}"
     sleep 1
   fi
@@ -1523,7 +1523,7 @@ if [ "$BRinterface" = "CLI" ]; then
           rm /mnt/target/fullbackup 2>/dev/null
         else
           detect_filetype_url
-          if [  "$BRfiletype" =  "wrong" ]; then
+          if [ "$BRfiletype" = "wrong" ]; then
             echo -e "${BR_RED}Invalid file type${BR_NORM}"
             rm /mnt/target/fullbackup 2>/dev/null
           fi
@@ -1536,7 +1536,7 @@ if [ "$BRinterface" = "CLI" ]; then
           rm /mnt/target/fullbackup 2>/dev/null
         else
         detect_filetype_url
-          if [  "$BRfiletype" =  "wrong" ]; then
+          if [ "$BRfiletype" = "wrong" ]; then
             echo -e "${BR_RED}Invalid file type${BR_NORM}"
             rm /mnt/target/fullbackup 2>/dev/null
           fi
@@ -1558,7 +1558,7 @@ if [ "$BRinterface" = "CLI" ]; then
       select c in "Local File" "URL" "Protected URL"; do
         if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
           echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-          if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+          if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
             unmount_only_in_subvol
             remount_delete_subvols
           fi
@@ -1587,14 +1587,14 @@ if [ "$BRinterface" = "CLI" ]; then
           if [ "$REPLY" = "3" ]; then
 	    read -p "USERNAME: " BRusername
             read -p "PASSWORD: " BRpassword
-	    wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup $BRurl --tries=2
+	    wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2
             if [ "$?" -ne "0" ]; then
               echo -e "${BR_RED}Error downloading file${BR_NORM}"
               echo -e "${BR_RED}Wrong URL or network is down${BR_NORM}"
 	      rm /mnt/target/fullbackup 2>/dev/null
             else
               detect_filetype_url
-              if [  "$BRfiletype" =  "wrong" ]; then
+              if [ "$BRfiletype" = "wrong" ]; then
                 echo -e "${BR_RED}Invalid file type${BR_NORM}"
                 rm /mnt/target/fullbackup 2>/dev/null
               fi
@@ -1608,7 +1608,7 @@ if [ "$BRinterface" = "CLI" ]; then
 	    rm /mnt/target/fullbackup 2>/dev/null
           else
             detect_filetype_url
-            if [  "$BRfiletype" =  "wrong" ]; then
+            if [ "$BRfiletype" = "wrong" ]; then
               echo -e "${BR_RED}Invalid file type${BR_NORM}"
               rm /mnt/target/fullbackup 2>/dev/null
             fi
@@ -1658,13 +1658,13 @@ if [ "$BRinterface" = "CLI" ]; then
     fi
   done
 
-  if [  "x$BRcontinue" = "xn" ]; then
-    if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+  if [ "x$BRcontinue" = "xn" ]; then
+    if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
       unmount_only_in_subvol
       remount_delete_subvols
     fi
     clean_unmount_in
-  elif [  "x$BRcontinue" = "xy" ]; then
+  elif [ "x$BRcontinue" = "xy" ]; then
     echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
     echo " " >> /tmp/restore.log
     if [ "$BRmode" = "Restore" ]; then
@@ -1675,7 +1675,7 @@ if [ "$BRinterface" = "CLI" ]; then
       echo " "
     elif [ "$BRmode" = "Transfer" ]; then
       echo -e "\n==>TRANSFERING"
-      run_calc  | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
+      run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
       total=$(cat /tmp/filelist | wc -l)
       sleep 1
       echo " "
@@ -1764,7 +1764,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
     exit
   fi
 
-  unset BR_NORM BR_RED  BR_GREEN BR_YELLOW  BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
+  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 25 80
@@ -1773,7 +1773,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   exec 3>&1
 
   while [ -z "$BRroot" ]; do
-    BRroot=$(dialog  --cancel-label Quit --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+    BRroot=$(dialog --cancel-label Quit --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
     if [ "$?" = "1" ]; then
       BRroot=" "
       exit
@@ -1781,10 +1781,10 @@ elif [ "$BRinterface" = "Dialog" ]; then
   done
 
   while [ -z "$BRmountoptions" ]; do
-     dialog   --yesno "Specify additional mount options?" 6 40
+     dialog --yesno "Specify additional mount options?" 6 40
      if [ "$?" = "0" ]; then
        BRmountoptions="Yes"
-       BR_MOUNT_OPTS=$(dialog  --no-cancel --inputbox "Enter options: (comma-separated list of mount options)" 8 70 2>&1 1>&3)
+       BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Enter options: (comma-separated list of mount options)" 8 70 2>&1 1>&3)
      else
        BRmountoptions="No"
        BR_MOUNT_OPTS="defaults"
@@ -1816,13 +1816,13 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    REPLY=$(dialog --cancel-label Skip --extra-button --extra-label Quit  --menu "Select bootloader:" 10 0 10 1 Grub 2 Syslinux 2>&1 1>&3)
+    REPLY=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select bootloader:" 10 0 10 1 Grub 2 Syslinux 2>&1 1>&3)
     if [ "$?" = "3" ]; then
       exit
     fi
     if [ "$REPLY" = "1" ]; then
       while [ -z "$BRgrub" ]; do
-        BRgrub=$(dialog --cancel-label Quit  --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
+        BRgrub=$(dialog --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
         if [ "$?" = "1" ]; then
           BRgrub=" "
           exit
@@ -1830,14 +1830,14 @@ elif [ "$BRinterface" = "Dialog" ]; then
       done
     elif [ "$REPLY" = "2" ]; then
       while [ -z "$BRsyslinux" ]; do
-        BRsyslinux=$(dialog --cancel-label Quit  --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
+        BRsyslinux=$(dialog --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
         if [ "$?" = "1" ]; then
           BRsyslinux=" "
           exit
         else
-          dialog   --yesno "Specify additional kernel options?" 6 40
+          dialog --yesno "Specify additional kernel options?" 6 40
           if [ "$?" = "0" ]; then
-            BR_KERNEL_OPTS=$(dialog  --no-cancel --inputbox "Enter additional kernel options:" 8 70 2>&1 1>&3)
+            BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Enter additional kernel options:" 8 70 2>&1 1>&3)
           fi
         fi
       done
@@ -1845,7 +1845,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    echo "WARNING! NO BOOTLOADER SELECTED" | dialog  --progressbox  3 35
+    echo "WARNING! NO BOOTLOADER SELECTED" | dialog --progressbox 3 35
     sleep 2
   fi
 
@@ -1866,7 +1866,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   while [ -z "$BRmode" ]; do
-    BRmode=$(dialog --cancel-label Quit --menu "Select Mode:" 12 50 12   Restore "system from backup file"  Transfer "this system with rsync" 2>&1 1>&3)
+    BRmode=$(dialog --cancel-label Quit --menu "Select Mode:" 12 50 12 Restore "system from backup file" Transfer "this system with rsync" 2>&1 1>&3)
     if [ "$?" = "1" ]; then
       BRmode=" "
       exit
@@ -1875,7 +1875,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   if [ "$BRmode" = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      dialog  --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 9 50
+      dialog --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 9 50
       if [ "$?" = "0" ]; then
         BRhidden="n"
       else
@@ -1889,12 +1889,12 @@ elif [ "$BRinterface" = "Dialog" ]; then
   mount_all 2>&1 | dialog --title "Mounting" --progressbox 30 70
 
   if [ -f /tmp/stop ]; then
-    rm  /tmp/stop
+    rm /tmp/stop
     echo -e "${BR_RED}Error while mounting partitions${BR_NORM}"
     clean_unmount_error
   fi
   if [ -f /tmp/not-empty ]; then
-    rm  /tmp/not-empty
+    rm /tmp/not-empty
     echo -e "${BR_RED}Root partition not empty, refusing to use it${BR_NORM}"
     echo -e "${BR_YELLOW}Root partition must be formatted and cleaned${BR_NORM}"
     clean_unmount_error
@@ -1915,9 +1915,9 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   sleep 2
 
-  if [  "x$BRfsystem" = "xbtrfs" ]; then
+  if [ "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
-      dialog  --yesno "BTRFS root file system detected. Create subvolume for root (/) ?" 5 68
+      dialog --yesno "BTRFS root file system detected. Create subvolume for root (/) ?" 5 68
       if [ "$?" = "0" ]; then
         BRrootsubvol="y"
       else
@@ -1927,15 +1927,15 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
     if [ "x$BRrootsubvol" = "xy" ]; then
       while [ -z "$BRrootsubvolname" ]; do
-        BRrootsubvolname=$(dialog  --no-cancel --inputbox "Enter subvolume name:" 8 50 2>&1 1>&3)
+        BRrootsubvolname=$(dialog --no-cancel --inputbox "Enter subvolume name:" 8 50 2>&1 1>&3)
         if [ -z "$BRrootsubvolname" ]; then
-          echo "Please enter a name for the subvolume" | dialog --title "Error" --progressbox  3 45
+          echo "Please enter a name for the subvolume" | dialog --title "Error" --progressbox 3 45
           sleep 2
         fi
       done
 
       while [ -z "$BRhomesubvol" ]; do
-        dialog  --yesno "Create subvolume for /home inside $BRrootsubvolname ?" 6 50
+        dialog --yesno "Create subvolume for /home inside $BRrootsubvolname ?" 6 50
         if [ "$?" = "0" ]; then
           BRhomesubvol="y"
         else
@@ -1944,7 +1944,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
       done
 
       while [ -z "$BRvarsubvol" ]; do
-        dialog  --yesno "Create subvolume for /var inside $BRrootsubvolname ?" 6 50
+        dialog --yesno "Create subvolume for /var inside $BRrootsubvolname ?" 6 50
         if [ "$?" = "0" ]; then
           BRvarsubvol="y"
         else
@@ -1953,7 +1953,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
       done
 
       while [ -z "$BRusrsubvol" ]; do
-        dialog  --yesno "Create subvolume for /usr inside $BRrootsubvolname ?" 6 50
+        dialog --yesno "Create subvolume for /usr inside $BRrootsubvolname ?" 6 50
         if [ "$?" = "0" ]; then
           BRusrsubvol="y"
         else
@@ -1970,10 +1970,10 @@ elif [ "$BRinterface" = "Dialog" ]; then
       if [ "x$BRhome" = "x-1" ]; then
 	unset BRvarsubvol
       fi
-      create_subvols 2>&1 | dialog --title "Creating subvolumes" --progressbox  30 70
+      create_subvols 2>&1 | dialog --title "Creating subvolumes" --progressbox 30 70
       sleep 2
     fi
-  elif [  "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
+  elif [ "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
     echo "Not a btrfs root filesystem, proceeding without subvolumes..." | dialog --title "Warning" --progressbox 3 70
     sleep 3
   fi
@@ -1991,32 +1991,32 @@ elif [ "$BRinterface" = "Dialog" ]; then
     if [ -n "$BRurl" ]; then
       if [ -n "$BRusername" ]; then
         ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
-        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog --gauge "Downloading..." 0 50
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
-          echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
+          echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57
           sleep 2
           rm /mnt/target/fullbackup 2>/dev/null
         else
           detect_filetype_url
-          if [  "$BRfiletype" =  "wrong" ]; then
-            echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
+          if [ "$BRfiletype" = "wrong" ]; then
+            echo "Invalid file type" | dialog --title "Error" --progressbox 3 21
             sleep 2
             rm /mnt/target/fullbackup 2>/dev/null
           fi
         fi
       else
         ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
-        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog --gauge "Downloading..." 0 50
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
-          echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
+          echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57
           sleep 2
           rm /mnt/target/fullbackup 2>/dev/null
         else
           detect_filetype_url
-          if [  "$BRfiletype" =  "wrong" ]; then
-            echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
+          if [ "$BRfiletype" = "wrong" ]; then
+            echo "Invalid file type" | dialog --title "Error" --progressbox 3 21
             sleep 2
             rm /mnt/target/fullbackup 2>/dev/null
           fi
@@ -2025,18 +2025,18 @@ elif [ "$BRinterface" = "Dialog" ]; then
     fi
     if [ -f /mnt/target/fullbackup ]; then
       ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
-      tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog  --progressbox 3 40
+      tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
       sleep 1
       ( if [ -f /tmp/tar_error ]; then
         rm /tmp/tar_error
         echo -e "Error reading archive"
         rm /mnt/target/fullbackup
         sleep 2
-      fi ) | dialog  --progressbox 3 30
+      fi ) | dialog --progressbox 3 30
     fi
 
     while [ ! -f /mnt/target/fullbackup ]; do
-      REPLY=$(dialog  --cancel-label Quit --menu "Select backup file. Choose an option:" 13 50 13  File "local file" URL "remote file" "Protected URL" "protected remote file" 2>&1 1>&3)
+      REPLY=$(dialog --cancel-label Quit --menu "Select backup file. Choose an option:" 13 50 13 File "local file" URL "remote file" "Protected URL" "protected remote file" 2>&1 1>&3)
       if [ "$?" = "1" ]; then
         if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
           unmount_only_in_subvol
@@ -2050,7 +2050,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
         IFS=$DEFAULTIFS
         while [ -z "$BRfile" ]; do
           show_path
-          BRselect=$(dialog --title "$BRcurrentpath" --menu  "Select backup archive:" 30 90 30 "<--UP" .. $(file_list) 2>&1 1>&3)
+          BRselect=$(dialog --title "$BRcurrentpath" --menu "Select backup archive:" 30 90 30 "<--UP" .. $(file_list) 2>&1 1>&3)
           if [ "$?" = "1" ]; then
             break
           fi
@@ -2067,7 +2067,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
               fi
               sleep 2
             else
-              echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
+              echo "Invalid file type" | dialog --title "Error" --progressbox 3 21
               sleep 2
               unset BRfile BRselect
             fi
@@ -2082,21 +2082,21 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
       elif [ "$REPLY" = "URL" ] || [ "$REPLY" = "Protected URL" ]; then
         unset BRfile
-        BRurl=$(dialog  --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 2>&1 1>&3)
+        BRurl=$(dialog --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 2>&1 1>&3)
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-          ( wget --user=$BRusername --password=$BRpassword  -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
-          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+          ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
+          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog --gauge "Downloading..." 0 50
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
-            echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
+            echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57
 	    sleep 2
             rm /mnt/target/fullbackup 2>/dev/null
           else
             detect_filetype_url
-            if [  "$BRfiletype" =  "wrong" ]; then
-              echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
+            if [ "$BRfiletype" = "wrong" ]; then
+              echo "Invalid file type" | dialog --title "Error" --progressbox 3 21
               sleep 2
               rm /mnt/target/fullbackup 2>/dev/null
             fi
@@ -2104,16 +2104,16 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
         elif [ "$REPLY" = "URL" ]; then
           ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
-          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog  --gauge "Downloading..." 0 50
+          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog --gauge "Downloading..." 0 50
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
-            echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox  3 57
+            echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57
             sleep 2
             rm /mnt/target/fullbackup 2>/dev/null
           else
             detect_filetype_url
-            if [  "$BRfiletype" =  "wrong" ]; then
-              echo "Invalid file type" | dialog --title "Error" --progressbox  3 21
+            if [ "$BRfiletype" = "wrong" ]; then
+              echo "Invalid file type" | dialog --title "Error" --progressbox 3 21
               sleep 2
               rm /mnt/target/fullbackup 2>/dev/null
             fi
@@ -2122,14 +2122,14 @@ elif [ "$BRinterface" = "Dialog" ]; then
       fi
       if [ -f /mnt/target/fullbackup ]; then
         ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
-        tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog  --progressbox 3 40
+        tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
         sleep 1
         ( if [ -f /tmp/tar_error ]; then
           rm /tmp/tar_error
           echo -e "Error reading archive"
           rm /mnt/target/fullbackup
           sleep 2
-        fi ) | dialog  --progressbox 3 30
+        fi ) | dialog --progressbox 3 30
       fi
     done
   fi
@@ -2141,7 +2141,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   if [ -z "$BRcontinue" ]; then
-    dialog --title "Summary"  --yesno "$(show_summary) $(echo -e "\n\nPress Yes to continue, or No to abort.")" 0 0
+    dialog --title "Summary" --yesno "$(show_summary) $(echo -e "\n\nPress Yes to continue, or No to abort.")" 0 0
 
     if [ "$?" = "0" ]; then
       def="y"
@@ -2151,7 +2151,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
-    if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+    if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
       unmount_only_in_subvol
       remount_delete_subvols
     fi
@@ -2165,7 +2165,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
     sleep 1
     run_tar 2>>/tmp/restore.log | count_gauge | dialog --gauge "Decompressing..." 0 50
   elif [ "$BRmode" = "Transfer" ]; then
-    run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done | dialog  --progressbox  3 40
+    run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done | dialog --progressbox 3 40
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Syncing..." 0 50
@@ -2175,7 +2175,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   generate_fstab
 
   if [ -n "$BRedit" ]; then
-    cat /mnt/target/etc/fstab  | dialog --title "GENERATING FSTAB" --progressbox  20 100
+    cat /mnt/target/etc/fstab | dialog --title "GENERATING FSTAB" --progressbox 20 100
     sleep 2
   else
     dialog --title "GENERATING FSTAB" --yesno "`cat /mnt/target/etc/fstab`
@@ -2184,7 +2184,7 @@ Edit fstab ?" 20 100
 
     if [ "$?" = "0" ]; then
       while [ -z "$BRdeditor" ]; do
-        BRdeditor=$(dialog --no-cancel  --menu "Select editor." 12 35 12   nano editor vi editor 2>&1 1>&3)
+        BRdeditor=$(dialog --no-cancel --menu "Select editor." 12 35 12 nano editor vi editor 2>&1 1>&3)
         $BRdeditor /mnt/target/etc/fstab
       done
     fi
@@ -2193,30 +2193,30 @@ Edit fstab ?" 20 100
  (prepare_chroot
   build_initramfs
   generate_locales
-  sleep 2) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox  30 100
+  sleep 2) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox 30 100
 
   if [ "$BRmode" = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
-    echo -e "Grub not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 49
+    echo -e "Grub not found! Proceeding without bootloader" | dialog --title "Warning" --progressbox 3 49
     sleep 2
     unset BRgrub
   elif [ "$BRmode" = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
-    echo -e "Syslinux not found! Proceeding without bootloader"  | dialog --title "Warning" --progressbox  3 53
+    echo -e "Syslinux not found! Proceeding without bootloader" | dialog --title "Warning" --progressbox 3 53
     sleep 2
     unset BRsyslinux
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox  30 70
+    install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox 30 70
     sleep 2
   fi
 
   if [ -f /tmp/bl_error ]; then
     rm /tmp/bl_error
-    dialog --title "Info" --msgbox  "Error installing $BRbootloader. Check /tmp/restore.log for details.\n\nPress OK to unmount all remaining (engaged) devices."  8 70
+    dialog --title "Info" --msgbox "Error installing $BRbootloader. Check /tmp/restore.log for details.\n\nPress OK to unmount all remaining (engaged) devices." 8 70
   elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    dialog --title "Info" --msgbox  "Completed. Log: /tmp/restore.log\n\nPress OK to unmount all remaining (engaged) devices, then reboot your system."  8 90
+    dialog --title "Info" --msgbox "Completed. Log: /tmp/restore.log\n\nPress OK to unmount all remaining (engaged) devices, then reboot your system." 8 90
   else
-    dialog --title "Info" --msgbox  "$(instruct_screen)"  22 80
+    dialog --title "Info" --msgbox "$(instruct_screen)" 22 80
   fi
 
   sleep 1

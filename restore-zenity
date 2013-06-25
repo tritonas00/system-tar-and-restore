@@ -27,20 +27,20 @@ else
 fi
 
 partition_list() {
-  for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
-  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)"; done  | grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"`  -e `echo /dev/mapper/"${BRboot##*/}"`
-  for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"`  -e `echo /dev/"${BRboot##*/}"`
+  for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"` -e `echo /dev/"${BRboot##*/}"`
+  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)"; done | grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"` -e `echo /dev/mapper/"${BRboot##*/}"`
+  for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"` -e `echo /dev/"${BRboot##*/}"`
 }
 
 disk_list() {
   for f in /dev/[hs]d[a-z]; do echo -e "$f"; done
-  for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f";  done
+  for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f"; done
 }
 
 update_options() {
   BR_RESTORE_OPTS="${BR_ROOT} ${BR_MOUNT_OPTIONS} ${BR_SWAP} ${BR_HOME} ${BR_BOOT} ${BR_BOOTLOADER} ${BR_KERN_OPTIONS} ${BR_ROOT_SUBVOL} ${BR_HOME_SUBVOL} ${BR_VAR_SUBVOL} ${BR_USR_SUBVOL} ${BR_FILE} ${BR_URL} ${BR_PROTECTED_URL} ${BR_TRANSFER}"
 
-  options=("Set target root partition" "$BRroot  $BRuseroptions"  \
+  options=("Set target root partition" "$BRroot $BRuseroptions" \
 "(Optional) Set swap partition" "$BRswap" \
 "(Optional) Set target home partition" "$BRhome" \
 "(Optional) Set target boot partition" "$BRboot" \
@@ -78,7 +78,7 @@ update_options
 
 while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
 
-  while opt=$(zenity  --width 550 --height 650 --cancel-label="Quit" --list  --title "Restore" --text "$BRinfo"  --column="Options" --column="Selection"  "${options[@]}" ); if [ $? = "1" ]; then exit; fi; do
+  while opt=$(zenity --width 550 --height 650 --cancel-label="Quit" --list --title "Restore" --text "$BRinfo" --column="Options" --column="Selection" "${options[@]}" ); if [ $? = "1" ]; then exit; fi; do
 
     case "$opt" in
       "${options[0]}" )
@@ -170,11 +170,11 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
               unset BR_BOOTLOADER BRbootloader BRkerneloptions BR_KERN_OPTIONS
             fi
           else
-            unset BRbootloader BRbootloader_disk  BR_BOOTLOADER BRkerneloptions BR_KERN_OPTIONS
+            unset BRbootloader BRbootloader_disk BR_BOOTLOADER BRkerneloptions BR_KERN_OPTIONS
           fi
           update_options;;
       "${options[12]}" )
-          BRfile=$(zenity --title "Select backup file" --file-selection --file-filter="GZIP Compressed Archive *.gz"  --file-filter="XZ Compressed Archive *.xz")
+          BRfile=$(zenity --title "Select backup file" --file-selection --file-filter="GZIP Compressed Archive *.gz" --file-filter="XZ Compressed Archive *.xz")
           if [ $? = "0" ]; then
             BR_FILE="-f '$BRfile'"
             BRsourceckeck="ok"
@@ -233,7 +233,7 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
           update_options;;
       "${options[20]}" )
           break ;;
-      *) zenity --error --no-wrap  --text="Select an option first.";;
+      *) zenity --error --no-wrap --text="Select an option first.";;
       esac
   done
 

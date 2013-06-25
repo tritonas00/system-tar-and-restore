@@ -58,6 +58,21 @@ show_path() {
   fi
 }
 
+detect_parts_fs_size() {
+  BRfsystem=$(df -T | grep $BRroot | awk '{ print $2}')
+  BRfsize=$(lsblk -d -n -o size 2> /dev/null $BRroot)
+
+  if [ -n "$BRhome" ]; then
+    BRhomefsystem=$(df -T | grep $BRhome | awk '{ print $2}')
+    BRhomefsize=$(lsblk -d -n -o size 2> /dev/null $BRhome)
+  fi
+
+  if [ -n "$BRboot" ]; then
+    BRbootfsystem=$(df -T | grep $BRboot | awk '{ print $2}')
+    BRbootfsize=$(lsblk -d -n -o size 2> /dev/null $BRboot)
+  fi
+}
+
 detect_filetype() {
   if file "$BRfile" | grep -w gzip > /dev/null; then
     BRfiletype="gz"
@@ -1391,19 +1406,7 @@ if [ "$BRinterface" = "CLI" ]; then
     clean_unmount_error
   fi
 
-
-  BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
-  BRfsize=(`lsblk -d -n -o size 2> /dev/null $BRroot`)
-
-  if [ -n "$BRhome" ]; then
-    BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
-    BRhomefsize=(`lsblk -d -n -o size 2> /dev/null $BRhome`)
-  fi
-
-  if [ -n "$BRboot" ]; then
-    BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
-    BRbootfsize=(`lsblk -d -n -o size 2> /dev/null $BRboot`)
-  fi
+  detect_parts_fs_size
 
   if [ "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
@@ -1900,19 +1903,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
     clean_unmount_error
   fi
 
-  BRfsystem=(`df -T | grep $BRroot | awk '{ print $2}'`)
-  BRfsize=(`lsblk -d -n -o size 2> /dev/null $BRroot`)
-
-  if [ -n "$BRhome" ]; then
-    BRhomefsystem=(`df -T | grep $BRhome | awk '{ print $2}'`)
-    BRhomefsize=(`lsblk -d -n -o size 2> /dev/null $BRhome`)
-  fi
-
-  if [ -n "$BRboot" ]; then
-    BRbootfsystem=(`df -T | grep $BRboot | awk '{ print $2}'`)
-    BRbootfsize=(`lsblk -d -n -o size 2> /dev/null $BRboot`)
-  fi
-
+  detect_parts_fs_size
   sleep 2
 
   if [ "x$BRfsystem" = "xbtrfs" ]; then

@@ -41,15 +41,15 @@ BRinfo="This script will make a tar backup image of your entire system.
 ==>Make sure you have enough free space.
 ==>Make sure you have GRUB or SYSLINUX packages installed.
 
-GRUB Packages:
--->Arch: grub-bios
--->Debian: grub-pc
--->Fedora: grub2
+GRUB PACKAGES:
+->Arch: grub-bios
+->Debian: grub-pc
+->Fedora: grub2
 
-SYSLINUX Packages:
--->Arch: syslinux
--->Debian: syslinux extlinux
--->Fedora: syslinux syslinux-extlinux
+SYSLINUX PACKAGES:
+->Arch: syslinux
+->Debian: syslinux extlinux
+->Fedora: syslinux syslinux-extlinux
 
 Choose an option:"
 

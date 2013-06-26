@@ -2132,7 +2132,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   if [ -z "$BRcontinue" ]; then
-    dialog --title "Summary" --yesno "$(show_summary) $(echo -e "\n\nPress Yes to continue, or No to abort.")" 0 0
+    dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0
 
     if [ "$?" = "0" ]; then
       def="y"

@@ -530,40 +530,33 @@ generate_fstab() {
 build_initramfs() {
   echo -e "\n==>REBUILDING INITRAMFS IMAGE"
   if [[ "$BRroot" == *md* ]] || [[ "$BRhome" == *md* ]] || [[ "$BRswap" == *md* ]] || [[ "$BRboot" == *md* ]]; then
+    echo "Generating mdadm.conf..."
     if [ $BRdistro = Debian ]; then
       if [ -f /mnt/target/etc/mdadm/mdadm.conf ]; then
         mv /mnt/target/etc/mdadm/mdadm.conf /mnt/target/etc/mdadm/mdadm.conf-old
       fi
-      echo "Generating mdadm.conf..."
       mdadm --examine --scan > /mnt/target/etc/mdadm/mdadm.conf
       cat /mnt/target/etc/mdadm/mdadm.conf
     else
       if [ -f /mnt/target/etc/mdadm.conf ]; then
         mv /mnt/target/etc/mdadm.conf /mnt/target/etc/mdadm.conf-old
       fi
-      echo "Generating mdadm.conf..."
       mdadm --examine --scan > /mnt/target/etc/mdadm.conf
       cat /mnt/target/etc/mdadm.conf
     fi
     echo " "
   fi
 
-  if [ "$BRdistro" = "Arch" ]; then
-    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
-     chroot /mnt/target mkinitcpio -p $BRinitrd
-    done
-
-  elif [ "$BRdistro" = "Debian" ]; then
-    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
+  for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
+    if [ "$BRdistro" = "Arch" ]; then  
+      chroot /mnt/target mkinitcpio -p $BRinitrd
+    elif [ "$BRdistro" = "Debian" ]; then
       chroot /mnt/target update-initramfs -u -k $BRinitrd
-    done
-
-  elif [ "$BRdistro" = "Fedora" ]; then
-    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
+    elif [ "$BRdistro" = "Fedora" ]; then
       echo "Building image for $BRinitrd..."
       chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd
-    done
- fi
+    fi 
+  done
 }
 
 install_bootloader() {

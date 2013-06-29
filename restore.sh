@@ -380,12 +380,12 @@ mount_all() {
   mount -o $BR_MOUNT_OPTS $BRroot /mnt/target && echo Success || touch /tmp/stop
 
   if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
-    touch /tmp/not-empty
+    touch /tmp/not_empty
   fi
 
   if [ -n "$BRhome" ]; then
     echo -e "\n==>MOUNTING $BRhome (/home)"
-    mkdir /mnt/target/home || touch /tmp/home-exists 
+    mkdir /mnt/target/home || touch /tmp/home_exists 
     mount $BRhome /mnt/target/home && echo Success || touch /tmp/stop
     if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
       echo "Home partition not empty"
@@ -394,7 +394,7 @@ mount_all() {
 
   if [ -n "$BRboot" ]; then
     echo -e "\n==>MOUNTING $BRboot (/boot)"
-    mkdir /mnt/target/boot || touch /tmp/boot-exists 
+    mkdir /mnt/target/boot || touch /tmp/boot_exists 
     mount $BRboot /mnt/target/boot && echo Success || touch /tmp/stop
     if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
       echo "Boot partition not empty"
@@ -660,7 +660,7 @@ generate_locales() {
 clean_home() {
   if [ "$(ls -A /mnt/target/home)" ]; then
     echo "/mnt/target/home is not empty"
-  elif [ ! -f /tmp/home-exists ] ; then
+  elif [ ! -f /tmp/home_exists ] ; then
     rm -r /mnt/target/home
   fi
 }
@@ -668,7 +668,7 @@ clean_home() {
 clean_boot() {
   if [ "$(ls -A /mnt/target/boot)" ]; then
     echo "/mnt/target/boot is not empty"
-  elif [ ! -f /tmp/boot-exists ] ; then
+  elif [ ! -f /tmp/boot_exists ] ; then
     rm -r /mnt/target/boot
   fi
 }
@@ -683,18 +683,13 @@ clean_root() {
 }
 
 clean_files() {
-  if [ -f /mnt/target/fullbackup ]; then
-    rm /mnt/target/fullbackup
-  fi
-  if [ -f /tmp/filelist ]; then
-    rm /tmp/filelist
-  fi
-  if [ -f /tmp/home-exists ]; then
-    rm /tmp/home-exists
-  fi
-  if [ -f /tmp/boot-exists ]; then
-    rm /tmp/boot-exists
-  fi
+  if [ -f /mnt/target/fullbackup ]; then rm /mnt/target/fullbackup; fi
+  if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
+  if [ -f /tmp/home_exists ]; then rm /tmp/home_exists; fi
+  if [ -f /tmp/boot_exists ]; then rm /tmp/boot_exists; fi
+  if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
+  if [ -f /tmp/not_empty ]; then rm /tmp/not_empty; fi
+  if [ -f /tmp/stop ]; then rm /tmp/stop; fi
 }
 
 clean_unmount_when_subvols() {
@@ -802,6 +797,16 @@ clean_unmount_out() {
   echo "Unmounting $BRroot"
   umount $BRroot && clean_root || echo "Error unmounting volume"
   exit
+}
+
+abort_on_error() {
+  if [ -f /tmp/stop ]; then
+    echo -e "${BR_RED}Error while mounting partitions${BR_NORM}"
+  elif [ -f /tmp/not_empty ]; then
+    echo -e "${BR_RED}Root partition not empty, refusing to use it${BR_NORM}"
+    echo -e "${BR_YELLOW}Root partition must be formatted and cleaned${BR_NORM}"
+  fi
+  clean_unmount_error
 }
 
 create_subvols() {
@@ -1347,19 +1352,7 @@ if [ "$BRinterface" = "CLI" ]; then
 
   check_input
   mount_all
-
-  if [ -f /tmp/stop ]; then
-    rm /tmp/stop
-    echo -e "${BR_RED}Error while mounting partitions${BR_NORM}"
-    clean_unmount_error
-  fi
-  if [ -f /tmp/not-empty ]; then
-    rm /tmp/not-empty
-    echo -e "${BR_RED}Root partition not empty, refusing to use it${BR_NORM}"
-    echo -e "${BR_YELLOW}Root partition must be formatted and cleaned${BR_NORM}"
-    clean_unmount_error
-  fi
-
+  abort_on_error
   detect_parts_fs_size
 
   if [ "x$BRfsystem" = "xbtrfs" ]; then
@@ -1697,7 +1690,6 @@ if [ "$BRinterface" = "CLI" ]; then
     sleep 1
 
     if [ -f /tmp/bl_error ]; then
-      rm /tmp/bl_error
       echo -e "\n${BR_RED}Error installing $BRbootloader. Check /tmp/restore.log for details.\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
     elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
       echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
@@ -1842,19 +1834,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   IFS=$'\n'
   check_input
   mount_all 2>&1 | dialog --title "Mounting" --progressbox 30 70
-
-  if [ -f /tmp/stop ]; then
-    rm /tmp/stop
-    echo -e "${BR_RED}Error while mounting partitions${BR_NORM}"
-    clean_unmount_error
-  fi
-  if [ -f /tmp/not-empty ]; then
-    rm /tmp/not-empty
-    echo -e "${BR_RED}Root partition not empty, refusing to use it${BR_NORM}"
-    echo -e "${BR_YELLOW}Root partition must be formatted and cleaned${BR_NORM}"
-    clean_unmount_error
-  fi
-
+  abort_on_error
   detect_parts_fs_size
   sleep 2
 
@@ -2154,7 +2134,6 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   if [ -f /tmp/bl_error ]; then
-    rm /tmp/bl_error
     dialog --title "Info" --msgbox "Error installing $BRbootloader. Check /tmp/restore.log for details.\n\nPress OK to unmount all remaining (engaged) devices." 8 70
   elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
     dialog --title "Info" --msgbox "Completed. Log: /tmp/restore.log\n\nPress OK to unmount all remaining (engaged) devices, then reboot your system." 8 90

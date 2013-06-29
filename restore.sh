@@ -2119,10 +2119,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
     cat /mnt/target/etc/fstab | dialog --title "GENERATING FSTAB" --progressbox 20 100
     sleep 2
   else
-    dialog --title "GENERATING FSTAB" --yesno "`cat /mnt/target/etc/fstab`
-
-Edit fstab ?" 20 100
-
+    dialog --title "GENERATING FSTAB" --yesno "$(echo -e "Edit fstab ? Generated fstab:\n`cat /mnt/target/etc/fstab`")" 13 100
     if [ "$?" = "0" ]; then
       while [ -z "$BRdeditor" ]; do
         REPLY=$(dialog --no-cancel --menu "Select editor:" 10 25 10 1 nano 2 vi 2>&1 1>&3)

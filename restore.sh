@@ -732,7 +732,6 @@ clean_unmount_when_subvols() {
 clean_unmount_error() {
   echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~
-  clean_files
   sleep 1
   if [ -n "$BRhome" ]; then
     umount $BRhome 2> /dev/null
@@ -743,7 +742,8 @@ clean_unmount_error() {
     umount $BRboot 2> /dev/null
     clean_boot
   fi
-
+ 
+ clean_files
   umount $BRroot 2> /dev/null
   clean_root
   exit
@@ -752,7 +752,6 @@ clean_unmount_error() {
 clean_unmount_in() {
   echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~
-  clean_files
   if [ -n "$BRhome" ]; then
     echo "Unmounting $BRhome"
     umount $BRhome && clean_home || echo "Error unmounting volume"
@@ -763,6 +762,7 @@ clean_unmount_in() {
     umount $BRboot && clean_boot || echo "Error unmounting volume"
   fi
 
+  clean_files
   echo "Unmounting $BRroot"
   umount $BRroot && clean_root || echo "Error unmounting volume"
   exit
@@ -771,7 +771,6 @@ clean_unmount_in() {
 clean_unmount_out() {
   echo -e "\n==>CLEANING AND UNMOUNTING"
   cd ~
-  clean_files
   umount /mnt/target/dev/pts
   umount /mnt/target/proc
   umount /mnt/target/dev
@@ -787,6 +786,7 @@ clean_unmount_out() {
     umount $BRboot
   fi
 
+  clean_files
   echo "Unmounting $BRroot"
   umount $BRroot && clean_root || echo "Error unmounting volume"
   exit
@@ -795,11 +795,12 @@ clean_unmount_out() {
 abort_on_error() {
   if [ -f /tmp/stop ]; then
     echo -e "${BR_RED}Error while mounting partitions${BR_NORM}"
+    clean_unmount_error
   elif [ -f /tmp/not_empty ]; then
     echo -e "${BR_RED}Root partition not empty, refusing to use it${BR_NORM}"
     echo -e "${BR_YELLOW}Root partition must be formatted and cleaned${BR_NORM}"
+    clean_unmount_error
   fi
-  clean_unmount_error
 }
 
 create_subvols() {

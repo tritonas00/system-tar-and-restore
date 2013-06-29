@@ -51,7 +51,7 @@ interface to use
 disable colors
 
 **-d, --directory**  
-path for backup folder
+backup folder path
 
 **-h, --exclude-home**  
 exclude /home (keep hidden files and folders)  

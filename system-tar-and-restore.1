@@ -3,9 +3,9 @@
 .\"    Author: [ see the "Authors" section]
 .\"      Date: 2013-06-06
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 3.3.1
+.\"    Source: system-tar-and-restore 3.3.2
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "17 june 2013" "3\&.3.1" "General Manual"
+.TH "system-tar-and-restore" "1" "17 june 2013" "3\&.3.2" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -49,7 +49,7 @@ in that location which contains the \fBarchive\fR and the \fBlog\fR file "backup
 .PP
 \fB\-i, \-\-interface\fR
 .RS 4
-interface to use
+interface to use (CLI Dialog)
 .RE
 .PP
 \fB\-N, \-\-no-color\fR
@@ -59,17 +59,17 @@ disable colors
 .PP
 \fB\-d, \-\-directory\fR
 .RS 4
-path for backup file\&. Default path is \fI/\fR
+backup folder path\&. Default path is \fI/\fR
 .RE
 .PP
 \fB\-h, \-\-exclude-home\fR
 .RS 4
-exclude \fI/home\fR directory
+exclude \fI/home\fR directory (keep hidden files and folders)
 .RE
 .PP
 \fB\-n, \-\-no-hidden\fR
 .RS 4
-dont keep home's hidden files and folders
+dont keep home's hidden files and folders (use with -h)
 .RE
 .PP
 \fB\-c, \-\-compression\fR
@@ -106,7 +106,7 @@ log file is saved as /tmp/restore.log
 .PP
 \fB\-i, \-\-interface\fR
 .RS 4
-interface to use
+interface to use (CLI Dialog)
 .RE
 .PP
 \fB\-N, \-\-no\-color\fR

@@ -149,7 +149,7 @@ Interface:${BR_NORM}
   -N, --no-color          disable colors
 
 ${BR_BOLD}Destination:${BR_NORM}
-  -d, --directory         path for backup folder
+  -d, --directory         backup folder path
 
 ${BR_BOLD}Home Directory:${BR_NORM}
   -h, --exclude-home	  exclude /home (keep hidden files and folders)

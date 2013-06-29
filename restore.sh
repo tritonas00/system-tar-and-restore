@@ -743,7 +743,7 @@ clean_unmount_error() {
     clean_boot
   fi
  
- clean_files
+  clean_files
   umount $BRroot 2> /dev/null
   clean_root
   exit

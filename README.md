@@ -54,13 +54,13 @@ disable colors
 path for backup folder
 
 **-h, --exclude-home**  
-exclude /home directory
+exclude /home (keep hidden files and folders)  
 
 **-n, --no-hidden**       
-dont keep home's hidden files and folders
+dont keep home's hidden files and folders (use with -h)  
 
 **-c, --compression**  
-compression type
+compression type (GZIP XZ)  
 
 **-u, --user-options**   
 additional tar options (See tar --help)  
@@ -87,7 +87,7 @@ installs and auto-configures Grub or Syslinux in MBR of given device and finally
 
 The script will ask for:
 
-- Interface to use  
+- Interface to use (CLI Dialog)  
 
 - Target root partition  and additional mount options  
 
@@ -121,7 +121,7 @@ Log file is saved as */tmp/restore.log*
 The script also supports all input as arguments:
 
 **-i, --interface**   
-interface to use
+interface to use (CLI Dialog)  
 
 **-N, --no-color**   
 disable colors
@@ -136,25 +136,25 @@ activate tranfer mode
 transfer /home's hidden files and folders only  
 
 **-r, --root**    
-root partition
+target root partition
+
+**-b, --boot**     
+target boot partition
+
+**-h, --home**     
+target home partition
 
 **-s, --swap**     
 swap partition
-
-**-b, --boot**     
-boot partition
-
-**-h, --home**     
-home partition
 
 **-m, --mount-options**     
 comma-separated list of mount options (root partition)
 
 **-g, --grub**    
-disk for grub
+target disk for grub
 
 **-S, --syslinux**      
-disk for syslinux
+target disk for syslinux
 
 **-k, --kernel-options**      
 additional kernel options (syslinux)

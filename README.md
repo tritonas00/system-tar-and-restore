@@ -45,7 +45,7 @@ The script will ask for:
 The script also supports all input as arguments:
 
 **-i, --interface**   
-interface to use
+interface to use (CLI Dialog)
 
 **-N, --no-color**   
 disable colors

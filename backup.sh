@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.3.1"
+BR_VERSION="System Tar & Restore 3.3.2"
 
 clear
 
@@ -16,18 +16,18 @@ color_variables() {
 }
 
 info_screen() {
-    echo "This script will make a tar backup image of your entire system."
-    echo -e "\n==>Make sure you have enough free space."
-    echo -e "\n==>Also make sure you have GRUB or SYSLINUX packages installed."
-    echo -e "\n${BR_YELLOW}GRUB PACKAGES:${BR_NORM}"
-    echo "->Arch: grub-bios"
-    echo "->Debian: grub-pc"
-    echo "->Fedora: grub2"
-    echo -e "\n${BR_YELLOW}SYSLINUX PACKAGES:${BR_NORM}"
-    echo "->Arch: syslinux"
-    echo "->Debian: syslinux extlinux"
-    echo "->Fedora: syslinux syslinux-extlinux"
-    echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
+  echo "This script will make a tar backup image of your entire system."
+  echo -e "\n==>Make sure you have enough free space."
+  echo -e "\n==>Also make sure you have GRUB or SYSLINUX packages installed."
+  echo -e "\n${BR_YELLOW}GRUB PACKAGES:${BR_NORM}"
+  echo "->Arch: grub-bios"
+  echo "->Debian: grub-pc"
+  echo "->Fedora: grub2"
+  echo -e "\n${BR_YELLOW}SYSLINUX PACKAGES:${BR_NORM}"
+  echo "->Arch: syslinux"
+  echo "->Debian: syslinux extlinux"
+  echo "->Fedora: syslinux syslinux-extlinux"
+  echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
 show_summary() {
@@ -153,7 +153,7 @@ ${BR_BOLD}Destination:${BR_NORM}
 
 ${BR_BOLD}Home Directory:${BR_NORM}
   -h, --exclude-home	  exclude /home
-  -n  --no-hidden         dont keep home's hidden files and folders
+  -n, --no-hidden         dont keep home's hidden files and folders
 
 ${BR_BOLD}Tar Options:${BR_NORM}
   -c, --compression       compression type (GZIP XZ)

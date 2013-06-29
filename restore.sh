@@ -653,7 +653,7 @@ generate_locales() {
 clean_home() {
   if [ "$(ls -A /mnt/target/home)" ]; then
     echo "/mnt/target/home is not empty"
-  elif [ ! -f /tmp/home_exists ] ; then
+  elif [ ! -f /tmp/home_exists ]; then
     rm -r /mnt/target/home
   fi
 }
@@ -661,7 +661,7 @@ clean_home() {
 clean_boot() {
   if [ "$(ls -A /mnt/target/boot)" ]; then
     echo "/mnt/target/boot is not empty"
-  elif [ ! -f /tmp/boot_exists ] ; then
+  elif [ ! -f /tmp/boot_exists ]; then
     rm -r /mnt/target/boot
   fi
 }

@@ -383,21 +383,22 @@ mount_all() {
     touch /tmp/not_empty
   fi
 
-  if [ -n "$BRhome" ]; then
-    echo -e "\n==>MOUNTING $BRhome (/home)"
-    mkdir /mnt/target/home || touch /tmp/home_exists
-    mount $BRhome /mnt/target/home && echo Success || touch /tmp/stop
-    if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
-      echo "Home partition not empty"
+  if [ ! -f /tmp/not_empty ]; then
+    if [ -n "$BRhome" ]; then
+      echo -e "\n==>MOUNTING $BRhome (/home)"
+      mkdir /mnt/target/home || touch /tmp/home_exists
+      mount $BRhome /mnt/target/home && echo Success || touch /tmp/stop
+      if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
+        echo "Home partition not empty"
+      fi
     fi
-  fi
-
-  if [ -n "$BRboot" ]; then
-    echo -e "\n==>MOUNTING $BRboot (/boot)"
-    mkdir /mnt/target/boot || touch /tmp/boot_exists
-    mount $BRboot /mnt/target/boot && echo Success || touch /tmp/stop
-    if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
-      echo "Boot partition not empty"
+    if [ -n "$BRboot" ]; then
+      echo -e "\n==>MOUNTING $BRboot (/boot)"
+      mkdir /mnt/target/boot || touch /tmp/boot_exists
+      mount $BRboot /mnt/target/boot && echo Success || touch /tmp/stop
+      if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
+        echo "Boot partition not empty"
+      fi
     fi
   fi
 }

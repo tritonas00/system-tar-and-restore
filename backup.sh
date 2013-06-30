@@ -92,9 +92,9 @@ run_calc() {
 
 run_tar() {
   if [ "$BRcompression" = "GZIP" ]; then
-     tar cvpzf "$BRFile".tar.gz ${BR_TAROPTS} --exclude="$BRFOLDER" / || touch /tmp/b_error
+     tar cvpzf "$BRFile".tar.gz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed succesfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
   elif [ "$BRcompression" = "XZ" ]; then
-     tar cvpJf "$BRFile".tar.xz ${BR_TAROPTS} --exclude="$BRFOLDER" / || touch /tmp/b_error
+     tar cvpJf "$BRFile".tar.xz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed succesfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
   fi
 }
 

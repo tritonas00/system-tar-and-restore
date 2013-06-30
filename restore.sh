@@ -168,9 +168,9 @@ generate_syslinux_cfg() {
 
 run_tar() {
   if [ "$BRfiletype" = "gz" ]; then
-    tar xvpfz /mnt/target/fullbackup -C /mnt/target
+    tar xvpfz /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed succesfully" >> /tmp/restore.log)
   elif [ "$BRfiletype" = "xz" ]; then
-    tar xvpfJ /mnt/target/fullbackup -C /mnt/target
+    tar xvpfJ /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed succesfully" >> /tmp/restore.log)
   fi
 }
 
@@ -184,9 +184,9 @@ run_calc() {
 
 run_rsync() {
   if [ "$BRhidden" = "n" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs}
+    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} && (echo "System transferred succesfully" >> /tmp/restore.log)
   elif [ "$BRhidden" = "y" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*}
+    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} && (echo "System transferred succesfully" >> /tmp/restore.log)
   fi
 }
 
@@ -2093,7 +2093,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
     cat /mnt/target/etc/fstab | dialog --title "GENERATING FSTAB" --progressbox 20 100
     sleep 2
   else
-    dialog --title "GENERATING FSTAB" --yesno "$(echo -e "Edit fstab ? Generated fstab:\n`cat /mnt/target/etc/fstab`")" 13 100
+    dialog --title "GENERATING FSTAB" --yesno "$(echo -e "Edit fstab ? Generated fstab:\n\n`cat /mnt/target/etc/fstab`")" 13 100
     if [ "$?" = "0" ]; then
       while [ -z "$BRdeditor" ]; do
         REPLY=$(dialog --no-cancel --menu "Select editor:" 10 25 10 1 nano 2 vi 2>&1 1>&3)

@@ -2127,7 +2127,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   if [ -f /tmp/bl_error ]; then
-    dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno  "Error installing $BRbootloader. Check /tmp/restore.log for details.\n\nPress OK to unmount all remaining (engaged) devices." 8 70
+    dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Error installing $BRbootloader. Check /tmp/restore.log for details.\n\nPress OK to unmount all remaining (engaged) devices." 8 70
   elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
     dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Completed. Log: /tmp/restore.log\n\nPress OK to unmount all remaining (engaged) devices, then reboot your system." 8 90
   else

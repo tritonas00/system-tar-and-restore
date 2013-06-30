@@ -484,9 +484,12 @@ elif [ "$BRinterface" = "Dialog" ]; then
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 
   if [ -f /tmp/b_error ]; then
-    dialog --title "Error" --msgbox "An error occurred.\n\nCheck "$BRFOLDER"/backup.log for details.\n\nPress ENTER to exit." 9 80
+    dialog --yes-label "OK" --no-label "View Log" --title "Error" --yesno "An error occurred.\n\nCheck $BRFOLDER/backup.log for details.\n\nPress OK to exit." 9 80
   else
-    dialog --title "Info" --msgbox "Completed.\n\nBackup archive and log saved in $BRFOLDER.\n\nPress ENTER to exit." 9 80
+    dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Completed.\n\nBackup archive and log saved in $BRFOLDER.\n\nPress OK to exit." 9 80
+  fi
+  if [ "$?" = "1" ]; then
+    dialog --textbox "$BRFOLDER"/backup.log 0 0
   fi
 fi
 

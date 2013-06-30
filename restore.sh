@@ -1664,10 +1664,10 @@ if [ "$BRinterface" = "CLI" ]; then
       done
     fi
 
-    (prepare_chroot
-     build_initramfs
-     generate_locales
-     sleep 1) 1> >(tee -a /tmp/restore.log) 2>&1
+    ( prepare_chroot
+      build_initramfs
+      generate_locales
+      sleep 1 ) 1> >(tee -a /tmp/restore.log) 2>&1
 
     if [ "$BRmode" = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
       echo -e "\n${BR_RED}Grub not found${BR_NORM}"
@@ -2106,10 +2106,10 @@ elif [ "$BRinterface" = "Dialog" ]; then
     fi
   fi
 
- (prepare_chroot
-  build_initramfs
-  generate_locales
-  sleep 2) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox 30 100
+ ( prepare_chroot
+   build_initramfs
+   generate_locales
+   sleep 2 ) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox 30 100
 
   if [ "$BRmode" = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
     echo -e "Grub not found! Proceeding without bootloader" | dialog --title "Warning" --progressbox 3 49

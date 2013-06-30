@@ -59,16 +59,16 @@ show_path() {
 }
 
 detect_parts_fs_size() {
-  BRfsystem=$(df -T | grep $BRroot | awk '{ print $2}')
+  BRfsystem=$(df -T | grep $BRroot | awk '{print $2}')
   BRfsize=$(lsblk -d -n -o size 2> /dev/null $BRroot)
 
   if [ -n "$BRhome" ]; then
-    BRhomefsystem=$(df -T | grep $BRhome | awk '{ print $2}')
+    BRhomefsystem=$(df -T | grep $BRhome | awk '{print $2}')
     BRhomefsize=$(lsblk -d -n -o size 2> /dev/null $BRhome)
   fi
 
   if [ -n "$BRboot" ]; then
-    BRbootfsystem=$(df -T | grep $BRboot | awk '{ print $2}')
+    BRbootfsystem=$(df -T | grep $BRboot | awk '{print $2}')
     BRbootfsize=$(lsblk -d -n -o size 2> /dev/null $BRboot)
   fi
 }
@@ -212,7 +212,7 @@ disk_list_dialog() {
   for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
 }
 
-update_list() {
+update_part_list() {
   list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")
          for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e $(echo /dev/mapper/"${BRroot##*/}") -e $(echo /dev/mapper/"${BRswap##*/}") -e $(echo /dev/mapper/"${BRhome##*/}") -e $(echo /dev/mapper/"${BRboot##*/}")
          for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")` )
@@ -1112,10 +1112,9 @@ if [ "$BRinterface" = "CLI" ]; then
     clear
   fi
 
-  bootloader_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f"; done
-                    for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f"; done`)
+  disk_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f"; done; for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f"; done`)
   editorlist=(nano vi)
-  update_list
+  update_part_list
 
   while [ -z "$BRroot" ]; do
     echo -e "\n${BR_CYAN}Select target root partition or enter Q to quit${BR_NORM}"
@@ -1154,7 +1153,7 @@ if [ "$BRinterface" = "CLI" ]; then
     fi
   done
 
-  update_list
+  update_part_list
 
   if [ -z "$BRhome" ]; then
     echo -e "\n${BR_CYAN}Select target home partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
@@ -1175,7 +1174,7 @@ if [ "$BRinterface" = "CLI" ]; then
     done
   fi
 
-  update_list
+  update_part_list
 
   if [ -z "$BRboot" ]; then
     echo -e "\n${BR_CYAN}Select target boot partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
@@ -1196,7 +1195,7 @@ if [ "$BRinterface" = "CLI" ]; then
     done
   fi
 
-  update_list
+  update_part_list
 
   if [ -z "$BRswap" ]; then
     echo -e "\n${BR_CYAN}Select swap partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
@@ -1230,11 +1229,11 @@ if [ "$BRinterface" = "CLI" ]; then
 
         while [ -z "$BRgrub" ]; do
           echo -e "\n${BR_CYAN}Select target disk for Grub or enter Q to quit${BR_NORM}"
-	  select c in ${bootloader_list[@]}; do
+	  select c in ${disk_list[@]}; do
 	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
-	    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#bootloader_list[@]} ]; then
+	    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
 	      BRgrub=(`echo $c | awk '{ print $1 }'`)
               echo -e "${BR_GREEN}You selected $BRgrub to install Grub${BR_NORM}"
 	      break
@@ -1248,11 +1247,11 @@ if [ "$BRinterface" = "CLI" ]; then
 
         while [ -z "$BRsyslinux" ]; do
           echo -e "\n${BR_CYAN}Select target disk Syslinux or enter Q to quit${BR_NORM}"
-	  select c in ${bootloader_list[@]}; do
+	  select c in ${disk_list[@]}; do
 	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
-	    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#bootloader_list[@]} ]; then
+	    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
 	      BRsyslinux=(`echo $c | awk '{ print $1 }'`)
               echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}"
 	      echo -e "\n${BR_CYAN}Enter additional kernel options?${BR_NORM}"

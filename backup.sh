@@ -98,6 +98,13 @@ run_tar() {
   fi
 }
 
+start_prepare() {
+  mkdir -p "$BRFOLDER"
+  echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
+  sleep 1
+  BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
+}
+
 BRargs=`getopt -o "i:d:c:u:hnN" -l "interface:,directory:,compression:,user-options:,exclude-home,no-hidden,no-color,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
@@ -361,16 +368,14 @@ if [ "$BRinterface" = "CLI" ]; then
     BRFOLDER="${BRFOLDER_IN[@]}"
 
     echo -e "\n==>CREATING ARCHIVE"
-    mkdir -p "$BRFOLDER"
-    echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
-    sleep 1
-    BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
+    start_prepare
     set_tar_options
     run_calc
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     echo " "
     run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
+
     echo -e "\n\n==>SETTING PERMISSIONS"
     chmod ugo+rw -R "$BRFOLDER" && echo Success || echo Failed
 
@@ -454,7 +459,6 @@ elif [ "$BRinterface" = "Dialog" ]; then
   done
 
   dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0
-
   if [ "$?" = "1" ]; then
     exit
   fi
@@ -462,11 +466,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
   BRFOLDER="${BRFOLDER_IN[@]}"
 
-  mkdir -p "$BRFOLDER"
-  echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
-  sleep 1
-
-  BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
+  start_prepare
   set_tar_options
   run_calc | dialog --progressbox 3 40
   total=$(cat /tmp/filelist | wc -l)
@@ -484,9 +484,9 @@ elif [ "$BRinterface" = "Dialog" ]; then
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 
   if [ -f /tmp/b_error ]; then
-    dialog --yes-label "OK" --no-label "View Log" --title "Error" --yesno "An error occurred.\n\nCheck $BRFOLDER/backup.log for details.\n\nPress OK to exit." 9 80
+    dialog --yes-label "OK" --no-label "View Log" --title "Error" --yesno "An error occurred.\n\nCheck $BRFOLDER/backup.log for details.\n\nPress OK to exit." 10 80
   else
-    dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Completed.\n\nBackup archive and log saved in $BRFOLDER.\n\nPress OK to exit." 9 80
+    dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Completed.\n\nBackup archive and log saved in $BRFOLDER.\n\nPress OK to exit." 10 80
   fi
   if [ "$?" = "1" ]; then
     dialog --textbox "$BRFOLDER"/backup.log 0 0

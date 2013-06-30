@@ -385,7 +385,7 @@ mount_all() {
 
   if [ -n "$BRhome" ]; then
     echo -e "\n==>MOUNTING $BRhome (/home)"
-    mkdir /mnt/target/home || touch /tmp/home_exists 
+    mkdir /mnt/target/home || touch /tmp/home_exists
     mount $BRhome /mnt/target/home && echo Success || touch /tmp/stop
     if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
       echo "Home partition not empty"
@@ -394,7 +394,7 @@ mount_all() {
 
   if [ -n "$BRboot" ]; then
     echo -e "\n==>MOUNTING $BRboot (/boot)"
-    mkdir /mnt/target/boot || touch /tmp/boot_exists 
+    mkdir /mnt/target/boot || touch /tmp/boot_exists
     mount $BRboot /mnt/target/boot && echo Success || touch /tmp/stop
     if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
       echo "Boot partition not empty"
@@ -548,14 +548,14 @@ build_initramfs() {
   fi
 
   for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
-    if [ "$BRdistro" = "Arch" ]; then  
+    if [ "$BRdistro" = "Arch" ]; then
       chroot /mnt/target mkinitcpio -p $BRinitrd
     elif [ "$BRdistro" = "Debian" ]; then
       chroot /mnt/target update-initramfs -u -k $BRinitrd
     elif [ "$BRdistro" = "Fedora" ]; then
       echo "Building image for $BRinitrd..."
       chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd
-    fi 
+    fi
   done
 }
 
@@ -742,7 +742,7 @@ clean_unmount_error() {
     umount $BRboot 2> /dev/null
     clean_boot
   fi
- 
+
   clean_files
   umount $BRroot 2> /dev/null
   clean_root

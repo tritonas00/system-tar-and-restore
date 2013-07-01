@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.3.2"
+BR_VERSION="System Tar & Restore 3.3.3"
 
 clear
 
@@ -168,9 +168,9 @@ generate_syslinux_cfg() {
 
 run_tar() {
   if [ "$BRfiletype" = "gz" ]; then
-    tar xvpfz /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed succesfully" >> /tmp/restore.log)
+    tar xvpfz /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
   elif [ "$BRfiletype" = "xz" ]; then
-    tar xvpfJ /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed succesfully" >> /tmp/restore.log)
+    tar xvpfJ /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
   fi
 }
 
@@ -184,9 +184,9 @@ run_calc() {
 
 run_rsync() {
   if [ "$BRhidden" = "n" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} && (echo "System transferred succesfully" >> /tmp/restore.log)
+    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} && (echo "System transferred successfully" >> /tmp/restore.log)
   elif [ "$BRhidden" = "y" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} && (echo "System transferred succesfully" >> /tmp/restore.log)
+    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} && (echo "System transferred successfully" >> /tmp/restore.log)
   fi
 }
 

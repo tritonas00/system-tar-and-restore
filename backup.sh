@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.3.2"
+BR_VERSION="System Tar & Restore 3.3.3"
 
 clear
 
@@ -92,9 +92,9 @@ run_calc() {
 
 run_tar() {
   if [ "$BRcompression" = "GZIP" ]; then
-     tar cvpzf "$BRFile".tar.gz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed succesfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
+     tar cvpzf "$BRFile".tar.gz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
   elif [ "$BRcompression" = "XZ" ]; then
-     tar cvpJf "$BRFile".tar.xz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed succesfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
+     tar cvpJf "$BRFile".tar.xz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
   fi
 }
 

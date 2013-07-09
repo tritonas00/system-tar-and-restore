@@ -7,7 +7,7 @@ using tar or transfer an existing installation using rsync.
 
 Supported distributions: Arch, Debian, Fedora*
 
-*Fedora 19 tar: xattrs patch bug(?), decompressed system cant login. Transfer Mode (rsync) works.
+<sub>*Fedora 19 tar: xattrs patch bug(?), decompressed system cant login. Transfer Mode (rsync) works.</sub>
 
 [Demo Video](http://www.youtube.com/watch?v=o03AEflC6qI&hd=1)  
 

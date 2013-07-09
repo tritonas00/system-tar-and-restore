@@ -6,7 +6,6 @@ The purpose is to make the process of backing up and restoring a full GNU/Linux 
 using tar or transfer an existing installation using rsync.
 
 Supported distributions: Arch, Debian, Fedora*
-
 <sub>*Fedora 19 tar: xattrs patch bug(?), decompressed system cant login. Transfer Mode (rsync) works.</sub>
 
 [Demo Video](http://www.youtube.com/watch?v=o03AEflC6qI&hd=1)  

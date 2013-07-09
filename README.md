@@ -286,7 +286,7 @@ Wrappers and main scripts must be in the same directory and executed as normal u
 - zenity
 - xterm
 
-###SCREENSHOTS###
+###WRAPPER SCREENSHOTS###
 
 ![ScreenShot] (https://raw.github.com/tritonas00/system-tar-and-restore/master/screenshots/backup.jpg)
 

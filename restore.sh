@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.4"
+BR_VERSION="System Tar & Restore 3.4.1"
 
 clear
 
@@ -1898,7 +1898,6 @@ elif [ "$BRinterface" = "Dialog" ]; then
       ( ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || (echo "Symlinking file: Error" && touch /tmp/ln_error) ) | dialog  --progressbox  3 30
       if [ -f /tmp/ln_error ]; then
         rm /tmp/ln_error
-        unset BRfile BRselect
       fi
       sleep 2
     fi
@@ -1959,7 +1958,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
         clean_unmount_in
 
       elif [ "$REPLY" = "File" ]; then
-        unset BRurl
+        unset BRurl BRfile BRselect
         BRpath=/
         IFS=$DEFAULTIFS
         while [ -z "$BRfile" ]; do

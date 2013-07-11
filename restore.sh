@@ -1453,7 +1453,7 @@ if [ "$BRinterface" = "CLI" ]; then
     echo -e "\n==>GETTING TAR IMAGE"
 
     if [ -n "$BRfile" ]; then
-      ln -s "$BRfile" "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo "Symlinking file: Error"
+      ln -s "$BRfile" "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo -e "${BR_RED}Error symlinking file${BR_NORM}"
     fi
 
     if [ -n "$BRurl" ]; then

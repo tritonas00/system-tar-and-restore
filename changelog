@@ -1,5 +1,8 @@
 Changelog:
 
+3.4.1
+    fixed opening file browser when reading archive fails
+
 3.4
     added log viewer in dialog interface
     re-written (un)mount/clean/create_subvols functions

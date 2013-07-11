@@ -1895,10 +1895,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-      ( ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || (echo "Symlinking file: Error" && touch /tmp/ln_error) ) | dialog  --progressbox  3 30
-      if [ -f /tmp/ln_error ]; then
-        rm /tmp/ln_error
-      fi
+      ( ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog  --progressbox  3 30
       sleep 2
     fi
 

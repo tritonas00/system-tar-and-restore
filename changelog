@@ -1,0 +1,155 @@
+Changelog:
+
+3.4
+    added log viewer in dialog interface
+    re-written (un)mount/clean/create_subvols functions
+    better explanation in backup help
+    cleaner edit fstab dialog
+    if tar/rsync completed successfully show it in the log
+    if empty /home and /boot dirrectories exist in non-empty root partition dont touch them
+    fixed last dialog in backup.sh when destination has spaces
+    code cleaning 
+
+3.3.1
+    added simple file/directory browser in dialog interface
+    better /home directory options in backup script and wrapper
+    cleaner editors/bootloaders menu dialog
+    corrected syntax in some dialogs
+    changed summary dialog labels
+    colorized summary
+    code cleaning 
+
+3.3
+    added additional root mount/fstab options
+    added additional kernel options with syslinux
+    gpt support for debian/fedora with syslinux
+    re-written install_bootloader
+    better syslinux installation error checking
+    changed dialogues
+    added sgdisk check
+    new syslinux output for debian/fedora
+    bind /run - fixed grub /var/lock/dmraid warnings
+    new help pages
+    updated wrappers
+    code cleaning 
+
+3.2
+    symlink local archive
+    count archive content
+    added bootloader installation error reporting
+    code cleaning / re-arranging
+    use dialog gauge
+    functions in CLI interface are now a bit faster
+    added manpage
+    cosmetic changes
+    new backup summary 
+
+3.1
+    added tar/rsync progress counter
+    added backup.log and restore.log
+    code re-arranging
+    functions prepare_chroot build_initramfs generate_locales show in one dialog box
+    better rsync syntax for /home's hidden files and folders
+    dont generate locales in fedora
+    various cosmetic changes 
+
+3.0
+    allow non-empty /boot and /home partitions
+    changed backup folder name
+    wait user input to exit backup script in CLI interface
+    changed /home options in backup wrapper
+    wrappers use sudo if installed 
+
+2.9.2
+    fixed raid arrays detection
+    fixes in check_input 
+
+2.9
+    raid support
+    option to install bootloader in all disks that an array contains
+    option to symlink archive
+    added -N, --no-color argument
+    wrappers now find full script's path
+    error reporting in backup script 
+
+2.8
+    fixed booting lvm root with syslinux
+    added tar user options
+    wrappers call main scripts with su -c
+    wrappers show the generated command
+    wrappers remember user input
+    added xterm titles 
+
+2.7.1
+    fixed grub detection 
+
+2.7
+    remaned scripts
+    added zenity wrappers
+    better syslinux directory handling 
+
+2.6
+    xz support
+    added -q --quiet, -o --only-hidden arguments
+    better summary
+    scripts are wrapper-ready now
+    autodetect archive type
+    save old syslinux.cfg
+    added hostname in backup filename
+    fixed file path with spaces in dialog interface
+    autosize dialogs
+    removed trailing spaces 
+
+2.5.1
+    write uuids in syslinux.cfg
+    fixed typos 
+
+2.5
+    lvm support
+    check if bootloader exists
+    automatic distro detection
+    changed color variables
+    partitions given from arguments dont show them again
+    check mount exit code
+    added dialog titles
+    better fstab generator
+    better chroot enviroment preperation
+    summary shows partition sizes
+    if fedora+grub, save old /etc/default/grub and re-generate it 
+
+2.4
+    added transfer mode
+    build initramfs for every available kernel
+    add syslinux.cfg entries for every available kernel
+    removed url ping check 
+
+2.3
+    better backup tar syntax
+    fixed backing up files with spaces when only /home's hidden files and folders selected
+    changed dialog sizes and syntax 
+
+2.2
+    check user input
+    archive integrity check
+    smart summary
+    selected partitions dont show up again
+    CLI colors
+    autodetect fedora and add extra tar options
+    bootloader is now optional
+    edit fstab option
+    better unmounting/cleaning with subvolumes
+    changes in dialogs
+    hidden password
+    added info in restore script
+    code cleaning
+    small fixes 
+
+2.1
+    option for /home's hidden files and folder in backup
+    added -i, --interface argument
+    support for paths with spaces
+    code re-arranging
+    various fixes 
+
+2.0
+    initial commit 

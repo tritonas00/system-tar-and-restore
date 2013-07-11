@@ -9,7 +9,7 @@ Supported distributions: Arch, Debian, Fedora*
 <sub>*Fedora 19 tar: xattrs patch bug(?), decompressed system cant login. Transfer Mode (rsync) works.</sub>
 
 [Demo Video](http://www.youtube.com/watch?v=o03AEflC6qI&hd=1)  
-[Stable Releases)](https://github.com/tritonas00/system-tar-and-restore/releases  
+[Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)  
 
 ###LIMITATIONS###
 

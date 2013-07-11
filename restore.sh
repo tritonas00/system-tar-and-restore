@@ -1513,7 +1513,7 @@ if [ "$BRinterface" = "CLI" ]; then
       	  else
             detect_filetype
             if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ]; then
-              ln -s $BRfile "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo "Symlinking file: Error"
+              ln -s $BRfile "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo -e "${BR_RED}Error symlinking file${BR_NORM}"
             else
               echo -e "${BR_RED}Invalid file type${BR_NORM}"
             fi

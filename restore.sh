@@ -112,7 +112,7 @@ detect_syslinux_root() {
 }
 
 detect_fstab_root() {
-  if [[ "$BRroot" == *md* ]]; then
+  if [[ "$BRroot" == */md* ]]; then
     echo "$BRroot"
   else
     echo "UUID=$(lsblk -d -n -o uuid $BRroot)"
@@ -500,7 +500,7 @@ generate_fstab() {
   fi
 
   if [ -n "$BRhome" ]; then
-    if [[ "$BRhome" == *md* ]]; then
+    if [[ "$BRhome" == */md* ]]; then
       echo "$BRhome  /home  $BRhomefsystem  defaults,noatime  0  2" >> /mnt/target/etc/fstab
     else
       echo "UUID=$(lsblk -d -n -o uuid $BRhome)  /home  $BRhomefsystem  defaults,noatime  0  2" >> /mnt/target/etc/fstab
@@ -508,7 +508,7 @@ generate_fstab() {
   fi
 
   if [ -n "$BRboot" ]; then
-    if [[ "$BRboot" == *md* ]]; then
+    if [[ "$BRboot" == */md* ]]; then
       echo "$BRboot  /boot  $BRbootfsystem  defaults  0  1" >> /mnt/target/etc/fstab
     else
       echo "UUID=$(lsblk -d -n -o uuid $BRboot)  /boot  $BRbootfsystem  defaults  0  1" >> /mnt/target/etc/fstab
@@ -516,7 +516,7 @@ generate_fstab() {
   fi
 
   if [ -n "$BRswap" ]; then
-    if [[ "$BRswap" == *md* ]]; then
+    if [[ "$BRswap" == */md* ]]; then
       echo "$BRswap  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
     else
       echo "UUID=$(lsblk -d -n -o uuid $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
@@ -528,7 +528,7 @@ generate_fstab() {
 
 build_initramfs() {
   echo -e "\n==>REBUILDING INITRAMFS IMAGE"
-  if [[ "$BRroot" == *md* ]] || [[ "$BRhome" == *md* ]] || [[ "$BRswap" == *md* ]] || [[ "$BRboot" == *md* ]]; then
+  if [[ "$BRroot" == */md* ]] || [[ "$BRhome" == */md* ]] || [[ "$BRswap" == */md* ]] || [[ "$BRboot" == */md* ]]; then
     echo "Generating mdadm.conf..."
     if [ $BRdistro = Debian ]; then
       if [ -f /mnt/target/etc/mdadm/mdadm.conf ]; then

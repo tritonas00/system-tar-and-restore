@@ -1,5 +1,9 @@
 Changelog:
 
+3.4.2
+    more accurate raid detection
+    code cleaning
+
 3.4.1
     fixed opening file browser when reading archive fails
 

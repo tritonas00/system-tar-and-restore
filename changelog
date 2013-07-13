@@ -1,5 +1,9 @@
 Changelog:
 
+3.4.3
+    changed backup destination dialogs
+    better raid detection
+
 3.4.2
     more accurate raid detection
     code cleaning

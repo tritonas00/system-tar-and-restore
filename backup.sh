@@ -271,7 +271,7 @@ if [ "$BRinterface" = "CLI" ]; then
       BRFOLDER="/"
     elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
       while [ -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-        echo -e "\n${BR_CYAN}Insert the folder path where the backup will be created${BR_NORM}"
+        echo -e "\n${BR_CYAN}Enter the path where the backup will be created${BR_NORM}"
         read -p "Path: " BRFOLDER
         if [ ! -d "$BRFOLDER" ]; then
           echo -e "${BR_RED}Directory does not exist.${BR_NORM}"
@@ -402,7 +402,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   while [ -z "$BRFOLDER" ]; do
-    dialog --yesno "The default folder for creating the backup image is / (root).\nSave in the default folder?" 8 65
+    dialog --yesno "The default folder for creating the backup image is / (root).\n\nSave in the default folder?" 8 65
     if [ "$?" = "0" ]; then
       BRFOLDER="/"
     else

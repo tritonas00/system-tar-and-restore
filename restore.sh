@@ -36,7 +36,7 @@ instruct_screen(){
 }
 
 ok_status() {
-echo -e "[${BR_GREEN}OK${BR_NORM}]"
+  echo -e "[${BR_GREEN}OK${BR_NORM}]"
 }
 
 item_type() {

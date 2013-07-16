@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.4.3"
+BR_VERSION="System Tar & Restore 3.4.4"
 
 clear
 
@@ -33,6 +33,10 @@ instruct_screen(){
   echo -e "\n==>Install and update a bootloader"
   echo -e "\n==>When done, leave chroot: exit"
   echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices.${BR_NORM}"
+}
+
+ok_status() {
+echo -e "[${BR_GREEN}OK${BR_NORM}]"
 }
 
 item_type() {
@@ -371,30 +375,32 @@ check_input() {
   fi
 }
 
-mount_all() {
-  echo -e "\n==>MAKING WORKING DIRECTORY"
-  mkdir /mnt/target && echo Success || echo Warning
-  sleep 1
 
-  echo -e "\n==>MOUNTING $BRroot (/)"
-  mount -o $BR_MOUNT_OPTS $BRroot /mnt/target && echo Success || touch /tmp/stop
+
+mount_all() { 
+  echo -e "\n${BR_CYAN}::${BR_NORM}MOUNTING"
+  echo -n "Making working directory "
+  mkdir /mnt/target && ok_status
+
+  echo -n "Mounting $BRroot "
+  mount -o $BR_MOUNT_OPTS $BRroot /mnt/target && ok_status || touch /tmp/stop
 
   if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
     touch /tmp/not_empty
   fi
 
   if [ -n "$BRhome" ]; then
-    echo -e "\n==>MOUNTING $BRhome (/home)"
+    echo -n "Mounting $BRhome "
     mkdir /mnt/target/home || touch /tmp/home_exists
-    mount $BRhome /mnt/target/home && echo Success || touch /tmp/stop
+    mount $BRhome /mnt/target/home && ok_status || touch /tmp/stop
     if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
       echo "Home partition not empty"
     fi
   fi
   if [ -n "$BRboot" ]; then
-    echo -e "\n==>MOUNTING $BRboot (/boot)"
+    echo -n "Mounting $BRboot "
     mkdir /mnt/target/boot || touch /tmp/boot_exists
-    mount $BRboot /mnt/target/boot && echo Success || touch /tmp/stop
+    mount $BRboot /mnt/target/boot && ok_status || touch /tmp/stop
     if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
       echo "Boot partition not empty"
     fi
@@ -670,7 +676,7 @@ clean_root() {
     echo "/mnt/target is not empty"
   else
     sleep 1
-    rm -r /mnt/target && echo "Success"
+    rm -r /mnt/target
   fi
 }
 
@@ -685,28 +691,30 @@ clean_files() {
 }
 
 clean_unmount_when_subvols() {
-  echo -e "\n==>UNMOUNTING"
+  echo -e "${BR_CYAN}::${BR_NORM}CLEANING AND UNMOUNTING"
   cd ~
   if [ -n "$BRhome" ]; then
-    echo "Unmounting $BRhome"
+    echo -n "Unmounting $BRhome "
     umount $BRhome
     if [ "$?" -ne "0" ]; then
       echo "Error unmounting volume"
     elif [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
       clean_home
-    fi
+    else
+      ok_status
+     fi
   fi
 
   if [ -n "$BRboot" ]; then
-    echo "Unmounting $BRboot"
-    umount $BRboot && clean_boot || echo "Error unmounting volume"
+    echo -n "Unmounting $BRboot "
+    umount $BRboot && (ok_status && clean_boot)
   fi
 
-  echo "Unmounting subvolume $BRrootsubvolname"
-  umount $BRroot && echo "Success" || echo "Error unmounting volume"
+  echo -n "Unmounting $BRrootsubvolname "
+  umount $BRroot && ok_status
 
-  echo -e "\n==>RE-MOUNTING AND DELETING SUBVOLUMES"
-  mount $BRroot /mnt/target
+  echo -n "Mounting $BRroot "
+  mount $BRroot /mnt/target && ok_status
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRhomesubvol" = "xy" ]; then
     btrfs subvolume delete /mnt/target/$BRrootsubvolname/home
@@ -721,10 +729,9 @@ clean_unmount_when_subvols() {
     btrfs subvolume delete /mnt/target/$BRrootsubvolname
   fi
 
-  echo -e "\n==>CLEANING AND UNMOUNTING"
   clean_files
-  echo "Unmounting $BRroot"
-  umount $BRroot && clean_root || echo "Error unmounting volume"
+  echo -n "Unmounting $BRroot "
+  umount $BRroot && (ok_status && clean_root)
   exit
 }
 
@@ -749,21 +756,21 @@ clean_unmount_error() {
 }
 
 clean_unmount_in() {
-  echo -e "\n==>CLEANING AND UNMOUNTING"
+  echo -e "${BR_CYAN}::${BR_NORM}CLEANING AND UNMOUNTING"
   cd ~
   if [ -n "$BRhome" ]; then
-    echo "Unmounting $BRhome"
-    umount $BRhome && clean_home || echo "Error unmounting volume"
+    echo -n "Unmounting $BRhome "
+    umount $BRhome && (ok_status && clean_home)
   fi
 
   if [ -n "$BRboot" ]; then
-    echo "Unmounting $BRboot"
-    umount $BRboot && clean_boot || echo "Error unmounting volume"
+    echo -n "Unmounting $BRboot "
+    umount $BRboot && (ok_status && clean_boot)
   fi
 
   clean_files
-  echo "Unmounting $BRroot"
-  umount $BRroot && clean_root || echo "Error unmounting volume"
+  echo -n "Unmounting $BRroot "
+  umount $BRroot && (ok_status && clean_root)
   exit
 }
 
@@ -803,7 +810,7 @@ abort_on_error() {
 }
 
 create_subvols() {
-  echo -e "\n==>CREATING SUBVOLUMES"
+  echo -e "\n${BR_CYAN}::${BR_NORM}CREATING SUBVOLUMES"
   btrfs subvolume create /mnt/target/$BRrootsubvolname
 
   if [ "x$BRhomesubvol" = "xy" ]; then
@@ -816,36 +823,36 @@ create_subvols() {
     btrfs subvolume create /mnt/target/$BRrootsubvolname/usr
   fi
 
-  echo -e "\n==>CLEANING AND UNMOUNTING"
+  echo -e "\n${BR_CYAN}::${BR_NORM}RE-MOUNTING"
   cd ~
   if [ -n "$BRhome" ]; then
-    echo "Unmounting $BRhome"
-    umount $BRhome && clean_home || echo "Error unmounting volume"
+    echo -n "Unmounting $BRhome "
+    umount $BRhome && (ok_status && clean_home)
   fi
 
   if [ -n "$BRboot" ]; then
-    echo "Unmounting $BRboot"
-    umount $BRboot && clean_boot || echo "Error unmounting volume"
+    echo -n "Unmounting $BRboot "
+    umount $BRboot && (ok_status && clean_boot)
   fi
 
-  echo "Unmounting $BRroot"
-  umount $BRroot && echo "Success" || echo "Error unmounting volume"
+  echo -n "Unmounting $BRroot "
+  umount $BRroot && ok_status
 
-  echo -e "\n==>MOUNTING SUBVOLUME $BRrootsubvolname AS ROOT (/)"
-  mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target && echo Success || echo Warning
+  echo -n "Mounting $BRrootsubvolname "
+  mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target && ok_status
 
   if [ -n "$BRhome" ]; then
-    echo -e "\n==>MOUNTING $BRhome (/home)"
+    echo -n "Mounting $BRhome "
     if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
       mkdir /mnt/target/home
     fi
-    mount $BRhome /mnt/target/home && echo Success || echo Warning
+    mount $BRhome /mnt/target/home && ok_status
   fi
 
   if [   -n "$BRboot" ]; then
-    echo -e "\n==>MOUNTING $BRboot (/boot)"
+    echo -n "Mounting $BRboot "
     mkdir /mnt/target/boot
-    mount $BRboot /mnt/target/boot && echo Success || echo Warning
+    mount $BRboot /mnt/target/boot && ok_status
   fi
 }
 
@@ -1349,7 +1356,7 @@ if [ "$BRinterface" = "CLI" ]; then
 
   if [ "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
-      echo -e "\n${BR_CYAN}BTRFS root file system detected.\nCreate subvolume for root (/) ?${BR_NORM}"
+      echo -e "\n${BR_CYAN}BTRFS root file system detected. Create subvolume for root (/) ?${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -1576,7 +1583,7 @@ if [ "$BRinterface" = "CLI" ]; then
   elif [ -n "$BRsyslinux" ]; then
     BRbootloader=Syslinux
   fi
-  echo -e "\n==>SUMMARY"
+  echo -e "\n${BR_CYAN}::${BR_NORM}SUMMARY"
   show_summary
 
   while [ -z "$BRcontinue" ]; do

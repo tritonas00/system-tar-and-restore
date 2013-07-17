@@ -56,6 +56,15 @@ show_summary() {
     echo -e "\nUSER OPTIONS:"
     echo "$BR_USER_OPTS"
   fi
+
+  echo -e "\nFOUND BOOTLOADERS:"
+  if [ -d /usr/lib/grub/i386-pc ]; then
+    echo "Grub 2"
+  elif which extlinux >/dev/null; then
+    echo "Syslinux"
+  else
+    echo "None or not supported"
+  fi
 }
 
 dir_list() {

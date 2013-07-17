@@ -40,6 +40,10 @@ ok_status() {
   echo -e "[${BR_GREEN}OK${BR_NORM}]"
 }
 
+error_status() {
+  echo -e "[${BR_RED}FAILED${BR_NORM}]\n$OUTPUT"
+}
+
 item_type() {
   if [ -d "$BRpath/$f" ]; then
     echo dir
@@ -379,10 +383,10 @@ check_input() {
 mount_all() { 
   echo -e "\n${BR_SEP}MOUNTING"
   echo -n "Making working directory "
-  mkdir /mnt/target && ok_status
+  OUTPUT=$(mkdir /mnt/target 2>&1) && ok_status || error_status
 
   echo -n "Mounting $BRroot "
-  mount -o $BR_MOUNT_OPTS $BRroot /mnt/target && ok_status || touch /tmp/stop
+  OUTPUT=$(mount -o $BR_MOUNT_OPTS $BRroot /mnt/target 2>&1) && ok_status || (error_status && touch /tmp/stop)
 
   if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
     touch /tmp/not_empty
@@ -391,7 +395,7 @@ mount_all() {
   if [ -n "$BRhome" ]; then
     echo -n "Mounting $BRhome "
     mkdir /mnt/target/home 2> /dev/null || touch /tmp/home_exists
-    mount $BRhome /mnt/target/home && ok_status || touch /tmp/stop
+    OUTPUT=$(mount $BRhome /mnt/target/home 2>&1) && ok_status || (error_status && touch /tmp/stop)
     if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
       echo "Home partition not empty"
     fi
@@ -399,7 +403,7 @@ mount_all() {
   if [ -n "$BRboot" ]; then
     echo -n "Mounting $BRboot "
     mkdir /mnt/target/boot 2> /dev/null || touch /tmp/boot_exists
-    mount $BRboot /mnt/target/boot && ok_status || touch /tmp/stop
+    OUTPUT=$(mount $BRboot /mnt/target/boot 2>&1) && ok_status || (error_status && touch /tmp/stop)
     if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
       echo "Boot partition not empty"
     fi
@@ -696,7 +700,7 @@ clean_unmount_when_subvols() {
     echo -n "Unmounting $BRhome "
     umount $BRhome
     if [ "$?" -ne "0" ]; then
-      echo "Error unmounting volume"
+      error_status
     elif [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
       clean_home
     else
@@ -706,35 +710,35 @@ clean_unmount_when_subvols() {
 
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
-    umount $BRboot && (ok_status && clean_boot)
+    OUTPUT=$(umount $BRboot 2>&1) && (ok_status && clean_boot) || error_status
   fi
 
   echo -n "Unmounting $BRrootsubvolname "
-  umount $BRroot && ok_status
+  OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
 
   echo -n "Mounting $BRroot "
-  mount $BRroot /mnt/target && ok_status
+  OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRhomesubvol" = "xy" ]; then
     echo -n "Deleting $BRrootsubvolname/home "
-    btrfs subvolume delete /mnt/target/$BRrootsubvolname/home 1> /dev/null && ok_status
+    OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/home  2>&1 1> /dev/null) && ok_status || error_status
   fi
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRvarsubvol" = "xy" ]; then
     echo -n "Deleting $BRrootsubvolname/var "
-    btrfs subvolume delete /mnt/target/$BRrootsubvolname/var 1> /dev/null && ok_status
+    OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/var  2>&1 1> /dev/null) && ok_status || error_status
   fi
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRusrsubvol" = "xy" ]; then
     echo -n "Deleting $BRrootsubvolname/usr "
-    btrfs subvolume delete /mnt/target/$BRrootsubvolname/usr 1> /dev/null && ok_status
+    OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/usr 2>&1 1> /dev/null) && ok_status || error_status
   fi
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo -n "Deleting $BRrootsubvolname "
-    btrfs subvolume delete /mnt/target/$BRrootsubvolname 1> /dev/null && ok_status
+    OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
   fi
 
   clean_files
   echo -n "Unmounting $BRroot "
-  umount $BRroot && (ok_status && clean_root)
+  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
   exit
 }
 
@@ -763,17 +767,17 @@ clean_unmount_in() {
   cd ~
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
-    umount $BRhome && (ok_status && clean_home)
+    OUTPUT=$(umount $BRhome 2>&1) && (ok_status && clean_home) || error_status
   fi
 
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
-    umount $BRboot && (ok_status && clean_boot)
+    OUTPUT=$(umount $BRboot 2>&1) && (ok_status && clean_boot) || error_status
   fi
 
   clean_files
   echo -n "Unmounting $BRroot "
-  umount $BRroot && (ok_status && clean_root)
+  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
   exit
 }
 
@@ -788,16 +792,16 @@ clean_unmount_out() {
 
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
-    umount $BRhome && ok_status
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
   fi
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
-    umount $BRboot && ok_status
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
   fi
 
   clean_files
   echo -n "Unmounting $BRroot "
-  umount $BRroot && (ok_status && clean_root)
+  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
   exit
 }
 
@@ -815,51 +819,51 @@ abort_on_error() {
 create_subvols() {
   echo -e "\n${BR_SEP}CREATING SUBVOLUMES"
   echo -n "Creating $BRrootsubvolname "
-  btrfs subvolume create /mnt/target/$BRrootsubvolname 1> /dev/null && ok_status
+  OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
 
   if [ "x$BRhomesubvol" = "xy" ]; then
     echo -n "Creating $BRrootsubvolname/home "
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/home 1> /dev/null && ok_status
+    OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname/home 2>&1 1> /dev/null) && ok_status || error_status
   fi
   if [ "x$BRvarsubvol" = "xy" ]; then
     echo -n "Creating $BRrootsubvolname/var "
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/var 1> /dev/null && ok_status
+    OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname/var 2>&1 1> /dev/null) && ok_status || error_status
   fi
   if [ "x$BRusrsubvol" = "xy" ]; then
     echo -n "Creating $BRrootsubvolname/usr "
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/usr 1> /dev/null && ok_status
+    OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname/usr 2>&1 1> /dev/null) && ok_status || error_status
   fi
 
   echo -e "\n${BR_SEP}RE-MOUNTING"
   cd ~
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
-    umount $BRhome && (ok_status && clean_home)
+    OUTPUT=$(umount $BRhome 2>&1) && (ok_status && clean_home) || error_status
   fi
 
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
-    umount $BRboot && (ok_status && clean_boot)
+    OUTPUT=$(umount $BRboot 2>&1) && (ok_status && clean_boot) || error_status
   fi
 
   echo -n "Unmounting $BRroot "
-  umount $BRroot && ok_status
+  OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
 
   echo -n "Mounting $BRrootsubvolname "
-  mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target && ok_status
+  OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
 
   if [ -n "$BRhome" ]; then
     echo -n "Mounting $BRhome "
     if [ -z "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xn" ]; then
       mkdir /mnt/target/home
     fi
-    mount $BRhome /mnt/target/home && ok_status
+    OUTPUT=$(mount $BRhome /mnt/target/home 2>&1) && ok_status || error_status
   fi
 
   if [   -n "$BRboot" ]; then
     echo -n "Mounting $BRboot "
     mkdir /mnt/target/boot
-    mount $BRboot /mnt/target/boot && ok_status
+    OUTPUT=$(mount $BRboot /mnt/target/boot 2>&1) && ok_status || error_status
   fi
 }
 
@@ -1468,7 +1472,7 @@ if [ "$BRinterface" = "CLI" ]; then
     echo -e "\n${BR_SEP}GETTING TAR IMAGE" 
     if [ -n "$BRfile" ]; then
       echo -n "Symlinking file "
-      ln -s "$BRfile" "/mnt/target/fullbackup" && ok_status || echo -e "${BR_RED}Error symlinking file${BR_NORM}"
+      OUTPUT=$(ln -s "$BRfile" "/mnt/target/fullbackup" 2>&1) && ok_status || error_status
     fi
 
     if [ -n "$BRurl" ]; then
@@ -1529,7 +1533,7 @@ if [ "$BRinterface" = "CLI" ]; then
             detect_filetype
             if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ]; then
               echo -n "Symlinking file "
-              ln -s $BRfile "/mnt/target/fullbackup" && ok_status || echo -e "${BR_RED}Error symlinking file${BR_NORM}"
+              OUTPUT=$(ln -s $BRfile "/mnt/target/fullbackup" 2>&1) && ok_status || error_status
             else
               echo -e "${BR_RED}Invalid file type${BR_NORM}"
             fi

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 BR_VERSION="System Tar & Restore 3.4.4"
+BR_SEP="::"
 
 clear
 
@@ -375,10 +376,8 @@ check_input() {
   fi
 }
 
-
-
 mount_all() { 
-  echo -e "\n${BR_CYAN}::${BR_NORM}MOUNTING"
+  echo -e "\n${BR_SEP}MOUNTING"
   echo -n "Making working directory "
   mkdir /mnt/target && ok_status
 
@@ -478,7 +477,7 @@ show_summary() {
 }
 
 prepare_chroot() {
-  echo -e "\n==>PREPARING CHROOT ENVIROMENT"
+  echo -e "\n${BR_SEP}PREPARING CHROOT ENVIROMENT"
   echo -e "Binding /run"
   mount --bind /run /mnt/target/run
   echo -e "Binding /dev"
@@ -528,12 +527,12 @@ generate_fstab() {
       echo "UUID=$(lsblk -d -n -o uuid $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
     fi
   fi
-  echo -e "\n==>GENERATED FSTAB" >> /tmp/restore.log
+  echo -e "\n${BR_SEP}GENERATED FSTAB" >> /tmp/restore.log
   cat /mnt/target/etc/fstab >> /tmp/restore.log
 }
 
 build_initramfs() {
-  echo -e "\n==>REBUILDING INITRAMFS IMAGE"
+  echo -e "\n${BR_SEP}REBUILDING INITRAMFS IMAGE"
   if [[ "$BRroot" == *dev/md* ]] || [[ "$BRhome" == *dev/md* ]] || [[ "$BRswap" == *dev/md* ]] || [[ "$BRboot" == *dev/md* ]]; then
     echo "Generating mdadm.conf..."
     if [ $BRdistro = Debian ]; then
@@ -566,7 +565,7 @@ build_initramfs() {
 
 install_bootloader() {
   if [ -n "$BRgrub" ]; then
-    echo -e "\n==>INSTALLING AND UPDATING GRUB2 IN $BRgrub"
+    echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [[ "$BRgrub" == *md* ]]; then
       for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'` ; do
         if [ "$BRdistro" = "Arch" ]; then
@@ -595,7 +594,7 @@ install_bootloader() {
       echo 'GRUB_CMDLINE_LINUX="vconsole.keymap=us rhgb quiet"' >> /mnt/target/etc/default/grub
       echo 'GRUB_DISABLE_RECOVERY="true"' >> /mnt/target/etc/default/grub
       echo 'GRUB_THEME="/boot/grub2/themes/system/theme.txt"' >> /mnt/target/etc/default/grub
-      echo -e "\n==>Generated grub2 config" >> /tmp/restore.log
+      echo -e "\n${BR_SEP}Generated grub2 config" >> /tmp/restore.log
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
     else
@@ -603,7 +602,7 @@ install_bootloader() {
     fi
 
   elif [ -n "$BRsyslinux" ]; then
-    echo -e "\n==>INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
+    echo -e "\n${BR_SEP}INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
     if [ -d /mnt/target/boot/syslinux ]; then
       mv /mnt/target/boot/syslinux/syslinux.cfg /mnt/target/boot/syslinux.cfg-old
       chattr -i /mnt/target/boot/syslinux/* 2> /dev/null
@@ -643,14 +642,14 @@ install_bootloader() {
       cp $BRsyslinuxpath/menu.c32 /mnt/target/boot/syslinux/
     fi
     generate_syslinux_cfg
-    echo -e "\n==>GENERATED SYSLINUX CONFIG" >> /tmp/restore.log
+    echo -e "\n${BR_SEP}GENERATED SYSLINUX CONFIG" >> /tmp/restore.log
     cat /mnt/target/boot/syslinux/syslinux.cfg >> /tmp/restore.log
   fi
 }
 
 generate_locales() {
   if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ]; then
-    echo -e "\n==>GENERATING LOCALES"
+    echo -e "\n${BR_SEP}GENERATING LOCALES"
     chroot /mnt/target locale-gen
   fi
 }
@@ -691,7 +690,7 @@ clean_files() {
 }
 
 clean_unmount_when_subvols() {
-  echo -e "${BR_CYAN}::${BR_NORM}CLEANING AND UNMOUNTING"
+  echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
@@ -717,16 +716,20 @@ clean_unmount_when_subvols() {
   mount $BRroot /mnt/target && ok_status
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRhomesubvol" = "xy" ]; then
-    btrfs subvolume delete /mnt/target/$BRrootsubvolname/home
+    echo -n "Deleting $BRrootsubvolname/home "
+    btrfs subvolume delete /mnt/target/$BRrootsubvolname/home 1> /dev/null && ok_status
   fi
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRvarsubvol" = "xy" ]; then
-    btrfs subvolume delete /mnt/target/$BRrootsubvolname/var
+    echo -n "Deleting $BRrootsubvolname/var "
+    btrfs subvolume delete /mnt/target/$BRrootsubvolname/var 1> /dev/null && ok_status
   fi
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRusrsubvol" = "xy" ]; then
-    btrfs subvolume delete /mnt/target/$BRrootsubvolname/usr
+    echo -n "Deleting $BRrootsubvolname/usr "
+    btrfs subvolume delete /mnt/target/$BRrootsubvolname/usr 1> /dev/null && ok_status
   fi
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-    btrfs subvolume delete /mnt/target/$BRrootsubvolname
+    echo -n "Deleting $BRrootsubvolname "
+    btrfs subvolume delete /mnt/target/$BRrootsubvolname 1> /dev/null && ok_status
   fi
 
   clean_files
@@ -736,7 +739,7 @@ clean_unmount_when_subvols() {
 }
 
 clean_unmount_error() {
-  echo -e "\n==>CLEANING AND UNMOUNTING"
+  echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   sleep 1
   if [ -n "$BRhome" ]; then
@@ -756,7 +759,7 @@ clean_unmount_error() {
 }
 
 clean_unmount_in() {
-  echo -e "${BR_CYAN}::${BR_NORM}CLEANING AND UNMOUNTING"
+  echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
@@ -775,7 +778,7 @@ clean_unmount_in() {
 }
 
 clean_unmount_out() {
-  echo -e "\n==>CLEANING AND UNMOUNTING"
+  echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   umount /mnt/target/dev/pts
   umount /mnt/target/proc
@@ -784,17 +787,17 @@ clean_unmount_out() {
   umount /mnt/target/run
 
   if [ -n "$BRhome" ]; then
-    echo "Unmounting $BRhome"
-    umount $BRhome
+    echo -n "Unmounting $BRhome "
+    umount $BRhome && ok_status
   fi
   if [ -n "$BRboot" ]; then
-    echo "Unmounting $BRboot"
-    umount $BRboot
+    echo -n "Unmounting $BRboot "
+    umount $BRboot && ok_status
   fi
 
   clean_files
-  echo "Unmounting $BRroot"
-  umount $BRroot && clean_root || echo "Error unmounting volume"
+  echo -n "Unmounting $BRroot "
+  umount $BRroot && (ok_status && clean_root)
   exit
 }
 
@@ -810,20 +813,24 @@ abort_on_error() {
 }
 
 create_subvols() {
-  echo -e "\n${BR_CYAN}::${BR_NORM}CREATING SUBVOLUMES"
-  btrfs subvolume create /mnt/target/$BRrootsubvolname
+  echo -e "\n${BR_SEP}CREATING SUBVOLUMES"
+  echo -n "Creating $BRrootsubvolname "
+  btrfs subvolume create /mnt/target/$BRrootsubvolname 1> /dev/null && ok_status
 
   if [ "x$BRhomesubvol" = "xy" ]; then
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/home
+    echo -n "Creating $BRrootsubvolname/home "
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/home 1> /dev/null && ok_status
   fi
   if [ "x$BRvarsubvol" = "xy" ]; then
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/var
+    echo -n "Creating $BRrootsubvolname/var "
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/var 1> /dev/null && ok_status
   fi
   if [ "x$BRusrsubvol" = "xy" ]; then
-    btrfs subvolume create /mnt/target/$BRrootsubvolname/usr
+    echo -n "Creating $BRrootsubvolname/var "
+    btrfs subvolume create /mnt/target/$BRrootsubvolname/usr 1> /dev/null && ok_status
   fi
 
-  echo -e "\n${BR_CYAN}::${BR_NORM}RE-MOUNTING"
+  echo -e "\n${BR_SEP}RE-MOUNTING"
   cd ~
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
@@ -1583,7 +1590,7 @@ if [ "$BRinterface" = "CLI" ]; then
   elif [ -n "$BRsyslinux" ]; then
     BRbootloader=Syslinux
   fi
-  echo -e "\n${BR_CYAN}::${BR_NORM}SUMMARY"
+  echo -e "\n${BR_SEP}SUMMARY"
   show_summary
 
   while [ -z "$BRcontinue" ]; do
@@ -1956,6 +1963,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
     while [ ! -f /mnt/target/fullbackup ]; do
       REPLY=$(dialog --cancel-label Quit --menu "Select backup file. Choose an option:" 13 50 13 File "local file" URL "remote file" "Protected URL" "protected remote file" 2>&1 1>&3)
       if [ "$?" = "1" ]; then
+        color_variables
         if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
           clean_unmount_when_subvols
         fi
@@ -2059,19 +2067,13 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   if [ -z "$BRcontinue" ]; then
     dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0
-
-    if [ "$?" = "0" ]; then
-      def="y"
-    elif [ "$?" = "1" ]; then
-      def="n"
+    if [ "$?" = "1" ]; then
+      color_variables
+      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+        clean_unmount_when_subvols
+      fi
+      clean_unmount_in
     fi
-  fi
-
-  if [ "x$def" = "xn" ] || [ "x$def" = "xN" ]; then
-    if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-      clean_unmount_when_subvols
-    fi
-    clean_unmount_in
   fi
 
   echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log

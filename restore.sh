@@ -1157,7 +1157,8 @@ if [ "$BRinterface" = "CLI" ]; then
 
     if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRmountoptions="Yes"
-      read -p "Enter options (comma-separated list of mount options):" BR_MOUNT_OPTS
+      echo -e "\n${BR_CYAN}Enter options (comma-separated list of mount options)${BR_NORM}"
+      read -p "Options: " BR_MOUNT_OPTS
     elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
       BRmountoptions="No"
       BR_MOUNT_OPTS="defaults"

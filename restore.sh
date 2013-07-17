@@ -597,7 +597,6 @@ install_bootloader() {
       echo 'GRUB_DEFAULT=saved' >> /mnt/target/etc/default/grub
       echo 'GRUB_CMDLINE_LINUX="vconsole.keymap=us quiet"' >> /mnt/target/etc/default/grub
       echo 'GRUB_DISABLE_RECOVERY="true"' >> /mnt/target/etc/default/grub
-      echo 'GRUB_THEME="/boot/grub2/themes/system/theme.txt"' >> /mnt/target/etc/default/grub
       echo -e "\n${BR_SEP}Generated grub2 config" >> /tmp/restore.log
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg

@@ -1464,8 +1464,10 @@ if [ "$BRinterface" = "CLI" ]; then
   fi
 
   if [ "$BRmode" = "Restore" ]; then
+    echo -e "\n${BR_SEP}GETTING TAR IMAGE" 
     if [ -n "$BRfile" ]; then
-      ln -s "$BRfile" "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo -e "${BR_RED}Error symlinking file${BR_NORM}"
+      echo -n "Symlinking file "
+      ln -s "$BRfile" "/mnt/target/fullbackup" && ok_status || echo -e "${BR_RED}Error symlinking file${BR_NORM}"
     fi
 
     if [ -n "$BRurl" ]; then
@@ -1525,7 +1527,8 @@ if [ "$BRinterface" = "CLI" ]; then
       	  else
             detect_filetype
             if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ]; then
-              ln -s $BRfile "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo -e "${BR_RED}Error symlinking file${BR_NORM}"
+              echo -n "Symlinking file "
+              ln -s $BRfile "/mnt/target/fullbackup" && ok_status || echo -e "${BR_RED}Error symlinking file${BR_NORM}"
             else
               echo -e "${BR_RED}Invalid file type${BR_NORM}"
             fi

@@ -389,7 +389,7 @@ if [ "$BRinterface" = "CLI" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
 
     echo -ne "\nSetting permissions "
-    chmod ugo+rw -R "$BRFOLDER"  && echo -e "[${BR_GREEN}OK${BR_NORM}]"
+    OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1)  && echo -e "[${BR_GREEN}OK${BR_NORM}]" || echo -e "[${BR_RED}FAILED${BR_NORM}]\n$OUTPUT"
 
     if [ -f /tmp/b_error ]; then
       echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details.\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"

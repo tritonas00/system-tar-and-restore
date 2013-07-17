@@ -1,6 +1,7 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.4.3"
+BR_VERSION="System Tar & Restore 3.4.4"
+BR_SEP="::"
 
 clear
 
@@ -339,7 +340,7 @@ if [ "$BRinterface" = "CLI" ]; then
 
   IFS=$DEFAULTIFS
 
-  echo -e "\n==>SUMMARY"
+  echo -e "\n${BR_SEP}SUMMARY"
   show_summary
 
   while [ -z "$BRcontinue" ]; do
@@ -367,7 +368,7 @@ if [ "$BRinterface" = "CLI" ]; then
     BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
     BRFOLDER="${BRFOLDER_IN[@]}"
 
-    echo -e "\n==>CREATING ARCHIVE"
+    echo -e "\n${BR_SEP}CREATING ARCHIVE"
     start_prepare
     set_tar_options
     run_calc
@@ -376,8 +377,8 @@ if [ "$BRinterface" = "CLI" ]; then
     echo " "
     run_tar 2>>"$BRFOLDER"/backup.log | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
 
-    echo -e "\n\n==>SETTING PERMISSIONS"
-    chmod ugo+rw -R "$BRFOLDER" && echo Success || echo Failed
+    echo -ne "\nSetting permissions "
+    chmod ugo+rw -R "$BRFOLDER"  && echo -e "[${BR_GREEN}OK${BR_NORM}]"
 
     if [ -f /tmp/b_error ]; then
       echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details.\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"

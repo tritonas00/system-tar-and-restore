@@ -2149,5 +2149,6 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   sleep 1
+  color_variables
   clean_unmount_out
 fi

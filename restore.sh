@@ -1623,13 +1623,13 @@ if [ "$BRinterface" = "CLI" ]; then
     echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
     echo " " >> /tmp/restore.log
     if [ "$BRmode" = "Restore" ]; then
-      echo -e "\n==>EXTRACTING"
+      echo -e "\n${BR_SEP}EXTRACTING"
       total=$(cat /tmp/filelist | wc -l)
       sleep 1
       run_tar 2>>/tmp/restore.log | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $(($a*100/$total))%"; done
       echo " "
     elif [ "$BRmode" = "Transfer" ]; then
-      echo -e "\n==>TRANSFERING"
+      echo -e "\n${BR_SEP}TRANSFERING"
       run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
       total=$(cat /tmp/filelist | wc -l)
       sleep 1
@@ -1640,7 +1640,7 @@ if [ "$BRinterface" = "CLI" ]; then
 
     detect_distro
 
-    echo -e "\n==>GENERATING FSTAB"
+    echo -e "\n{BR_SEP}GENERATING FSTAB"
     generate_fstab
     cat /mnt/target/etc/fstab
 

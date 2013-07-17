@@ -1640,7 +1640,7 @@ if [ "$BRinterface" = "CLI" ]; then
 
     detect_distro
 
-    echo -e "\n{BR_SEP}GENERATING FSTAB"
+    echo -e "\n${BR_SEP}GENERATING FSTAB"
     generate_fstab
     cat /mnt/target/etc/fstab
 

@@ -60,9 +60,11 @@ show_summary() {
   echo -e "\nFOUND BOOTLOADERS:"
   if [ -d /usr/lib/grub/i386-pc ]; then
     echo "Grub 2"
-  elif which extlinux >/dev/null; then
+  fi
+  if which extlinux >/dev/null; then
     echo "Syslinux"
-  else
+  fi
+  if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
     echo "None or not supported"
   fi
 }

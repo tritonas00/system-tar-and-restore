@@ -826,7 +826,7 @@ create_subvols() {
     btrfs subvolume create /mnt/target/$BRrootsubvolname/var 1> /dev/null && ok_status
   fi
   if [ "x$BRusrsubvol" = "xy" ]; then
-    echo -n "Creating $BRrootsubvolname/var "
+    echo -n "Creating $BRrootsubvolname/usr "
     btrfs subvolume create /mnt/target/$BRrootsubvolname/usr 1> /dev/null && ok_status
   fi
 

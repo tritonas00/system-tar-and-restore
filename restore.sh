@@ -1464,8 +1464,6 @@ if [ "$BRinterface" = "CLI" ]; then
   fi
 
   if [ "$BRmode" = "Restore" ]; then
-    echo -e "\n==>GETTING TAR IMAGE"
-
     if [ -n "$BRfile" ]; then
       ln -s "$BRfile" "/mnt/target/fullbackup" && echo "Symlinking file: Done" || echo -e "${BR_RED}Error symlinking file${BR_NORM}"
     fi

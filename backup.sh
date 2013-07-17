@@ -59,7 +59,7 @@ show_summary() {
 
   echo -e "\nFOUND BOOTLOADERS:"
   if [ -d /usr/lib/grub/i386-pc ]; then
-    echo "Grub 2"
+    echo "Grub"
   fi
   if which extlinux >/dev/null; then
     echo "Syslinux"

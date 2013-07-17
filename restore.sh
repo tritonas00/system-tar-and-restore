@@ -1368,7 +1368,7 @@ if [ "$BRinterface" = "CLI" ]; then
 
   if [ "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
-      echo -e "\n${BR_CYAN}BTRFS root file system detected. Create subvolume for root (/) ?${BR_NORM}"
+      echo -e "\n${BR_CYAN}BTRFS root file system detected. Create subvolume for root?${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then
@@ -1396,7 +1396,7 @@ if [ "$BRinterface" = "CLI" ]; then
       done
 
       while [ -z "$BRhomesubvol" ]; do
-        echo -e "\n${BR_CYAN}Create subvolume for /home inside $BRrootsubvolname ?${BR_NORM}"
+        echo -e "\n${BR_CYAN}Create subvolume for /home inside $BRrootsubvolname?${BR_NORM}"
         read -p "(Y/n) " an
 
         if [ -n "$an" ]; then
@@ -1415,7 +1415,7 @@ if [ "$BRinterface" = "CLI" ]; then
       done
 
       while [ -z "$BRvarsubvol" ]; do
-        echo -e "\n${BR_CYAN}Create subvolume for /var inside $BRrootsubvolname ?${BR_NORM}"
+        echo -e "\n${BR_CYAN}Create subvolume for /var inside $BRrootsubvolname?${BR_NORM}"
         read -p "(Y/n):" an
 
         if [ -n "$an" ]; then
@@ -1434,7 +1434,7 @@ if [ "$BRinterface" = "CLI" ]; then
       done
 
       while [ -z "$BRusrsubvol" ]; do
-        echo -e "\n${BR_CYAN}Create subvolume for /usr inside $BRrootsubvolname ?${BR_NORM}"
+        echo -e "\n${BR_CYAN}Create subvolume for /usr inside $BRrootsubvolname?${BR_NORM}"
         read -p "(Y/n):" an
 
         if [ -n "$an" ]; then
@@ -1650,7 +1650,7 @@ if [ "$BRinterface" = "CLI" ]; then
     cat /mnt/target/etc/fstab
 
     while [ -z "$BRedit" ] ; do
-      echo -e "\n${BR_CYAN}Edit fstab ?${BR_NORM}"
+      echo -e "\n${BR_CYAN}Edit fstab?${BR_NORM}"
       read -p "(y/N):" an
 
       if [ -n "$an" ]; then
@@ -1852,7 +1852,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   if [ "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
-      dialog --yesno "BTRFS root file system detected. Create subvolume for root (/) ?" 5 68
+      dialog --yesno "BTRFS root file system detected. Create subvolume for root?" 5 68
       if [ "$?" = "0" ]; then
         BRrootsubvol="y"
       else
@@ -1870,7 +1870,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
       done
 
       while [ -z "$BRhomesubvol" ]; do
-        dialog --yesno "Create subvolume for /home inside $BRrootsubvolname ?" 6 50
+        dialog --yesno "Create subvolume for /home inside $BRrootsubvolname?" 6 50
         if [ "$?" = "0" ]; then
           BRhomesubvol="y"
         else
@@ -1879,7 +1879,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
       done
 
       while [ -z "$BRvarsubvol" ]; do
-        dialog --yesno "Create subvolume for /var inside $BRrootsubvolname ?" 6 50
+        dialog --yesno "Create subvolume for /var inside $BRrootsubvolname?" 6 50
         if [ "$?" = "0" ]; then
           BRvarsubvol="y"
         else
@@ -1888,7 +1888,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
       done
 
       while [ -z "$BRusrsubvol" ]; do
-        dialog --yesno "Create subvolume for /usr inside $BRrootsubvolname ?" 6 50
+        dialog --yesno "Create subvolume for /usr inside $BRrootsubvolname?" 6 50
         if [ "$?" = "0" ]; then
           BRusrsubvol="y"
         else
@@ -2102,7 +2102,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
     cat /mnt/target/etc/fstab | dialog --title "GENERATING FSTAB" --progressbox 20 100
     sleep 2
   else
-    dialog --title "GENERATING FSTAB" --yesno "$(echo -e "Edit fstab ? Generated fstab:\n\n`cat /mnt/target/etc/fstab`")" 13 100
+    dialog --title "GENERATING FSTAB" --yesno "$(echo -e "Edit fstab? Generated fstab:\n\n`cat /mnt/target/etc/fstab`")" 13 100
     if [ "$?" = "0" ]; then
       while [ -z "$BRdeditor" ]; do
         REPLY=$(dialog --no-cancel --menu "Select editor:" 10 25 10 1 nano 2 vi 2>&1 1>&3)

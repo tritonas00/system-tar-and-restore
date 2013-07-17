@@ -124,19 +124,19 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
           BRrootsubvol=$(zenity --title "Restore" --cancel-label="Reset" --entry --entry-text="$BRrootsubvol" --text "Enter root subvolume name:")
           if [ -n "$BRrootsubvol" ] && [ $? = "0" ]; then
             BR_ROOT_SUBVOL="-R $BRrootsubvol"
-            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /home ?"
+            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /home?"
             if [ $? = "0" ]; then
               BR_HOME_SUBVOL="-H"
             else
               unset BR_HOME_SUBVOL
             fi
-            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /var ?"
+            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /var?"
             if [ $? = "0" ]; then
               BR_VAR_SUBVOL="-V"
             else
               unset BR_VAR_SUBVOL
             fi
-            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /usr ?"
+            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /usr?"
             if [ $? = "0" ]; then
               BR_USR_SUBVOL="-U"
             else

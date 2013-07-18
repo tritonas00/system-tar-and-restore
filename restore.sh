@@ -487,10 +487,6 @@ show_summary() {
     echo "Home Partition: $BRhome $BRhomefsystem $BRhomefsize"
   fi
 
-  if [ -n "$BRswap" ]; then
-    echo "Swap Partition: $BRswap"
-  fi
-
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
@@ -499,6 +495,10 @@ show_summary() {
       BRcustomsize=$(lsblk -d -n -o size 2> /dev/null $BRdevice)
       echo "$BRmpoint Partition: $BRdevice $BRcustomfs $BRcustomsize"
     done
+  fi
+
+  if [ -n "$BRswap" ]; then
+    echo "Swap Partition: $BRswap"
   fi
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then

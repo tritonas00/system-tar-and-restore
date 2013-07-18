@@ -38,12 +38,13 @@ disk_list() {
 }
 
 update_options() {
-  BR_RESTORE_OPTS="${BR_ROOT} ${BR_MOUNT_OPTIONS} ${BR_SWAP} ${BR_HOME} ${BR_BOOT} ${BR_BOOTLOADER} ${BR_KERN_OPTIONS} ${BR_ROOT_SUBVOL} ${BR_HOME_SUBVOL} ${BR_VAR_SUBVOL} ${BR_USR_SUBVOL} ${BR_FILE} ${BR_URL} ${BR_PROTECTED_URL} ${BR_TRANSFER}"
+  BR_RESTORE_OPTS="${BR_ROOT} ${BR_MOUNT_OPTIONS} ${BR_SWAP} ${BR_HOME} ${BR_BOOT} ${BR_CUSTOM_PARTS} ${BR_BOOTLOADER} ${BR_KERN_OPTIONS} ${BR_ROOT_SUBVOL} ${BR_HOME_SUBVOL} ${BR_VAR_SUBVOL} ${BR_USR_SUBVOL} ${BR_FILE} ${BR_URL} ${BR_PROTECTED_URL} ${BR_TRANSFER}"
 
   options=("Set target root partition" "$BRroot $BRuseroptions" \
 "(Optional) Set swap partition" "$BRswap" \
 "(Optional) Set target home partition" "$BRhome" \
 "(Optional) Set target boot partition" "$BRboot" \
+"(Optional) Set custom partitions" "$BRcustomparts" \
 "(Optional) Set btrfs subvolumes" "$BRrootsubvol $BR_HOME_SUBVOL $BR_VAR_SUBVOL $BR_USR_SUBVOL" \
 "(Optional) Set bootloader" "$BRbootloader $BRbootloader_disk $BRkerneloptions" \
 "Choose Backup File" "$BRfile" \
@@ -120,7 +121,15 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
             unset BR_BOOT
           fi
           update_options;;
-      "${options[8]}" )
+        "${options[8]}" )
+          BRcustomparts=$(zenity --width 550 --title "Restore" --cancel-label="Skip" --entry --entry-text="$BRcustomparts" --text "Set partitions: (mointpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)")   
+          if [ -n "$BRcustomparts" ] && [ $? = "0" ]; then
+            BR_CUSTOM_PARTS="-c '$BRcustomparts'"
+          else
+            unset BRcustomparts BR_CUSTOM_PARTS
+          fi
+          update_options;;
+      "${options[10]}" )
           BRrootsubvol=$(zenity --title "Restore" --cancel-label="Reset" --entry --entry-text="$BRrootsubvol" --text "Enter root subvolume name:")
           if [ -n "$BRrootsubvol" ] && [ $? = "0" ]; then
             BR_ROOT_SUBVOL="-R $BRrootsubvol"
@@ -146,7 +155,7 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
             unset BRrootsubvol BR_ROOT_SUBVOL BR_HOME_SUBVOL BR_VAR_SUBVOL BR_USR_SUBVOL
           fi
           update_options;;
-      "${options[10]}" )
+      "${options[12]}" )
           BRbootloader=$(zenity --title "Restore" --cancel-label="Reset" --text="Select bootloader:" --list --column "Bootloaders" Grub Syslinux)
           if [ "x$BRbootloader" = "xGrub" ]; then
             BRbootloader_disk=$(zenity --title "Restore" --cancel-label="Reset" --text="Select target disk for Grub:" --list --column "Disks" $(disk_list))
@@ -173,7 +182,7 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
             unset BRbootloader BRbootloader_disk BR_BOOTLOADER BRkerneloptions BR_KERN_OPTIONS
           fi
           update_options;;
-      "${options[12]}" )
+      "${options[14]}" )
           BRfile=$(zenity --title "Select backup file" --file-selection --file-filter="GZIP Compressed Archive *.gz" --file-filter="XZ Compressed Archive *.xz")
           if [ $? = "0" ]; then
             BR_FILE="-f '$BRfile'"
@@ -185,7 +194,7 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
             unset BR_FILE
           fi
           update_options;;
-      "${options[14]}" )
+      "${options[16]}" )
           BRurl=$(zenity --width 550 --title "Restore" --cancel-label="Reset" --entry --entry-text="$BRurl" --text "Enter URL:")
           if [ -n "$BRurl" ] && [ $? = "0" ]; then
             BR_URL="-u '$BRurl'"
@@ -197,7 +206,7 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
             unset BR_URL
           fi
           update_options;;
-      "${options[16]}" )
+      "${options[18]}" )
           BRprotectedurl=$(zenity --width 550 --title "Restore" --cancel-label="Reset" --entry --entry-text="$BRprotectedurl" --text "Enter URL:")
           if [ -n "$BRprotectedurl" ] && [ $? = "0" ]; then
             BRprotected=$(zenity --title "Restore" --cancel-label="Reset" --password --username)
@@ -216,7 +225,7 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
             unset BR_PROTECTED_URL BRusername
           fi
           update_options;;
-      "${options[18]}" )
+      "${options[20]}" )
           BR_TR_EN=Enabled
           BRsourceckeck=ok
           unset BRfile BRprotected BRprotectedurl BRusername BRpassword BRurl BR_FILE BR_URL BR_PROTECTED_URL
@@ -231,7 +240,7 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
             unset BRsourceckeck
           fi
           update_options;;
-      "${options[20]}" )
+      "${options[22]}" )
           break ;;
       *) zenity --error --no-wrap --text="Select an option first.";;
       esac

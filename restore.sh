@@ -438,6 +438,8 @@ mount_all() {
     echo -e "\n[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it"
     echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned\n"
     echo -n "Unmounting $BRroot "
+    cd ~
+    sleep 1
     OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
     exit
   fi
@@ -1384,8 +1386,11 @@ if [ "$BRinterface" = "CLI" ]; then
 
     if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRcustom="y"
-      echo -e "\n${BR_CYAN}Set partitions (mointpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)${BR_NORM}"
-      read -p "Partitions: " BRcustomparts
+      IFS=$DEFAULTIFS
+      echo -e "\n${BR_CYAN}Set partitions (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)${BR_NORM}"
+      read -p "Partitions: " BRcustompartslist
+      BRcustomparts=($BRcustompartslist)
+      IFS=$'\n'
     elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
       BRcustom="n"
     else
@@ -1933,7 +1938,8 @@ elif [ "$BRinterface" = "Dialog" ]; then
     dialog --yesno "Specify custom partitions?" 6 30
     if [ "$?" = "0" ]; then
       BRcustom="y"
-      BRcustomparts=$(dialog --no-cancel --inputbox "Set partitions: (mointpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 2>&1 1>&3)
+      BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 2>&1 1>&3)
+      BRcustomparts=($BRcustompartslist)
     fi
   fi
 

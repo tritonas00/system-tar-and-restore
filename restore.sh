@@ -315,7 +315,7 @@ check_input() {
      echo -e "${BR_YELLOW}$BRhome already used${BR_NORM}"
      BRSTOP=y
     fi
-     if [ -n "$BRhomesubvol" ] || [ "x$BRhomesubvol" = "xy" ]; then
+     if [ "x$BRhomesubvol" = "xy" ]; then
      echo -e "${BR_YELLOW}Dont use partitions inside btrfs subvolumes${BR_NORM}"
      BRSTOP=y
     fi

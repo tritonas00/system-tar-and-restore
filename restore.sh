@@ -1161,6 +1161,10 @@ if [ -n "$BRroot" ]; then
     BRrootsubvol="n"
   fi
 
+  if [ -z "$BRcustom" ]; then
+    BRcustom="n"
+  fi
+
   if [ -z "$BRmountoptions" ]; then
     BRmountoptions="No"
     BR_MOUNT_OPTS="defaults"
@@ -1364,6 +1368,27 @@ if [ "$BRinterface" = "CLI" ]; then
       fi
     done
   fi
+
+  while [ -z "$BRcustom" ]; do
+    echo -e "\n${BR_CYAN}Specify custom partitions?${BR_NORM}"
+    read -p "(y/N):" an
+
+    if [ -n "$an" ]; then
+      def=$an
+    else
+      def="n"
+    fi
+
+    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
+      BRcustom="y"
+      echo -e "\n${BR_CYAN}Set partitions (mointpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)${BR_NORM}"
+      read -p "Partitions: " BRcustomparts
+    elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
+      BRcustom="n"
+    else
+      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+    fi
+  done
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
     echo -e "\n${BR_CYAN}Select bootloader or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
@@ -1904,6 +1929,14 @@ elif [ "$BRinterface" = "Dialog" ]; then
     if [ "$?" = "3" ]; then
       BRswap=" "
       exit
+    fi
+  fi
+
+  if [ -z "$BRcustom" ]; then
+    dialog --yesno "Specify custom partitions?" 6 30
+    if [ "$?" = "0" ]; then
+      BRcustom="y"
+      BRcustomparts=$(dialog --no-cancel --inputbox "Set partitions: (mointpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 2>&1 1>&3)
     fi
   fi
 

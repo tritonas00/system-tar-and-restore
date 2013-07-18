@@ -599,14 +599,6 @@ generate_fstab() {
     fi
   fi
 
-  if [ -n "$BRswap" ]; then
-    if [[ "$BRswap" == *dev/md* ]]; then
-      echo "$BRswap  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
-    else
-      echo "UUID=$(lsblk -d -n -o uuid $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
-    fi
-  fi
-
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
@@ -619,6 +611,14 @@ generate_fstab() {
       fi
     done
   fi  
+
+  if [ -n "$BRswap" ]; then
+    if [[ "$BRswap" == *dev/md* ]]; then
+      echo "$BRswap  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
+    else
+      echo "UUID=$(lsblk -d -n -o uuid $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
+    fi
+  fi
   echo -e "\n${BR_SEP}GENERATED FSTAB" >> /tmp/restore.log
   cat /mnt/target/etc/fstab >> /tmp/restore.log
 }

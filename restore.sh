@@ -803,12 +803,11 @@ clean_unmount_when_subvols() {
       OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
     fi
 
-    clean_files
     rm -r /mnt/target/* 2>/dev/null
     echo -n "Unmounting $BRroot "
     OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
   else
-    echo "/mnt/target/ remained"
+    echo "/mnt/target remained"
   fi
   clean_files
   exit
@@ -862,11 +861,10 @@ clean_unmount_in() {
     done
   fi
 
-  clean_files
-
   if [ ! -f /tmp/umount_error ]; then
     rm -r /mnt/target/* 2>/dev/null
   fi
+  clean_files
 
   echo -n "Unmounting $BRroot "
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
@@ -884,11 +882,11 @@ clean_unmount_out() {
 
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
   fi
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
   fi
 
   if [ "$BRcustom" = "y" ]; then
@@ -896,11 +894,15 @@ clean_unmount_out() {
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       echo -n "Unmounting $BRdevice "
-      OUTPUT=$(umount $BRdevice 2>&1) && ok_status || error_status
+      OUTPUT=$(umount $BRdevice 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
     done
   fi
 
+   if [ ! -f /tmp/umount_error ]; then
+    rm -r /mnt/target/* 2>/dev/null
+  fi
   clean_files
+
   echo -n "Unmounting $BRroot "
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
   exit

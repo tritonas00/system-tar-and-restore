@@ -624,7 +624,7 @@ generate_fstab() {
 
 build_initramfs() {
   echo -e "\n${BR_SEP}REBUILDING INITRAMFS IMAGE"
-  if [[ "$BRroot" == *dev/md* ]] || [[ "$BRhome" == *dev/md* ]] || [[ "$BRswap" == *dev/md* ]] || [[ "$BRboot" == *dev/md* ]]; then
+  if grep -q dev/md /mnt/target/etc/fstab; then
     echo "Generating mdadm.conf..."
     if [ $BRdistro = Debian ]; then
       if [ -f /mnt/target/etc/mdadm/mdadm.conf ]; then

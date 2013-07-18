@@ -898,7 +898,7 @@ clean_unmount_out() {
     done
   fi
 
-   if [ ! -f /tmp/umount_error ]; then
+  if [ ! -f /tmp/umount_error ]; then
     rm -r /mnt/target/* 2>/dev/null
   fi
   clean_files

@@ -435,9 +435,9 @@ mount_all() {
   OUTPUT=$(mount -o $BR_MOUNT_OPTS $BRroot /mnt/target 2>&1) && ok_status || (error_status && touch /tmp/stop)
 
   if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
+    touch /tmp/not_empty
     echo -e "${BR_RED}Root partition not empty, refusing to use it${BR_NORM}"
     echo -e "${BR_YELLOW}Root partition must be formatted and cleaned${BR_NORM}"
-    
     echo -n "Unmounting $BRroot "
     OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
     exit
@@ -755,6 +755,7 @@ clean_files() {
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
   if [ -f /tmp/stop ]; then rm /tmp/stop; fi
   if [ -f /tmp/umount_error ]; then rm /tmp/umount_error; fi
+  if [ -f /tmp/not_empty ]; then rm /tmp/not_empty; fi
  }
 
 clean_unmount_when_subvols() {
@@ -1977,10 +1978,16 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   IFS=$'\n'
   check_input
-  mount_all  #2>&1 | dialog --title "Mounting" --progressbox 30 70
+  mount_all  2>&1 | dialog --title "Mounting" --progressbox 30 70
+
+  if [ -f /tmp/not_empty ]; then
+    clean_files
+    exit
+  fi
+
   abort_on_error
   detect_parts_fs_size
-  sleep 2
+  sleep 1
 
   if [ "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do

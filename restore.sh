@@ -344,10 +344,10 @@ check_input() {
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
-      for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRdevice} ]] ; then BRbootcheck="true" ; fi; done
-      for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRdevice} ]] ; then BRbootcheck="true" ; fi; done
-      for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRdevice} ]] ; then BRbootcheck="true" ; fi; done
-      if [ ! "$BRbootcheck" = "true" ]; then
+      for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
+      for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
+      for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
+      if [ ! "$BRcustomcheck" = "true" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong $BRmpoint partition: $BRdevice"
         BRSTOP=y
       elif pvdisplay 2>&1 | grep -w $BRdevice > /dev/null; then

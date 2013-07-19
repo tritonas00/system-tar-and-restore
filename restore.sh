@@ -807,6 +807,7 @@ clean_unmount_when_subvols() {
 
     rm -r /mnt/target/* 2>/dev/null
     echo -n "Unmounting $BRroot "
+    sleep 1
     OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
   else
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained"
@@ -871,6 +872,7 @@ clean_unmount_in() {
   clean_files
 
   echo -n "Unmounting $BRroot "
+  sleep 1
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
   exit
 }
@@ -910,6 +912,7 @@ clean_unmount_out() {
   clean_files
 
   echo -n "Unmounting $BRroot "
+  sleep 1
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
   exit
 }

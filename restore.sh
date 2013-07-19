@@ -762,16 +762,6 @@ clean_files() {
 clean_unmount_when_subvols() {
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
-  if [ -n "$BRhome" ]; then
-    echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
-  fi
-
-  if [ -n "$BRboot" ]; then
-    echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
-  fi
-
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
@@ -783,6 +773,16 @@ clean_unmount_when_subvols() {
       echo -n "Unmounting $ln "
       OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
     done
+  fi
+
+  if [ -n "$BRhome" ]; then
+    echo -n "Unmounting $BRhome "
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+  fi
+
+  if [ -n "$BRboot" ]; then
+    echo -n "Unmounting $BRboot "
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
   fi
 
   echo -n "Unmounting $BRrootsubvolname "
@@ -824,15 +824,7 @@ clean_unmount_error() {
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   sleep 1
-  if [ -n "$BRhome" ]; then
-    umount $BRhome 2> /dev/null
-  fi
-
-  if [ -n "$BRboot" ]; then
-    umount $BRboot 2> /dev/null
-  fi
-
- if [ "$BRcustom" = "y" ]; then
+  if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
@@ -844,6 +836,14 @@ clean_unmount_error() {
     done
   fi
 
+  if [ -n "$BRhome" ]; then
+    umount $BRhome 2> /dev/null
+  fi
+
+  if [ -n "$BRboot" ]; then
+    umount $BRboot 2> /dev/null
+  fi
+
   clean_files
   umount $BRroot 2> /dev/null
   echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained"
@@ -853,16 +853,6 @@ clean_unmount_error() {
 clean_unmount_in() {
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
-  if [ -n "$BRhome" ]; then
-    echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
-  fi
-
-  if [ -n "$BRboot" ]; then
-    echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
-  fi
-
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
@@ -874,6 +864,16 @@ clean_unmount_in() {
       echo -n "Unmounting $ln "
       OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
     done
+  fi
+
+  if [ -n "$BRhome" ]; then
+    echo -n "Unmounting $BRhome "
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+  fi
+
+  if [ -n "$BRboot" ]; then
+    echo -n "Unmounting $BRboot "
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
   fi
 
   if [ ! -f /tmp/umount_error ]; then
@@ -898,16 +898,7 @@ clean_unmount_out() {
   umount /mnt/target/sys || touch /tmp/umount_error
   umount /mnt/target/run || touch /tmp/umount_error
 
-  if [ -n "$BRhome" ]; then
-    echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
-  fi
-  if [ -n "$BRboot" ]; then
-    echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
-  fi
-
-   if [ "$BRcustom" = "y" ]; then
+  if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
@@ -918,6 +909,15 @@ clean_unmount_out() {
       echo -n "Unmounting $ln "
       OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
     done
+  fi
+
+  if [ -n "$BRhome" ]; then
+    echo -n "Unmounting $BRhome "
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+  fi
+  if [ -n "$BRboot" ]; then
+    echo -n "Unmounting $BRboot "
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
   fi
 
   if [ ! -f /tmp/umount_error ]; then
@@ -959,16 +959,6 @@ create_subvols() {
 
   echo -e "\n${BR_SEP}RE-MOUNTING"
   cd ~
-  if [ -n "$BRhome" ]; then
-    echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
-  fi
-
-  if [ -n "$BRboot" ]; then
-    echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
-  fi
-
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
@@ -981,7 +971,17 @@ create_subvols() {
       OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
     done
   fi
- 
+
+  if [ -n "$BRhome" ]; then
+    echo -n "Unmounting $BRhome "
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+  fi
+
+  if [ -n "$BRboot" ]; then
+    echo -n "Unmounting $BRboot "
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+  fi
+
   echo -n "Unmounting $BRroot "
   OUTPUT=$(umount $BRroot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
 

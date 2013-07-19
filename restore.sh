@@ -775,9 +775,13 @@ clean_unmount_when_subvols() {
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
-      BRmpoint=$(echo $i | cut -f1 -d"=")
-      echo -n "Unmounting $BRdevice "
-      OUTPUT=$(umount $BRdevice 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+      echo $BRdevice
+    done | tac | 
+ 
+    while read ln; do
+      sleep 1
+      echo -n "Unmounting $ln "
+      OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
     done
   fi
 
@@ -828,11 +832,15 @@ clean_unmount_error() {
     umount $BRboot 2> /dev/null
   fi
 
-  if [ "$BRcustom" = "y" ]; then
+ if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
-      BRmpoint=$(echo $i | cut -f1 -d"=")
-      umount $BRdevice 2> /dev/null
+      echo $BRdevice
+    done | tac | 
+ 
+    while read ln; do
+      sleep 1
+      umount $ln 2> /dev/null
     done
   fi
 
@@ -858,9 +866,13 @@ clean_unmount_in() {
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
-      BRmpoint=$(echo $i | cut -f1 -d"=")
-      echo -n "Unmounting $BRdevice "
-      OUTPUT=$(umount $BRdevice 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+      echo $BRdevice
+    done | tac | 
+ 
+    while read ln; do
+      sleep 1
+      echo -n "Unmounting $ln "
+      OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
     done
   fi
 
@@ -895,12 +907,16 @@ clean_unmount_out() {
     OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
   fi
 
-  if [ "$BRcustom" = "y" ]; then
+   if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
-      BRmpoint=$(echo $i | cut -f1 -d"=")
-      echo -n "Unmounting $BRdevice "
-      OUTPUT=$(umount $BRdevice 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+      echo $BRdevice
+    done | tac | 
+ 
+    while read ln; do
+      sleep 1
+      echo -n "Unmounting $ln "
+      OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
     done
   fi
 
@@ -956,9 +972,13 @@ create_subvols() {
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
-      BRmpoint=$(echo $i | cut -f1 -d"=")
-      echo -n "Unmounting $BRdevice "
-      OUTPUT=$(umount $BRdevice 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+      echo $BRdevice
+    done | tac | 
+ 
+    while read ln; do
+      sleep 1
+      echo -n "Unmounting $ln "
+      OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
     done
   fi
  

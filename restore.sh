@@ -897,25 +897,23 @@ clean_unmount_in() {
 
   if [ ! -f /tmp/umount_error ]; then
     rm -r /mnt/target/* 2>/dev/null
-  else
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained"
   fi
   clean_files
 
   echo -n "Unmounting $BRroot "
   sleep 1
-  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
+  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || (error_status &&  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
   exit
 }
 
 clean_unmount_out() {
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
-  umount /mnt/target/dev/pts || touch /tmp/umount_error
-  umount /mnt/target/proc || touch /tmp/umount_error
-  umount /mnt/target/dev || touch /tmp/umount_error
-  umount /mnt/target/sys || touch /tmp/umount_error
-  umount /mnt/target/run || touch /tmp/umount_error
+  umount /mnt/target/dev/pts
+  umount /mnt/target/proc
+  umount /mnt/target/dev
+  umount /mnt/target/sys
+  umount /mnt/target/run
 
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do
@@ -926,28 +924,23 @@ clean_unmount_out() {
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
-      OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+      OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
     done
   fi
 
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
   fi
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
   fi
-
-  if [ ! -f /tmp/umount_error ]; then
-    echo -n "Unmounting $BRroot "
-    sleep 1
-    OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
-  else
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained"
-  fi
-
   clean_files
+
+  echo -n "Unmounting $BRroot "
+  sleep 1
+  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || (error_status &&  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
   exit
 }
 

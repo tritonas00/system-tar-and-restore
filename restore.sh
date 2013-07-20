@@ -372,19 +372,19 @@ check_input() {
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
         touch /tmp/abort
       elif [[ "$BRmpoint" == *var* ]]; then
-        BRvarsubvol="n"
+        touch /tmp/BRvarsubvol && touch /tmp/abort
       fi
       if [[ "$BRmpoint" == *usr* ]] && [ "x$BRusrsubvol" = "xy" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
         touch /tmp/abort
       elif [[ "$BRmpoint" == *usr* ]]; then
-        BRusrsubvol="n"
+        touch /tmp/BRusrsubvol && touch /tmp/abort
       fi
       if [[ "$BRmpoint" == *home* ]] && [ "x$BRhomesubvol" = "xy" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
         touch /tmp/abort
       elif [[ "$BRmpoint" == *home* ]]; then
-        BRhomesubvol="n"
+        touch /tmp/BRhomesubvol && touch /tmp/abort
       fi
       unset BRcustomcheck 
     done
@@ -428,6 +428,11 @@ check_input() {
     BRSTOP=y
   fi
 
+
+  if [ -f /tmp/BRvarsubvol ]; then rm /tmp/BRvarsubvol ; fi
+  if [ -f /tmp/BRusrsubvol ]; then rm /tmp/BRusrsubvol ; fi
+  if [ -f /tmp/BRhomesubvol ]; then rm /tmp/BRhomesubvol ; fi
+
   if [ -n "$BRSTOP" ]; then
     exit
   fi
@@ -436,6 +441,7 @@ check_input() {
     rm /tmp/abort
     exit
   fi
+
 }
 
 mount_all() { 

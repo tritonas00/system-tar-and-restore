@@ -340,16 +340,24 @@ check_input() {
     fi
   fi
 
- if [ "$BRcustom" = "y" ]; then
-   for a in ${BRcustomparts[@]}; do
-     BRmpoint=$(echo $a | cut -f1 -d"=")
-     BRdevice=$(echo $a | cut -f2 -d"=")
-     echo "$BRmpoint=$BRdevice"
-   done |
+  if [ "$BRcustom" = "y" ]; then
+    if [[ -n $(for i in ${BRcustomparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"=") && echo $BRdevice; done | sort  | uniq -d) ]]; then
+      for a in ${BRcustomparts[@]}; do
+        BRdevice=$(echo $a | cut -f2 -d"=")
+      done
+      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
+      touch /tmp/abort
+    fi 
+
+    for a in ${BRcustomparts[@]}; do
+      BRmpoint=$(echo $a | cut -f1 -d"=")
+      BRdevice=$(echo $a | cut -f2 -d"=")
+      echo "$BRmpoint=$BRdevice"
+    done |
  
-   while read ln; do
-     BRmpoint=$(echo $ln | cut -f1 -d"=")
-     BRdevice=$(echo $ln | cut -f2 -d"=")
+    while read ln; do
+      BRmpoint=$(echo $ln | cut -f1 -d"=")
+      BRdevice=$(echo $ln | cut -f2 -d"=")
 
       for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
       for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
@@ -386,7 +394,7 @@ check_input() {
       elif [[ "$BRmpoint" == *home* ]]; then
         touch /tmp/BRhomesubvol
       fi
-      unset BRcustomcheck 
+      unset BRcustomcheck
     done
   fi
 
@@ -840,7 +848,7 @@ clean_unmount_when_subvols() {
 }
 
 clean_unmount_error() {
-  echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
+  echo -e "\n${BR_SEP}UNMOUNTING"
   cd ~
   sleep 1
   if [ "$BRcustom" = "y" ]; then
@@ -902,7 +910,7 @@ clean_unmount_in() {
 
   echo -n "Unmounting $BRroot "
   sleep 1
-  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || (error_status &&  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
+  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
   exit
 }
 
@@ -940,7 +948,7 @@ clean_unmount_out() {
 
   echo -n "Unmounting $BRroot "
   sleep 1
-  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || (error_status &&  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
+  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
   exit
 }
 
@@ -1023,6 +1031,8 @@ create_subvols() {
         OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
       done
     fi
+  else
+    clean_unmount_error
   fi
 }
 

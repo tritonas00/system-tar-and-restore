@@ -432,10 +432,10 @@ check_input() {
     exit
   fi
 
-if [ -f /tmp/abort ]; then
-rm /tmp/abort
-exit
-fi
+  if [ -f /tmp/abort ]; then
+    rm /tmp/abort
+    exit
+  fi
 }
 
 mount_all() { 

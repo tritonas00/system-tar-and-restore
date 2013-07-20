@@ -430,8 +430,8 @@ check_input() {
 
 
   if [ -f /tmp/BRvarsubvol ]; then BRvarsubvol="n" && rm /tmp/BRvarsubvol ; fi
-  if [ -f /tmp/BRusrsubvol ]; then BRusrsubvol="n" && rm /tmp/BRvarsubvol ; fi
-  if [ -f /tmp/BRhomesubvol ]; then BRhomesubvol="n" && rm /tmp/BRvarsubvol ; fi
+  if [ -f /tmp/BRusrsubvol ]; then BRusrsubvol="n" && rm /tmp/BRusrsubvol ; fi
+  if [ -f /tmp/BRhomesubvol ]; then BRhomesubvol="n" && rm /tmp/BRhomesubvol ; fi
 
   if [ -n "$BRSTOP" ]; then
     exit

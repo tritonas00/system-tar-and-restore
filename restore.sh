@@ -347,7 +347,7 @@ check_input() {
       for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
       for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
       for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
-      if [ ! "$BRcustomcheck" = "true" ]; then
+      if [ ! "$BRbootcheck" = "true" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong $BRmpoint partition: $BRdevice"
         BRSTOP=y
       elif pvdisplay 2>&1 | grep -w $BRdevice > /dev/null; then
@@ -462,7 +462,7 @@ mount_all() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
-    for i in $(for a in ${BRcustomparts[@]}; do echo "$a"; done | sort -d); do
+    for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       echo -n "Mounting $BRdevice "
@@ -492,7 +492,7 @@ show_summary() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
-    for i in $(for a in ${BRcustomparts[@]}; do echo "$a"; done | sort -d); do
+    for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
@@ -600,7 +600,7 @@ generate_fstab() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
-    for i in $(for a in ${BRcustomparts[@]}; do echo "$a"; done | sort -d); do
+    for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
@@ -763,10 +763,10 @@ clean_unmount_when_subvols() {
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   if [ "$BRcustom" = "y" ]; then
-    for i in $(for a in ${BRcustomparts[@]}; do echo "$a"; done | sort -d -r); do
+    for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
-    done |
+    done | tac | 
  
     while read ln; do
       sleep 1
@@ -825,10 +825,10 @@ clean_unmount_error() {
   cd ~
   sleep 1
   if [ "$BRcustom" = "y" ]; then
-    for i in $(for a in ${BRcustomparts[@]}; do echo "$a"; done | sort -d -r); do
+    for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
-    done |
+    done | tac | 
  
     while read ln; do
       sleep 1
@@ -854,10 +854,10 @@ clean_unmount_in() {
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   if [ "$BRcustom" = "y" ]; then
-    for i in $(for a in ${BRcustomparts[@]}; do echo "$a"; done | sort -d -r); do
+    for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
-    done |
+    done | tac | 
  
     while read ln; do
       sleep 1
@@ -899,10 +899,10 @@ clean_unmount_out() {
   umount /mnt/target/run || touch /tmp/umount_error
 
   if [ "$BRcustom" = "y" ]; then
-    for i in $(for a in ${BRcustomparts[@]}; do echo "$a"; done | sort -d -r); do
+    for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
-    done |
+    done | tac | 
  
     while read ln; do
       sleep 1
@@ -960,10 +960,10 @@ create_subvols() {
   echo -e "\n${BR_SEP}RE-MOUNTING"
   cd ~
   if [ "$BRcustom" = "y" ]; then
-    for i in $(for a in ${BRcustomparts[@]}; do echo "$a"; done | sort -d -r); do
+    for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
-    done |
+    done | tac | 
  
     while read ln; do
       sleep 1
@@ -1003,7 +1003,7 @@ create_subvols() {
     fi
 
     if [ "$BRcustom" = "y" ]; then
-      for i in $(for a in ${BRcustomparts[@]}; do echo "$a"; done | sort -d); do
+      for i in ${BRcustomparts[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
         BRmpoint=$(echo $i | cut -f1 -d"=")
         echo -n "Mounting $BRdevice "

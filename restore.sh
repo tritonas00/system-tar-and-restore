@@ -372,19 +372,19 @@ check_input() {
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
         touch /tmp/abort
       elif [[ "$BRmpoint" == *var* ]]; then
-        touch /tmp/BRvarsubvol && touch /tmp/abort
+        touch /tmp/BRvarsubvol
       fi
       if [[ "$BRmpoint" == *usr* ]] && [ "x$BRusrsubvol" = "xy" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
         touch /tmp/abort
       elif [[ "$BRmpoint" == *usr* ]]; then
-        touch /tmp/BRusrsubvol && touch /tmp/abort
+        touch /tmp/BRusrsubvol
       fi
       if [[ "$BRmpoint" == *home* ]] && [ "x$BRhomesubvol" = "xy" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
         touch /tmp/abort
       elif [[ "$BRmpoint" == *home* ]]; then
-        touch /tmp/BRhomesubvol && touch /tmp/abort
+        touch /tmp/BRhomesubvol
       fi
       unset BRcustomcheck 
     done
@@ -429,9 +429,9 @@ check_input() {
   fi
 
 
-  if [ -f /tmp/BRvarsubvol ]; then rm /tmp/BRvarsubvol ; fi
-  if [ -f /tmp/BRusrsubvol ]; then rm /tmp/BRusrsubvol ; fi
-  if [ -f /tmp/BRhomesubvol ]; then rm /tmp/BRhomesubvol ; fi
+  if [ -f /tmp/BRvarsubvol ]; then BRvarsubvol="n" && rm /tmp/BRvarsubvol ; fi
+  if [ -f /tmp/BRusrsubvol ]; then BRusrsubvol="n" && rm /tmp/BRvarsubvol ; fi
+  if [ -f /tmp/BRhomesubvol ]; then BRhomesubvol="n" && rm /tmp/BRvarsubvol ; fi
 
   if [ -n "$BRSTOP" ]; then
     exit

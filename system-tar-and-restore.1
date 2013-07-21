@@ -3,9 +3,9 @@
 .\"    Author: [ see the "Authors" section]
 .\"      Date: 2013-06-06
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 3.4.3
+.\"    Source: system-tar-and-restore 3.5
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "13 July 2013" "3\&.4.3" "General Manual"
+.TH "system-tar-and-restore" "1" "21 July 2013" "3\&.5" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -142,6 +142,11 @@ target home partition
 \fB\-b, \-\-boot\fR
 .RS 4
 target boot partition
+.RE
+.PP
+\fB\-c, \-\-custom-partitions\fR
+.RS 4
+specify custom partitions (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)
 .RE
 .PP
 \fB\-s, \-\-swap\fR
@@ -309,6 +314,8 @@ and the root partition will be \fI/dev/md1\fR\&. The backup will be the local fi
 .RE
 .SH LIMITATIONS
 \fBUEFI\fR not supported - not tested
+.SH ONLINE DOCUMENTATION
+https://github.com/tritonas00/system-tar-and-restore#about
 .SH BUGS
 Report bugs in: https://github.com/tritonas00/system-tar-and-restore/issues
 .SH AUTHOR

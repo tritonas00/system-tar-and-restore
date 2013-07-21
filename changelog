@@ -2,7 +2,7 @@ Changelog:
 
 3.5.1
     fixed cleaning tmp file if root is not empty
-    dont mount others if root failed to mount
+    if root failed to mount dont mount other partitions 
 
 3.5
     new output layout

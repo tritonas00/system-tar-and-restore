@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.5"
+BR_VERSION="System Tar & Restore 3.5.1"
 BR_SEP="::"
 
 clear
@@ -460,43 +460,38 @@ mount_all() {
 
   if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
     touch /tmp/not_empty
-    echo -e "\n[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it"
-    echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned\n"
-    echo -n "Unmounting $BRroot "
-    cd ~
-    sleep 1
-    OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
-    exit
   fi
 
-  if [ -n "$BRhome" ]; then
-    echo -n "Mounting $BRhome "
-    mkdir /mnt/target/home
-    OUTPUT=$(mount $BRhome /mnt/target/home 2>&1) && ok_status || (error_status && touch /tmp/stop)
-    if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
-      echo -e "[${BR_CYAN}INFO${BR_NORM}] /home partition not empty"
-    fi
-  fi
-  if [ -n "$BRboot" ]; then
-    echo -n "Mounting $BRboot "
-    mkdir /mnt/target/boot
-    OUTPUT=$(mount $BRboot /mnt/target/boot 2>&1) && ok_status || (error_status && touch /tmp/stop)
-    if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
-      echo -e "[${BR_CYAN}INFO${BR_NORM}] /boot partition not empty"
-    fi
-  fi
-
-  if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
-      BRdevice=$(echo $i | cut -f2 -d"=")
-      BRmpoint=$(echo $i | cut -f1 -d"=")
-      echo -n "Mounting $BRdevice "
-      mkdir -p /mnt/target$BRmpoint
-      OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || (error_status && touch /tmp/stop)
-      if [ "$(ls -A /mnt/target$BRmpoint | grep -vw "lost+found")" ]; then
-        echo -e "[${BR_CYAN}INFO${BR_NORM}] $BRmpoint partition not empty"
+  if [ ! -f /tmp/not_empty ] &&  [ ! -f /tmp/stop ]; then
+    if [ -n "$BRhome" ]; then
+      echo -n "Mounting $BRhome "
+      mkdir /mnt/target/home
+      OUTPUT=$(mount $BRhome /mnt/target/home 2>&1) && ok_status || (error_status && touch /tmp/stop)
+      if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
+        echo -e "[${BR_CYAN}INFO${BR_NORM}] /home partition not empty"
       fi
-    done
+    fi
+    if [ -n "$BRboot" ]; then
+      echo -n "Mounting $BRboot "
+      mkdir /mnt/target/boot
+      OUTPUT=$(mount $BRboot /mnt/target/boot 2>&1) && ok_status || (error_status && touch /tmp/stop)
+      if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
+        echo -e "[${BR_CYAN}INFO${BR_NORM}] /boot partition not empty"
+      fi
+    fi
+
+    if [ "$BRcustom" = "y" ]; then
+      for i in ${BRcustomparts[@]}; do
+        BRdevice=$(echo $i | cut -f2 -d"=")
+        BRmpoint=$(echo $i | cut -f1 -d"=")
+        echo -n "Mounting $BRdevice "
+        mkdir -p /mnt/target$BRmpoint
+        OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || (error_status && touch /tmp/stop)
+        if [ "$(ls -A /mnt/target$BRmpoint | grep -vw "lost+found")" ]; then
+          echo -e "[${BR_CYAN}INFO${BR_NORM}] $BRmpoint partition not empty"
+        fi
+      done
+    fi
   fi
 }
 
@@ -846,7 +841,7 @@ clean_unmount_when_subvols() {
 }
 
 clean_unmount_error() {
-  echo -e "\n${BR_SEP}UNMOUNTING"
+  echo -e "\n${BR_SEP}ABORTING"
   cd ~
   sleep 1
   if [ "$BRcustom" = "y" ]; then
@@ -870,8 +865,13 @@ clean_unmount_error() {
   fi
 
   clean_files
+  sleep 1
   umount $BRroot 2> /dev/null
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained"
+  if [ "$(ls -A /mnt/target)" ]; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained"
+  else
+    rm -r /mnt/target
+  fi
   exit
 }
 
@@ -952,7 +952,13 @@ clean_unmount_out() {
 
 abort_on_error() {
   if [ -f /tmp/stop ]; then
+    color_variables
     echo -e "[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions${BR_NORM}"
+    clean_unmount_error
+  elif [ -f /tmp/not_empty ]; then
+    color_variables
+    echo -e "\n[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it"
+    echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned\n"
     clean_unmount_error
   fi
 }
@@ -2057,12 +2063,6 @@ elif [ "$BRinterface" = "Dialog" ]; then
   IFS=$'\n'
   check_input
   mount_all  2>&1 | dialog --title "Mounting" --progressbox 30 70
-
-  if [ -f /tmp/not_empty ]; then
-    clean_files
-    exit
-  fi
-
   abort_on_error
   detect_parts_fs_size
   sleep 1

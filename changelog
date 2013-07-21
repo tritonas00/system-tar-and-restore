@@ -1,5 +1,9 @@
 Changelog:
 
+3.5.1
+    fixed cleaning tmp file if root is not empty
+    dont mount others if root failed to mount
+
 3.5
     new output layout
     cleaner INFO/WARNING/ERROR messages

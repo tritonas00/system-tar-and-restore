@@ -952,11 +952,15 @@ clean_unmount_out() {
 
 abort_on_error() {
   if [ -f /tmp/stop ]; then
-    color_variables
+    if [ -z "$BRnocolor" ]; then
+      color_variables
+    fi
     echo -e "[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions${BR_NORM}"
     clean_unmount_error
   elif [ -f /tmp/not_empty ]; then
-    color_variables
+    if [ -z "$BRnocolor" ]; then
+      color_variables
+    fi
     echo -e "\n[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it"
     echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned\n"
     clean_unmount_error
@@ -2061,7 +2065,11 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   IFS=$'\n'
+  if [ -z "$BRnocolor" ]; then
+    color_variables
+  fi
   check_input
+  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
   mount_all  2>&1 | dialog --title "Mounting" --progressbox 30 70
   abort_on_error
   detect_parts_fs_size
@@ -2188,7 +2196,9 @@ elif [ "$BRinterface" = "Dialog" ]; then
     while [ ! -f /mnt/target/fullbackup ]; do
       REPLY=$(dialog --cancel-label Quit --menu "Select backup file. Choose an option:" 13 50 13 File "local file" URL "remote file" "Protected URL" "protected remote file" 2>&1 1>&3)
       if [ "$?" = "1" ]; then
-        color_variables
+        if [ -z "$BRnocolor" ]; then
+          color_variables
+        fi
         if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
           clean_unmount_when_subvols
         fi
@@ -2293,7 +2303,9 @@ elif [ "$BRinterface" = "Dialog" ]; then
   if [ -z "$BRcontinue" ]; then
     dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0
     if [ "$?" = "1" ]; then
-      color_variables
+      if [ -z "$BRnocolor" ]; then
+        color_variables
+      fi
       if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
         clean_unmount_when_subvols
       fi
@@ -2368,6 +2380,8 @@ elif [ "$BRinterface" = "Dialog" ]; then
   fi
 
   sleep 1
-  color_variables
+  if [ -z "$BRnocolor" ]; then
+    color_variables
+  fi
   clean_unmount_out
 fi

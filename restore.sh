@@ -342,9 +342,7 @@ check_input() {
 
   if [ "$BRcustom" = "y" ]; then
     if [[ -n $(for i in ${BRcustomparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"=") && echo $BRdevice; done | sort  | uniq -d) ]]; then
-      for a in ${BRcustomparts[@]}; do
-        BRdevice=$(echo $a | cut -f2 -d"=")
-      done
+      for a in ${BRcustomparts[@]}; do BRdevice=$(echo $a | cut -f2 -d"="); done
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
       touch /tmp/abort
     fi 

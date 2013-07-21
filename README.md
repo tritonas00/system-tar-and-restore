@@ -99,7 +99,7 @@ The script will ask for:
 
 - (Optional) Set custom partitions. Syntax is mountpoint=device (e.g /usr=/dev/sda3 /var/cache=/dev/sda4).
    If you plan to use partition inside partition (e.g /var, /var/tmp ...) make sure your list is sorted by path:
-   Correct syntax: /var=device /var/tmp=device. Wrong syntax: /var/tmp=device /var=device
+   Correct syntax: /var=device /var/tmp=device Wrong syntax: /var/tmp=device /var=device
    
 - (Optional) Bootloader and target disk (MBR). Grub2 and Syslinux are both supported.
    If Syslinux is selected, it will ask for additional kernel options which will be written in syslinux.cfg.

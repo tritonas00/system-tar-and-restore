@@ -1,5 +1,17 @@
 Changelog:
 
+3.5
+    new output layout
+    cleaner INFO/WARNING/ERROR messages
+    added custom partitions option
+    backup.sh reports found bootloaders
+    cleaned fedora's grub config file
+    check generated fstab for md devices
+    safer unmount/cleaning process
+    if not empty root partition dont mount anything else, unmount and abort immediately
+    if /mnt/target exists abort
+    dont allow partitions inside btrfs subvolumes
+  
 3.4.3
     changed backup destination dialogs
     better raid detection

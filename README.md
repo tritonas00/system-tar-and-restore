@@ -97,6 +97,10 @@ The script will ask for:
 
 - (Optional) Swap partition   
 
+- (Optional) Set custom partitions. Syntax is mountpoint=device (e.g /usr=/dev/sda3 /var/cache=/dev/sda4).
+   If you plan to use partition inside partition (e.g /var, /var/tmp ...) make sure your list is sorted by path:
+   Correct syntax: /var=device /var/tmp=device. Wrong syntax: /var/tmp=device /var=device
+   
 - (Optional) Bootloader and target disk (MBR). Grub2 and Syslinux are both supported.
    If Syslinux is selected, it will ask for additional kernel options which will be written in syslinux.cfg.
    If a raid array is selected, the script will install the bootloader in all disks that the array contains.  
@@ -146,6 +150,9 @@ target home partition
 
 **-s, --swap**     
 swap partition
+
+**-c,  --custom-partitions**  
+specify custom partitions (mountpoint=device)
 
 **-m, --mount-options**     
 comma-separated list of mount options (root partition)

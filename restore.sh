@@ -345,14 +345,14 @@ check_input() {
       for a in ${BRcustomparts[@]}; do BRdevice=$(echo $a | cut -f2 -d"="); done
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
       touch /tmp/abort
-    fi 
+    fi
 
     for a in ${BRcustomparts[@]}; do
       BRmpoint=$(echo $a | cut -f1 -d"=")
       BRdevice=$(echo $a | cut -f2 -d"=")
       echo "$BRmpoint=$BRdevice"
     done |
- 
+
     while read ln; do
       BRmpoint=$(echo $ln | cut -f1 -d"=")
       BRdevice=$(echo $ln | cut -f2 -d"=")
@@ -450,7 +450,7 @@ check_input() {
 
 }
 
-mount_all() { 
+mount_all() {
   echo -e "\n${BR_SEP}MOUNTING"
   echo -n "Making working directory "
   OUTPUT=$(mkdir /mnt/target 2>&1) && ok_status || error_status
@@ -635,7 +635,7 @@ generate_fstab() {
         echo "UUID=$(lsblk -d -n -o uuid $BRdevice)  $BRmpoint  $BRcustomfs  defaults  0  2" >> /mnt/target/etc/fstab
       fi
     done
-  fi  
+  fi
 
   if [ -n "$BRswap" ]; then
     if [[ "$BRswap" == *dev/md* ]]; then
@@ -791,8 +791,8 @@ clean_unmount_when_subvols() {
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
-    done | tac | 
- 
+    done | tac |
+
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
@@ -853,8 +853,8 @@ clean_unmount_error() {
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
-    done | tac | 
- 
+    done | tac |
+
     while read ln; do
       sleep 1
       umount $ln 2> /dev/null
@@ -882,8 +882,8 @@ clean_unmount_in() {
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
-    done | tac | 
- 
+    done | tac |
+
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
@@ -925,8 +925,8 @@ clean_unmount_out() {
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
-    done | tac | 
- 
+    done | tac |
+
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
@@ -981,8 +981,8 @@ create_subvols() {
     for i in ${BRcustomparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
-    done | tac | 
- 
+    done | tac |
+
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
@@ -1601,7 +1601,7 @@ if [ "$BRinterface" = "CLI" ]; then
         fi
       done
 
-      if [ -z "$BRhome" ]; then 
+      if [ -z "$BRhome" ]; then
         while [ -z "$BRhomesubvol" ]; do
           echo -e "\n${BR_CYAN}Create subvolume for /home inside $BRrootsubvolname?${BR_NORM}"
           read -p "(Y/n) " an
@@ -1677,7 +1677,7 @@ if [ "$BRinterface" = "CLI" ]; then
   fi
 
   if [ "$BRmode" = "Restore" ]; then
-    echo -e "\n${BR_SEP}GETTING TAR IMAGE" 
+    echo -e "\n${BR_SEP}GETTING TAR IMAGE"
     if [ -n "$BRfile" ]; then
       echo -n "Symlinking file "
       OUTPUT=$(ln -s "$BRfile" "/mnt/target/fullbackup" 2>&1) && ok_status || error_status
@@ -2086,7 +2086,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
         fi
       done
 
-      if [ -z "$BRhome" ]; then 
+      if [ -z "$BRhome" ]; then
         while [ -z "$BRhomesubvol" ]; do
           dialog --yesno "Create subvolume for /home inside $BRrootsubvolname?" 6 50
           if [ "$?" = "0" ]; then
@@ -2096,7 +2096,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
           fi
         done
       fi
-  
+
       while [ -z "$BRvarsubvol" ]; do
         dialog --yesno "Create subvolume for /var inside $BRrootsubvolname?" 6 50
         if [ "$?" = "0" ]; then

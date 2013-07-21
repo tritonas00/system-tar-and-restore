@@ -122,7 +122,7 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
           fi
           update_options;;
         "${options[8]}" )
-          BRcustomparts=$(zenity --width 550 --title "Restore" --cancel-label="Skip" --entry --entry-text="$BRcustomparts" --text "Set partitions: (mointpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)")   
+          BRcustomparts=$(zenity --width 550 --title "Restore" --cancel-label="Skip" --entry --entry-text="$BRcustomparts" --text "Set partitions: (mointpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)")
           if [ -n "$BRcustomparts" ] && [ $? = "0" ]; then
             BR_CUSTOM_PARTS="-c '$BRcustomparts'"
           else

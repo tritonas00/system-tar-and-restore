@@ -2,7 +2,8 @@ Changelog:
 
 3.5.1
     fixed cleaning tmp file if root is not empty
-    if root failed to mount dont mount other partitions 
+    if root failed to mount dont mount other partitions
+    enabled color warnings in dialog interface
 
 3.5
     new output layout

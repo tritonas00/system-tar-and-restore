@@ -2100,7 +2100,11 @@ elif [ "$BRinterface" = "Dialog" ]; then
       if [ "x$BRhome" = "x-1" ]; then
 	unset BRvarsubvol
       fi
+      if [ -z "$BRnocolor" ]; then
+        color_variables
+      fi
       create_subvols
+      unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
     fi
   elif [ "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
     echo "Not a btrfs root filesystem, proceeding without subvolumes..." | dialog --title "Warning" --progressbox 3 70

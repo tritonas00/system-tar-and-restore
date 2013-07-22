@@ -1,5 +1,10 @@
 Changelog:
 
+3.5.2
+    smarter mounting process/better error handling-cleaning
+    clean_unmount_in is now aware of not mounted partitions
+    code cleaning 
+
 3.5.1
     fixed cleaning tmp file if root is not empty
     if root failed to mount dont mount other partitions

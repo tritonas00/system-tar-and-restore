@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.5.1"
+BR_VERSION="System Tar & Restore 3.5.2"
 BR_SEP="::"
 
 clear
@@ -434,7 +434,6 @@ check_input() {
     BRSTOP=y
   fi
 
-
   if [ -f /tmp/BRvarsubvol ]; then BRvarsubvol="n" && rm /tmp/BRvarsubvol ; fi
   if [ -f /tmp/BRusrsubvol ]; then BRusrsubvol="n" && rm /tmp/BRusrsubvol ; fi
   if [ -f /tmp/BRhomesubvol ]; then BRhomesubvol="n" && rm /tmp/BRhomesubvol ; fi
@@ -447,7 +446,6 @@ check_input() {
     rm /tmp/abort
     exit
   fi
-
 }
 
 mount_all() {
@@ -457,41 +455,71 @@ mount_all() {
 
   echo -n "Mounting $BRroot "
   OUTPUT=$(mount -o $BR_MOUNT_OPTS $BRroot /mnt/target 2>&1) && ok_status || (error_status && touch /tmp/stop)
-
-  if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
-    touch /tmp/not_empty
+  if [ -f /tmp/stop ]; then
+    echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
+    clean_files
+    rm -r /mnt/target
+    exit
   fi
 
-  if [ ! -f /tmp/not_empty ] &&  [ ! -f /tmp/stop ]; then
-    if [ -n "$BRhome" ]; then
-      echo -n "Mounting $BRhome "
-      mkdir /mnt/target/home
-      OUTPUT=$(mount $BRhome /mnt/target/home 2>&1) && ok_status || (error_status && touch /tmp/stop)
+  if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
+    echo -e "\n[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it"
+    echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned\n"
+    echo -n "Unmounting $BRroot "
+    sleep 1
+    OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
+    exit
+  fi
+
+  if [ -n "$BRhome" ]; then
+    echo -n "Mounting $BRhome "
+    mkdir /mnt/target/home
+    OUTPUT=$(mount $BRhome /mnt/target/home 2>&1) && ok_status || (error_status && touch /tmp/stop)
+    if [ -f /tmp/stop ]; then
+      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
+      unset BRhome
+      clean_unmount_in
+    else
       if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
         echo -e "[${BR_CYAN}INFO${BR_NORM}] /home partition not empty"
       fi
     fi
-    if [ -n "$BRboot" ]; then
-      echo -n "Mounting $BRboot "
-      mkdir /mnt/target/boot
-      OUTPUT=$(mount $BRboot /mnt/target/boot 2>&1) && ok_status || (error_status && touch /tmp/stop)
+  fi
+
+  if [ -n "$BRboot" ]; then
+    echo -n "Mounting $BRboot "
+    mkdir /mnt/target/boot
+    OUTPUT=$(mount $BRboot /mnt/target/boot 2>&1) && ok_status || (error_status && touch /tmp/stop)
+    if [ -f /tmp/stop ]; then
+      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
+      unset BRboot
+      clean_unmount_in
+    else
       if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
         echo -e "[${BR_CYAN}INFO${BR_NORM}] /boot partition not empty"
       fi
     fi
+  fi
 
-    if [ "$BRcustom" = "y" ]; then
-      for i in ${BRcustomparts[@]}; do
-        BRdevice=$(echo $i | cut -f2 -d"=")
-        BRmpoint=$(echo $i | cut -f1 -d"=")
-        echo -n "Mounting $BRdevice "
-        mkdir -p /mnt/target$BRmpoint
-        OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || (error_status && touch /tmp/stop)
-        if [ "$(ls -A /mnt/target$BRmpoint | grep -vw "lost+found")" ]; then
-          echo -e "[${BR_CYAN}INFO${BR_NORM}] $BRmpoint partition not empty"
-        fi
-      done
-    fi
+  if [ "$BRcustom" = "y" ]; then
+    for i in ${BRcustomparts[@]}; do
+      BRdevice=$(echo $i | cut -f2 -d"=")
+      BRmpoint=$(echo $i | cut -f1 -d"=")
+      echo -n "Mounting $BRdevice "
+      mkdir -p /mnt/target$BRmpoint
+      OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && (ok_status && touch /tmp/custom_ok) || (error_status && touch /tmp/stop)
+      if [ -f /tmp/custom_ok ]; then
+        rm -r /tmp/custom_ok
+        BRumountparts+=($BRmpoint=$BRdevice)
+      fi
+      if [ "$(ls -A /mnt/target$BRmpoint | grep -vw "lost+found")" ]; then
+        echo -e "[${BR_CYAN}INFO${BR_NORM}] $BRmpoint partition not empty"
+      fi
+    done
+  fi
+  if [ -f /tmp/stop ]; then
+    echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
+    clean_unmount_in
   fi
 }
 
@@ -776,7 +804,6 @@ clean_files() {
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
   if [ -f /tmp/stop ]; then rm /tmp/stop; fi
   if [ -f /tmp/umount_error ]; then rm /tmp/umount_error; fi
-  if [ -f /tmp/not_empty ]; then rm /tmp/not_empty; fi
  }
 
 clean_unmount_when_subvols() {
@@ -840,46 +867,11 @@ clean_unmount_when_subvols() {
   exit
 }
 
-clean_unmount_error() {
-  echo -e "\n${BR_SEP}ABORTING"
-  cd ~
-  sleep 1
-  if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
-      BRdevice=$(echo $i | cut -f2 -d"=")
-      echo $BRdevice
-    done | tac |
-
-    while read ln; do
-      sleep 1
-      umount $ln 2> /dev/null
-    done
-  fi
-
-  if [ -n "$BRhome" ]; then
-    umount $BRhome 2> /dev/null
-  fi
-
-  if [ -n "$BRboot" ]; then
-    umount $BRboot 2> /dev/null
-  fi
-
-  clean_files
-  sleep 1
-  umount $BRroot 2> /dev/null
-  if [ "$(ls -A /mnt/target)" ]; then
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained"
-  else
-    rm -r /mnt/target
-  fi
-  exit
-}
-
 clean_unmount_in() {
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRumountparts[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
     done | tac |
@@ -950,22 +942,6 @@ clean_unmount_out() {
   exit
 }
 
-abort_on_error() {
-  if [ -f /tmp/stop ]; then
-    if [ -z "$BRnocolor" ]; then
-      color_variables
-    fi
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions${BR_NORM}"
-    clean_unmount_error
-  elif [ -f /tmp/not_empty ]; then
-    if [ -z "$BRnocolor" ]; then
-      color_variables
-    fi
-    echo -e "\n[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it"
-    echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned\n"
-    clean_unmount_error
-  fi
-}
 
 create_subvols() {
   echo -e "\n${BR_SEP}CREATING SUBVOLUMES"
@@ -996,51 +972,46 @@ create_subvols() {
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
-      OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+      OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
     done
   fi
 
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
   fi
 
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
   fi
 
   echo -n "Unmounting $BRroot "
-  OUTPUT=$(umount $BRroot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+  OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
 
-  if [ ! -f /tmp/umount_error ]; then
-    rm -r /mnt/target/* 2>/dev/null
-    echo -n "Mounting $BRrootsubvolname "
-    OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
+  echo -n "Mounting $BRrootsubvolname "
+  OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
 
-    if [ -n "$BRhome" ]; then
-      echo -n "Mounting $BRhome "
-      mkdir /mnt/target/home
-      OUTPUT=$(mount $BRhome /mnt/target/home 2>&1) && ok_status || error_status
-    fi
+  if [ -n "$BRhome" ]; then
+    echo -n "Mounting $BRhome "
+    mkdir /mnt/target/home
+    OUTPUT=$(mount $BRhome /mnt/target/home 2>&1) && ok_status || error_status
+  fi
 
-    if [   -n "$BRboot" ]; then
-      echo -n "Mounting $BRboot "
-      mkdir /mnt/target/boot
-      OUTPUT=$(mount $BRboot /mnt/target/boot 2>&1) && ok_status || error_status
-    fi
+  if [   -n "$BRboot" ]; then
+    echo -n "Mounting $BRboot "
+    mkdir /mnt/target/boot
+    OUTPUT=$(mount $BRboot /mnt/target/boot 2>&1) && ok_status || error_status
+  fi
 
-    if [ "$BRcustom" = "y" ]; then
-      for i in ${BRcustomparts[@]}; do
-        BRdevice=$(echo $i | cut -f2 -d"=")
-        BRmpoint=$(echo $i | cut -f1 -d"=")
-        echo -n "Mounting $BRdevice "
-        mkdir -p /mnt/target$BRmpoint
-        OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
-      done
-    fi
-  else
-    clean_unmount_error
+  if [ "$BRcustom" = "y" ]; then
+    for i in ${BRcustomparts[@]}; do
+      BRdevice=$(echo $i | cut -f2 -d"=")
+      BRmpoint=$(echo $i | cut -f1 -d"=")
+      echo -n "Mounting $BRdevice "
+      mkdir -p /mnt/target$BRmpoint
+      OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
+    done
   fi
 }
 
@@ -1579,7 +1550,6 @@ if [ "$BRinterface" = "CLI" ]; then
 
   check_input
   mount_all
-  abort_on_error
   detect_parts_fs_size
 
   if [ "x$BRfsystem" = "xbtrfs" ]; then
@@ -2069,11 +2039,9 @@ elif [ "$BRinterface" = "Dialog" ]; then
     color_variables
   fi
   check_input
+  mount_all
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
-  mount_all  2>&1 | dialog --title "Mounting" --progressbox 30 70
-  abort_on_error
   detect_parts_fs_size
-  sleep 1
 
   if [ "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
@@ -2132,8 +2100,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
       if [ "x$BRhome" = "x-1" ]; then
 	unset BRvarsubvol
       fi
-      create_subvols 2>&1 | dialog --title "Creating subvolumes" --progressbox 30 70
-      sleep 2
+      create_subvols
     fi
   elif [ "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
     echo "Not a btrfs root filesystem, proceeding without subvolumes..." | dialog --title "Warning" --progressbox 3 70

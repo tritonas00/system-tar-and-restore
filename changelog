@@ -2,6 +2,7 @@ Changelog:
 
 3.5.4
     better handling of not mounted partitions
+    updated backup.sh error messages 
     code cleaning
 
 3.5.3

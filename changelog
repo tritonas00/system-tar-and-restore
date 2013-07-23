@@ -1,6 +1,7 @@
 Changelog:
 
 3.5.4
+    better handling of not mounted partitions
     code cleaning
 
 3.5.3

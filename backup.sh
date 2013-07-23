@@ -196,7 +196,7 @@ if [ -z "$BRnocolor" ]; then
 fi
 
 if [ $(id -u) -gt 0 ]; then
-  echo -e "${BR_RED}Script must run as root${BR_NORM}"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Script must run as root"
   exit
 fi
 
@@ -207,18 +207,17 @@ else
 fi
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
-  echo -e "${BR_RED}Directory does not exist:${BR_NORM} $BRFOLDER"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Directory does not exist: $BRFOLDER"
   BRSTOP=y
 fi
 
 if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "GZIP" ] && [ ! "$BRcompression" = "XZ" ]; then
-  echo -e "${BR_RED}Wrong compression type:${BR_NORM} $BRcompression"
-  echo -e "${BR_CYAN}Supported compressors: GZIP XZ${BR_NORM}"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Supported compressors: GZIP XZ"
   BRSTOP=y
 fi
 
 if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "CLI" ] && [ ! "$BRinterface" = "Dialog" ]; then
-  echo -e "${BR_RED}Wrong interface name:${BR_NORM} $BRinterface\n${BR_CYAN}Available options: CLI Dialog${BR_NORM}"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong interface name: $BRinterface. Available options: CLI Dialog"
   BRSTOP=y
 fi
 
@@ -402,7 +401,7 @@ if [ "$BRinterface" = "CLI" ]; then
 
 elif [ "$BRinterface" = "Dialog" ]; then
   if [ -z $(which dialog 2> /dev/null) ];then
-    echo -e "${BR_RED}Package dialog is not installed\n${BR_CYAN}Install the package and re-run the script${BR_NORM}"
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Package dialog is not installed. Install the package and re-run the script"
     exit
   fi
 

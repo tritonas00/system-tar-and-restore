@@ -478,7 +478,7 @@ mount_all() {
     OUTPUT=$(mount $BRhome /mnt/target/home 2>&1) && ok_status || error_status
     if [ -n "$BRSTOP" ]; then
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
-      unset BRhome
+      unset BRhome BRboot BRSTOP
       clean_unmount_in
     else
       if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
@@ -493,7 +493,7 @@ mount_all() {
     OUTPUT=$(mount $BRboot /mnt/target/boot 2>&1) && ok_status || error_status
     if [ -n "$BRSTOP" ]; then
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
-      unset BRboot
+      unset BRboot BRSTOP
       clean_unmount_in
     else
       if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
@@ -519,6 +519,7 @@ mount_all() {
     done
     if [ -n "$BRSTOP" ]; then
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
+      unset BRSTOP
       clean_unmount_in
     fi
   fi
@@ -803,7 +804,6 @@ clean_files() {
   if [ -f /mnt/target/fullbackup ]; then rm /mnt/target/fullbackup; fi
   if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
-  if [ -f /tmp/umount_error ]; then rm /tmp/umount_error; fi
  }
 
 clean_unmount_when_subvols() {
@@ -818,24 +818,24 @@ clean_unmount_when_subvols() {
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
-      OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+      OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
     done
   fi
 
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
   fi
 
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
   fi
 
   echo -n "Unmounting $BRrootsubvolname "
-  OUTPUT=$(umount $BRroot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+  OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
 
-  if [ ! -f /tmp/umount_error ]; then
+  if [ -z "$BRSTOP" ]; then
     echo -n "Mounting $BRroot "
     OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
 
@@ -879,21 +879,21 @@ clean_unmount_in() {
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
-      OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+      OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
     done
   fi
 
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
   fi
 
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
   fi
 
-  if [ ! -f /tmp/umount_error ]; then
+  if [ -z "$BRSTOP" ]; then
     rm -r /mnt/target/* 2>/dev/null
   fi
   clean_files

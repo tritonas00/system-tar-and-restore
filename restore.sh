@@ -942,9 +942,8 @@ clean_unmount_out() {
   exit
 }
 
-
 create_subvols() {
-   echo -e "\n${BR_SEP}CREATING SUBVOLUMES"
+  echo -e "\n${BR_SEP}CREATING SUBVOLUMES"
   cd ~
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRcustomparts[@]}; do

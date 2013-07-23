@@ -803,6 +803,7 @@ clean_files() {
   if [ -f /mnt/target/fullbackup ]; then rm /mnt/target/fullbackup; fi
   if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
+  if [ -f /tmp/umount_error ]; then rm /tmp/umount_error; fi
  }
 
 clean_unmount_when_subvols() {
@@ -817,24 +818,24 @@ clean_unmount_when_subvols() {
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
-      OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
+      OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
     done
   fi
 
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
   fi
 
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
   fi
 
   echo -n "Unmounting $BRrootsubvolname "
-  OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
+  OUTPUT=$(umount $BRroot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
 
-  if [ -z "$BRSTOP" ]; then
+  if [ ! -f /tmp/umount_error ]; then
     echo -n "Mounting $BRroot "
     OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
 
@@ -878,21 +879,21 @@ clean_unmount_in() {
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
-      OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
+      OUTPUT=$(umount $ln 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
     done
   fi
 
   if [ -n "$BRhome" ]; then
     echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
+    OUTPUT=$(umount $BRhome 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
   fi
 
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
+    OUTPUT=$(umount $BRboot 2>&1) && ok_status || (error_status && touch /tmp/umount_error)
   fi
 
-  if [ -z "$BRSTOP" ]; then
+  if [ ! -f /tmp/umount_error ]; then
     rm -r /mnt/target/* 2>/dev/null
   fi
   clean_files

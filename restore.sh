@@ -480,10 +480,8 @@ mount_all() {
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
       unset BRhome BRboot BRSTOP
       clean_unmount_in
-    else
-      if [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
-        echo -e "[${BR_CYAN}INFO${BR_NORM}] /home partition not empty"
-      fi
+    elif [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
+      echo -e "[${BR_CYAN}INFO${BR_NORM}] /home partition not empty"
     fi
   fi
 
@@ -495,10 +493,8 @@ mount_all() {
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
       unset BRboot BRSTOP
       clean_unmount_in
-    else
-      if [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
-        echo -e "[${BR_CYAN}INFO${BR_NORM}] /boot partition not empty"
-      fi
+    elif [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
+      echo -e "[${BR_CYAN}INFO${BR_NORM}] /boot partition not empty"
     fi
   fi
 
@@ -747,7 +743,7 @@ install_bootloader() {
     if [ -d /mnt/target/boot/syslinux ]; then
       mv /mnt/target/boot/syslinux/syslinux.cfg /mnt/target/boot/syslinux.cfg-old
       chattr -i /mnt/target/boot/syslinux/* 2> /dev/null
-      rm -r /mnt/target/boot/syslinux/*
+      rm -r /mnt/target/boot/syslinux/* 2> /dev/null
     else
       mkdir -p /mnt/target/boot/syslinux
     fi

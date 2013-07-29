@@ -714,15 +714,14 @@ install_bootloader() {
           chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/bl_error
         fi
       done
-    else
-      if [ "$BRdistro" = "Arch" ]; then
-        chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/bl_error
-      elif [ "$BRdistro" = "Debian" ]; then
-        chroot /mnt/target grub-install --recheck $BRgrub || touch /tmp/bl_error
-      elif [ "$BRdistro" = "Fedora" ]; then
-        chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
-      fi
+    elif [ "$BRdistro" = "Arch" ]; then
+      chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/bl_error
+    elif [ "$BRdistro" = "Debian" ]; then
+      chroot /mnt/target grub-install --recheck $BRgrub || touch /tmp/bl_error
+    elif [ "$BRdistro" = "Fedora" ]; then
+      chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
     fi
+
     if [ "$BRdistro" = "Fedora" ]; then
       if [ -f /mnt/target/etc/default/grub ]; then
         mv /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old

@@ -109,7 +109,7 @@ set_tar_options() {
       BR_TAROPTS+=(--exclude=/home/*?*)
     fi
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
-    find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print -type d > /tmp/excludelist
+    find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
     if [ "$BRarchiver" = "TAR" ]; then
       BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/excludelist"
     elif [ "$BRarchiver" = "BSDTAR" ]; then

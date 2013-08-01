@@ -241,10 +241,6 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
-if [ -z "$BRarchiver" ]; then
-  BRarchiver="TAR"
-fi
-
 if [ -f /etc/yum.conf ] && [ "$BRarchiver" = "TAR" ]; then
   BRfedoratar="y"
 else
@@ -381,6 +377,21 @@ if [ "$BRinterface" = "CLI" ]; then
     else
       echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
     fi
+  done
+
+  while [ -z "$BRarchiver" ]; do
+    echo -e "\n${BR_CYAN}Select archiver:${BR_NORM}"
+    select c in "TAR (GNU Tar)" "BSDTAR (Libarchive Tar)"; do
+      if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+        BRarchiver="TAR"
+        break
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+        BRarchiver="BSDTAR"
+        break
+      else
+        echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
+      fi
+    done
   done
 
   while [ -z "$BRcompression" ]; do
@@ -527,6 +538,10 @@ elif [ "$BRinterface" = "Dialog" ]; then
     else
       BRuseroptions="No"
     fi
+  done
+
+  while [ -z "$BRarchiver" ]; do
+    BRarchiver=$(dialog --no-cancel --menu "Select archiver:" 12 35 12 TAR "GNU Tar" BSDTAR "Libarchive Tar" 2>&1 1>&3)
   done
 
   while [ -z "$BRcompression" ]; do

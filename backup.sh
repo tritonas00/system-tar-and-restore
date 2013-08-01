@@ -62,7 +62,7 @@ show_summary() {
   if [ -d /usr/lib/grub/i386-pc ]; then
     echo "Grub"
   fi
-  if which extlinux >/dev/null; then
+  if which extlinux &>/dev/null; then
     echo "Syslinux"
   fi
   if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
@@ -96,7 +96,7 @@ set_tar_options() {
   if [ "$BRarchiver" = "TAR" ]; then
     BR_TAROPTS="--sparse $BR_USER_OPTS --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
   elif [ "$BRarchiver" = "BSDTAR" ]; then
-    BR_TAROPTS=(--exclude=run/*?* --exclude=dev/*?* --exclude=proc/*?* --exclude=sys/*?* --exclude=media/*?* --exclude=tmp/*?* --exclude=mnt/*?* --exclude=.gvfs --exclude=lost+found)
+    BR_TAROPTS=(--exclude=/run/*?* --exclude=/dev/*?* --exclude=/proc/*?* --exclude=/sys/*?* --exclude=/media/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found)
     if  [ "$BRuseroptions" = "Yes" ]; then
       BR_TAROPTS+=("$BR_USER_OPTS")
     fi
@@ -106,7 +106,7 @@ set_tar_options() {
     if [ "$BRarchiver" = "TAR" ]; then
       BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
     elif [ "$BRarchiver" = "BSDTAR" ]; then
-      BR_TAROPTS+=(--exclude=home/*?*)
+      BR_TAROPTS+=(--exclude=/home/*?*)
     fi
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
     find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print -type d > /tmp/excludelist
@@ -245,6 +245,10 @@ if [ -f /etc/yum.conf ] && [ "$BRarchiver" = "TAR" ]; then
   BRfedoratar="y"
 else
   BRfedoratar="n"
+fi
+
+if [ -z "$BRarchiver" ]; then
+  BRarchiver="TAR"
 fi
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then

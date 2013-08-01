@@ -241,14 +241,14 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
+if [ -z "$BRarchiver" ]; then
+  BRarchiver="TAR"
+fi
+
 if [ -f /etc/yum.conf ] && [ "$BRarchiver" = "TAR" ]; then
   BRfedoratar="y"
 else
   BRfedoratar="n"
-fi
-
-if [ -z "$BRarchiver" ]; then
-  BRarchiver="TAR"
 fi
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then

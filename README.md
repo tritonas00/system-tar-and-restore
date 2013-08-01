@@ -17,6 +17,7 @@ Supported distributions: Arch, Debian, Fedora*
 
 ###REQUIREMENTS###
 
+- bsdtar (for libarchive tar)  
 - rsync (for Transfer Mode)
 - dialog (for ncurses interface)
 - wget   (for downloading backup archives)

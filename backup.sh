@@ -126,7 +126,7 @@ run_calc() {
   if [ "$BRarchiver" = "TAR" ]; then
     $BR_ARC cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2> /dev/null | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
   elif [ "$BRarchiver" = "BSDTAR" ]; then
-    $BR_ARC cvf  /dev/null ${BR_TAROPTS[@]}  --exclude="$BRFOLDER" / 2>&1 | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
+    $BR_ARC cvf /dev/null ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
   fi
 }
 
@@ -139,9 +139,9 @@ run_tar() {
     fi
   elif [ "$BRarchiver" = "BSDTAR" ]; then
     if [ "$BRcompression" = "GZIP" ]; then
-      $BR_ARC cvpzf "$BRFile".tar.gz ${BR_TAROPTS[@]}  --exclude="$BRFOLDER"  /  2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
+      $BR_ARC cvpzf "$BRFile".tar.gz ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
     elif [ "$BRcompression" = "XZ" ]; then
-      $BR_ARC cvpJf "$BRFile".tar.xz ${BR_TAROPTS[@]}  --exclude="$BRFOLDER"  /  2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
+      $BR_ARC cvpJf "$BRFile".tar.xz ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
     fi
   fi
 }
@@ -381,7 +381,7 @@ if [ "$BRinterface" = "CLI" ]; then
 
   while [ -z "$BRarchiver" ]; do
     echo -e "\n${BR_CYAN}Select archiver:${BR_NORM}"
-    select c in "TAR (GNU Tar)" "BSDTAR (Libarchive Tar)"; do
+    select c in "TAR    (GNU Tar)" "BSDTAR (Libarchive Tar)"; do
       if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
         BRarchiver="TAR"
         break
@@ -459,7 +459,7 @@ if [ "$BRinterface" = "CLI" ]; then
     fi | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
  
     echo -ne "\nSetting permissions "
-    OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1)  && echo -e "[${BR_GREEN}OK${BR_NORM}]" || echo -e "[${BR_RED}FAILED${BR_NORM}]\n$OUTPUT"
+    OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -e "[${BR_GREEN}OK${BR_NORM}]" || echo -e "[${BR_RED}FAILED${BR_NORM}]\n$OUTPUT"
 
     if [ "$BRarchiver" = "BSDTAR" ] && [ -f /tmp/b_error ]; then
       cat /tmp/bsdtar_out >> "$BRFOLDER"/backup.log

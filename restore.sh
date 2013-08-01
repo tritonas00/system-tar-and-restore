@@ -261,7 +261,7 @@ check_input() {
     BRSTOP=y
   fi
 
-  if [ -n "$BRfile" ] && [ -z "$BRarchiver" ]; then
+  if [ -n "$BRfile" ]  || [ -n "$BRurl" ] && [ -z "$BRarchiver" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify archiver"
     BRSTOP=y
   fi

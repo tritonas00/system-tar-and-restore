@@ -217,7 +217,7 @@ ${BR_BOLD}Home Directory:${BR_NORM}
 ${BR_BOLD}Archiver Options:${BR_NORM}
   -a, --archiver          select archiver (TAR BSDTAR)
   -c, --compression       compression type (GZIP XZ)
-  -u, --user-options      additional tar options (See tar --help)
+  -u, --user-options      additional tar options (See tar --help or man bsdtar)
 
 --help	print this page
 "

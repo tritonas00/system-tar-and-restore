@@ -146,7 +146,7 @@ run_tar() {
   fi
 }
 
-start_prepare() {
+prepare() {
   mkdir -p "$BRFOLDER"
   echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
   sleep 1
@@ -446,7 +446,7 @@ if [ "$BRinterface" = "CLI" ]; then
 
     echo -e "\n${BR_SEP}CREATING ARCHIVE"
     set_archiver
-    start_prepare
+    prepare
     set_tar_options
     run_calc
     total=$(cat /tmp/filelist | wc -l)
@@ -564,7 +564,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
   BRFOLDER="${BRFOLDER_IN[@]}"
   set_archiver
-  start_prepare
+  prepare
   set_tar_options
   run_calc | dialog --progressbox 3 40
   total=$(cat /tmp/filelist | wc -l)

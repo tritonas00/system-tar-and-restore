@@ -444,7 +444,7 @@ if [ "$BRinterface" = "CLI" ]; then
     BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
     BRFOLDER="${BRFOLDER_IN[@]}"
 
-    echo -e "\n${BR_SEP}CREATING ARCHIVE" 
+    echo -e "\n${BR_SEP}CREATING ARCHIVE"
     set_archiver
     start_prepare
     set_tar_options
@@ -453,11 +453,11 @@ if [ "$BRinterface" = "CLI" ]; then
     sleep 1
     echo " "
     if [ "$BRarchiver" = "BSDTAR" ]; then
-      run_tar | tee /tmp/bsdtar_out 
+      run_tar | tee /tmp/bsdtar_out
     elif [ "$BRarchiver" = "TAR" ]; then
       run_tar 2>>"$BRFOLDER"/backup.log
     fi | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
- 
+
     echo -ne "\nSetting permissions "
     OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -e "[${BR_GREEN}OK${BR_NORM}]" || echo -e "[${BR_RED}FAILED${BR_NORM}]\n$OUTPUT"
 
@@ -547,7 +547,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   while [ -z "$BRcompression" ]; do
     BRcompression=$(dialog --no-cancel --menu "Select compression type:" 12 35 12 GZIP "Fast, big file" XZ "Slow, smaller file" 2>&1 1>&3)
   done
-  
+
   if [ "$BRarchiver" = "BSDTAR" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
     if [ -z "$BRnocolor" ]; then
       color_variables
@@ -571,7 +571,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   sleep 1
 
   if [ "$BRarchiver" = "BSDTAR" ]; then
-    run_tar | tee /tmp/bsdtar_out 
+    run_tar | tee /tmp/bsdtar_out
   elif [ "$BRarchiver" = "TAR" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
   fi |

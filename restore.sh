@@ -542,7 +542,7 @@ mount_all() {
         if [ "$(ls -A /mnt/target$BRmpoint | grep -vw "lost+found")" ]; then
           echo -e "[${BR_CYAN}INFO${BR_NORM}] $BRmpoint partition not empty"
         fi
-      fi  
+      fi
     done
     if [ -n "$BRSTOP" ]; then
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
@@ -1876,7 +1876,7 @@ if [ "$BRinterface" = "CLI" ]; then
       if [ "$BRarchiver" = "TAR" ]; then
         run_tar 2>>/tmp/restore.log
       elif [ "$BRarchiver" = "BSDTAR" ]; then
-        run_tar | tee /tmp/bsdtar_out 
+        run_tar | tee /tmp/bsdtar_out
       fi | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $(($a*100/$total))%"; done
 
       if [ "$BRarchiver" = "BSDTAR" ] && [ -f /tmp/r_error ]; then
@@ -2365,11 +2365,11 @@ elif [ "$BRinterface" = "Dialog" ]; then
     total=$(cat /tmp/filelist | wc -l)
     set_archiver
     sleep 1
-    
+
     if [ "$BRarchiver" = "TAR" ]; then
       run_tar 2>>/tmp/restore.log
     elif [ "$BRarchiver" = "BSDTAR" ]; then
-      run_tar | tee /tmp/bsdtar_out 
+      run_tar | tee /tmp/bsdtar_out
     fi | count_gauge | dialog --gauge "Decompressing..." 0 50
 
     if [ "$BRarchiver" = "BSDTAR" ] && [ -f /tmp/r_error ]; then

@@ -176,11 +176,27 @@ generate_syslinux_cfg() {
   done
 }
 
+set_archiver() {
+  if [ "$BRarchiver" = "TAR" ]; then
+BR_ARC="tar"
+  elif [ "$BRarchiver" = "BSDTAR" ]; then
+BR_ARC="bsdtar"
+  fi
+}
+
 run_tar() {
-  if [ "$BRfiletype" = "gz" ]; then
-    tar xvpfz /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
-  elif [ "$BRfiletype" = "xz" ]; then
-    tar xvpfJ /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
+  if [ "$BRarchiver" = "TAR" ]; then
+    if [ "$BRfiletype" = "gz" ]; then
+      $BR_ARC xvpfz /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
+    elif [ "$BRfiletype" = "xz" ]; then
+      $BR_ARC xvpfJ /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
+    fi
+  elif [ "$BRarchiver" = "BSDTAR" ]; then
+    if [ "$BRfiletype" = "gz" ]; then
+      $BR_ARC xvpfz /mnt/target/fullbackup -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
+    elif [ "$BRfiletype" = "xz" ]; then
+      $BR_ARC xvpfJ /mnt/target/fullbackup -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
+    fi
   fi
 }
 
@@ -435,6 +451,16 @@ check_input() {
     BRSTOP=y
   fi
 
+  if [ -n "$BRarchiver" ] && [ ! "$BRarchiver" = "TAR" ] && [ ! "$BRarchiver" = "BSDTAR" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong archiver: $BRarchiver. Available options: TAR BSDTAR"
+    BRSTOP=y
+  fi
+
+  if [ "$BRarchiver" = "BSDTAR" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
+    BRSTOP=y
+  fi
+
   if [ -f /tmp/BRvarsubvol ]; then BRvarsubvol="n" && rm /tmp/BRvarsubvol ; fi
   if [ -f /tmp/BRusrsubvol ]; then BRusrsubvol="n" && rm /tmp/BRusrsubvol ; fi
   if [ -f /tmp/BRhomesubvol ]; then BRhomesubvol="n" && rm /tmp/BRhomesubvol ; fi
@@ -592,6 +618,7 @@ show_summary() {
   if [ "$BRmode" = "Restore" ]; then
     echo "Mode: $BRmode"
     echo "File: $BRfiletype compressed archive"
+    echo "Archiver: $BRarchiver"
   elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "n" ]; then
     echo "Mode: $BRmode"
     echo "Home: Include"
@@ -799,6 +826,8 @@ clean_files() {
   if [ -f /mnt/target/fullbackup ]; then rm /mnt/target/fullbackup; fi
   if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
+  if [ -f /tmp/r_error ]; then rm /tmp/r_error; fi
+  if [ -f /tmp/bsdtar_out ]; then rm /tmp/bsdtar_out; fi
  }
 
 clean_unmount_when_subvols() {
@@ -1011,7 +1040,7 @@ create_subvols() {
   fi
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoNm:k:c:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,no-color,mount-options:,kernel-options:,custom-partitions:" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoNm:k:c:a:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,no-color,mount-options:,kernel-options:,custom-partitions:archiver:" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1118,6 +1147,10 @@ while true; do
       BRcustomparts=($2)
       shift 2
     ;;
+    -a|--archiver)
+      BRarchiver=$2
+      shift 2
+    ;;
     --help)
     BR_BOLD='\033[1m'
     BR_NORM='\e[00m'
@@ -1151,6 +1184,7 @@ ${BR_BOLD}Backup File:${BR_NORM}
   -u,  --url                url
   -n,  --username           username
   -p,  --password           password
+  -a,  --archiver           select archiver (TAR BSDTAR)
 
 ${BR_BOLD}Btrfs Subvolumes:${BR_NORM}
   -R,  --rootsubvolname     subvolume name for /
@@ -1521,6 +1555,25 @@ if [ "$BRinterface" = "CLI" ]; then
     done
   done
 
+  if [ "$BRmode" = "Restore" ]; then
+    while [ -z "$BRarchiver" ]; do
+      echo -e "\n${BR_CYAN}Select the archiver you used to create the backup archive:${BR_NORM}"
+      select c in "TAR (GNU Tar)" "BSDTAR (Libarchive Tar)"; do
+        if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+          BRarchiver="TAR"
+          echo -e "${BR_GREEN}You selected $BRarchiver${BR_NORM}"
+          break
+        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+          BRarchiver="BSDTAR"
+          echo -e "${BR_GREEN}You selected $BRarchiver${BR_NORM}"
+          break
+        else
+          echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
+        fi
+      done
+    done
+  fi
+
   if [ "$BRmode" = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
       echo -e "\n${BR_CYAN}Transfer entire /home directory?\n(If no, only hidden files and folders will be transferred)${BR_NORM}"
@@ -1687,7 +1740,8 @@ if [ "$BRinterface" = "CLI" ]; then
       fi
     fi
     if [ -f /mnt/target/fullbackup ]; then
-      (tar tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+      set_archiver
+      ($BR_ARC tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
       if [ -f /tmp/tar_error ]; then
         rm /tmp/tar_error
         echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
@@ -1760,7 +1814,8 @@ if [ "$BRinterface" = "CLI" ]; then
         fi
       done
       if [ -f /mnt/target/fullbackup ]; then
-        (tar tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+        set_archiver
+        ($BR_ARC tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
         if [ -f /tmp/tar_error ]; then
           rm /tmp/tar_error
           echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
@@ -1810,8 +1865,19 @@ if [ "$BRinterface" = "CLI" ]; then
     if [ "$BRmode" = "Restore" ]; then
       echo -e "\n${BR_SEP}EXTRACTING"
       total=$(cat /tmp/filelist | wc -l)
+      set_archiver
       sleep 1
-      run_tar 2>>/tmp/restore.log | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $(($a*100/$total))%"; done
+
+      if [ "$BRarchiver" = "TAR" ]; then
+        run_tar 2>>/tmp/restore.log
+      elif [ "$BRarchiver" = "BSDTAR" ]; then
+        run_tar | tee /tmp/bsdtar_out 
+      fi | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $(($a*100/$total))%"; done
+
+      if [ "$BRarchiver" = "BSDTAR" ] && [ -f /tmp/r_error ]; then
+        cat /tmp/bsdtar_out >> /tmp/restore.log
+      fi
+
       echo " "
     elif [ "$BRmode" = "Transfer" ]; then
       echo -e "\n${BR_SEP}TRANSFERING"
@@ -2019,6 +2085,12 @@ elif [ "$BRinterface" = "Dialog" ]; then
     fi
   done
 
+  if [ "$BRmode" = "Restore" ]; then
+    while [ -z "$BRarchiver" ]; do
+      BRarchiver=$(dialog --no-cancel --menu "Select the archiver you used to create the backup archive:" 12 45 12 TAR "GNU Tar" BSDTAR "Libarchive Tar" 2>&1 1>&3)
+    done
+  fi
+
   if [ "$BRmode" = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
       dialog --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 9 50
@@ -2149,7 +2221,8 @@ elif [ "$BRinterface" = "Dialog" ]; then
       fi
     fi
     if [ -f /mnt/target/fullbackup ]; then
-      ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
+      set_archiver
+      ( $BR_ARC tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
       tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
       sleep 1
       ( if [ -f /tmp/tar_error ]; then
@@ -2248,7 +2321,8 @@ elif [ "$BRinterface" = "Dialog" ]; then
         fi
       fi
       if [ -f /mnt/target/fullbackup ]; then
-        ( tar tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
+        set_archiver
+        ( $BR_ARC tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
         tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
         sleep 1
         ( if [ -f /tmp/tar_error ]; then
@@ -2284,8 +2358,19 @@ elif [ "$BRinterface" = "Dialog" ]; then
   echo " " >> /tmp/restore.log
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
+    set_archiver
     sleep 1
-    run_tar 2>>/tmp/restore.log | count_gauge | dialog --gauge "Decompressing..." 0 50
+    
+    if [ "$BRarchiver" = "TAR" ]; then
+      run_tar 2>>/tmp/restore.log
+    elif [ "$BRarchiver" = "BSDTAR" ]; then
+      run_tar | tee /tmp/bsdtar_out 
+    fi | count_gauge | dialog --gauge "Decompressing..." 0 50
+
+    if [ "$BRarchiver" = "BSDTAR" ] && [ -f /tmp/r_error ]; then
+      cat /tmp/bsdtar_out >> /tmp/restore.log
+    fi
+
   elif [ "$BRmode" = "Transfer" ]; then
     run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done | dialog --progressbox 3 40
     total=$(cat /tmp/filelist | wc -l)

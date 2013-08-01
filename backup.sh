@@ -453,7 +453,7 @@ if [ "$BRinterface" = "CLI" ]; then
     sleep 1
     echo " "
     if [ "$BRarchiver" = "BSDTAR" ]; then
-      run_tar 2>>"$BRFOLDER"/backup.log | tee /tmp/bsdtar_out 
+      run_tar | tee /tmp/bsdtar_out 
     elif [ "$BRarchiver" = "TAR" ]; then
       run_tar 2>>"$BRFOLDER"/backup.log
     fi | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
@@ -571,7 +571,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
   sleep 1
 
   if [ "$BRarchiver" = "BSDTAR" ]; then
-    run_tar 2>>"$BRFOLDER"/backup.log | tee /tmp/bsdtar_out 
+    run_tar | tee /tmp/bsdtar_out 
   elif [ "$BRarchiver" = "TAR" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
   fi |

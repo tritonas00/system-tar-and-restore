@@ -261,6 +261,11 @@ check_input() {
     BRSTOP=y
   fi
 
+  if [ -n "$BRfile" ] && [ -z "$BRarchiver" ]; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify archiver"
+    BRSTOP=y
+  fi
+
   if [ -n "$BRfile" ] || [ -n "$BRurl" ] && [ -n "$BRrestore" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use local file / url and transfer mode at the same time"
     BRSTOP=y
@@ -1162,6 +1167,13 @@ Interface:${BR_NORM}
   -N,  --no-color           disable colors
   -q,  --quiet              dont ask, just run
 
+${BR_BOLD}Restore Mode:${BR_NORM}
+  -f,  --file               backup file path
+  -u,  --url                url
+  -n,  --username           username
+  -p,  --password           password
+  -a,  --archiver           select archiver (TAR BSDTAR)
+
 ${BR_BOLD}Transfer Mode:${BR_NORM}
   -t,  --transfer           activate transfer mode
   -o,  --only-hidden        transfer /home's hidden files and folders only
@@ -1178,13 +1190,6 @@ ${BR_BOLD}Bootloader:${BR_NORM}
   -g,  --grub               target disk for grub
   -S,  --syslinux           target disk for syslinux
   -k,  --kernel-options     additional kernel options (syslinux)
-
-${BR_BOLD}Backup File:${BR_NORM}
-  -f,  --file               backup file path
-  -u,  --url                url
-  -n,  --username           username
-  -p,  --password           password
-  -a,  --archiver           select archiver (TAR BSDTAR)
 
 ${BR_BOLD}Btrfs Subvolumes:${BR_NORM}
   -R,  --rootsubvolname     subvolume name for /

@@ -254,56 +254,56 @@ In the target system, if distribution is \fBFedora\fR\& and \fBGrub\fR\& is sele
 .SH EXAMPLES USING ARGUMENTS
 .sp
 Backup system in the directory \fI/home/john/\fR and use \fBGZIP\fR 
-compression:
+compression and \fBTAR\fR archiver:
 .RS 4
-\fBsudo ./backup.sh \-d /home/john/ \-c GZIP\fR 
+\fB./backup.sh \-d /home/john/ \-c GZIP -a TAR\fR 
 .RE
 .sp
-Backup system in the directory \fI/home/john/\fR\&, use \fBXZ\fR compression
-and exclude \fI/home/\fR directory from backup tarball:
+Backup system in the directory \fI/home/john/\fR\&, use \fBXZ\fR compression, 
+\fBBSDTAR\fR archiver and exclude \fI/home/\fR directory from backup tarball:
 .RS 4
-\fBsudo ./backup.sh \-d /home/john/ \-c XZ \-h \-n\fR 
+\fB./backup.sh \-d /home/john/ \-c XZ \-h \-n -a BSDTAR\fR 
 .RE
 .sp
-Backup system in the directory \fI/home/john/\fR\&, use \fBGZIP\fR compression 
-and keep only hidden files and folders from \fI/home/\fR: 
+Backup system in the directory \fI/home/john/\fR\&, use \fBGZIP\fR compression, 
+\fBTAR\fR archiver and keep only hidden files and folders from \fI/home/\fR: 
 .RS 4
-\fBsudo ./backup.sh \-d /home/john/ \-c GZIP \-h\fR 
+\fB./backup.sh \-d /home/john/ \-c GZIP \-h -a TAR\fR 
 .RE
 .sp
 Restore system in  \fI/dev/sdb1\fR partition, using \fBgrub\fR as bootloader 
 and use \fI/home/john/Downloads/backup.tar.gz\fR as local backup file:
 .RS 4
-\fBsudo ./restore.sh \-r /dev/sdb1 \-g /dev/sdb \-f /home/john/Downloads/backup.tar.gz\fR
+\fB./restore.sh \-r /dev/sdb1 \-g /dev/sdb \-f /home/john/Downloads/backup.tar.gz -a TAR\fR
 .RE
 .sp
 Transfer running system using \fBrsync\fR\& in \fBssd\fR\&. The \fI/\fR partition will be
 \fI/dev/sda1\fR, using \fBsyslinux\fR\& and \fBnomodeset\fR\& kernel option will be enabled:
 .RS 4
-\fBsudo ./restore.sh \-r /dev/sda1 \-S /dev/sda \-m discard,errors=remount-ro -S /dev/sda -k nomodeset -t\fR
+\fB./restore.sh \-r /dev/sda1 \-S /dev/sda \-m discard,errors=remount-ro -S /dev/sda -k nomodeset -t\fR
 .RE
 .sp
 Restore system in \fI/dev/sdb1\fR for \fI/\fR (root) partition\&, \fI/dev/sdb2\fR
 for \fI/home\fR partition\&, \fI/dev/sdb3\fR for \fIswap\fR\& partition, using \fBsyslinux\fR 
 as bootloader and downloading backup file from ftp server:
 .RS 4
-\fBsudo ./restore.sh \-r /dev/sdb1 \-h /dev/sdb2 \-s /dev/sdb3 \-S /dev/sdb \-u 
-ftp://server/data/backup.tar.xz\fR
+\fB./restore.sh \-r /dev/sdb1 \-h /dev/sdb2 \-s /dev/sdb3 \-S /dev/sdb \-u 
+ftp://server/data/backup.tar.xz -a BSDTAR\fR
 .RE
 .sp
 Restore system in  \fI/dev/sdb2\fR for \fI/\fR (root) partition, \fI/dev/sdb1\fR
 for \fI/boot\fR partition, \fI/dev/sdb3\fR for \fI/home\fR\&, using \fBsyslinux\fR 
 as bootloader and downloading backup file from protected http server\&.
 .RS 4
-\fBsudo ./restore.sh \-r /dev/sdb2 \-b /dev/sdb1 \-h /dev/sdb3 \-S /dev/sdb \-u 
-http://server/data/backup.tar.gz \-n user \-p pass\fR
+\fB./restore.sh \-r /dev/sdb2 \-b /dev/sdb1 \-h /dev/sdb3 \-S /dev/sdb \-u 
+http://server/backup.tar.gz \-n user \-p pass -a TAR\fR
 .RE
 .sp
 Transfer running  system using \fBrsync\fR\&. The \fI/\fR partition will be
 \fI/dev/mapper/debian-root\fR which is a \fBLVM\fR partition\&, \fI/dev/sdb1\fR
 for \fI/boot\fR partition using \fBgrub\fR as bootloader:
 .RS 4
-\fBsudo ./restore.sh \-r /dev/mapper/debian\-root \-b /dev/sdb1 \-g /dev/sdb \-t\fR
+\fB./restore.sh \-r /dev/mapper/debian\-root \-b /dev/sdb1 \-g /dev/sdb \-t -a TAR\fR
 .RE
 .sp
 Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be
@@ -312,14 +312,14 @@ Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be
 The root will be in __active subvolume, \fI/usr\fR\&, \fI/var\fR\&,
 \fI/home\fR will also be in subvolumes and btrfs compression will be enabled:
 .RS 4
-\fBsudo ./restore.sh \-t \-b /dev/sda1 \-r /dev/sda2 \-m compress=lzo \-S /dev/sda \-R __active \-V \-U \-H\fR
+\fB./restore.sh \-t \-b /dev/sda1 \-r /dev/sda2 \-m compress=lzo \-S /dev/sda \-R __active \-V \-U \-H\fR
 .RE
 .sp
 Restore system in \fBRAID\fR partitions\&. The boot partition will be \fI/dev/md0\fR
 and the root partition will be \fI/dev/md1\fR\&. The backup will be the local file
 \fI/home/john/Downloads/backup.tar.gz\fR and \fBsyslinux\fR will be installed in all disks that array \fI/dev/md0\fR\ contains:
 .RS 4
-\fBsudo ./restore.sh \-r /dev/md1 \-b /dev/md0 \-f /home/john/Downloads/backup.tar.gz \-S /dev/md0\fR
+\fB./restore.sh \-r /dev/md1 \-b /dev/md0 \-f /home/john/Downloads/backup.tar.gz \-S /dev/md0 -a BSDTAR\fR
 .RE
 .SH LIMITATIONS
 \fBUEFI\fR not supported - not tested

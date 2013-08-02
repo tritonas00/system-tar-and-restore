@@ -241,20 +241,20 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - Archiver: TAR  
 - Keep only /home's hidden files and folders
 
-<code>sudo ./backup.sh -d /home/john/ -c GZIP -h -a TAR</code>   
+<code>./backup.sh -d /home/john/ -c GZIP -h -a TAR</code>   
 
 - root = /dev/sdb1
 - grub  
 - local file
 
-<code>sudo ./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -a TAR</code>  
+<code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -a TAR</code>  
 
 - root = /dev/sda1 (ssd)
 - syslinux  
 - kernel options: nomodeset
 - transfer mode  
 
-<code>sudo ./restore.sh -r /dev/sda1 -m discard,errors=remount-ro -S /dev/sda -k nomodeset -t</code>  
+<code>./restore.sh -r /dev/sda1 -m discard,errors=remount-ro -S /dev/sda -k nomodeset -t</code>  
 
 - root = /dev/sdb1
 - home = /dev/sdb2
@@ -262,21 +262,21 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux 
 - remote file on ftp server
 
-<code>sudo ./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/backup.tar.xz -a TAR</code>
+<code>./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/backup.tar.xz -a BSDTAR</code>
 
 - root = /dev/sdb2
 - boot = /dev/sdb1
 - syslinux 
 - remote file in protected http server
 
-<code>./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -u http://server/backup.tar.gz -n user -p pass -a BSDTAR</code>
+<code>./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -u http://server/backup.tar.gz -n user -p pass -a TAR</code>
 
 - root = /dev/mapper/debian-root
 - boot = /dev/sdb1  
 - grub  
 - transfer mode  
 
-<code>sudo ./restore.sh -r /dev/mapper/debian-root -b /dev/sdb1 -g /dev/sdb -t</code>  
+<code>./restore.sh -r /dev/mapper/debian-root -b /dev/sdb1 -g /dev/sdb -t</code>  
 
 - root = /dev/sda2 (btrfs) with compression
 - boot = /dev/sda1
@@ -285,14 +285,14 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux  
 - transfer mode  
 
-<code>sudo ./restore.sh -t -b /dev/sda1 -r /dev/sda2 -m compress=lzo -S /dev/sda -R __active -V -U -H </code>  
+<code>./restore.sh -t -b /dev/sda1 -r /dev/sda2 -m compress=lzo -S /dev/sda -R __active -V -U -H </code>  
 
 - root = /dev/md1
 - boot = /dev/md0
 - local file  
 - syslinux  
 
-<code>sudo ./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0 -a TAR</code>  
+<code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0 -a TAR</code>  
 
 ###WRAPPERS###
 

@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 3.5.4
+.\"    Source: system-tar-and-restore 3.6
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "23 July 2013" "3\&.5.4" "General Manual"
+.TH "system-tar-and-restore" "1" "2 Aug 2013" "3\&.6" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -69,6 +69,11 @@ exclude \fI/home\fR directory (keep hidden files and folders)
 \fB\-n, \-\-no-hidden\fR
 .RS 4
 dont keep home's hidden files and folders (use with -h)
+.RE
+.PP
+\fB\-a, \-\-archiver\fR
+.RS 4
+select archiver\&. TAR and BSDTAR are supported
 .RE
 .PP
 \fB\-c, \-\-compression\fR
@@ -191,6 +196,11 @@ username
 \fB\-p, \-\-password\fR
 .RS 4
 password
+.RE
+.PP
+\fB\-a, \-\-archiver\fR
+.RS 4
+select the archiver you used to create the backup archive (TAR BSDTAR)
 .RE
 .PP
 \fB\-R, \-\-rootsubvolname\fR

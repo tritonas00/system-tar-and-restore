@@ -6,7 +6,7 @@ The purpose is to make the process of backing up and restoring a full GNU/Linux 
 using tar or transfer an existing installation using rsync.
 
 Supported distributions: Arch, Debian, Fedora*   
-<sub>*Fedora 19 tar: xattrs patch bug(?), decompressed system can't login. Downgrading to 1.26-12.fc18 fixes the problem. Transfer Mode works.</sub>
+<sub>*Fedora 19 tar: xattrs patch bug(?), decompressed system can't login. Downgrading to 1.26-12.fc18 fixes the problem. BSDTAR and Transfer Mode works.</sub>
 
 [Demo Video](http://www.youtube.com/watch?v=o03AEflC6qI&hd=1)  
 [Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)  
@@ -225,26 +225,29 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 
 - Backup directory=/home/john/
 - Compression: GZIP  
+- Archiver: TAR
 
-<code>sudo ./backup.sh -d /home/john/ -c GZIP</code>  
+<code>sudo ./backup.sh -d /home/john/ -c GZIP -a TAR</code>  
 
 - Backup directory=/home/john/
 - Compression: XZ  
+- Archiver: BSDTAR   
 - Exclude /home directory  
 
-<code>sudo ./backup.sh -d /home/john/ -c XZ -h -n</code>   
+<code>sudo ./backup.sh -d /home/john/ -c XZ -h -n -a BSDTAR</code>   
 
 - Backup directory=/home/john/
 - Compression: GZIP  
+- Archiver: TAR  
 - Keep only /home's hidden files and folders
 
-<code>sudo ./backup.sh -d /home/john/ -c GZIP -h</code>   
+<code>sudo ./backup.sh -d /home/john/ -c GZIP -h -a TAR</code>   
 
 - root = /dev/sdb1
 - grub  
 - local file
 
-<code>sudo ./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz</code>  
+<code>sudo ./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -a TAR</code>  
 
 - root = /dev/sda1 (ssd)
 - syslinux  
@@ -266,7 +269,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux 
 - remote file in protected http server
 
-<code>sudo ./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -u http://server/backup.tar.gz -n user -p pass</code>
+<code>sudo ./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -u http://server/backup.tar.gz -n user -p pass -a BSDTAR</code>
 
 - root = /dev/mapper/debian-root
 - boot = /dev/sdb1  
@@ -289,7 +292,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - local file  
 - syslinux  
 
-<code>sudo ./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0</code>  
+<code>sudo ./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0 -a TAR</code>  
 
 ###WRAPPERS###
 

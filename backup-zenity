@@ -64,61 +64,61 @@ BR_BACKUP_COMP="-c gzip"
 
 update_options
 
-  while opt=$(zenity --width 550 --height 550 --cancel-label="Quit" --list --title "Backup" --text "$BRinfo" --column="Options" --column="Selection" "${options[@]}" ); if [ $? = "1" ]; then exit; fi; do
+while opt=$(zenity --width 550 --height 550 --cancel-label="Quit" --list --title "Backup" --text "$BRinfo" --column="Options" --column="Selection" "${options[@]}" ); if [ $? = "1" ]; then exit; fi; do
 
-    case "$opt" in
-      "${options[0]}" )
-          BRFOLDER=$(zenity --title "Select destination folder" --file-selection --directory)
-          if [ $? = "0" ]; then
-            BR_BACKUP_DEST="-d '$BRFOLDER'"
-          else
-            BRFOLDER="/"
-            BR_BACKUP_DEST="-d /"
-          fi
-          update_options;;
-      "${options[2]}" )
-          BRHOME=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Options" "Include" "Only hidden files and folders" "Exclude" --text "Select an option:")
-          if [ "$BRHOME" = "Only hidden files and folders" ]; then
-            BR_BACKUP_HOME="-h"
-          elif [ "$BRHOME" = "Exclude" ]; then
-            BR_BACKUP_HOME="-h -n"
-          else
-            BRHOME="Include"
-            unset BR_BACKUP_HOME
-          fi
-          update_options;;
-      "${options[4]}" )
-          BRuseroptions=$(zenity --width 550 --title "Backup" --cancel-label="Reset" --entry --entry-text="$BRuseroptions" --text "Enter additional tar options: (See tar --help or man bsdtar)")
-          if [ -n "$BRuseroptions" ] && [ $? = "0" ]; then
-            BR_TAR_OPTIONS="-u '$BRuseroptions'"
-            BRtaroptions=Activated
-          else
-           unset BRtaroptions BR_TAR_OPTIONS
-          fi
-          update_options;;
-      "${options[6]}" )
-          BRarchiver=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Archivers" --column="Info" tar "GNU Tar" bsdtar "Libarchive Tar" --text "Select archiver:")
-          if [ -n "$BRarchiver" ] && [ $? = "0" ]; then
-             BR_BACKUP_ARCH="-a $BRarchiver"
-          else
-            BR_BACKUP_ARCH="-a tar"
-            BRarchiver="tar"
-          fi
-          update_options;;
-      "${options[8]}" )
-          BRcompression=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Compressors" --column="Info" gzip "Fast, big file" xz "Slow, smaller file" --text "Select compression type:")
-          if [ -n "$BRcompression" ] && [ $? = "0" ]; then
-             BR_BACKUP_COMP="-c $BRcompression"
-          else
-            BR_BACKUP_COMP="-c gzip"
-            BRcompression="gzip"
-          fi
-          update_options;;
-      "${options[10]}" )
-          break ;;
-      *) zenity --error --no-wrap --text="Select an option first.";;
-      esac
-  done
+  case "$opt" in
+    "${options[0]}" )
+        BRFOLDER=$(zenity --title "Select destination folder" --file-selection --directory)
+        if [ $? = "0" ]; then
+          BR_BACKUP_DEST="-d '$BRFOLDER'"
+        else
+          BRFOLDER="/"
+          BR_BACKUP_DEST="-d /"
+        fi
+        update_options;;
+    "${options[2]}" )
+        BRHOME=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Options" "Include" "Only hidden files and folders" "Exclude" --text "Select an option:")
+        if [ "$BRHOME" = "Only hidden files and folders" ]; then
+          BR_BACKUP_HOME="-h"
+        elif [ "$BRHOME" = "Exclude" ]; then
+          BR_BACKUP_HOME="-h -n"
+        else
+          BRHOME="Include"
+          unset BR_BACKUP_HOME
+        fi
+        update_options;;
+    "${options[4]}" )
+        BRuseroptions=$(zenity --width 550 --title "Backup" --cancel-label="Reset" --entry --entry-text="$BRuseroptions" --text "Enter additional tar options: (See tar --help or man bsdtar)")
+        if [ -n "$BRuseroptions" ] && [ $? = "0" ]; then
+          BR_TAR_OPTIONS="-u '$BRuseroptions'"
+          BRtaroptions=Activated
+        else
+         unset BRtaroptions BR_TAR_OPTIONS
+        fi
+        update_options;;
+    "${options[6]}" )
+        BRarchiver=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Archivers" --column="Info" tar "GNU Tar" bsdtar "Libarchive Tar" --text "Select archiver:")
+        if [ -n "$BRarchiver" ] && [ $? = "0" ]; then
+           BR_BACKUP_ARCH="-a $BRarchiver"
+        else
+          BR_BACKUP_ARCH="-a tar"
+          BRarchiver="tar"
+        fi
+        update_options;;
+    "${options[8]}" )
+        BRcompression=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Compressors" --column="Info" gzip "Fast, big file" xz "Slow, smaller file" --text "Select compression type:")
+        if [ -n "$BRcompression" ] && [ $? = "0" ]; then
+           BR_BACKUP_COMP="-c $BRcompression"
+        else
+          BR_BACKUP_COMP="-c gzip"
+          BRcompression="gzip"
+        fi
+        update_options;;
+    "${options[10]}" )
+        break ;;
+    *) zenity --error --no-wrap --text="Select an option first.";;
+  esac
+done
 
 if [ "$BRauth" = "su -c" ]; then
   xterm -T Backup -e su -c "

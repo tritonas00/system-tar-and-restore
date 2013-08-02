@@ -69,7 +69,7 @@ compression type (gzip xz)
 select archiver (tar bsdtar)    
 
 **-u, --user-options**   
-additional tar options (See tar --help or manpage bsdtar)  
+additional tar options (See tar --help or man bsdtar)  
 
 **--help**   
 show all arguments

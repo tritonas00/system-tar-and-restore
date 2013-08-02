@@ -40,15 +40,15 @@ The script will ask for:
 
 - If you want to enter any additional tar options (See tar --help)  
 
-- Archiver. TAR and BSDTAR are supported. 
+- Archiver: tar and bsdtar are supported. 
 
-- Compression type. GZIP and XZ are supported.
+- Compression type: gzip and xz are supported.
 
 
 The script also supports all input as arguments:
 
 **-i, --interface**   
-interface to use (CLI Dialog)
+interface to use (cli dialog)
 
 **-N, --no-color**   
 disable colors
@@ -63,10 +63,10 @@ exclude /home (keep hidden files and folders)
 dont keep home's hidden files and folders (use with -h)  
 
 **-c, --compression**  
-compression type (GZIP XZ)  
+compression type (gzip xz)  
 
 **-a, --archiver**  
-select archiver (TAR BSDTAR)    
+select archiver (tar bsdtar)    
 
 **-u, --user-options**   
 additional tar options (See tar --help)  
@@ -93,7 +93,7 @@ installs and auto-configures Grub or Syslinux in MBR of given device and finally
 
 The script will ask for:
 
-- Interface to use (CLI Dialog)  
+- Interface to use (cli dialog)  
 
 - Target root partition  and additional mount options  
 
@@ -132,7 +132,7 @@ Log file is saved as */tmp/restore.log*
 The script also supports all input as arguments:
 
 **-i, --interface**   
-interface to use (CLI Dialog)  
+interface to use (cli dialog)  
 
 **-N, --no-color**   
 disable colors
@@ -186,7 +186,7 @@ username
 password
 
 **-a, --archiver**  
-select archiver (TAR BSDTAR)    
+select archiver (tar bsdtar)    
 
 **-R, --rootsubvolname**   
 subvolume name for root
@@ -227,27 +227,27 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - Compression: GZIP  
 - Archiver: TAR
 
-<code>sudo ./backup.sh -d /home/john/ -c GZIP -a TAR</code>  
+<code>sudo ./backup.sh -d /home/john/ -c gzip -a tar</code>  
 
 - Backup directory=/home/john/
 - Compression: XZ  
 - Archiver: BSDTAR   
 - Exclude /home directory  
 
-<code>sudo ./backup.sh -d /home/john/ -c XZ -h -n -a BSDTAR</code>   
+<code>sudo ./backup.sh -d /home/john/ -c xz -h -n -a bsdtar</code>   
 
 - Backup directory=/home/john/
 - Compression: GZIP  
 - Archiver: TAR  
 - Keep only /home's hidden files and folders
 
-<code>./backup.sh -d /home/john/ -c GZIP -h -a TAR</code>   
+<code>./backup.sh -d /home/john/ -c gzip -h -a tar</code>   
 
 - root = /dev/sdb1
 - grub  
 - local file
 
-<code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -a TAR</code>  
+<code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -a tar</code>  
 
 - root = /dev/sda1 (ssd)
 - syslinux  
@@ -262,14 +262,14 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux 
 - remote file on ftp server
 
-<code>./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/backup.tar.xz -a BSDTAR</code>
+<code>./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/backup.tar.xz -a bsdtar</code>
 
 - root = /dev/sdb2
 - boot = /dev/sdb1
 - syslinux 
 - remote file in protected http server
 
-<code>./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -u http://server/backup.tar.gz -n user -p pass -a TAR</code>
+<code>./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -u http://server/backup.tar.gz -n user -p pass -a tar</code>
 
 - root = /dev/mapper/debian-root
 - boot = /dev/sdb1  
@@ -292,7 +292,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - local file  
 - syslinux  
 
-<code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0 -a BSDTAR</code>  
+<code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0 -a bsdtar</code>  
 
 ###WRAPPERS###
 

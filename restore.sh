@@ -1290,7 +1290,6 @@ if [ -f /etc/pacman.conf ]; then
 fi
 
 PS3="Choice: "
-
 interfaces=(cli dialog)
 
 while [ -z "$BRinterface" ]; do

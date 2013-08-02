@@ -40,6 +40,8 @@ The script will ask for:
 
 - If you want to enter any additional tar options (See tar --help)  
 
+- Archiver. TAR and BSDTAR are supported. 
+
 - Compression type. GZIP and XZ are supported.
 
 
@@ -62,6 +64,9 @@ dont keep home's hidden files and folders (use with -h)
 
 **-c, --compression**  
 compression type (GZIP XZ)  
+
+**-a, --archiver**  
+select archiver (TAR BSDTAR)    
 
 **-u, --user-options**   
 additional tar options (See tar --help)  
@@ -112,7 +117,8 @@ The script will ask for:
    If yes, it will ask for the subvolume's name and also if you want to create seperate
    subvolumes for /home, /usr and /var inside root subvolume.  
 
-- If Restore Mode is selected it will ask for the backup archive. This can be obtained locally (by entering the full path of the file), or remotelly (by entering the url of the file).
+- If Restore Mode is selected it will ask for the archiver you used to create the backup archive and the backup archive itself. 
+   This can be obtained locally (by entering the full path of the file), or remotelly (by entering the url of the file).
    Also protected url is supported, which will ask for server's username and password.  
 
 - If Transfer Mode is selected, it will ask you if you want to transfer entire /home directory or only it's hidden files and folders.    
@@ -178,6 +184,9 @@ username
 
 **-p, --password**     
 password
+
+**-a, --archiver**  
+select archiver (TAR BSDTAR)    
 
 **-R, --rootsubvolname**   
 subvolume name for root

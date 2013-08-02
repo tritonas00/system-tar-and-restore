@@ -38,7 +38,7 @@ The script will ask for:
 
 - If /home directory is excluded, it will ask if you want to keep only hidden files and folders inside it
 
-- If you want to enter any additional tar options (See tar --help)  
+- If you want to enter any additional tar options (See tar --help or man bsdtar)  
 
 - Archiver: tar and bsdtar are supported. 
 
@@ -69,7 +69,7 @@ compression type (gzip xz)
 select archiver (tar bsdtar)    
 
 **-u, --user-options**   
-additional tar options (See tar --help)  
+additional tar options (See tar --help or manpage bsdtar)  
 
 **--help**   
 show all arguments

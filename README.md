@@ -262,7 +262,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux 
 - remote file on ftp server
 
-<code>sudo ./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/data/backup.tar.xz</code>
+<code>sudo ./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/backup.tar.xz -a TAR</code>
 
 - root = /dev/sdb2
 - boot = /dev/sdb1

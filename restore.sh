@@ -176,26 +176,18 @@ generate_syslinux_cfg() {
   done
 }
 
-set_archiver() {
-  if [ "$BRarchiver" = "TAR" ]; then
-BR_ARC="tar"
-  elif [ "$BRarchiver" = "BSDTAR" ]; then
-BR_ARC="bsdtar"
-  fi
-}
-
 run_tar() {
-  if [ "$BRarchiver" = "TAR" ]; then
+  if [ "$BRarchiver" = "tar" ]; then
     if [ "$BRfiletype" = "gz" ]; then
-      $BR_ARC xvpfz /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
+      $BRarchiver xvpfz /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
     elif [ "$BRfiletype" = "xz" ]; then
-      $BR_ARC xvpfJ /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
+      $BRarchiver xvpfJ /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
     fi
-  elif [ "$BRarchiver" = "BSDTAR" ]; then
+  elif [ "$BRarchiver" = "bsdtar" ]; then
     if [ "$BRfiletype" = "gz" ]; then
-      $BR_ARC xvpfz /mnt/target/fullbackup -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
+      $BRarchiver xvpfz /mnt/target/fullbackup -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
     elif [ "$BRfiletype" = "xz" ]; then
-      $BR_ARC xvpfJ /mnt/target/fullbackup -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
+      $BRarchiver xvpfJ /mnt/target/fullbackup -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
     fi
   fi
 }
@@ -451,17 +443,17 @@ check_input() {
     BRSTOP=y
   fi
 
-  if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "CLI" ] && [ ! "$BRinterface" = "Dialog" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong interface name: $BRinterface. Available options: CLI Dialog"
+  if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" = "dialog" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong interface name: $BRinterface. Available options: cli dialog"
     BRSTOP=y
   fi
 
-  if [ -n "$BRarchiver" ] && [ ! "$BRarchiver" = "TAR" ] && [ ! "$BRarchiver" = "BSDTAR" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong archiver: $BRarchiver. Available options: TAR BSDTAR"
+  if [ -n "$BRarchiver" ] && [ ! "$BRarchiver" = "tar" ] && [ ! "$BRarchiver" = "bsdtar" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong archiver: $BRarchiver. Available options: tar bsdtar"
     BRSTOP=y
   fi
 
-  if [ "$BRarchiver" = "BSDTAR" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
+  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
     BRSTOP=y
   fi
@@ -1163,7 +1155,7 @@ while true; do
 ${BR_BOLD}$BR_VERSION
 
 Interface:${BR_NORM}
-  -i,  --interface          interface to use (CLI Dialog)
+  -i,  --interface          interface to use (cli dialog)
   -N,  --no-color           disable colors
   -q,  --quiet              dont ask, just run
 
@@ -1172,7 +1164,7 @@ ${BR_BOLD}Restore Mode:${BR_NORM}
   -u,  --url                url
   -n,  --username           username
   -p,  --password           password
-  -a,  --archiver           select archiver (TAR BSDTAR)
+  -a,  --archiver           select archiver (tar bsdtar)
 
 ${BR_BOLD}Transfer Mode:${BR_NORM}
   -t,  --transfer           activate transfer mode
@@ -1299,7 +1291,7 @@ fi
 
 PS3="Choice: "
 
-interfaces=(CLI Dialog)
+interfaces=(cli dialog)
 
 while [ -z "$BRinterface" ]; do
   echo -e "\n${BR_CYAN}Select interface or enter Q to quit${BR_NORM}"
@@ -1316,7 +1308,7 @@ while [ -z "$BRinterface" ]; do
   done
 done
 
-if [ "$BRinterface" = "CLI" ]; then
+if [ "$BRinterface" = "cli" ]; then
   clear
   echo -e "${BR_BOLD}$BR_VERSION${BR_NORM}"
   echo " "
@@ -1563,13 +1555,13 @@ if [ "$BRinterface" = "CLI" ]; then
   if [ "$BRmode" = "Restore" ]; then
     while [ -z "$BRarchiver" ]; do
       echo -e "\n${BR_CYAN}Select the archiver you used to create the backup archive:${BR_NORM}"
-      select c in "TAR (GNU Tar)" "BSDTAR (Libarchive Tar)"; do
+      select c in "tar (GNU Tar)" "bsdtar (Libarchive Tar)"; do
         if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-          BRarchiver="TAR"
+          BRarchiver="tar"
           echo -e "${BR_GREEN}You selected $BRarchiver${BR_NORM}"
           break
         elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
-          BRarchiver="BSDTAR"
+          BRarchiver="bsdtar"
           echo -e "${BR_GREEN}You selected $BRarchiver${BR_NORM}"
           break
         else
@@ -1745,8 +1737,7 @@ if [ "$BRinterface" = "CLI" ]; then
       fi
     fi
     if [ -f /mnt/target/fullbackup ]; then
-      set_archiver
-      ($BR_ARC tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+      ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
       if [ -f /tmp/tar_error ]; then
         rm /tmp/tar_error
         echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
@@ -1819,8 +1810,7 @@ if [ "$BRinterface" = "CLI" ]; then
         fi
       done
       if [ -f /mnt/target/fullbackup ]; then
-        set_archiver
-        ($BR_ARC tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+        ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
         if [ -f /tmp/tar_error ]; then
           rm /tmp/tar_error
           echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
@@ -1870,16 +1860,15 @@ if [ "$BRinterface" = "CLI" ]; then
     if [ "$BRmode" = "Restore" ]; then
       echo -e "\n${BR_SEP}EXTRACTING"
       total=$(cat /tmp/filelist | wc -l)
-      set_archiver
       sleep 1
 
-      if [ "$BRarchiver" = "TAR" ]; then
+      if [ "$BRarchiver" = "tar" ]; then
         run_tar 2>>/tmp/restore.log
-      elif [ "$BRarchiver" = "BSDTAR" ]; then
+      elif [ "$BRarchiver" = "bsdtar" ]; then
         run_tar | tee /tmp/bsdtar_out
       fi | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $(($a*100/$total))%"; done
 
-      if [ "$BRarchiver" = "BSDTAR" ] && [ -f /tmp/r_error ]; then
+      if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
         cat /tmp/bsdtar_out >> /tmp/restore.log
       fi
 
@@ -1963,7 +1952,7 @@ if [ "$BRinterface" = "CLI" ]; then
     clean_unmount_out
   fi
 
-elif [ "$BRinterface" = "Dialog" ]; then
+elif [ "$BRinterface" = "dialog" ]; then
   clear
   IFS=$DEFAULTIFS
 
@@ -2092,7 +2081,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   if [ "$BRmode" = "Restore" ]; then
     while [ -z "$BRarchiver" ]; do
-      BRarchiver=$(dialog --no-cancel --menu "Select the archiver you used to create the backup archive:" 12 45 12 TAR "GNU Tar" BSDTAR "Libarchive Tar" 2>&1 1>&3)
+      BRarchiver=$(dialog --no-cancel --menu "Select the archiver you used to create the backup archive:" 12 45 12 tar "GNU Tar" bsdtar "Libarchive Tar" 2>&1 1>&3)
     done
   fi
 
@@ -2226,8 +2215,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
       fi
     fi
     if [ -f /mnt/target/fullbackup ]; then
-      set_archiver
-      ( $BR_ARC tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
+      ( $BRarchiver tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
       tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
       sleep 1
       ( if [ -f /tmp/tar_error ]; then
@@ -2326,8 +2314,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
         fi
       fi
       if [ -f /mnt/target/fullbackup ]; then
-        set_archiver
-        ( $BR_ARC tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
+        ( $BRarchiver tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
         tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
         sleep 1
         ( if [ -f /tmp/tar_error ]; then
@@ -2363,16 +2350,15 @@ elif [ "$BRinterface" = "Dialog" ]; then
   echo " " >> /tmp/restore.log
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
-    set_archiver
     sleep 1
 
-    if [ "$BRarchiver" = "TAR" ]; then
+    if [ "$BRarchiver" = "tar" ]; then
       run_tar 2>>/tmp/restore.log
-    elif [ "$BRarchiver" = "BSDTAR" ]; then
+    elif [ "$BRarchiver" = "bsdtar" ]; then
       run_tar | tee /tmp/bsdtar_out
     fi | count_gauge | dialog --gauge "Decompressing..." 0 50
 
-    if [ "$BRarchiver" = "BSDTAR" ] && [ -f /tmp/r_error ]; then
+    if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
       cat /tmp/bsdtar_out >> /tmp/restore.log
     fi
 

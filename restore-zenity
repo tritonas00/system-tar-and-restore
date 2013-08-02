@@ -38,7 +38,7 @@ disk_list() {
 }
 
 update_options() {
-  BR_RESTORE_OPTS="${BR_ROOT} ${BR_MOUNT_OPTIONS} ${BR_SWAP} ${BR_HOME} ${BR_BOOT} ${BR_CUSTOM_PARTS} ${BR_BOOTLOADER} ${BR_KERN_OPTIONS} ${BR_ROOT_SUBVOL} ${BR_HOME_SUBVOL} ${BR_VAR_SUBVOL} ${BR_USR_SUBVOL} ${BR_FILE} ${BR_URL} ${BR_PROTECTED_URL} ${BR_TRANSFER}"
+  BR_RESTORE_OPTS="${BR_ROOT} ${BR_MOUNT_OPTIONS} ${BR_SWAP} ${BR_HOME} ${BR_BOOT} ${BR_CUSTOM_PARTS} ${BR_BOOTLOADER} ${BR_KERN_OPTIONS} ${BR_ROOT_SUBVOL} ${BR_HOME_SUBVOL} ${BR_VAR_SUBVOL} ${BR_USR_SUBVOL} ${BR_FILE} ${BR_URL} ${BR_PROTECTED_URL} ${BR_RESTORE_ARCH} ${BR_TRANSFER}"
 
   options=("Set target root partition" "$BRroot $BRuseroptions" \
 "(Optional) Set swap partition" "$BRswap" \
@@ -50,6 +50,7 @@ update_options() {
 "Choose Backup File" "$BRfile" \
 "Enter URL" "$BRurl" \
 "Enter Protected URL" "$BRprotectedurl $BRusername" \
+"Set Archiver" "$BRarchiver" \
 "Enable Transfer Mode" "$BR_TR_EN $BR_OH" \
 "Done" "> $BRauth $BRscript $BR_RESTORE_OPTS")
 }
@@ -74,12 +75,14 @@ BRinfo="This script will restore a backup image of your system or transfer this 
 
 Choose an option:"
 
-update_options
+BRarchiver="tar"
+BR_RESTORE_ARCH="-a tar"
 
+update_options
 
 while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
 
-  while opt=$(zenity --width 550 --height 650 --cancel-label="Quit" --list --title "Restore" --text "$BRinfo" --column="Options" --column="Selection" "${options[@]}" ); if [ $? = "1" ]; then exit; fi; do
+  while opt=$(zenity --width 600 --height 700 --cancel-label="Quit" --list --title "Restore" --text "$BRinfo" --column="Options" --column="Selection" "${options[@]}" ); if [ $? = "1" ]; then exit; fi; do
 
     case "$opt" in
       "${options[0]}" )
@@ -226,6 +229,15 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
           fi
           update_options;;
       "${options[20]}" )
+          BRarchiver=$(zenity --title "Backup" --cancel-label="Reset" --list --column="Archivers" --column="Info" tar "GNU Tar" bsdtar "Libarchive Tar" --text "Select the archiver you used to create the backup archive:")
+          if [ -n "$BRarchiver" ] && [ $? = "0" ]; then
+             BR_RESTORE_ARCH="-a $BRarchiver"
+          else
+            BRarchiver="tar" 
+            BR_RESTORE_ARCH="-a tar"
+          fi
+          update_options;;
+      "${options[22]}" )
           BR_TR_EN=Enabled
           BRsourceckeck=ok
           unset BRfile BRprotected BRprotectedurl BRusername BRpassword BRurl BR_FILE BR_URL BR_PROTECTED_URL
@@ -240,7 +252,7 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
             unset BRsourceckeck
           fi
           update_options;;
-      "${options[22]}" )
+      "${options[24]}" )
           break ;;
       *) zenity --error --no-wrap --text="Select an option first.";;
       esac
@@ -255,10 +267,10 @@ done
 
 if [ "$BRauth" = "su -c" ]; then
   xterm -T Restore -e su -c "
-  ${BRscript} -i CLI -N ${BR_RESTORE_OPTS}
+  ${BRscript} -i cli -N ${BR_RESTORE_OPTS}
   sleep 2"
 elif [ "$BRauth" = "sudo" ]; then
   xterm -T Restore -e "
-  sudo ${BRscript} -i CLI -N ${BR_RESTORE_OPTS}
+  sudo ${BRscript} -i cli -N ${BR_RESTORE_OPTS}
   sleep 2"
 fi

@@ -84,18 +84,10 @@ show_path() {
   fi
 }
 
-set_archiver() {
-  if [ "$BRarchiver" = "TAR" ]; then
-    BR_ARC="tar"
-  elif [ "$BRarchiver" = "BSDTAR" ]; then
-    BR_ARC="bsdtar"
-  fi
-}
-
 set_tar_options() {
-  if [ "$BRarchiver" = "TAR" ]; then
+  if [ "$BRarchiver" = "tar" ]; then
     BR_TAROPTS="--sparse $BR_USER_OPTS --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
-  elif [ "$BRarchiver" = "BSDTAR" ]; then
+  elif [ "$BRarchiver" = "bsdtar" ]; then
     BR_TAROPTS=(--exclude=/run/*?* --exclude=/dev/*?* --exclude=/proc/*?* --exclude=/sys/*?* --exclude=/media/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found)
     if  [ "$BRuseroptions" = "Yes" ]; then
       BR_TAROPTS+=("$BR_USER_OPTS")
@@ -103,16 +95,16 @@ set_tar_options() {
   fi
 
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
-    if [ "$BRarchiver" = "TAR" ]; then
+    if [ "$BRarchiver" = "tar" ]; then
       BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
-    elif [ "$BRarchiver" = "BSDTAR" ]; then
+    elif [ "$BRarchiver" = "bsdtar" ]; then
       BR_TAROPTS+=(--exclude=/home/*?*)
     fi
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
     find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
-    if [ "$BRarchiver" = "TAR" ]; then
+    if [ "$BRarchiver" = "tar" ]; then
       BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/excludelist"
-    elif [ "$BRarchiver" = "BSDTAR" ]; then
+    elif [ "$BRarchiver" = "bsdtar" ]; then
       BR_TAROPTS+=(--exclude-from=/tmp/excludelist)
     fi
   fi
@@ -123,25 +115,25 @@ set_tar_options() {
 }
 
 run_calc() {
-  if [ "$BRarchiver" = "TAR" ]; then
-    $BR_ARC cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2> /dev/null | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
-  elif [ "$BRarchiver" = "BSDTAR" ]; then
-    $BR_ARC cvf /dev/null ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
+  if [ "$BRarchiver" = "tar" ]; then
+    $BRarchiver cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2> /dev/null | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
+  elif [ "$BRarchiver" = "bsdtar" ]; then
+    $BRarchiver cvf /dev/null ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
   fi
 }
 
 run_tar() {
-  if [ "$BRarchiver" = "TAR" ]; then
-    if [ "$BRcompression" = "GZIP" ]; then
-      $BR_ARC cvpzf "$BRFile".tar.gz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
-    elif [ "$BRcompression" = "XZ" ]; then
-      $BR_ARC cvpJf "$BRFile".tar.xz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
+  if [ "$BRarchiver" = "tar" ]; then
+    if [ "$BRcompression" = "gzip" ]; then
+      $BRarchiver cvpzf "$BRFile".tar.gz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
+    elif [ "$BRcompression" = "xz" ]; then
+      $BRarchiver cvpJf "$BRFile".tar.xz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
     fi
-  elif [ "$BRarchiver" = "BSDTAR" ]; then
-    if [ "$BRcompression" = "GZIP" ]; then
-      $BR_ARC cvpzf "$BRFile".tar.gz ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
-    elif [ "$BRcompression" = "XZ" ]; then
-      $BR_ARC cvpJf "$BRFile".tar.xz ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
+  elif [ "$BRarchiver" = "bsdtar" ]; then
+    if [ "$BRcompression" = "gzip" ]; then
+      $BRarchiver cvpzf "$BRFile".tar.gz ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
+    elif [ "$BRcompression" = "xz" ]; then
+      $BRarchiver cvpJf "$BRFile".tar.xz ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
     fi
   fi
 }
@@ -204,7 +196,7 @@ while true; do
 ${BR_BOLD}$BR_VERSION
 
 Interface:${BR_NORM}
-  -i, --interface         interface to use (CLI Dialog)
+  -i, --interface         interface to use (cli dialog)
   -N, --no-color          disable colors
 
 ${BR_BOLD}Destination:${BR_NORM}
@@ -215,8 +207,8 @@ ${BR_BOLD}Home Directory:${BR_NORM}
   -n, --no-hidden         dont keep home's hidden files and folders (use with -h)
 
 ${BR_BOLD}Archiver Options:${BR_NORM}
-  -a, --archiver          select archiver (TAR BSDTAR)
-  -c, --compression       compression type (GZIP XZ)
+  -a, --archiver          select archiver (tar bsdtar)
+  -c, --compression       compression type (gzip xz)
   -u, --user-options      additional tar options (See tar --help or man bsdtar)
 
 --help	print this page
@@ -241,7 +233,7 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
-if [ -f /etc/yum.conf ] && [ "$BRarchiver" = "TAR" ]; then
+if [ -f /etc/yum.conf ] && [ "$BRarchiver" = "tar" ]; then
   BRfedoratar="y"
 else
   BRfedoratar="n"
@@ -252,18 +244,18 @@ if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
   BRSTOP=y
 fi
 
-if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "GZIP" ] && [ ! "$BRcompression" = "XZ" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Supported compressors: GZIP XZ"
+if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Supported compressors: gzip xz"
   BRSTOP=y
 fi
 
-if [ -n "$BRarchiver" ] && [ ! "$BRarchiver" = "TAR" ] && [ ! "$BRarchiver" = "BSDTAR" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong archiver: $BRarchiver. Available options: TAR BSDTAR"
+if [ -n "$BRarchiver" ] && [ ! "$BRarchiver" = "tar" ] && [ ! "$BRarchiver" = "bsdtar" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong archiver: $BRarchiver. Available options: tar bsdtar"
   BRSTOP=y
 fi
 
-if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "CLI" ] && [ ! "$BRinterface" = "Dialog" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong interface name: $BRinterface. Available options: CLI Dialog"
+if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" = "dialog" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong interface name: $BRinterface. Available options: cli dialog"
   BRSTOP=y
 fi
 
@@ -284,7 +276,7 @@ if [ -n "$BRFOLDER" ]; then
 fi
 
 PS3="Choice: "
-interfaces=(CLI Dialog)
+interfaces=(cli dialog)
 
 while [ -z "$BRinterface" ]; do
   echo -e "\n${BR_CYAN}Select interface or enter Q to quit${BR_NORM}"
@@ -301,7 +293,7 @@ while [ -z "$BRinterface" ]; do
   done
 done
 
-if [ "$BRinterface" = "CLI" ]; then
+if [ "$BRinterface" = "cli" ]; then
   clear
   echo -e "${BR_BOLD}$BR_VERSION${BR_NORM}"
   echo " "
@@ -381,12 +373,12 @@ if [ "$BRinterface" = "CLI" ]; then
 
   while [ -z "$BRarchiver" ]; do
     echo -e "\n${BR_CYAN}Select archiver:${BR_NORM}"
-    select c in "TAR    (GNU Tar)" "BSDTAR (Libarchive Tar)"; do
+    select c in "tar    (GNU Tar)" "bsdtar (Libarchive Tar)"; do
       if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-        BRarchiver="TAR"
+        BRarchiver="tar"
         break
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
-        BRarchiver="BSDTAR"
+        BRarchiver="bsdtar"
         break
       else
         echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
@@ -396,12 +388,12 @@ if [ "$BRinterface" = "CLI" ]; then
 
   while [ -z "$BRcompression" ]; do
     echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
-    select c in "GZIP (Fast, big file)" "XZ   (Slow, smaller file)"; do
+    select c in "gzip (Fast, big file)" "xz   (Slow, smaller file)"; do
       if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-        BRcompression="GZIP"
+        BRcompression="gzip"
         break
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
-        BRcompression="XZ"
+        BRcompression="xz"
         break
       else
         echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
@@ -409,7 +401,7 @@ if [ "$BRinterface" = "CLI" ]; then
     done
   done
 
-  if [ "$BRarchiver" = "BSDTAR" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
+  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
     exit
   fi
@@ -445,23 +437,22 @@ if [ "$BRinterface" = "CLI" ]; then
     BRFOLDER="${BRFOLDER_IN[@]}"
 
     echo -e "\n${BR_SEP}CREATING ARCHIVE"
-    set_archiver
     prepare
     set_tar_options
     run_calc
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     echo " "
-    if [ "$BRarchiver" = "BSDTAR" ]; then
+    if [ "$BRarchiver" = "bsdtar" ]; then
       run_tar | tee /tmp/bsdtar_out
-    elif [ "$BRarchiver" = "TAR" ]; then
+    elif [ "$BRarchiver" = "tar" ]; then
       run_tar 2>>"$BRFOLDER"/backup.log
     fi | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
 
     echo -ne "\nSetting permissions "
     OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -e "[${BR_GREEN}OK${BR_NORM}]" || echo -e "[${BR_RED}FAILED${BR_NORM}]\n$OUTPUT"
 
-    if [ "$BRarchiver" = "BSDTAR" ] && [ -f /tmp/b_error ]; then
+    if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
       cat /tmp/bsdtar_out >> "$BRFOLDER"/backup.log
     fi
 
@@ -474,7 +465,7 @@ if [ "$BRinterface" = "CLI" ]; then
 
   read -s a
 
-elif [ "$BRinterface" = "Dialog" ]; then
+elif [ "$BRinterface" = "dialog" ]; then
   if [ -z $(which dialog 2> /dev/null) ];then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package dialog is not installed. Install the package and re-run the script"
     exit
@@ -541,14 +532,14 @@ elif [ "$BRinterface" = "Dialog" ]; then
   done
 
   while [ -z "$BRarchiver" ]; do
-    BRarchiver=$(dialog --no-cancel --menu "Select archiver:" 12 35 12 TAR "GNU Tar" BSDTAR "Libarchive Tar" 2>&1 1>&3)
+    BRarchiver=$(dialog --no-cancel --menu "Select archiver:" 12 35 12 tar "GNU Tar" bsdtar "Libarchive Tar" 2>&1 1>&3)
   done
 
   while [ -z "$BRcompression" ]; do
-    BRcompression=$(dialog --no-cancel --menu "Select compression type:" 12 35 12 GZIP "Fast, big file" XZ "Slow, smaller file" 2>&1 1>&3)
+    BRcompression=$(dialog --no-cancel --menu "Select compression type:" 12 35 12 gzip "Fast, big file" xz "Slow, smaller file" 2>&1 1>&3)
   done
 
-  if [ "$BRarchiver" = "BSDTAR" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
+  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
     if [ -z "$BRnocolor" ]; then
       color_variables
     fi
@@ -563,16 +554,15 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
   BRFOLDER="${BRFOLDER_IN[@]}"
-  set_archiver
   prepare
   set_tar_options
   run_calc | dialog --progressbox 3 40
   total=$(cat /tmp/filelist | wc -l)
   sleep 1
 
-  if [ "$BRarchiver" = "BSDTAR" ]; then
+  if [ "$BRarchiver" = "bsdtar" ]; then
     run_tar | tee /tmp/bsdtar_out
-  elif [ "$BRarchiver" = "TAR" ]; then
+  elif [ "$BRarchiver" = "tar" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
   fi |
 
@@ -587,7 +577,7 @@ elif [ "$BRinterface" = "Dialog" ]; then
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 
-  if [ "$BRarchiver" = "BSDTAR" ] && [ -f /tmp/b_error ]; then
+  if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
     cat /tmp/bsdtar_out >> "$BRFOLDER"/backup.log
   fi
 

@@ -292,7 +292,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - local file  
 - syslinux  
 
-<code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0 -a TAR</code>  
+<code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0 -a BSDTAR</code>  
 
 ###WRAPPERS###
 

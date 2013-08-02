@@ -233,7 +233,7 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
           if [ -n "$BRarchiver" ] && [ $? = "0" ]; then
              BR_RESTORE_ARCH="-a $BRarchiver"
           else
-            BRarchiver="tar" 
+            BRarchiver="tar"
             BR_RESTORE_ARCH="-a tar"
           fi
           update_options;;

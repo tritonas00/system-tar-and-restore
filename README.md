@@ -269,7 +269,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux 
 - remote file in protected http server
 
-<code>sudo ./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -u http://server/backup.tar.gz -n user -p pass -a BSDTAR</code>
+<code>./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -u http://server/backup.tar.gz -n user -p pass -a BSDTAR</code>
 
 - root = /dev/mapper/debian-root
 - boot = /dev/sdb1  

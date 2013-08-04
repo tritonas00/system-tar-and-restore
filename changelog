@@ -1,5 +1,9 @@
 Changelog:
 
+3.6.1
+    better dialog order in backup.sh
+    updated backup.sh wrapper
+
 3.6
     added libarchive tar (bsdtar) support
     changed any upper case argument input to lower case

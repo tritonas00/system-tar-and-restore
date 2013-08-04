@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6"
+BR_VERSION="System Tar & Restore 3.6.1"
 BR_SEP="::"
 
 clear
@@ -351,26 +351,6 @@ if [ "$BRinterface" = "cli" ]; then
     done
   done
 
-  while [ -z "$BRuseroptions" ]; do
-    echo -e "\n${BR_CYAN}Enter additional tar options?${BR_NORM}"
-    read -p "(y/N):" an
-
-    if [ -n "$an" ]; then
-      def=$an
-    else
-      def="n"
-    fi
-
-    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
-      BRuseroptions="Yes"
-      read -p "Enter options (See tar --help):" BR_USER_OPTS
-    elif [ $def = "n" ] || [ $def = "N" ]; then
-      BRuseroptions="No"
-    else
-      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
-    fi
-  done
-
   while [ -z "$BRarchiver" ]; do
     echo -e "\n${BR_CYAN}Select archiver:${BR_NORM}"
     select c in "tar    (GNU Tar)" "bsdtar (Libarchive Tar)"; do
@@ -385,6 +365,11 @@ if [ "$BRinterface" = "cli" ]; then
       fi
     done
   done
+
+  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
+    exit
+  fi
 
   while [ -z "$BRcompression" ]; do
     echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
@@ -401,10 +386,25 @@ if [ "$BRinterface" = "cli" ]; then
     done
   done
 
-  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
-    exit
-  fi
+  while [ -z "$BRuseroptions" ]; do
+    echo -e "\n${BR_CYAN}Enter additional $BRarchiver options?${BR_NORM}"
+    read -p "(y/N):" an
+
+    if [ -n "$an" ]; then
+      def=$an
+    else
+      def="n"
+    fi
+
+    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
+      BRuseroptions="Yes"
+      read -p "Enter options (See tar --help or man bsdtar):" BR_USER_OPTS
+    elif [ $def = "n" ] || [ $def = "N" ]; then
+      BRuseroptions="No"
+    else
+      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+    fi
+  done
 
   IFS=$DEFAULTIFS
 
@@ -521,22 +521,8 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   done
 
-  while [ -z "$BRuseroptions" ]; do
-    dialog --yesno "Specify additional tar options?" 6 35
-    if [ "$?" = "0" ]; then
-      BRuseroptions="Yes"
-      BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional tar options: (See tar --help)" 8 70 2>&1 1>&3)
-    else
-      BRuseroptions="No"
-    fi
-  done
-
   while [ -z "$BRarchiver" ]; do
     BRarchiver=$(dialog --no-cancel --menu "Select archiver:" 12 35 12 tar "GNU Tar" bsdtar "Libarchive Tar" 2>&1 1>&3)
-  done
-
-  while [ -z "$BRcompression" ]; do
-    BRcompression=$(dialog --no-cancel --menu "Select compression type:" 12 35 12 gzip "Fast, big file" xz "Slow, smaller file" 2>&1 1>&3)
   done
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
@@ -546,6 +532,20 @@ elif [ "$BRinterface" = "dialog" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
     exit
   fi
+
+  while [ -z "$BRcompression" ]; do
+    BRcompression=$(dialog --no-cancel --menu "Select compression type:" 12 35 12 gzip "Fast, big file" xz "Slow, smaller file" 2>&1 1>&3)
+  done
+
+  while [ -z "$BRuseroptions" ]; do
+    dialog --yesno "Specify additional $BRarchiver options?" 6 39
+    if [ "$?" = "0" ]; then
+      BRuseroptions="Yes"
+      BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional tar options: (See tar --help or man bsdtar)" 8 70 2>&1 1>&3)
+    else
+      BRuseroptions="No"
+    fi
+  done
 
   dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0
   if [ "$?" = "1" ]; then

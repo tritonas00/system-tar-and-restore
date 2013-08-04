@@ -31,7 +31,7 @@ update_options() {
 
   options=("Change Destination Folder " "$BRFOLDER" \
 "(Optional) /home directory options:" "$BRHOME" \
-"(Optional) Set additional tar options" "$BRtaroptions" \
+"(Optional) Set additional tar/bsdtar options" "$BRtaroptions" \
 "Set Archiver" "$BRarchiver" \
 "Set Compression Type" "$BRcompression" \
 "Done" "> $BRauth $BRscript $BR_BACKUP_OPTS")

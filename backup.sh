@@ -541,7 +541,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     dialog --yesno "Specify additional $BRarchiver options?" 6 39
     if [ "$?" = "0" ]; then
       BRuseroptions="Yes"
-      BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional tar options: (See tar --help or man bsdtar)" 8 70 2>&1 1>&3)
+      BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter options: (See tar --help or man bsdtar)" 8 70 2>&1 1>&3)
     else
       BRuseroptions="No"
     fi

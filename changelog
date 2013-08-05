@@ -1,5 +1,9 @@
 Changelog:
 
+3.6.2
+    changed some dialogs
+    code cleaning
+
 3.6.1
     better dialog order in backup.sh
     updated backup.sh wrapper

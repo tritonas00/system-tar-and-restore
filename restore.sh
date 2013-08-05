@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.1"
+BR_VERSION="System Tar & Restore 3.6.2"
 BR_SEP="::"
 
 clear
@@ -1290,19 +1290,18 @@ if [ -f /etc/pacman.conf ]; then
 fi
 
 PS3="Choice: "
-interfaces=(cli dialog)
 
 while [ -z "$BRinterface" ]; do
   echo -e "\n${BR_CYAN}Select interface or enter Q to quit${BR_NORM}"
-  select c in ${interfaces[@]}; do
-    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-      echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-      exit
-    elif [[ $REPLY = [0-9]* ]] && [ $REPLY -gt 0 ] && [ $REPLY -le ${#interfaces[@]} ]; then
-      BRinterface=$c
+  select c in "CLI" "Dialog"; do
+    if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+      BRinterface="cli"
+      break
+    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+      BRinterface="dialog"
       break
     else
-      echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+      echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
     fi
   done
 done

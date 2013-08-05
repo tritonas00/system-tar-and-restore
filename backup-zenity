@@ -31,7 +31,7 @@ update_options() {
 
   options=("Change Destination Folder " "$BRFOLDER" \
 "(Optional) /home directory options:" "$BRHOME" \
-"(Optional) Set additional tar/bsdtar options" "$BRtaroptions" \
+"(Optional) Set additional tar options" "$BRtaroptions" \
 "Set Archiver" "$BRarchiver" \
 "Set Compression Type" "$BRcompression" \
 "Done" "> $BRauth $BRscript $BR_BACKUP_OPTS")
@@ -88,7 +88,7 @@ while opt=$(zenity --width 550 --height 550 --cancel-label="Quit" --list --title
         fi
         update_options;;
     "${options[4]}" )
-        BRuseroptions=$(zenity --width 550 --title "Backup" --cancel-label="Reset" --entry --entry-text="$BRuseroptions" --text "Enter additional tar options: (See tar --help or man bsdtar)")
+        BRuseroptions=$(zenity --width 550 --title "Backup" --cancel-label="Reset" --entry --entry-text="$BRuseroptions" --text "Enter options: (See tar --help or man bsdtar)")
         if [ -n "$BRuseroptions" ] && [ $? = "0" ]; then
           BR_TAR_OPTIONS="-u '$BRuseroptions'"
           BRtaroptions=Activated

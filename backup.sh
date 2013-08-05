@@ -280,14 +280,17 @@ PS3="Choice: "
 while [ -z "$BRinterface" ]; do
   echo -e "\n${BR_CYAN}Select interface or enter Q to quit${BR_NORM}"
   select c in "CLI" "Dialog"; do
-    if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+      exit
+    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
       BRinterface="cli"
       break
     elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
       BRinterface="dialog"
       break
     else
-      echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
+      echo -e "${BR_RED}Please enter a valid option from the list or enter Q to quit${BR_NORM}"
     fi
   done
 done

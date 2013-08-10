@@ -34,9 +34,7 @@ The script will ask for:
 
 - If you want to save the backup in the default folder (/), or enter your desired path
 
-- If you want to include your /home directory
-
-- If /home directory is excluded, it will ask if you want to keep only hidden files and folders inside it
+- What to do with /home directory
 
 - Archiver: tar and bsdtar are supported. 
 

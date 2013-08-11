@@ -896,10 +896,7 @@ clean_unmount_in() {
       sleep 1
       echo -n "Unmounting $ln "
       OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-    done < <( for i in ${BRumountparts[@]}; do
-      BRdevice=$(echo $i | cut -f2 -d"=")
-      echo $BRdevice
-      done | tac )
+    done < <( for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
   fi
 
   if [ -n "$BRhome" ]; then

@@ -892,16 +892,14 @@ clean_unmount_in() {
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRumountparts[@]}; do
-      BRdevice=$(echo $i | cut -f2 -d"=")
-      echo $BRdevice
-    done | tac |
-
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
       OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-    done
+    done < <( for i in ${BRumountparts[@]}; do
+      BRdevice=$(echo $i | cut -f2 -d"=")
+      echo $BRdevice
+      done | tac )
   fi
 
   if [ -n "$BRhome" ]; then

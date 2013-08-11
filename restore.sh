@@ -358,14 +358,8 @@ check_input() {
     if [[ -n $(for i in ${BRcustomparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"=") && echo $BRdevice; done | sort  | uniq -d) ]]; then
       for a in ${BRcustomparts[@]}; do BRdevice=$(echo $a | cut -f2 -d"="); done
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
-      touch /tmp/abort
+      BRSTOP=y
     fi
-
-    for a in ${BRcustomparts[@]}; do
-      BRmpoint=$(echo $a | cut -f1 -d"=")
-      BRdevice=$(echo $a | cut -f2 -d"=")
-      echo "$BRmpoint=$BRdevice"
-    done |
 
     while read ln; do
       BRmpoint=$(echo $ln | cut -f1 -d"=")
@@ -376,38 +370,38 @@ check_input() {
       for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
       if [ ! "$BRcustomcheck" = "true" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong $BRmpoint partition: $BRdevice"
-        touch /tmp/abort
+        BRSTOP=y
       elif pvdisplay 2>&1 | grep -w $BRdevice > /dev/null; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice contains lvm physical volume, refusing to use it. Use a logical volume instead"
-        touch /tmp/abort
+        BRSTOP=y
       elif [[ ! -z `lsblk -d -n -o mountpoint 2> /dev/null $BRdevice` ]]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice is already mounted as $(lsblk -d -n -o mountpoint 2> /dev/null $BRdevice), refusing to use it"
-        touch /tmp/abort
+        BRSTOP=y
       fi
       if [ "$BRdevice" == "$BRroot" ] || [ "$BRdevice" == "$BRswap" ] || [ "$BRdevice" == "$BRhome" ] || [ "$BRdevice" == "$BRboot" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
-        touch /tmp/abort
+        BRSTOP=y
       fi
       if [[ "$BRmpoint" == *var* ]] && [ "x$BRvarsubvol" = "xy" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
-        touch /tmp/abort
+        BRSTOP=y
       elif [[ "$BRmpoint" == *var* ]]; then
-        touch /tmp/BRvarsubvol
+        BRvarsubvol="n"
       fi
       if [[ "$BRmpoint" == *usr* ]] && [ "x$BRusrsubvol" = "xy" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
-        touch /tmp/abort
+        BRSTOP=y
       elif [[ "$BRmpoint" == *usr* ]]; then
-        touch /tmp/BRusrsubvol
+        BRusrsubvol="n"
       fi
       if [[ "$BRmpoint" == *home* ]] && [ "x$BRhomesubvol" = "xy" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
-        touch /tmp/abort
+        BRSTOP=y
       elif [[ "$BRmpoint" == *home* ]]; then
-        touch /tmp/BRhomesubvol
+        BRhomesubvol="n"
       fi
       unset BRcustomcheck
-    done
+    done < <( for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); BRdevice=$(echo $a | cut -f2 -d"="); echo "$BRmpoint=$BRdevice"; done )
   fi
 
   if [ -n "$BRgrub" ]; then
@@ -455,15 +449,6 @@ check_input() {
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
-    BRSTOP=y
-  fi
-
-  if [ -f /tmp/BRvarsubvol ]; then BRvarsubvol="n" && rm /tmp/BRvarsubvol ; fi
-  if [ -f /tmp/BRusrsubvol ]; then BRusrsubvol="n" && rm /tmp/BRusrsubvol ; fi
-  if [ -f /tmp/BRhomesubvol ]; then BRhomesubvol="n" && rm /tmp/BRhomesubvol ; fi
-
-  if [ -f /tmp/abort ]; then
-    rm /tmp/abort
     BRSTOP=y
   fi
 

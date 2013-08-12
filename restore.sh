@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.4"
+BR_VERSION="System Tar & Restore 3.6.5"
 BR_SEP="::"
 
 clear
@@ -234,6 +234,13 @@ update_part_list() {
   list=(`for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")
          for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e $(echo /dev/mapper/"${BRroot##*/}") -e $(echo /dev/mapper/"${BRswap##*/}") -e $(echo /dev/mapper/"${BRhome##*/}") -e $(echo /dev/mapper/"${BRboot##*/}")
          for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")` )
+}
+
+sort_custom_parts() {
+  if [ "$BRcustom" = "y" ]; then
+    unset LC_COLLATE
+    BRsorted=($(for i in ${BRcustomparts[@]}; do echo $i; done | sort))
+  fi
 }
 
 check_input() {
@@ -507,7 +514,7 @@ mount_all() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       echo -n "Mounting $BRdevice "
@@ -546,7 +553,7 @@ show_summary() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
@@ -655,7 +662,7 @@ generate_fstab() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
@@ -816,7 +823,7 @@ clean_unmount_when_subvols() {
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
     done | tac |
@@ -915,7 +922,7 @@ clean_unmount_out() {
   umount /mnt/target/run
 
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
     done | tac |
@@ -947,7 +954,7 @@ create_subvols() {
   echo -e "\n${BR_SEP}CREATING SUBVOLUMES"
   cd ~
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
     done | tac |
@@ -1006,7 +1013,7 @@ create_subvols() {
     fi
 
     if [ "$BRcustom" = "y" ]; then
-      for i in ${BRcustomparts[@]}; do
+      for i in ${BRsorted[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
         BRmpoint=$(echo $i | cut -f1 -d"=")
         echo -n "Mounting $BRdevice "
@@ -1576,6 +1583,7 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   check_input
+  sort_custom_parts
   mount_all
   detect_parts_fs_size
 
@@ -2082,6 +2090,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     color_variables
   fi
   check_input
+  sort_custom_parts
   mount_all
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
   detect_parts_fs_size

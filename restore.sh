@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.4"
+BR_VERSION="System Tar & Restore 3.6.5"
 BR_SEP="::"
 
 clear
@@ -399,6 +399,10 @@ check_input() {
         BRSTOP=y
       elif [[ "$BRmpoint" == *home* ]]; then
         BRhomesubvol="n"
+      fi
+      if [[ ! "$BRmpoint" == /* ]]; then
+        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Wrong mountpoint syntax: $BRmpoint"
+        BRSTOP=y
       fi
       unset BRcustomcheck
     done < <( for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); BRdevice=$(echo $a | cut -f2 -d"="); echo "$BRmpoint=$BRdevice"; done )

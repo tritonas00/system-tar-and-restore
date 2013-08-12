@@ -236,6 +236,12 @@ update_part_list() {
          for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | grep -vw -e $(echo /dev/"${BRroot##*/}") -e $(echo /dev/"${BRswap##*/}") -e $(echo /dev/"${BRhome##*/}") -e $(echo /dev/"${BRboot##*/}")` )
 }
 
+sort_custom_parts() {
+  if [ "$BRcustom" = "y" ]; then
+    BRsorted=($(for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =))
+  fi
+}
+
 check_input() {
   if [ -n "$BRfile" ] && [ ! -f "$BRfile" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] File not found: $BRfile"
@@ -403,7 +409,7 @@ check_input() {
       if [[ ! "$BRmpoint" == /* ]]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Wrong mountpoint syntax: $BRmpoint"
         BRSTOP=y
-      fi
+      fi 
       unset BRcustomcheck
     done < <( for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); BRdevice=$(echo $a | cut -f2 -d"="); echo "$BRmpoint=$BRdevice"; done )
   fi
@@ -511,7 +517,7 @@ mount_all() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       echo -n "Mounting $BRdevice "
@@ -550,7 +556,7 @@ show_summary() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
@@ -659,7 +665,7 @@ generate_fstab() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
@@ -820,7 +826,7 @@ clean_unmount_when_subvols() {
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
     done | tac |
@@ -919,7 +925,7 @@ clean_unmount_out() {
   umount /mnt/target/run
 
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
     done | tac |
@@ -951,7 +957,7 @@ create_subvols() {
   echo -e "\n${BR_SEP}CREATING SUBVOLUMES"
   cd ~
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRcustomparts[@]}; do
+    for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       echo $BRdevice
     done | tac |
@@ -1010,7 +1016,7 @@ create_subvols() {
     fi
 
     if [ "$BRcustom" = "y" ]; then
-      for i in ${BRcustomparts[@]}; do
+      for i in ${BRsorted[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
         BRmpoint=$(echo $i | cut -f1 -d"=")
         echo -n "Mounting $BRdevice "
@@ -1580,6 +1586,7 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   check_input
+  sort_custom_parts
   mount_all
   detect_parts_fs_size
 
@@ -2086,6 +2093,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     color_variables
   fi
   check_input
+  sort_custom_parts
   mount_all
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
   detect_parts_fs_size

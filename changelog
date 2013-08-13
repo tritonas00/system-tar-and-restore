@@ -1,7 +1,7 @@
 Changelog:
 
 3.6.5
-    automatically sort custom partitions array
+    sort custom partitions array
     check mountpoint syntax
 
 3.6.4

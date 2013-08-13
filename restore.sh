@@ -409,7 +409,7 @@ check_input() {
       if [[ ! "$BRmpoint" == /* ]]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Wrong mountpoint syntax: $BRmpoint"
         BRSTOP=y
-      fi 
+      fi
       unset BRcustomcheck
     done < <( for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); BRdevice=$(echo $a | cut -f2 -d"="); echo "$BRmpoint=$BRdevice"; done )
   fi

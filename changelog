@@ -1,5 +1,8 @@
 Changelog:
 
+3.6.6
+    updated archlinux syslinux.cfg
+
 3.6.5
     sort custom partitions array
     check mountpoint syntax

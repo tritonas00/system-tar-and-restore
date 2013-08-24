@@ -1,7 +1,7 @@
 Changelog:
 
 3.6.7
-    fixed download gauge dialog
+    fixed download gauge dialog speed
     remember url input in dialog interface
 
 3.6.6

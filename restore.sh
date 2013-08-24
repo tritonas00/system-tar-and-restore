@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.6"
+BR_VERSION="System Tar & Restore 3.6.7"
 BR_SEP="::"
 
 clear
@@ -2174,8 +2174,14 @@ elif [ "$BRinterface" = "dialog" ]; then
 
     if [ -n "$BRurl" ]; then
       if [ -n "$BRusername" ]; then
-        ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
-        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog --gauge "Downloading..." 0 50
+        (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
+        while read ln; do
+          if [[ $ln -gt $lastln ]]; then
+            lastln=$ln
+            echo $lastln
+          fi
+        done | dialog --gauge "Downloading..." 0 50
+        
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
           echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57
@@ -2190,8 +2196,14 @@ elif [ "$BRinterface" = "dialog" ]; then
           fi
         fi
       else
-        ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
-        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog --gauge "Downloading..." 0 50
+        (wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
+        while read ln; do
+          if [[ $ln -gt $lastln ]]; then
+            lastln=$ln
+            echo $lastln
+          fi
+        done | dialog --gauge "Downloading..." 0 50
+
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
           echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57
@@ -2272,8 +2284,14 @@ elif [ "$BRinterface" = "dialog" ]; then
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-          ( wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
-          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog --gauge "Downloading..." 0 50
+          (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
+          while read ln; do 
+            if [[ $ln -gt $lastln ]]; then
+              lastln=$ln
+              echo $lastln
+            fi
+          done | dialog --gauge "Downloading..." 0 50
+
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
             echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57
@@ -2289,8 +2307,14 @@ elif [ "$BRinterface" = "dialog" ]; then
           fi
 
         elif [ "$REPLY" = "URL" ]; then
-          ( wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error ) 2>&1 |
-          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | dialog --gauge "Downloading..." 0 50
+          (wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
+          while read ln; do 
+            if [[ $ln -gt $lastln ]]; then
+              lastln=$ln
+              echo $lastln
+            fi
+          done | dialog --gauge "Downloading..." 0 50
+
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
             echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57

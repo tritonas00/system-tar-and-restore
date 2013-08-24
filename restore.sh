@@ -2280,7 +2280,8 @@ elif [ "$BRinterface" = "dialog" ]; then
 
       elif [ "$REPLY" = "URL" ] || [ "$REPLY" = "Protected URL" ]; then
         unset BRfile
-        BRurl=$(dialog --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 2>&1 1>&3)
+        BRurl=$(dialog --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 $BRurlold  2>&1 1>&3)
+        BRurlold=$BRurl
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)

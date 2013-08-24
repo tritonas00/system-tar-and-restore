@@ -2173,6 +2173,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
 
     if [ -n "$BRurl" ]; then
+      BRurlold=$BRurl
       if [ -n "$BRusername" ]; then
        (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
         while read ln; do

@@ -373,7 +373,7 @@ check_input() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
-    if [[ -n $(for i in ${BRcustomparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"=") && echo $BRdevice; done | sort  | uniq -d) ]]; then
+    if [[ -n $(for i in ${BRcustomparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"=") && echo $BRdevice; done | sort | uniq -d) ]]; then
       for a in ${BRcustomparts[@]}; do BRdevice=$(echo $a | cut -f2 -d"="); done
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
       BRSTOP=y
@@ -870,11 +870,11 @@ clean_unmount_when_subvols() {
 
     if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRhomesubvol" = "xy" ]; then
       echo -n "Deleting $BRrootsubvolname/home "
-      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/home  2>&1 1> /dev/null) && ok_status || error_status
+      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/home 2>&1 1> /dev/null) && ok_status || error_status
     fi
     if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRvarsubvol" = "xy" ]; then
       echo -n "Deleting $BRrootsubvolname/var "
-      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/var  2>&1 1> /dev/null) && ok_status || error_status
+      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/var 2>&1 1> /dev/null) && ok_status || error_status
     fi
     if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRusrsubvol" = "xy" ]; then
       echo -n "Deleting $BRrootsubvolname/usr "
@@ -2284,7 +2284,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
       elif [ "$REPLY" = "URL" ] || [ "$REPLY" = "Protected URL" ]; then
         unset BRfile
-        BRurl=$(dialog --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 $BRurlold  2>&1 1>&3)
+        BRurl=$(dialog --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 $BRurlold 2>&1 1>&3)
         BRurlold=$BRurl
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)

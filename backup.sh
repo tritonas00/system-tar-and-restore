@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.7"
+BR_VERSION="System Tar & Restore 3.6.8"
 BR_SEP="::"
 
 clear
@@ -139,6 +139,11 @@ run_tar() {
 }
 
 prepare() {
+  BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
+  BRFOLDER="${BRFOLDER_IN[@]}"
+  if [ "$BRinterface" = "cli" ]; then
+    echo -e "\n${BR_SEP}CREATING ARCHIVE"
+  fi
   mkdir -p "$BRFOLDER"
   echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
   sleep 1
@@ -435,10 +440,6 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   if [  "x$BRcontinue" = "xy" ]; then
-    BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
-    BRFOLDER="${BRFOLDER_IN[@]}"
-
-    echo -e "\n${BR_SEP}CREATING ARCHIVE"
     prepare
     set_tar_options
     run_calc
@@ -554,8 +555,6 @@ elif [ "$BRinterface" = "dialog" ]; then
     exit
   fi
 
-  BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
-  BRFOLDER="${BRFOLDER_IN[@]}"
   prepare
   set_tar_options
   run_calc | dialog --progressbox 3 40

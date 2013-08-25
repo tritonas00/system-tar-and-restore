@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.7"
+BR_VERSION="System Tar & Restore 3.6.8"
 BR_SEP="::"
 
 clear
@@ -38,6 +38,7 @@ instruct_screen(){
 
 ok_status() {
   echo -e "[${BR_GREEN}OK${BR_NORM}]"
+  custom_ok=y
 }
 
 error_status() {
@@ -217,6 +218,15 @@ count_gauge() {
       echo $lastper
     fi
   done
+}
+
+count_gauge_wget() {
+  while read ln; do
+    if [[ $ln -gt $lastln ]]; then
+      lastln=$ln
+      echo $lastln
+    fi
+  done 
 }
 
 part_list_dialog() {
@@ -517,14 +527,15 @@ mount_all() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
+    unset custom_ok
     for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       echo -n "Mounting $BRdevice "
       mkdir -p /mnt/target$BRmpoint
-      OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && (ok_status && touch /tmp/custom_ok) || error_status
-      if [ -f /tmp/custom_ok ]; then
-        rm -r /tmp/custom_ok
+      OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
+      if [ -n "$custom_ok" ]; then
+        unset custom_ok
         BRumountparts+=($BRmpoint=$BRdevice)
         if [ "$(ls -A /mnt/target$BRmpoint | grep -vw "lost+found")" ]; then
           echo -e "[${BR_CYAN}INFO${BR_NORM}] $BRmpoint partition not empty"
@@ -2175,13 +2186,8 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -n "$BRurl" ]; then
       BRurlold=$BRurl
       if [ -n "$BRusername" ]; then
-       (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
-        while read ln; do
-          if [[ $ln -gt $lastln ]]; then
-            lastln=$ln
-            echo $lastln
-          fi
-        done | dialog --gauge "Downloading..." 0 50
+       (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 | 
+        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
         
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
@@ -2197,13 +2203,8 @@ elif [ "$BRinterface" = "dialog" ]; then
           fi
         fi
       else
-       (wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
-        while read ln; do
-          if [[ $ln -gt $lastln ]]; then
-            lastln=$ln
-            echo $lastln
-          fi
-        done | dialog --gauge "Downloading..." 0 50
+       (wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
+        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
 
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
@@ -2286,13 +2287,8 @@ elif [ "$BRinterface" = "dialog" ]; then
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-         (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
-          while read ln; do 
-            if [[ $ln -gt $lastln ]]; then
-              lastln=$ln
-              echo $lastln
-            fi
-          done | dialog --gauge "Downloading..." 0 50
+         (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
+          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
 
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
@@ -2309,13 +2305,8 @@ elif [ "$BRinterface" = "dialog" ]; then
           fi
 
         elif [ "$REPLY" = "URL" ]; then
-         (wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
-          while read ln; do 
-            if [[ $ln -gt $lastln ]]; then
-              lastln=$ln
-              echo $lastln
-            fi
-          done | dialog --gauge "Downloading..." 0 50
+         (wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
+          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
 
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error

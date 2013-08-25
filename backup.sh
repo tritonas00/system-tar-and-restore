@@ -592,15 +592,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 fi
 
-if [ -f /tmp/excludelist ]; then
-  rm /tmp/excludelist
-fi
-if [ -f /tmp/b_error ]; then
-  rm /tmp/b_error
-fi
-if [ -f /tmp/filelist ]; then
-  rm /tmp/filelist
-fi
-if [ -f /tmp/bsdtar_out ]; then
-  rm /tmp/bsdtar_out
-fi
+if [ -f /tmp/excludelist ]; then rm /tmp/excludelist; fi
+if [ -f /tmp/b_error ]; then rm /tmp/b_error; fi
+if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
+if [ -f /tmp/bsdtar_out ]; then rm /tmp/bsdtar_out; fi

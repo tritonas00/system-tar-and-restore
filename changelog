@@ -1,5 +1,9 @@
 Changelog:
 
+3.6.8
+    code cleaning/optimising
+    dont hide used partitions in restore wrapper    
+
 3.6.7
     fixed download gauge dialog speed
     remember url input in dialog interface

@@ -246,7 +246,7 @@ update_part_list() {
 
 sort_custom_parts() {
   if [ "$BRcustom" = "y" ]; then
-    BRsorted=($(for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =))
+    BRsorted=(`for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =`)
   fi
 }
 

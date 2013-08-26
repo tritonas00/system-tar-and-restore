@@ -118,7 +118,7 @@ detect_syslinux_root() {
   if [[ "$BRroot" == *mapper* ]]; then
     echo "root=$BRroot"
   else
-    echo "root=UUID=$(lsblk -d -n -o uuid $BRroot)"
+    echo "root=UUID=$(blkid -s UUID -o value $BRroot)"
   fi
 }
 
@@ -126,7 +126,7 @@ detect_fstab_root() {
   if [[ "$BRroot" == *dev/md* ]]; then
     echo "$BRroot"
   else
-    echo "UUID=$(lsblk -d -n -o uuid $BRroot)"
+    echo "UUID=$(blkid -s UUID -o value $BRroot)"
   fi
 }
 
@@ -665,7 +665,7 @@ generate_fstab() {
     if [[ "$BRhome" == *dev/md* ]]; then
       echo "$BRhome  /home  $BRhomefsystem  defaults,noatime  0  2" >> /mnt/target/etc/fstab
     else
-      echo "UUID=$(lsblk -d -n -o uuid $BRhome)  /home  $BRhomefsystem  defaults,noatime  0  2" >> /mnt/target/etc/fstab
+      echo "UUID=$(blkid -s UUID -o value $BRhome)  /home  $BRhomefsystem  defaults,noatime  0  2" >> /mnt/target/etc/fstab
     fi
   fi
 
@@ -673,7 +673,7 @@ generate_fstab() {
     if [[ "$BRboot" == *dev/md* ]]; then
       echo "$BRboot  /boot  $BRbootfsystem  defaults  0  1" >> /mnt/target/etc/fstab
     else
-      echo "UUID=$(lsblk -d -n -o uuid $BRboot)  /boot  $BRbootfsystem  defaults  0  1" >> /mnt/target/etc/fstab
+      echo "UUID=$(blkid -s UUID -o value $BRboot)  /boot  $BRbootfsystem  defaults  0  1" >> /mnt/target/etc/fstab
     fi
   fi
 
@@ -685,7 +685,7 @@ generate_fstab() {
       if [[ "$BRdevice" == *dev/md* ]]; then
         echo "$BRdevice  $BRmpoint  $BRcustomfs  defaults  0  2" >> /mnt/target/etc/fstab
       else
-        echo "UUID=$(lsblk -d -n -o uuid $BRdevice)  $BRmpoint  $BRcustomfs  defaults  0  2" >> /mnt/target/etc/fstab
+        echo "UUID=$(blkid -s UUID -o value $BRdevice)  $BRmpoint  $BRcustomfs  defaults  0  2" >> /mnt/target/etc/fstab
       fi
     done
   fi
@@ -694,7 +694,7 @@ generate_fstab() {
     if [[ "$BRswap" == *dev/md* ]]; then
       echo "$BRswap  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
     else
-      echo "UUID=$(lsblk -d -n -o uuid $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
+      echo "UUID=$(blkid -s UUID -o value $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
     fi
   fi
   echo -e "\n${BR_SEP}GENERATED FSTAB" >> /tmp/restore.log

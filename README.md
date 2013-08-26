@@ -220,21 +220,21 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 ###EXAMPLES USING ARGUMENTS###
 
 - Backup directory=/home/john/
-- Compression: GZIP  
-- Archiver: TAR
+- Compression: gzip  
+- Archiver: tar
 
 <code>sudo ./backup.sh -d /home/john/ -c gzip -a tar</code>  
 
 - Backup directory=/home/john/
-- Compression: XZ  
-- Archiver: BSDTAR   
+- Compression: xz  
+- Archiver: bsdtar   
 - Exclude /home directory  
 
 <code>sudo ./backup.sh -d /home/john/ -c xz -h -n -a bsdtar</code>   
 
 - Backup directory=/home/john/
-- Compression: GZIP  
-- Archiver: TAR  
+- Compression: gzip  
+- Archiver: tar  
 - Keep only /home's hidden files and folders
 
 <code>./backup.sh -d /home/john/ -c gzip -h -a tar</code>   

@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 3.6.8
+.\"    Source: system-tar-and-restore 3.6.9
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "25 Aug 2013" "3\&.6.8" "General Manual"
+.TH "system-tar-and-restore" "1" "26 Aug 2013" "3\&.6.9" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -97,7 +97,7 @@ before running the script. At least one \fI/\fR \fB(root)\fR partition is
 required and optionally a seperate partition for \fI/home\fR, \fI/boot\fR
 and a \fIswap\fR partition\&.
 .sp
-Restore script contains two modes: \fBRestore\fR and \fBTransfer\fR\&.In 
+Restore script contains two modes: \fBRestore\fR and \fBTransfer\fR\&. In 
 \fBRestore Mode\fR\&, the script uses the above created archive to extract it 
 in user defined partitions\&. In \fBTransfer Mode\fR\&, the script uses 
 \fBRSYNC\fR to transfer the root filesystem \fI/\fR in user defined partitions\&.
@@ -253,20 +253,20 @@ In the target system, if distribution is \fBFedora\fR\& and \fBGrub\fR\& is sele
 /etc/default/grub is saved as /etc/default/grub-old\&.
 .SH EXAMPLES USING ARGUMENTS
 .sp
-Backup system in the directory \fI/home/john/\fR and use \fBGZIP\fR 
-compression and \fBTAR\fR archiver:
+Backup system in the directory \fI/home/john/\fR and use \fBgzip\fR 
+compression and \fBtar\fR archiver:
 .RS 4
 \fB./backup.sh \-d /home/john/ \-c gzip -a tar\fR 
 .RE
 .sp
-Backup system in the directory \fI/home/john/\fR\&, use \fBXZ\fR compression, 
-\fBBSDTAR\fR archiver and exclude \fI/home/\fR directory from backup tarball:
+Backup system in the directory \fI/home/john/\fR\&, use \fBxz\fR compression, 
+\fBbsdtar\fR archiver and exclude \fI/home/\fR directory from backup tarball:
 .RS 4
 \fB./backup.sh \-d /home/john/ \-c xz \-h \-n -a bsdtar\fR 
 .RE
 .sp
-Backup system in the directory \fI/home/john/\fR\&, use \fBGZIP\fR compression, 
-\fBTAR\fR archiver and keep only hidden files and folders from \fI/home/\fR: 
+Backup system in the directory \fI/home/john/\fR\&, use \fBgzip\fR compression, 
+\fBtar\fR archiver and keep only hidden files and folders from \fI/home/\fR: 
 .RS 4
 \fB./backup.sh \-d /home/john/ \-c gzip \-h -a tar\fR 
 .RE

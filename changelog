@@ -1,5 +1,8 @@
 Changelog:
 
+3.6.9
+    use blkid to extract uuids, not lsblk
+
 3.6.8
     code cleaning/optimising
     dont hide used partitions in restore wrapper    

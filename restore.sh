@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.9"
+BR_VERSION="System Tar & Restore 3.6.10"
 BR_SEP="::"
 
 clear
@@ -812,6 +812,14 @@ install_bootloader() {
     generate_syslinux_cfg
     echo -e "\n${BR_SEP}GENERATED SYSLINUX CONFIG" >> /tmp/restore.log
     cat /mnt/target/boot/syslinux/syslinux.cfg >> /tmp/restore.log
+  fi
+}
+
+set_bootloader() {
+  if [ -n "$BRgrub" ]; then
+    BRbootloader=Grub
+  elif [ -n "$BRsyslinux" ]; then
+    BRbootloader=Syslinux
   fi
 }
 
@@ -1826,11 +1834,7 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  if [ -n "$BRgrub" ]; then
-    BRbootloader=Grub
-  elif [ -n "$BRsyslinux" ]; then
-    BRbootloader=Syslinux
-  fi
+  set_bootloader
   echo -e "\n${BR_SEP}SUMMARY"
   show_summary
 
@@ -2339,11 +2343,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     done
   fi
 
-  if [ -n "$BRgrub" ]; then
-    BRbootloader=Grub
-  elif [ -n "$BRsyslinux" ]; then
-    BRbootloader=Syslinux
-  fi
+  set_bootloader
 
   if [ -z "$BRcontinue" ]; then
     dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0

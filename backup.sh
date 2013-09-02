@@ -93,6 +93,9 @@ set_tar_options() {
       find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
       BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/excludelist"
     fi
+    if [ "$BRfedoratar" = "y" ]; then
+      BR_TAROPTS="${BR_TAROPTS} --acls --selinux --xattrs"
+    fi
   elif [ "$BRarchiver" = "bsdtar" ]; then
     BR_TAROPTS=("$BR_USER_OPTS" --exclude=/run/*?* --exclude=/dev/*?* --exclude=/proc/*?* --exclude=/sys/*?* --exclude=/media/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found)
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
@@ -101,10 +104,6 @@ set_tar_options() {
       find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
       BR_TAROPTS+=(--exclude-from=/tmp/excludelist)
     fi
-  fi
-
-  if [ "$BRfedoratar" = "y" ] && [ "$BRarchiver" = "tar" ]; then
-    BR_TAROPTS="${BR_TAROPTS} --acls --selinux --xattrs"
   fi
 }
 
@@ -234,8 +233,6 @@ fi
 
 if [ -f /etc/yum.conf ]; then
   BRfedoratar="y"
-else
-  BRfedoratar="n"
 fi
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then

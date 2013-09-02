@@ -498,7 +498,7 @@ mount_all() {
     echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned\n"
     echo -n "Unmounting $BRroot "
     sleep 1
-    OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
+    OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
     exit
   fi
 
@@ -830,7 +830,7 @@ generate_locales() {
   fi
 }
 
-clean_root() {
+rm_work_dir() {
   sleep 1
   rm -r /mnt/target
 }
@@ -896,7 +896,7 @@ clean_unmount_when_subvols() {
     rm -r /mnt/target/* 2>/dev/null
     echo -n "Unmounting $BRroot "
     sleep 1
-    OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || error_status
+    OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || error_status
   else
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained"
   fi
@@ -932,7 +932,7 @@ clean_unmount_in() {
 
   echo -n "Unmounting $BRroot "
   sleep 1
-  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
+  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
   exit
 }
 
@@ -970,7 +970,7 @@ clean_unmount_out() {
 
   echo -n "Unmounting $BRroot "
   sleep 1
-  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && clean_root) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
+  OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
   exit
 }
 

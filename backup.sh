@@ -48,7 +48,7 @@ show_summary() {
     echo "Exclude"
   fi
 
-  if [ "$BRfedoratar" = "y" ]; then
+  if [ "$BRfedoratar" = "y" ] && [ "$BRarchiver" = "tar" ]; then
     echo -e "\nEXTRA OPTIONS:"
     echo "--acls --selinux --xattrs"
   fi
@@ -103,7 +103,7 @@ set_tar_options() {
     fi
   fi
 
-  if [ "$BRfedoratar" = "y" ]; then
+  if [ "$BRfedoratar" = "y" ] && [ "$BRarchiver" = "tar" ]; then
     BR_TAROPTS="${BR_TAROPTS} --acls --selinux --xattrs"
   fi
 }
@@ -232,7 +232,7 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
-if [ -f /etc/yum.conf ] && [ "$BRarchiver" = "tar" ]; then
+if [ -f /etc/yum.conf ]; then
   BRfedoratar="y"
 else
   BRfedoratar="n"

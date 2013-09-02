@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.9"
+BR_VERSION="System Tar & Restore 3.6.10"
 BR_SEP="::"
 
 clear
@@ -86,25 +86,19 @@ show_path() {
 
 set_tar_options() {
   if [ "$BRarchiver" = "tar" ]; then
-    BR_TAROPTS="--sparse $BR_USER_OPTS --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
-  elif [ "$BRarchiver" = "bsdtar" ]; then
-    BR_TAROPTS=(--exclude=/run/*?* --exclude=/dev/*?* --exclude=/proc/*?* --exclude=/sys/*?* --exclude=/media/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found)
-    if  [ "$BRuseroptions" = "Yes" ]; then
-      BR_TAROPTS+=("$BR_USER_OPTS")
-    fi
-  fi
-
-  if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
-    if [ "$BRarchiver" = "tar" ]; then
+    BR_TAROPTS="$BR_USER_OPTS --sparse --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
+    if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
-    elif [ "$BRarchiver" = "bsdtar" ]; then
-      BR_TAROPTS+=(--exclude=/home/*?*)
-    fi
-  elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
-    find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
-    if [ "$BRarchiver" = "tar" ]; then
+    elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
+      find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
       BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/excludelist"
-    elif [ "$BRarchiver" = "bsdtar" ]; then
+    fi
+  elif [ "$BRarchiver" = "bsdtar" ]; then
+    BR_TAROPTS=("$BR_USER_OPTS" --exclude=/run/*?* --exclude=/dev/*?* --exclude=/proc/*?* --exclude=/sys/*?* --exclude=/media/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found)
+    if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
+      BR_TAROPTS+=(--exclude=/home/*?*)
+    elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then 
+      find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
       BR_TAROPTS+=(--exclude-from=/tmp/excludelist)
     fi
   fi

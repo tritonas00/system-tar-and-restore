@@ -103,7 +103,7 @@ set_tar_options() {
     fi
   fi
 
-  if [ ${BRfedoratar} = "y" ]; then
+  if [ "$BRfedoratar" = "y" ]; then
     BR_TAROPTS="${BR_TAROPTS} --acls --selinux --xattrs"
   fi
 }

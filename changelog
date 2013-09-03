@@ -1,5 +1,9 @@
 Changelog:
 
+3.6.10
+    fixed fedora tar options detection
+    code cleaning
+
 3.6.9
     use blkid to extract uuids, not lsblk
 

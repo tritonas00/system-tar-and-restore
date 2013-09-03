@@ -259,9 +259,9 @@ if [ -n "$BRSTOP" ]; then
   exit
 fi
 
-  if [ -z "$BRhidden" ]; then
-    BRhidden="Yes"
-  fi
+if [ -z "$BRhidden" ]; then
+  BRhidden="Yes"
+fi
 
 if [ -n "$BRFOLDER" ]; then
   if [ -z "$BRhome" ]; then

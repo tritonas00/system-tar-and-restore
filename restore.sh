@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.10"
+BR_VERSION="System Tar & Restore 3.6.11"
 BR_SEP="::"
 
 clear

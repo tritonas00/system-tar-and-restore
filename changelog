@@ -1,5 +1,8 @@
 Changelog:
 
+3.6.11
+    backup.sh: obey -h argument when -d is not given
+
 3.6.10
     fixed fedora tar options detection
     code cleaning

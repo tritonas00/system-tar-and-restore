@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.10"
+BR_VERSION="System Tar & Restore 3.6.11"
 BR_SEP="::"
 
 clear
@@ -259,12 +259,13 @@ if [ -n "$BRSTOP" ]; then
   exit
 fi
 
+  if [ -z "$BRhidden" ]; then
+    BRhidden="Yes"
+  fi
+
 if [ -n "$BRFOLDER" ]; then
   if [ -z "$BRhome" ]; then
     BRhome="Yes"
-  fi
-  if [ -z "$BRhidden" ]; then
-    BRhidden="Yes"
   fi
   if [ -z "$BRuseroptions" ]; then
     BRuseroptions="No"

@@ -892,6 +892,7 @@ clean_files() {
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
   if [ -f /tmp/r_error ]; then rm /tmp/r_error; fi
   if [ -f /tmp/bsdtar_out ]; then rm /tmp/bsdtar_out; fi
+  if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
  }
 
 clean_unmount_in() {

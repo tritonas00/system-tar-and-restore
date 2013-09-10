@@ -841,6 +841,19 @@ set_bootloader() {
   elif [ -n "$BRsyslinux" ]; then
     BRbootloader=Syslinux
   fi
+
+  if [ "$BRmode" = "Restore" ]; then
+    if [ -z "$BRnocolor" ]; then
+      color_variables
+    fi
+    if [ -n "$BRgrub" ] && ! grep -Fxq "usr/lib/grub/i386-pc" /tmp/filelist 2>/dev/null; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
+      clean_unmount_in
+    elif [ -n "$BRsyslinux" ] && ! grep -Fxq "usr/bin/extlinux" /tmp/filelist 2>/dev/null; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system"
+      clean_unmount_in
+    fi
+  fi
 }
 
 generate_locales() {
@@ -1914,14 +1927,6 @@ if [ "$BRinterface" = "cli" ]; then
       generate_locales
       sleep 1 ) 1> >(tee -a /tmp/restore.log) 2>&1
 
-    if [ "$BRmode" = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
-      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Grub not found, proceeding without bootloader"
-      unset BRgrub
-    elif [ "$BRmode" = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
-      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Syslinux not found, proceeding without bootloader"
-      unset BRsyslinux
-    fi
-
     install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1
     sleep 1
 
@@ -2377,16 +2382,6 @@ elif [ "$BRinterface" = "dialog" ]; then
    build_initramfs
    generate_locales
    sleep 2 ) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox 30 100
-
-  if [ "$BRmode" = "Restore" ] && [ -n "$BRgrub" ] && [ ! -d /mnt/target/usr/lib/grub/i386-pc ]; then
-    echo -e "Grub not found! Proceeding without bootloader" | dialog --title "Warning" --progressbox 3 49
-    sleep 2
-    unset BRgrub
-  elif [ "$BRmode" = "Restore" ] && [ -n "$BRsyslinux" ] && [ -z $(chroot /mnt/target which extlinux 2> /dev/null) ];then
-    echo -e "Syslinux not found! Proceeding without bootloader" | dialog --title "Warning" --progressbox 3 53
-    sleep 2
-    unset BRsyslinux
-  fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
     install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox 30 70

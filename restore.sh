@@ -844,10 +844,10 @@ set_bootloader() {
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRgrub" ] && ! grep -Fxq "usr/lib/grub/i386-pc" /tmp/filelist 2>/dev/null; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
+      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system\n"
       clean_unmount_in
     elif [ -n "$BRsyslinux" ] && ! grep -Fq "bin/extlinux" /tmp/filelist 2>/dev/null; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system"
+      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system\n"
       clean_unmount_in
     fi
   fi

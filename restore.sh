@@ -635,11 +635,6 @@ show_summary() {
 
   echo -e "\nPROCESS:"
 
-  if [ "$BRdistro" = "Unsupported" ]; then
-    echo "System: $BRdistro (WARNING)"
-  else
-    echo "System: $BRdistro based"
-  fi
   if [ "$BRmode" = "Restore" ]; then
     echo "Mode: $BRmode"
     echo "File: $BRfiletype compressed archive"
@@ -650,6 +645,13 @@ show_summary() {
   elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "y" ]; then
     echo "Mode: $BRmode"
     echo "Home: Only hidden files and folders"
+  fi
+  if [ "$BRdistro" = "Unsupported" ]; then
+    echo "System: $BRdistro (WARNING)"
+  elif [ "$BRmode" = "Restore" ]; then
+    echo "System: $BRdistro based ${target_arch#*.}"
+  elif [ "$BRmode" = "Transfer" ]; then
+     echo "System: $BRdistro based $(uname -m)"
   fi
 }
 
@@ -844,10 +846,29 @@ set_bootloader() {
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRgrub" ] && ! grep -Fxq "usr/lib/grub/i386-pc" /tmp/filelist 2>/dev/null; then
+      if [ -z "$BRnocolor" ]; then
+        color_variables
+      fi
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system\n"
       clean_unmount_in
     elif [ -n "$BRsyslinux" ] && ! grep -Fq "bin/extlinux" /tmp/filelist 2>/dev/null; then
+      if [ -z "$BRnocolor" ]; then
+        color_variables
+      fi
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system\n"
+      clean_unmount_in
+    fi
+  fi
+}
+
+check_arch() {
+  if [ "$BRmode" = "Restore" ]; then
+    target_arch=$(grep -F 'target_architecture.' /tmp/filelist)
+    if [ ! "$(uname -m)" == "$(echo ${target_arch#*.})" ]; then
+      if [ -z "$BRnocolor" ]; then
+        color_variables
+      fi
+      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive\n"
       clean_unmount_in
     fi
   fi
@@ -1833,6 +1854,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   detect_distro
   set_bootloader
+  check_arch
   echo -e "\n${BR_SEP}SUMMARY"
   show_summary
 
@@ -2313,6 +2335,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   detect_distro
   set_bootloader
+  check_arch
 
   if [ -z "$BRcontinue" ]; then
     dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0

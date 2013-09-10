@@ -132,6 +132,7 @@ run_tar() {
 }
 
 prepare() {
+  touch /target_architecture.$(uname -m)
   BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
   BRFOLDER="${BRFOLDER_IN[@]}"
   if [ "$BRinterface" = "cli" ]; then
@@ -588,3 +589,4 @@ if [ -f /tmp/excludelist ]; then rm /tmp/excludelist; fi
 if [ -f /tmp/b_error ]; then rm /tmp/b_error; fi
 if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
 if [ -f /tmp/bsdtar_out ]; then rm /tmp/bsdtar_out; fi
+if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi

@@ -37,7 +37,7 @@ update_options() {
 "Done" "> $BRauth $BRscript $BR_BACKUP_OPTS")
 }
 
-BRinfo="This script will make a tar backup image of your entire system.
+BRinfo="This script will make a tar backup image of this system.
 
 ==>Make sure you have enough free space.
 ==>Make sure you have GRUB or SYSLINUX packages installed.

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.11"
+BR_VERSION="System Tar & Restore 3.7"
 BR_SEP="::"
 
 clear
@@ -17,7 +17,7 @@ color_variables() {
 }
 
 info_screen() {
-  echo "This script will make a tar backup image of your entire system."
+  echo "This script will make a tar backup image of this system."
   echo -e "\n==>Make sure you have enough free space."
   echo -e "\n==>Also make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\n${BR_YELLOW}GRUB PACKAGES:${BR_NORM}"

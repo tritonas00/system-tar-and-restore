@@ -637,8 +637,8 @@ show_summary() {
 
   if [ "$BRmode" = "Restore" ]; then
     echo "Mode: $BRmode"
-    echo "File: $BRfiletype compressed archive"
     echo "Archiver: $BRarchiver"
+    echo "Archive: $BRfiletype compressed"
   elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "n" ]; then
     echo "Mode: $BRmode"
     echo "Home: Include"

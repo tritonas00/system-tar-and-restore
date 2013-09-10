@@ -105,13 +105,28 @@ detect_filetype_url() {
 }
 
 detect_distro() {
-  if [ -f /mnt/target/etc/yum.conf ]; then
-    BRdistro="Fedora"
-  elif [ -f /mnt/target/etc/pacman.conf ]; then
-    BRdistro="Arch"
-  elif [ -f /mnt/target/etc/apt/sources.list ]; then
-    BRdistro="Debian"
-  fi
+  if [ "$BRmode" = "Restore" ]; then
+    if grep -Fxq "etc/yum.conf" /tmp/filelist 2>/dev/null; then
+      BRdistro="Fedora"
+    elif grep -Fxq "etc/pacman.conf" /tmp/filelist 2>/dev/null; then
+      BRdistro="Arch"
+    elif grep -Fxq "etc/apt/sources.list" /tmp/filelist 2>/dev/null; then
+      BRdistro="Debian"
+    else
+      BRdistro="Unsupported"
+    fi
+
+  elif [ "$BRmode" = "Transfer" ]; then
+    if [ -f /etc/yum.conf ]; then
+      BRdistro="Fedora"
+    elif [ -f /etc/pacman.conf ]; then
+      BRdistro="Arch"
+    elif [ -f /etc/apt/sources.list ]; then
+      BRdistro="Debian"
+    else
+      BRdistro="Unsupported"
+    fi
+   fi
 }
 
 detect_syslinux_root() {
@@ -620,6 +635,11 @@ show_summary() {
 
   echo -e "\nPROCESS:"
 
+  if [ "$BRdistro" = "Unsupported" ]; then
+    echo "System: $BRdistro (WARNING)"
+  else
+    echo "System: $BRdistro based"
+  fi
   if [ "$BRmode" = "Restore" ]; then
     echo "Mode: $BRmode"
     echo "File: $BRfiletype compressed archive"
@@ -1795,6 +1815,7 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
+  detect_distro
   set_bootloader
   echo -e "\n${BR_SEP}SUMMARY"
   show_summary
@@ -1849,8 +1870,6 @@ if [ "$BRinterface" = "cli" ]; then
       run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $(($b*100/$total))%"; done
       echo " "
     fi
-
-    detect_distro
 
     echo -e "\n${BR_SEP}GENERATING FSTAB"
     generate_fstab
@@ -2298,6 +2317,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     done
   fi
 
+  detect_distro
   set_bootloader
 
   if [ -z "$BRcontinue" ]; then
@@ -2333,7 +2353,6 @@ elif [ "$BRinterface" = "dialog" ]; then
     run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Syncing..." 0 50
   fi
 
-  detect_distro
   generate_fstab
 
   if [ -n "$BRedit" ]; then

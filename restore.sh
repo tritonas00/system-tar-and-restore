@@ -2045,8 +2045,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    echo "WARNING! NO BOOTLOADER SELECTED" | dialog --progressbox 3 35
-    sleep 2
+    dialog  --title "Warning" --msgbox "No bootloader selected, press ok to continue." 5 49
   fi
 
   if [ "x$BRswap" = "x-1" ] || [[ "x$BRswap" == *"Error"* ]]; then
@@ -2114,8 +2113,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       while [ -z "$BRrootsubvolname" ]; do
         BRrootsubvolname=$(dialog --no-cancel --inputbox "Enter subvolume name:" 8 50 2>&1 1>&3)
         if [ -z "$BRrootsubvolname" ]; then
-          echo "Please enter a name for the subvolume" | dialog --title "Error" --progressbox 3 45
-          sleep 2
+          dialog  --title "Warning" --msgbox "Please enter a name for the subvolume." 5 42
         fi
       done
 
@@ -2164,8 +2162,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
     fi
   elif [ "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
-    echo "Not a btrfs root filesystem, proceeding without subvolumes..." | dialog --title "Warning" --progressbox 3 70
-    sleep 3
+    dialog  --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
   fi
 
   if [ "$BRmode" = "Restore" ]; then
@@ -2182,14 +2179,12 @@ elif [ "$BRinterface" = "dialog" ]; then
         
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
-          echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57
-          sleep 2
+          dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
           rm /mnt/target/fullbackup 2>/dev/null
         else
           detect_filetype_url
           if [ "$BRfiletype" = "wrong" ]; then
-            echo "Invalid file type" | dialog --title "Error" --progressbox 3 21
-            sleep 2
+            dialog --title "Error" --msgbox "Invalid file type." 5 22
             rm /mnt/target/fullbackup 2>/dev/null
           fi
         fi
@@ -2199,14 +2194,13 @@ elif [ "$BRinterface" = "dialog" ]; then
 
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
-          echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57
+          dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
           sleep 2
           rm /mnt/target/fullbackup 2>/dev/null
         else
           detect_filetype_url
           if [ "$BRfiletype" = "wrong" ]; then
-            echo "Invalid file type" | dialog --title "Error" --progressbox 3 21
-            sleep 2
+            dialog --title "Error" --msgbox "Invalid file type." 5 22
             rm /mnt/target/fullbackup 2>/dev/null
           fi
         fi
@@ -2252,8 +2246,7 @@ elif [ "$BRinterface" = "dialog" ]; then
               fi
               sleep 2
             else
-              echo "Invalid file type" | dialog --title "Error" --progressbox 3 21
-              sleep 2
+              dialog --title "Error" --msgbox "Invalid file type." 5 22
               unset BRfile BRselect
             fi
           fi
@@ -2277,14 +2270,12 @@ elif [ "$BRinterface" = "dialog" ]; then
 
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
-            echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57
-	    sleep 2
+            dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
             rm /mnt/target/fullbackup 2>/dev/null
           else
             detect_filetype_url
             if [ "$BRfiletype" = "wrong" ]; then
-              echo "Invalid file type" | dialog --title "Error" --progressbox 3 21
-              sleep 2
+              dialog --title "Error" --msgbox "Invalid file type." 5 22
               rm /mnt/target/fullbackup 2>/dev/null
             fi
           fi
@@ -2295,14 +2286,12 @@ elif [ "$BRinterface" = "dialog" ]; then
 
           if [ -f /tmp/wget_error ]; then
             rm /tmp/wget_error
-            echo "Error downloading file. Wrong URL or network is down." | dialog --title "Error" --progressbox 3 57
-            sleep 2
+            dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
             rm /mnt/target/fullbackup 2>/dev/null
           else
             detect_filetype_url
             if [ "$BRfiletype" = "wrong" ]; then
-              echo "Invalid file type" | dialog --title "Error" --progressbox 3 21
-              sleep 2
+              dialog --title "Error" --msgbox "Invalid file type." 5 22
               rm /mnt/target/fullbackup 2>/dev/null
             fi
           fi

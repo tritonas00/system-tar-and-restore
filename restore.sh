@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.6.11"
+BR_VERSION="System Tar & Restore 3.7"
 BR_SEP="::"
 
 clear
@@ -843,67 +843,6 @@ clean_files() {
   if [ -f /tmp/bsdtar_out ]; then rm /tmp/bsdtar_out; fi
  }
 
-clean_unmount_when_subvols() {
-  echo "${BR_SEP}CLEANING AND UNMOUNTING"
-  cd ~
-  if [ "$BRcustom" = "y" ]; then
-    for i in ${BRsorted[@]}; do
-      BRdevice=$(echo $i | cut -f2 -d"=")
-      echo $BRdevice
-    done | tac |
-
-    while read ln; do
-      sleep 1
-      echo -n "Unmounting $ln "
-      OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-    done
-  fi
-
-  if [ -n "$BRhome" ]; then
-    echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
-  fi
-
-  if [ -n "$BRboot" ]; then
-    echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
-  fi
-
-  echo -n "Unmounting $BRrootsubvolname "
-  OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
-
-  if [ -z "$BRSTOP" ]; then
-    echo -n "Mounting $BRroot "
-    OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
-
-    if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRhomesubvol" = "xy" ]; then
-      echo -n "Deleting $BRrootsubvolname/home "
-      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/home 2>&1 1> /dev/null) && ok_status || error_status
-    fi
-    if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRvarsubvol" = "xy" ]; then
-      echo -n "Deleting $BRrootsubvolname/var "
-      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/var 2>&1 1> /dev/null) && ok_status || error_status
-    fi
-    if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRusrsubvol" = "xy" ]; then
-      echo -n "Deleting $BRrootsubvolname/usr "
-      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/usr 2>&1 1> /dev/null) && ok_status || error_status
-    fi
-    if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-      echo -n "Deleting $BRrootsubvolname "
-      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
-    fi
-
-    rm -r /mnt/target/* 2>/dev/null
-    echo -n "Unmounting $BRroot "
-    sleep 1
-    OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || error_status
-  else
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained"
-  fi
-  clean_files
-  exit
-}
-
 clean_unmount_in() {
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
@@ -923,6 +862,31 @@ clean_unmount_in() {
   if [ -n "$BRboot" ]; then
     echo -n "Unmounting $BRboot "
     OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
+  fi
+
+  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+    echo -n "Unmounting $BRrootsubvolname "
+    OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
+    sleep 1
+    echo -n "Mounting $BRroot "
+    OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
+
+    if [ "x$BRhomesubvol" = "xy" ]; then
+      echo -n "Deleting $BRrootsubvolname/home "
+      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/home 2>&1 1> /dev/null) && ok_status || error_status
+    fi
+    if [ "x$BRvarsubvol" = "xy" ]; then
+      echo -n "Deleting $BRrootsubvolname/var "
+      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/var 2>&1 1> /dev/null) && ok_status || error_status
+    fi
+    if [ "x$BRusrsubvol" = "xy" ]; then
+      echo -n "Deleting $BRrootsubvolname/usr "
+      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/usr 2>&1 1> /dev/null) && ok_status || error_status
+    fi
+    if [ "x$BRrootsubvol" = "xy" ]; then
+      echo -n "Deleting $BRrootsubvolname "
+      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
+    fi
   fi
 
   if [ -z "$BRSTOP" ]; then
@@ -1764,9 +1728,6 @@ if [ "$BRinterface" = "cli" ]; then
       select c in "Local File" "URL" "Protected URL"; do
         if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
           echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-          if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-            clean_unmount_when_subvols
-          fi
           clean_unmount_in
         elif [ "$REPLY" = "1" ]; then
           unset BRurl
@@ -1859,9 +1820,6 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   if [ "x$BRcontinue" = "xn" ]; then
-    if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-      clean_unmount_when_subvols
-    fi
     clean_unmount_in
   elif [ "x$BRcontinue" = "xy" ]; then
     echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
@@ -2245,9 +2203,6 @@ elif [ "$BRinterface" = "dialog" ]; then
         if [ -z "$BRnocolor" ]; then
           color_variables
         fi
-        if [  "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-          clean_unmount_when_subvols
-        fi
         clean_unmount_in
 
       elif [ "$REPLY" = "File" ]; then
@@ -2350,9 +2305,6 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$?" = "1" ]; then
       if [ -z "$BRnocolor" ]; then
         color_variables
-      fi
-      if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
-        clean_unmount_when_subvols
       fi
       clean_unmount_in
     fi

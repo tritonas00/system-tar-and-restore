@@ -2218,7 +2218,6 @@ elif [ "$BRinterface" = "dialog" ]; then
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
           dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
-          sleep 2
           rm /mnt/target/fullbackup 2>/dev/null
         else
           detect_filetype_url

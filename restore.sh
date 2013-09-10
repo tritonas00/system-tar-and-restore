@@ -843,9 +843,6 @@ set_bootloader() {
   fi
 
   if [ "$BRmode" = "Restore" ]; then
-    if [ -z "$BRnocolor" ]; then
-      color_variables
-    fi
     if [ -n "$BRgrub" ] && ! grep -Fxq "usr/lib/grub/i386-pc" /tmp/filelist 2>/dev/null; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
       clean_unmount_in
@@ -877,6 +874,9 @@ clean_files() {
  }
 
 clean_unmount_in() {
+  if [ -z "$BRnocolor" ]; then
+    color_variables
+  fi
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   if [ "$BRcustom" = "y" ]; then
@@ -934,6 +934,9 @@ clean_unmount_in() {
 }
 
 clean_unmount_out() {
+  if [ -z "$BRnocolor" ]; then
+    color_variables
+  fi
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   umount /mnt/target/dev/pts
@@ -2224,9 +2227,6 @@ elif [ "$BRinterface" = "dialog" ]; then
     while [ ! -f /mnt/target/fullbackup ]; do
       REPLY=$(dialog --cancel-label Quit --menu "Select backup file. Choose an option:" 13 50 13 File "local file" URL "remote file" "Protected URL" "protected remote file" 2>&1 1>&3)
       if [ "$?" = "1" ]; then
-        if [ -z "$BRnocolor" ]; then
-          color_variables
-        fi
         clean_unmount_in
 
       elif [ "$REPLY" = "File" ]; then
@@ -2328,9 +2328,6 @@ elif [ "$BRinterface" = "dialog" ]; then
   if [ -z "$BRcontinue" ]; then
     dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0
     if [ "$?" = "1" ]; then
-      if [ -z "$BRnocolor" ]; then
-        color_variables
-      fi
       clean_unmount_in
     fi
   fi
@@ -2401,8 +2398,5 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   sleep 1
-  if [ -z "$BRnocolor" ]; then
-    color_variables
-  fi
   clean_unmount_out
 fi

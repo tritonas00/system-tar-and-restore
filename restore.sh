@@ -973,16 +973,11 @@ clean_unmount_out() {
   umount /mnt/target/run
 
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRsorted[@]}; do
-      BRdevice=$(echo $i | cut -f2 -d"=")
-      echo $BRdevice
-    done | tac |
-
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
       OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-    done
+    done < <( for i in ${BRsorted[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
   fi
 
   if [ -n "$BRhome" ]; then
@@ -1005,16 +1000,11 @@ create_subvols() {
   echo -e "\n${BR_SEP}CREATING SUBVOLUMES"
   cd ~
   if [ "$BRcustom" = "y" ]; then
-    for i in ${BRsorted[@]}; do
-      BRdevice=$(echo $i | cut -f2 -d"=")
-      echo $BRdevice
-    done | tac |
-
     while read ln; do
       sleep 1
       echo -n "Unmounting $ln "
       OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-    done
+    done < <( for i in ${BRsorted[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
   fi
 
   if [ -n "$BRhome" ]; then

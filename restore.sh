@@ -845,7 +845,7 @@ set_bootloader() {
   fi
 
   if [ "$BRmode" = "Restore" ]; then
-    if [ -n "$BRgrub" ] && ! grep -Fxq "usr/lib/grub/i386-pc" /tmp/filelist 2>/dev/null; then
+    if [ -n "$BRgrub" ] && ! grep -Fq "usr/lib/grub/i386-pc" /tmp/filelist 2>/dev/null; then
       if [ -z "$BRnocolor" ]; then
         color_variables
       fi

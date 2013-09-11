@@ -671,10 +671,6 @@ prepare_chroot() {
 
 generate_fstab() {
   mv /mnt/target/etc/fstab /mnt/target/etc/fstab-old
-  if [ $BRdistro = Arch ]; then
-    echo "tmpfs  /tmp  tmpfs  nodev,nosuid  0  0" >> /mnt/target/etc/fstab
-  fi
-
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
   elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ]; then

@@ -873,7 +873,7 @@ check_archive() {
   else
     target_arch=$(grep -F 'target_architecture.' /tmp/filelist)
     if [ ! "$(uname -m)" == "$(echo ${target_arch#*.})" ]; then
-      rm /mnt/target/fullbackup 2>/dev/null
+      rm /mnt/target/fullbackup
       if [ "$BRinterface" = "cli" ]; then
         echo -e "\n[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive\n"
       elif [ "$BRinterface" = "dialog" ]; then

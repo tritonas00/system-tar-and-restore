@@ -1777,7 +1777,8 @@ if [ "$BRinterface" = "cli" ]; then
       fi
     fi
     if [ -f /mnt/target/fullbackup ]; then
-      ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+      ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | 
+      while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
       check_archive
     fi
 
@@ -1842,7 +1843,8 @@ if [ "$BRinterface" = "cli" ]; then
         fi
       done
       if [ -f /mnt/target/fullbackup ]; then
-        ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+        ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | 
+        while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
         check_archive
       fi
     done
@@ -2223,8 +2225,8 @@ elif [ "$BRinterface" = "dialog" ]; then
       fi
     fi
     if [ -f /mnt/target/fullbackup ]; then
-      ( $BRarchiver tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
-      tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
+      ($BRarchiver tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
+      while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
       sleep 1
       check_archive
     fi
@@ -2309,8 +2311,8 @@ elif [ "$BRinterface" = "dialog" ]; then
         fi
       fi
       if [ -f /mnt/target/fullbackup ]; then
-        ( $BRarchiver tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
-        tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
+        ($BRarchiver tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
+        while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
         sleep 1
         check_archive
       fi

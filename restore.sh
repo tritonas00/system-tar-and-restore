@@ -286,7 +286,7 @@ check_input() {
     BRSTOP=y
   fi
 
-  if [ -n "$BRfile" ]  || [ -n "$BRurl" ] && [ -z "$BRarchiver" ]; then
+  if [ -n "$BRfile" ] || [ -n "$BRurl" ] && [ -z "$BRarchiver" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify archiver"
     BRSTOP=y
   fi
@@ -2132,7 +2132,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       while [ -z "$BRrootsubvolname" ]; do
         BRrootsubvolname=$(dialog --no-cancel --inputbox "Enter subvolume name:" 8 50 2>&1 1>&3)
         if [ -z "$BRrootsubvolname" ]; then
-          dialog  --title "Warning" --msgbox "Please enter a name for the subvolume." 5 42
+          dialog --title "Warning" --msgbox "Please enter a name for the subvolume." 5 42
         fi
       done
 
@@ -2186,7 +2186,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-      ( ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog  --progressbox  3 30
+      ( ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog --progressbox 3 30
       sleep 2
     fi
 
@@ -2252,7 +2252,7 @@ elif [ "$BRinterface" = "dialog" ]; then
             BRfile="${BRfile#*/}"
             detect_filetype
             if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ]; then
-              ( ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || (echo "Symlinking file: Error" && touch /tmp/ln_error) ) | dialog  --progressbox  3 30
+              ( ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || (echo "Symlinking file: Error" && touch /tmp/ln_error) ) | dialog --progressbox 3 30
               if [ -f /tmp/ln_error ]; then
                 rm /tmp/ln_error
                 unset BRfile BRselect

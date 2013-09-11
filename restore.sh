@@ -864,7 +864,7 @@ set_bootloader() {
 check_archive() {
   if [ -f /tmp/tar_error ]; then
     rm /tmp/tar_error
-    rm /mnt/target/fullbackup
+    rm /mnt/target/fullbackup 2>/dev/null
     if [ "$BRinterface" = "cli" ]; then
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error reading archive\n"
     elif [ "$BRinterface" = "dialog" ]; then
@@ -873,7 +873,7 @@ check_archive() {
   else
     target_arch=$(grep -F 'target_architecture.' /tmp/filelist)
     if [ ! "$(uname -m)" == "$(echo ${target_arch#*.})" ]; then
-      rm /mnt/target/fullbackup
+      rm /mnt/target/fullbackup 2>/dev/null
       if [ "$BRinterface" = "cli" ]; then
         echo -e "\n[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive\n"
       elif [ "$BRinterface" = "dialog" ]; then

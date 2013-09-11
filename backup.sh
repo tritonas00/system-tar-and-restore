@@ -202,7 +202,7 @@ ${BR_BOLD}Destination:${BR_NORM}
   -d, --directory         backup folder path
 
 ${BR_BOLD}Home Directory:${BR_NORM}
-  -h, --exclude-home	  exclude /home (keep hidden files and folders)
+  -h, --exclude-home	  exclude /home directory (keep hidden files and folders)
   -n, --no-hidden         dont keep home's hidden files and folders (use with -h)
 
 ${BR_BOLD}Archiver Options:${BR_NORM}

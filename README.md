@@ -55,7 +55,7 @@ disable colors
 backup folder path
 
 **-h, --exclude-home**  
-exclude /home (keep hidden files and folders)  
+exclude /home directory (keep hidden files and folders)  
 
 **-n, --no-hidden**       
 dont keep home's hidden files and folders (use with -h)  

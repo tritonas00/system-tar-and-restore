@@ -861,15 +861,24 @@ set_bootloader() {
   fi
 }
 
-check_arch() {
-  if [ "$BRmode" = "Restore" ]; then
+check_archive() {
+  if [ -f /tmp/tar_error ]; then
+    rm /tmp/tar_error
+    rm /mnt/target/fullbackup
+    if [ "$BRinterface" = "cli" ]; then
+      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error reading archive\n"
+    elif [ "$BRinterface" = "dialog" ]; then
+      dialog --title "Error" --msgbox "Error reading archive." 5 26
+    fi 
+  else
     target_arch=$(grep -F 'target_architecture.' /tmp/filelist)
     if [ ! "$(uname -m)" == "$(echo ${target_arch#*.})" ]; then
-      if [ -z "$BRnocolor" ]; then
-        color_variables
+      rm /mnt/target/fullbackup 2>/dev/null
+      if [ "$BRinterface" = "cli" ]; then
+        echo -e "\n[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive\n"
+      elif [ "$BRinterface" = "dialog" ]; then
+        dialog --title "Error" --msgbox "Running and target system architecture mismatch or invalid archive." 5 71
       fi
-      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive\n"
-      clean_unmount_in
     fi
   fi
 }
@@ -1763,7 +1772,7 @@ if [ "$BRinterface" = "cli" ]; then
           echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
           rm /mnt/target/fullbackup 2>/dev/null
         else
-        detect_filetype_url
+          detect_filetype_url
           if [ "$BRfiletype" = "wrong" ]; then
             echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
             rm /mnt/target/fullbackup 2>/dev/null
@@ -1773,12 +1782,7 @@ if [ "$BRinterface" = "cli" ]; then
     fi
     if [ -f /mnt/target/fullbackup ]; then
       ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
-      if [ -f /tmp/tar_error ]; then
-        rm /tmp/tar_error
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
-        rm /mnt/target/fullbackup
-      fi
-      echo " "
+      check_archive
     fi
 
     while [ ! -f /mnt/target/fullbackup ]; do
@@ -1843,19 +1847,13 @@ if [ "$BRinterface" = "cli" ]; then
       done
       if [ -f /mnt/target/fullbackup ]; then
         ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
-        if [ -f /tmp/tar_error ]; then
-          rm /tmp/tar_error
-          echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
-          rm /mnt/target/fullbackup
-        fi
-        echo " "
+        check_archive
       fi
     done
   fi
 
   detect_distro
   set_bootloader
-  check_arch
   echo -e "\n${BR_SEP}SUMMARY"
   show_summary
 
@@ -2232,11 +2230,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       ( $BRarchiver tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
       tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
       sleep 1
-      if [ -f /tmp/tar_error ]; then
-        rm /tmp/tar_error
-        rm /mnt/target/fullbackup
-        dialog --title "Error" --msgbox "Error reading archive." 5 26
-      fi
+      check_archive
     fi
 
     while [ ! -f /mnt/target/fullbackup ]; do
@@ -2322,18 +2316,13 @@ elif [ "$BRinterface" = "dialog" ]; then
         ( $BRarchiver tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error ) |
         tee /tmp/filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
         sleep 1
-        if [ -f /tmp/tar_error ]; then
-          rm /tmp/tar_error
-          rm /mnt/target/fullbackup
-          dialog --title "Error" --msgbox "Error reading archive." 5 26
-        fi
+        check_archive
       fi
     done
   fi
 
   detect_distro
   set_bootloader
-  check_arch
 
   if [ -z "$BRcontinue" ]; then
     dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0

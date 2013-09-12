@@ -491,10 +491,6 @@ show_summary() {
   echo -e "${BR_YELLOW}PARTITIONS:"
   echo -e "root partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
 
-  if [ -n "$BRswap" ]; then
-    echo "swap partition: $BRswap"
-  fi
-
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
@@ -503,6 +499,10 @@ show_summary() {
       BRcustomsize=$(lsblk -d -n -o size 2> /dev/null $BRdevice)
       echo "${BRmpoint#*/} partition: $BRdevice $BRcustomfs $BRcustomsize"
     done
+  fi
+
+  if [ -n "$BRswap" ]; then
+    echo "swap partition: $BRswap"
   fi
 
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then

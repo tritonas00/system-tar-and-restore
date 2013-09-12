@@ -21,7 +21,7 @@ info_screen() {
   echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
   echo -e "\n==>Make sure that target LVM volume groups are activated and target\n   RAID arrays are properly assembled."
   echo -e "\n==>If you didn't include /home directory in the backup\n   and you already have a seperate /home partition,\n   simply enter it when prompted."
-  echo -e "\n==>Also make sure that this system and the system you want\n   to restore have the same architecture (for chroot to work)."
+  echo -e "\n==>Also make sure that this system and the system you want\n   to restore have the same architecture."
   echo -e "\n==>Fedora backups can only be restored from a Fedora enviroment,\n   due to extra tar options."
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }

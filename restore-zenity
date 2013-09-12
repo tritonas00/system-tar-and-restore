@@ -68,7 +68,7 @@ BRinfo="This script will restore a backup image of your system or transfer this 
        simply enter it in the options below.
 
 ==>Also make sure that this system and the system you want
-       to restore have the same architecture (for chroot to work).
+       to restore have the same architecture.
 
 ==>Fedora backups can only be restored from a Fedora enviroment,
        due to extra tar options.

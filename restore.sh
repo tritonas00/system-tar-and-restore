@@ -2176,8 +2176,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-      ( ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || echo "Symlinking file: Error" ) | dialog --progressbox 3 30
-      sleep 2
+      ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null || dialog --title "Error" --msgbox "Error symlinking file." 5 26
     fi
 
     if [ -n "$BRurl" ]; then
@@ -2242,12 +2241,12 @@ elif [ "$BRinterface" = "dialog" ]; then
             BRfile="${BRfile#*/}"
             detect_filetype
             if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ]; then
-              ( ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null && echo "Symlinking file: Done" || (echo "Symlinking file: Error" && touch /tmp/ln_error) ) | dialog --progressbox 3 30
+              ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null || touch /tmp/ln_error
               if [ -f /tmp/ln_error ]; then
                 rm /tmp/ln_error
                 unset BRfile BRselect
+                dialog --title "Error" --msgbox "Error symlinking file." 5 26
               fi
-              sleep 2
             else
               dialog --title "Error" --msgbox "Invalid file type." 5 22
               unset BRfile BRselect

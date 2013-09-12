@@ -69,19 +69,9 @@ show_path() {
   fi
 }
 
-detect_parts_fs_size() {
+detect_root_fs_size() {
   BRfsystem=$(df -T | grep $BRroot | awk '{print $2}')
   BRfsize=$(lsblk -d -n -o size 2> /dev/null $BRroot)
-
-  if [ -n "$BRhome" ]; then
-    BRhomefsystem=$(df -T | grep $BRhome | awk '{print $2}')
-    BRhomefsize=$(lsblk -d -n -o size 2> /dev/null $BRhome)
-  fi
-
-  if [ -n "$BRboot" ]; then
-    BRbootfsystem=$(df -T | grep $BRboot | awk '{print $2}')
-    BRbootfsize=$(lsblk -d -n -o size 2> /dev/null $BRboot)
-  fi
 }
 
 detect_filetype() {
@@ -263,12 +253,6 @@ update_part_list() {
   list=(`part_list_dialog`)
 }
 
-sort_custom_parts() {
-  if [ "$BRcustom" = "y" ]; then
-    BRsorted=(`for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =`)
-  fi
-}
-
 check_input() {
   if [ -n "$BRfile" ] && [ ! -f "$BRfile" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] File not found: $BRfile"
@@ -343,50 +327,6 @@ check_input() {
     fi
   fi
 
-  if [ -n "$BRhome" ]; then
-    for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
-    for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
-    for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRhome} ]] ; then BRhomecheck="true" ; fi; done
-    if [ ! "$BRhomecheck" = "true" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong home partition: $BRhome"
-      BRSTOP=y
-    elif pvdisplay 2>&1 | grep -w $BRhome > /dev/null; then
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRhome contains lvm physical volume, refusing to use it. Use a logical volume instead"
-      BRSTOP=y
-    elif [[ ! -z `lsblk -d -n -o mountpoint 2> /dev/null $BRhome` ]]; then
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRhome is already mounted as $(lsblk -d -n -o mountpoint 2> /dev/null $BRhome), refusing to use it"
-      BRSTOP=y
-    fi
-    if [ "$BRhome" == "$BRroot" ] || [ "$BRhome" == "$BRswap" ]; then
-     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRhome already used"
-     BRSTOP=y
-    fi
-     if [ "x$BRhomesubvol" = "xy" ]; then
-     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
-     BRSTOP=y
-    fi
-  fi
-
-  if [ -n "$BRboot" ]; then
-    for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
-    for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
-    for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRboot} ]] ; then BRbootcheck="true" ; fi; done
-    if [ ! "$BRbootcheck" = "true" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong boot partition: $BRboot"
-      BRSTOP=y
-    elif pvdisplay 2>&1 | grep -w $BRboot > /dev/null; then
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRboot contains lvm physical volume, refusing to use it. Use a logical volume instead"
-      BRSTOP=y
-    elif [[ ! -z `lsblk -d -n -o mountpoint 2> /dev/null $BRboot` ]]; then
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRboot is already mounted as $(lsblk -d -n -o mountpoint 2> /dev/null $BRboot), refusing to use it"
-      BRSTOP=y
-    fi
-    if [ "$BRboot" == "$BRroot" ] || [ "$BRboot" == "$BRswap" ] || [ "$BRboot" == "$BRhome" ]; then
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRboot already used"
-      BRSTOP=y
-    fi
-  fi
-
   if [ "$BRcustom" = "y" ]; then
     if [[ -n $(for i in ${BRcustomparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"=") && echo $BRdevice; done | sort | uniq -d) ]]; then
       for a in ${BRcustomparts[@]}; do BRdevice=$(echo $a | cut -f2 -d"="); done
@@ -416,7 +356,7 @@ check_input() {
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice is already mounted as $(lsblk -d -n -o mountpoint 2> /dev/null $BRdevice), refusing to use it"
         BRSTOP=y
       fi
-      if [ "$BRdevice" == "$BRroot" ] || [ "$BRdevice" == "$BRswap" ] || [ "$BRdevice" == "$BRhome" ] || [ "$BRdevice" == "$BRboot" ]; then
+      if [ "$BRdevice" == "$BRroot" ] || [ "$BRdevice" == "$BRswap" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
         BRSTOP=y
       fi
@@ -522,33 +462,8 @@ mount_all() {
     exit
   fi
 
-  if [ -n "$BRhome" ]; then
-    echo -n "Mounting $BRhome "
-    mkdir /mnt/target/home
-    OUTPUT=$(mount $BRhome /mnt/target/home 2>&1) && ok_status || error_status
-    if [ -n "$BRSTOP" ]; then
-      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
-      unset BRhome BRboot BRSTOP
-      clean_unmount_in
-    elif [ "$(ls -A /mnt/target/home | grep -vw "lost+found")" ]; then
-      echo -e "[${BR_CYAN}INFO${BR_NORM}] /home partition not empty"
-    fi
-  fi
-
-  if [ -n "$BRboot" ]; then
-    echo -n "Mounting $BRboot "
-    mkdir /mnt/target/boot
-    OUTPUT=$(mount $BRboot /mnt/target/boot 2>&1) && ok_status || error_status
-    if [ -n "$BRSTOP" ]; then
-      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
-      unset BRboot BRSTOP
-      clean_unmount_in
-    elif [ "$(ls -A /mnt/target/boot | grep -vw "lost+found")" ]; then
-      echo -e "[${BR_CYAN}INFO${BR_NORM}] /boot partition not empty"
-    fi
-  fi
-
   if [ "$BRcustom" = "y" ]; then
+    BRsorted=(`for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =`)
     unset custom_ok
     for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
@@ -575,14 +490,6 @@ mount_all() {
 show_summary() {
   echo -e "${BR_YELLOW}PARTITIONS:"
   echo -e "root partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
-
-  if [ -n "$BRboot" ]; then
-    echo "boot partition: $BRboot $BRbootfsystem $BRbootfsize"
-  fi
-
-  if [ -n "$BRhome" ]; then
-    echo "home partition: $BRhome $BRhomefsystem $BRhomefsize"
-  fi
 
   if [ -n "$BRswap" ]; then
     echo "swap partition: $BRswap"
@@ -682,22 +589,6 @@ generate_fstab() {
     echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,noatime  0  0" >> /mnt/target/etc/fstab
   else
     echo "$(detect_fstab_root)  /  $BRfsystem  $BR_MOUNT_OPTS,noatime  0  1" >> /mnt/target/etc/fstab
-  fi
-
-  if [ -n "$BRhome" ]; then
-    if [[ "$BRhome" == *dev/md* ]]; then
-      echo "$BRhome  /home  $BRhomefsystem  defaults,noatime  0  2" >> /mnt/target/etc/fstab
-    else
-      echo "UUID=$(blkid -s UUID -o value $BRhome)  /home  $BRhomefsystem  defaults,noatime  0  2" >> /mnt/target/etc/fstab
-    fi
-  fi
-
-  if [ -n "$BRboot" ]; then
-    if [[ "$BRboot" == *dev/md* ]]; then
-      echo "$BRboot  /boot  $BRbootfsystem  defaults  0  1" >> /mnt/target/etc/fstab
-    else
-      echo "UUID=$(blkid -s UUID -o value $BRboot)  /boot  $BRbootfsystem  defaults  0  1" >> /mnt/target/etc/fstab
-    fi
   fi
 
   if [ "$BRcustom" = "y" ]; then
@@ -919,16 +810,6 @@ clean_unmount_in() {
     done < <( for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
   fi
 
-  if [ -n "$BRhome" ]; then
-    echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
-  fi
-
-  if [ -n "$BRboot" ]; then
-    echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
-  fi
-
   if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
     echo -n "Unmounting $BRrootsubvolname "
     OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
@@ -985,14 +866,6 @@ clean_unmount_out() {
     done < <( for i in ${BRsorted[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
   fi
 
-  if [ -n "$BRhome" ]; then
-    echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
-  fi
-  if [ -n "$BRboot" ]; then
-    echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
-  fi
   clean_files
 
   echo -n "Unmounting $BRroot "
@@ -1010,16 +883,6 @@ create_subvols() {
       echo -n "Unmounting $ln "
       OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
     done < <( for i in ${BRsorted[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
-  fi
-
-  if [ -n "$BRhome" ]; then
-    echo -n "Unmounting $BRhome "
-    OUTPUT=$(umount $BRhome 2>&1) && ok_status || error_status
-  fi
-
-  if [ -n "$BRboot" ]; then
-    echo -n "Unmounting $BRboot "
-    OUTPUT=$(umount $BRboot 2>&1) && ok_status || error_status
   fi
 
   if [ -z "$BRSTOP" ]; then
@@ -1045,18 +908,6 @@ create_subvols() {
 
     echo -n "Mounting $BRrootsubvolname "
     OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
-
-    if [ -n "$BRhome" ]; then
-      echo -n "Mounting $BRhome "
-      mkdir /mnt/target/home
-      OUTPUT=$(mount $BRhome /mnt/target/home 2>&1) && ok_status || error_status
-    fi
-
-    if [   -n "$BRboot" ]; then
-      echo -n "Mounting $BRboot "
-      mkdir /mnt/target/boot
-      OUTPUT=$(mount $BRboot /mnt/target/boot 2>&1) && ok_status || error_status
-    fi
 
     if [ "$BRcustom" = "y" ]; then
       for i in ${BRsorted[@]}; do
@@ -1174,6 +1025,7 @@ while true; do
     ;;
     -c|--custom-partitions)
       BRcustom="y"
+      BRother="y"
       BRcustomparts=($2)
       shift 2
     ;;
@@ -1242,6 +1094,16 @@ fi
 DEFAULTIFS=$IFS
 IFS=$'\n'
 
+if [ -n "$BRhome" ]; then
+  BRcustom="y"
+  BRcustomparts+=(/home="$BRhome")
+fi
+
+if [ -n "$BRboot" ]; then
+  BRcustom="y"
+  BRcustomparts+=(/boot="$BRboot")
+fi
+
 check_input
 
 if [ -n "$BRroot" ]; then
@@ -1249,8 +1111,8 @@ if [ -n "$BRroot" ]; then
     BRrootsubvol="n"
   fi
 
-  if [ -z "$BRcustom" ]; then
-    BRcustom="n"
+  if [ -z "$BRother" ]; then
+    BRother="n"
   fi
 
   if [ -z "$BRmountoptions" ]; then
@@ -1405,6 +1267,8 @@ if [ "$BRinterface" = "cli" ]; then
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
         BRhome=(`echo $c | awk '{ print $1 }'`)
+        BRcustom="y"
+        BRcustomparts+=(/home="$BRhome")
         echo -e "${BR_GREEN}You selected $BRhome as your home partition${BR_NORM}"
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
@@ -1426,6 +1290,8 @@ if [ "$BRinterface" = "cli" ]; then
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
         BRboot=(`echo $c | awk '{ print $1 }'`)
+        BRcustom="y"
+        BRcustomparts+=(/boot="$BRboot")
         echo -e "${BR_GREEN}You selected $BRboot as your boot partition${BR_NORM}"
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
@@ -1458,7 +1324,7 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  while [ -z "$BRcustom" ]; do
+  while [ -z "$BRother" ]; do
     echo -e "\n${BR_CYAN}Specify custom partitions?${BR_NORM}"
     read -p "(y/N):" an
 
@@ -1470,13 +1336,14 @@ if [ "$BRinterface" = "cli" ]; then
 
     if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRcustom="y"
+      BRother="y"
       IFS=$DEFAULTIFS
       echo -e "\n${BR_CYAN}Set partitions (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)${BR_NORM}"
       read -p "Partitions: " BRcustompartslist
-      BRcustomparts=($BRcustompartslist)
+      BRcustomparts+=($BRcustompartslist)
       IFS=$'\n'
     elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-      BRcustom="n"
+      BRother="n"
     else
       echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
     fi
@@ -1629,9 +1496,8 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   check_input
-  sort_custom_parts
   mount_all
-  detect_parts_fs_size
+  detect_root_fs_size
 
   if [ "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do
@@ -2002,6 +1868,10 @@ elif [ "$BRinterface" = "dialog" ]; then
       BRhome=" "
       exit
     fi
+    if [ -n "$BRhome" ]; then
+      BRcustom="y"
+      BRcustomparts+=(/home="$BRhome")
+    fi
   fi
 
   if [ -z "$BRboot" ]; then
@@ -2009,6 +1879,10 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$?" = "3" ]; then
       BRboot=" "
       exit
+    fi
+    if [ -n "$BRboot" ]; then
+      BRcustom="y"
+      BRcustomparts+=(/boot="$BRboot")
     fi
   fi
 
@@ -2020,12 +1894,13 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  if [ -z "$BRcustom" ]; then
+  if [ -z "$BRother" ]; then
     dialog --yesno "Specify custom partitions?" 6 30
     if [ "$?" = "0" ]; then
       BRcustom="y"
+      BRother="y"
       BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 2>&1 1>&3)
-      BRcustomparts=($BRcustompartslist)
+      BRcustomparts+=($BRcustompartslist)
     fi
   fi
 
@@ -2108,10 +1983,9 @@ elif [ "$BRinterface" = "dialog" ]; then
     color_variables
   fi
   check_input
-  sort_custom_parts
   mount_all
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
-  detect_parts_fs_size
+  detect_root_fs_size
 
   if [ "x$BRfsystem" = "xbtrfs" ]; then
     while [ -z "$BRrootsubvol" ]; do

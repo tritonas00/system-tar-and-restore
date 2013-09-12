@@ -393,6 +393,11 @@ check_input() {
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
       BRSTOP=y
     fi
+    if [[ -n $(for i in ${BRcustomparts[@]}; do BRmpoint=$(echo $i | cut -f1 -d"=") && echo $BRmpoint; done | sort | uniq -d) ]]; then
+      for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); done
+      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Duplicate mountpoint: $BRmpoint"
+      BRSTOP=y
+    fi
 
     while read ln; do
       BRmpoint=$(echo $ln | cut -f1 -d"=")
@@ -569,18 +574,18 @@ mount_all() {
 
 show_summary() {
   echo -e "${BR_YELLOW}PARTITIONS:"
-  echo -e "Root Partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
+  echo -e "root partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
 
   if [ -n "$BRboot" ]; then
-    echo "Boot Partition: $BRboot $BRbootfsystem $BRbootfsize"
+    echo "boot partition: $BRboot $BRbootfsystem $BRbootfsize"
   fi
 
   if [ -n "$BRhome" ]; then
-    echo "Home Partition: $BRhome $BRhomefsystem $BRhomefsize"
+    echo "home partition: $BRhome $BRhomefsystem $BRhomefsize"
   fi
 
   if [ -n "$BRswap" ]; then
-    echo "Swap Partition: $BRswap"
+    echo "swap partition: $BRswap"
   fi
 
   if [ "$BRcustom" = "y" ]; then
@@ -589,7 +594,7 @@ show_summary() {
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
       BRcustomsize=$(lsblk -d -n -o size 2> /dev/null $BRdevice)
-      echo "$BRmpoint Partition: $BRdevice $BRcustomfs $BRcustomsize"
+      echo "${BRmpoint#*/} partition: $BRdevice $BRcustomfs $BRcustomsize"
     done
   fi
 

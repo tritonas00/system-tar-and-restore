@@ -243,14 +243,14 @@ hide_used_parts_lvm() {
 }
 
 part_list_dialog() {
-  for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | hide_used_parts
-  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | hide_used_parts_lvm
-  for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done | hide_used_parts
+  for f in /dev/[hs]d[a-z][0-9]; do echo -e "$f $(lsblk -d -n -o size $f)"; done | hide_used_parts
+  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)"; done | hide_used_parts_lvm
+  for f in $(find /dev -regex "/dev/md[0-9].*"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | hide_used_parts
 }
 
 disk_list_dialog() {
-  for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
-  for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)\r"; done
+  for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)"; done
+  for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)"; done
 }
 
 update_part_list() {

@@ -321,7 +321,7 @@ if [ "$BRinterface" = "cli" ]; then
     elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
       while [ -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
         echo -e "\n${BR_CYAN}Enter the path where the backup will be created${BR_NORM}"
-        read -p "Path: " BRFOLDER
+        read -e -p "Path: " BRFOLDER
         if [ ! -d "$BRFOLDER" ]; then
           echo -e "${BR_RED}Directory does not exist${BR_NORM}"
         fi

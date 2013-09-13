@@ -1662,7 +1662,9 @@ if [ "$BRinterface" = "cli" ]; then
         elif [ "$REPLY" = "1" ]; then
           unset BRurl
           echo -e "\n${BR_CYAN}Enter the path of the backup file${BR_NORM}"
-          read -p "Path:" BRfile
+          IFS=$DEFAULTIFS
+          read -e -p "Path:" BRfile
+          IFS=$'\n'
           if [ ! -f "$BRfile" ] || [ -z "$BRfile" ]; then
             echo -e "[${BR_RED}ERROR${BR_NORM}] File not found"
       	  else

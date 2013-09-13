@@ -1489,10 +1489,8 @@ if [ "$BRinterface" = "cli" ]; then
 
       if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
         BRhidden="n"
-        echo -e "${BR_GREEN}Entire /home directory will be transferred${BR_NORM}"
       elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
         BRhidden="y"
-         echo -e "${BR_GREEN}Only /home's hidden files and folders will be transferred${BR_NORM}"
       else
         echo -e "${BR_RED}Please select a valid option${BR_NORM}"
       fi

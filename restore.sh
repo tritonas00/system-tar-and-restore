@@ -1276,7 +1276,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_GREEN}You selected $BRhome as your home partition${BR_NORM}"
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
-        echo -e "${BR_GREEN}No seperate home partition${BR_NORM}"
+        echo -e "${BR_GREEN}No home partition${BR_NORM}"
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1299,7 +1299,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_GREEN}You selected $BRboot as your boot partition${BR_NORM}"
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
-        echo -e "${BR_GREEN}No seperate boot partition${BR_NORM}"
+        echo -e "${BR_GREEN}No boot partition${BR_NORM}"
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"

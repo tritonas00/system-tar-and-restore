@@ -332,15 +332,19 @@ check_input() {
   fi
 
   if [ "$BRcustom" = "y" ]; then
-    if [[ -n $(for i in ${BRcustomparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"=") && echo $BRdevice; done | sort | uniq -d) ]]; then
-      for a in ${BRcustomparts[@]}; do BRdevice=$(echo $a | cut -f2 -d"="); done
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
-      BRSTOP=y
+    BRdevused=(`for i in ${BRcustomparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"=") && echo $BRdevice; done | sort | uniq -d`)
+    BRmpointused=(`for i in ${BRcustomparts[@]}; do BRmpoint=$(echo $i | cut -f1 -d"=") && echo $BRmpoint; done | sort | uniq -d`)
+    if [ -n "$BRdevused" ]; then
+      for a in ${BRdevused[@]}; do
+        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $a already used"
+        BRSTOP=y
+      done
     fi
-    if [[ -n $(for i in ${BRcustomparts[@]}; do BRmpoint=$(echo $i | cut -f1 -d"=") && echo $BRmpoint; done | sort | uniq -d) ]]; then
-      for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); done
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Duplicate mountpoint: $BRmpoint"
-      BRSTOP=y
+    if [ -n "$BRmpointused" ]; then
+      for a in ${BRmpointused[@]}; do
+        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Duplicate mountpoint: $a"
+        BRSTOP=y
+      done
     fi
 
     while read ln; do
@@ -362,6 +366,10 @@ check_input() {
       fi
       if [ "$BRdevice" == "$BRroot" ] || [ "$BRdevice" == "$BRswap" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
+        BRSTOP=y
+      fi
+      if [ "$BRmpoint" = "/" ]; then
+        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Duplicate mountpoint: /"
         BRSTOP=y
       fi
       if [[ "$BRmpoint" == *var* ]] && [ "x$BRvarsubvol" = "xy" ]; then

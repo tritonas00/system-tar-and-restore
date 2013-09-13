@@ -1188,10 +1188,10 @@ if [ -f /etc/pacman.conf ]; then
   PATH="$PATH:/usr/sbin:/bin"
 fi
 
-PS3="Choice: "
+PS3="Enter number or Q to quit: "
 
 while [ -z "$BRinterface" ]; do
-  echo -e "\n${BR_CYAN}Select interface or enter Q to quit${BR_NORM}"
+  echo -e "\n${BR_CYAN}Select interface:${BR_NORM}"
   select c in "CLI" "Dialog"; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1203,7 +1203,7 @@ while [ -z "$BRinterface" ]; do
       BRinterface="dialog"
       break
     else
-      echo -e "${BR_RED}Please enter a valid option from the list or enter Q to quit${BR_NORM}"
+      echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
     fi
   done
 done
@@ -1224,7 +1224,7 @@ if [ "$BRinterface" = "cli" ]; then
   update_part_list
 
   while [ -z "$BRroot" ]; do
-    echo -e "\n${BR_CYAN}Select target root partition or enter Q to quit${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select target root partition:${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1234,7 +1234,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_GREEN}You selected $BRroot as your root partition${BR_NORM}"
         break
       else
-        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
       fi
     done
   done
@@ -1264,7 +1264,7 @@ if [ "$BRinterface" = "cli" ]; then
   update_part_list
 
   if [ -z "$BRhome" ]; then
-    echo -e "\n${BR_CYAN}Select target home partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select target home partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1279,7 +1279,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_GREEN}No seperate home partition${BR_NORM}"
         break
       else
-        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
       fi
     done
   fi
@@ -1287,7 +1287,7 @@ if [ "$BRinterface" = "cli" ]; then
   update_part_list
 
   if [ -z "$BRboot" ]; then
-    echo -e "\n${BR_CYAN}Select target boot partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select target boot partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1302,7 +1302,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_GREEN}No seperate boot partition${BR_NORM}"
         break
       else
-        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
       fi
     done
   fi
@@ -1310,7 +1310,7 @@ if [ "$BRinterface" = "cli" ]; then
   update_part_list
 
   if [ -z "$BRswap" ]; then
-    echo -e "\n${BR_CYAN}Select swap partition or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select swap partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1323,7 +1323,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_GREEN}No swap partition${BR_NORM}"
         break
       else
-        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
       fi
     done
   fi
@@ -1354,7 +1354,7 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    echo -e "\n${BR_CYAN}Select bootloader or enter Q to quit \n${BR_MAGENTA}(Optional - Press C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select bootloader: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in Grub Syslinux; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1365,7 +1365,7 @@ if [ "$BRinterface" = "cli" ]; then
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
 
         while [ -z "$BRgrub" ]; do
-          echo -e "\n${BR_CYAN}Select target disk for Grub or enter Q to quit${BR_NORM}"
+          echo -e "\n${BR_CYAN}Select target disk for Grub:${BR_NORM}"
 	  select c in ${disk_list[@]}; do
 	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1375,7 +1375,7 @@ if [ "$BRinterface" = "cli" ]; then
               echo -e "${BR_GREEN}You selected $BRgrub to install Grub${BR_NORM}"
 	      break
 	    else
-              echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+              echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
 	    fi
 	  done
         done
@@ -1383,7 +1383,7 @@ if [ "$BRinterface" = "cli" ]; then
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
 
         while [ -z "$BRsyslinux" ]; do
-          echo -e "\n${BR_CYAN}Select target disk Syslinux or enter Q to quit${BR_NORM}"
+          echo -e "\n${BR_CYAN}Select target disk Syslinux:${BR_NORM}"
 	  select c in ${disk_list[@]}; do
 	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1409,13 +1409,13 @@ if [ "$BRinterface" = "cli" ]; then
                 echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
               fi
 	    else
-              echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+              echo -e "${BR_RED}Please select a valid option from${BR_NORM}"
 	    fi
 	  done
         done
         break
       else
-        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
       fi
     done
   fi
@@ -1438,7 +1438,7 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   while [ -z "$BRmode" ]; do
-    echo -e "\n${BR_CYAN}Select Mode or enter Q to quit${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select Mode:${BR_NORM}"
     select c in "Restore system from backup file" "Transfer this system with rsync"; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1452,7 +1452,7 @@ if [ "$BRinterface" = "cli" ]; then
         BRmode="Transfer"
         break
       else
-        echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
       fi
     done
   done
@@ -1648,7 +1648,7 @@ if [ "$BRinterface" = "cli" ]; then
     fi
 
     while [ ! -f /mnt/target/fullbackup ]; do
-      echo -e "\n${BR_CYAN}Select backup file. Choose an option or enter Q to quit${BR_NORM}"
+      echo -e "\n${BR_CYAN}Select backup file. Choose an option:${BR_NORM}"
       select c in "Local File" "URL" "Protected URL"; do
         if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
           echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1704,7 +1704,7 @@ if [ "$BRinterface" = "cli" ]; then
           fi
           break
         else
-          echo -e "${BR_RED}Please select a valid option from the list or enter Q to quit${BR_NORM}"
+          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
         fi
       done
       if [ -f /mnt/target/fullbackup ]; then

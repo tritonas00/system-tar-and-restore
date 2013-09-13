@@ -273,10 +273,10 @@ if [ -n "$BRFOLDER" ]; then
   fi
 fi
 
-PS3="Choice: "
+PS3="Enter number or Q to quit: "
 
 while [ -z "$BRinterface" ]; do
-  echo -e "\n${BR_CYAN}Select interface or enter Q to quit${BR_NORM}"
+  echo -e "\n${BR_CYAN}Select interface:${BR_NORM}"
   select c in "CLI" "Dialog"; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
       echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -288,7 +288,7 @@ while [ -z "$BRinterface" ]; do
       BRinterface="dialog"
       break
     else
-      echo -e "${BR_RED}Please enter a valid option from the list or enter Q to quit${BR_NORM}"
+      echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
     fi
   done
 done
@@ -334,7 +334,10 @@ if [ "$BRinterface" = "cli" ]; then
   while [ -z "$BRhome" ] ; do
     echo -e "\n${BR_CYAN}Home (/home) directory options:${BR_NORM}"
     select c in "Include" "Only hidden files and folders" "Exclude"; do
-      if [ "$REPLY" = "1" ]; then
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+        exit
+      elif [ "$REPLY" = "1" ]; then
         BRhome="Yes"
         break
       elif [ "$REPLY" = "2" ]; then
@@ -354,7 +357,10 @@ if [ "$BRinterface" = "cli" ]; then
   while [ -z "$BRarchiver" ]; do
     echo -e "\n${BR_CYAN}Select archiver:${BR_NORM}"
     select c in "tar    (GNU Tar)" "bsdtar (Libarchive Tar)"; do
-      if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+        exit
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
         BRarchiver="tar"
         break
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
@@ -374,7 +380,10 @@ if [ "$BRinterface" = "cli" ]; then
   while [ -z "$BRcompression" ]; do
     echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
     select c in "gzip (Fast, big file)" "xz   (Slow, smaller file)"; do
-      if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+        exit
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
         BRcompression="gzip"
         break
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then

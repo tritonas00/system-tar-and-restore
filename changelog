@@ -1,5 +1,23 @@
 Changelog:
 
+3.7
+    merged clean_unmount_when_subvols in clean_unmount_in
+    show distro and architecture in summary
+    check if selected bootloader exists in the archived system
+    check if running and target system architecture match*
+    removed useless tmpfs line in fstab
+    added check for custom mountpoints syntax
+    use custom partitions array to assign home and boot partitions
+    hide used lvm partitions
+    enabled tab auto completion in cli interface
+    replaced error/warning messages in dialog interface with --msgbox
+    more accurate cli dialogs
+    added quit options in backup.sh dialogs
+    fixed partition list in cli interface
+    code cleaning
+
+* With this commit, 3.7 restore.sh will NOT accept backups made with previous versions.
+
 3.6.11
     backup.sh: obey -h argument when -d is not given
 

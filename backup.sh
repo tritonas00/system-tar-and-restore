@@ -514,7 +514,11 @@ elif [ "$BRinterface" = "dialog" ]; then
   done
 
   while [ -z "$BRhome" ]; do
-    REPLY=$(dialog --no-cancel --menu "Home (/home) directory options:" 13 50 13 1 Include 2 "Only hidden files and folders" 3 Exclude 2>&1 1>&3)
+    REPLY=$(dialog --cancel-label Quit --menu "Home (/home) directory options:" 13 50 13 1 Include 2 "Only hidden files and folders" 3 Exclude 2>&1 1>&3)
+    if [ "$?" = "1" ]; then
+      BRhome=" "
+      exit
+    fi
     if [ "$REPLY" = "1" ]; then
       BRhome="Yes"
     elif [ "$REPLY" = "2" ]; then

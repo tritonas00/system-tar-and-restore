@@ -527,7 +527,11 @@ elif [ "$BRinterface" = "dialog" ]; then
   done
 
   while [ -z "$BRarchiver" ]; do
-    BRarchiver=$(dialog --no-cancel --menu "Select archiver:" 12 35 12 tar "GNU Tar" bsdtar "Libarchive Tar" 2>&1 1>&3)
+    BRarchiver=$(dialog --cancel-label Quit --menu "Select archiver:" 12 35 12 tar "GNU Tar" bsdtar "Libarchive Tar" 2>&1 1>&3)
+    if [ "$?" = "1" ]; then
+      BRarchiver=" "
+      exit
+    fi
   done
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
@@ -539,7 +543,11 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   while [ -z "$BRcompression" ]; do
-    BRcompression=$(dialog --no-cancel --menu "Select compression type:" 12 35 12 gzip "Fast, big file" xz "Slow, smaller file" 2>&1 1>&3)
+    BRcompression=$(dialog --cancel-label Quit --menu "Select compression type:" 12 35 12 gzip "Fast, big file" xz "Slow, smaller file" 2>&1 1>&3)
+    if [ "$?" = "1" ]; then
+      BRcompression=" "
+      exit
+    fi
   done
 
   while [ -z "$BRuseroptions" ]; do

@@ -1352,7 +1352,7 @@ if [ "$BRinterface" = "cli" ]; then
         BRother="y"
         IFS=$DEFAULTIFS
         echo -e "\n${BR_CYAN}Set partitions (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)${BR_NORM}"
-        read -p "Partitions: " BRcustompartslist
+        read -e -p "Partitions: " BRcustompartslist
         BRcustomparts+=($BRcustompartslist)
         IFS=$'\n'
       elif [ "$def" = "n" ] || [ "$def" = "N" ]; then

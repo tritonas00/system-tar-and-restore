@@ -1271,7 +1271,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   update_part_list
 
-  if [ -z "$BRhome" ]; then
+  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ]; then
     echo -e "\n${BR_CYAN}Select target home partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1294,7 +1294,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   update_part_list
 
-  if [ -z "$BRboot" ]; then
+  if [ -z "$BRboot" ] && [ -n "$(part_list_dialog)" ]; then
     echo -e "\n${BR_CYAN}Select target boot partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1317,7 +1317,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   update_part_list
 
-  if [ -z "$BRswap" ]; then
+  if [ -z "$BRswap" ] && [ -n "$(part_list_dialog)" ]; then
     echo -e "\n${BR_CYAN}Select swap partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1336,30 +1336,32 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  while [ -z "$BRother" ]; do
-    echo -e "\n${BR_CYAN}Specify custom partitions?${BR_NORM}"
-    read -p "(y/N):" an
+  if [ -n "$(part_list_dialog)" ]; then
+    while [ -z "$BRother" ]; do
+      echo -e "\n${BR_CYAN}Specify custom partitions?${BR_NORM}"
+      read -p "(y/N):" an
 
-    if [ -n "$an" ]; then
-      def=$an
-    else
-      def="n"
-    fi
+      if [ -n "$an" ]; then
+        def=$an
+      else
+        def="n"
+      fi
 
-    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
-      BRcustom="y"
-      BRother="y"
-      IFS=$DEFAULTIFS
-      echo -e "\n${BR_CYAN}Set partitions (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)${BR_NORM}"
-      read -p "Partitions: " BRcustompartslist
-      BRcustomparts+=($BRcustompartslist)
-      IFS=$'\n'
-    elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-      BRother="n"
-    else
-      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
-    fi
-  done
+      if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
+        BRcustom="y"
+        BRother="y"
+        IFS=$DEFAULTIFS
+        echo -e "\n${BR_CYAN}Set partitions (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)${BR_NORM}"
+        read -p "Partitions: " BRcustompartslist
+        BRcustomparts+=($BRcustompartslist)
+        IFS=$'\n'
+      elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
+        BRother="n"
+      else
+        echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+      fi
+    done
+  fi
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
     echo -e "\n${BR_CYAN}Select bootloader: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
@@ -1874,7 +1876,7 @@ elif [ "$BRinterface" = "dialog" ]; then
      fi
    done
 
-  if [ -z "$BRhome" ]; then
+  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ]; then
     BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
     if [ "$?" = "3" ]; then
       BRhome=" "
@@ -1886,7 +1888,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  if [ -z "$BRboot" ]; then
+  if [ -z "$BRboot" ] && [ -n "$(part_list_dialog)" ]; then
     BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
     if [ "$?" = "3" ]; then
       BRboot=" "
@@ -1898,7 +1900,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  if [ -z "$BRswap" ]; then
+  if [ -z "$BRswap" ] && [ -n "$(part_list_dialog)" ]; then
     BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set swap partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
     if [ "$?" = "3" ]; then
       BRswap=" "
@@ -1906,7 +1908,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  if [ -z "$BRother" ]; then
+  if [ -z "$BRother" ] && [ -n "$(part_list_dialog)" ]; then
     dialog --yesno "Specify custom partitions?" 6 30
     if [ "$?" = "0" ]; then
       BRcustom="y"
@@ -1994,6 +1996,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   if [ -z "$BRnocolor" ]; then
     color_variables
   fi
+
   check_input
   mount_all
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD

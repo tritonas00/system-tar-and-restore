@@ -231,7 +231,7 @@ count_gauge_wget() {
       lastln=$ln
       echo $lastln
     fi
-  done 
+  done
 }
 
 hide_used_parts() {
@@ -773,7 +773,7 @@ check_archive() {
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error reading archive\n"
     elif [ "$BRinterface" = "dialog" ]; then
       dialog --title "Error" --msgbox "Error reading archive." 5 26
-    fi 
+    fi
   else
     target_arch=$(grep -F 'target_architecture.' /tmp/filelist)
     if [ ! "$(uname -m)" == "$(echo ${target_arch#*.})" ]; then
@@ -1648,7 +1648,7 @@ if [ "$BRinterface" = "cli" ]; then
       fi
     fi
     if [ -f /mnt/target/fullbackup ]; then
-      ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | 
+      ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
       check_archive
     fi
@@ -1716,7 +1716,7 @@ if [ "$BRinterface" = "cli" ]; then
         fi
       done
       if [ -f /mnt/target/fullbackup ]; then
-        ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist | 
+        ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
         check_archive
       fi
@@ -2073,9 +2073,9 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -n "$BRurl" ]; then
       BRurlold=$BRurl
       if [ -n "$BRusername" ]; then
-       (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 | 
+       (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
         sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
-        
+
         if [ -f /tmp/wget_error ]; then
           rm /tmp/wget_error
           dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57

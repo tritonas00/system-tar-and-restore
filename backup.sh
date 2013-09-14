@@ -100,7 +100,7 @@ set_tar_options() {
     BR_TAROPTS=("$BR_USER_OPTS" --exclude=/run/*?* --exclude=/dev/*?* --exclude=/proc/*?* --exclude=/sys/*?* --exclude=/media/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found)
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS+=(--exclude=/home/*?*)
-    elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then 
+    elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
       find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
       BR_TAROPTS+=(--exclude-from=/tmp/excludelist)
     fi

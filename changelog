@@ -5,6 +5,7 @@ Changelog:
     show distro and architecture in summary
     check if selected bootloader exists in the archived system
     check if running and target system architecture match*
+    ask for /home/boot/swap/custom partitions only if partition list is not empty
     removed useless tmpfs line in fstab
     added check for custom mountpoints syntax
     use custom partitions array to assign home and boot partitions

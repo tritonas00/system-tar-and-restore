@@ -934,21 +934,11 @@ create_subvols() {
 }
 
 unset_vars() {
- if [ "x$BRswap" = "x-1" ]; then
-    unset BRswap
-  fi
-  if [ "x$BRboot" = "x-1" ]; then
-    unset BRboot
-  fi
-  if [ "x$BRhome" = "x-1" ]; then
-    unset BRhome
-  fi
-  if [ "x$BRgrub" = "x-1" ]; then
-    unset BRgrub
-  fi
-  if [ "x$BRsyslinux" = "x-1" ]; then
-    unset BRsyslinux
-  fi
+  if [ "x$BRswap" = "x-1" ]; then unset BRswap; fi
+  if [ "x$BRboot" = "x-1" ]; then unset BRboot; fi
+  if [ "x$BRhome" = "x-1" ]; then unset BRhome; fi
+  if [ "x$BRgrub" = "x-1" ]; then unset BRgrub; fi
+  if [ "x$BRsyslinux" = "x-1" ]; then unset BRsyslinux; fi
 }
 
 BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoNm:k:c:a:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:" -n "$1" -- "$@"`
@@ -1874,8 +1864,8 @@ elif [ "$BRinterface" = "dialog" ]; then
       fi
     done
   else
-  dialog --title "Error" --msgbox "No partitions found." 5 24
-  exit
+    dialog --title "Error" --msgbox "No partitions found." 5 24
+    exit
   fi
 
   while [ -z "$BRmountoptions" ]; do

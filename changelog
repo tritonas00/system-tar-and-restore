@@ -3,6 +3,7 @@ Changelog:
 3.7.1
     if no partitions found for root, abort
     changed a warning message
+    fixed BRvarsubvol variable
     code cleaning
 
 3.7

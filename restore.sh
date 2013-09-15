@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.7"
+BR_VERSION="System Tar & Restore 3.7.1"
 BR_SEP="::"
 
 clear
@@ -369,7 +369,7 @@ check_input() {
         BRSTOP=y
       fi
       if [ "$BRmpoint" = "/" ]; then
-        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Duplicate mountpoint: /"
+        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont assign root partition as custom"
         BRSTOP=y
       fi
       if [[ "$BRmpoint" == *var* ]] && [ "x$BRvarsubvol" = "xy" ]; then
@@ -933,6 +933,24 @@ create_subvols() {
   fi
 }
 
+unset_vars() {
+ if [ "x$BRswap" = "x-1" ]; then
+    unset BRswap
+  fi
+  if [ "x$BRboot" = "x-1" ]; then
+    unset BRboot
+  fi
+  if [ "x$BRhome" = "x-1" ]; then
+    unset BRhome
+  fi
+  if [ "x$BRgrub" = "x-1" ]; then
+    unset BRgrub
+  fi
+  if [ "x$BRsyslinux" = "x-1" ]; then
+    unset BRsyslinux
+  fi
+}
+
 BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoNm:k:c:a:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
@@ -1231,21 +1249,26 @@ if [ "$BRinterface" = "cli" ]; then
   editorlist=(nano vi)
   update_part_list
 
-  while [ -z "$BRroot" ]; do
-    echo -e "\n${BR_CYAN}Select target root partition:${BR_NORM}"
-    select c in ${list[@]}; do
-      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-        exit
-      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-        BRroot=(`echo $c | awk '{ print $1 }'`)
-        echo -e "${BR_GREEN}You selected $BRroot as your root partition${BR_NORM}"
-        break
-      else
-        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-      fi
+  if [ -n "$(part_list_dialog)" ]; then
+    while [ -z "$BRroot" ]; do
+      echo -e "\n${BR_CYAN}Select target root partition:${BR_NORM}"
+      select c in ${list[@]}; do
+        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+          exit
+        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
+          BRroot=(`echo $c | awk '{ print $1 }'`)
+          echo -e "${BR_GREEN}You selected $BRroot as your root partition${BR_NORM}"
+          break
+        else
+          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+        fi
+      done
     done
-  done
+  else
+    echo -e "[${BR_RED}ERROR${BR_NORM}] No partitions found"
+    exit
+  fi
 
   while [ -z "$BRmountoptions" ]; do
     echo -e "\n${BR_CYAN}Enter additional mount options?${BR_NORM}"
@@ -1430,22 +1453,7 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-
-  if [ "x$BRswap" = "x-1" ]; then
-    unset BRswap
-  fi
-  if [ "x$BRboot" = "x-1" ]; then
-    unset BRboot
-  fi
-  if [ "x$BRhome" = "x-1" ]; then
-    unset BRhome
-  fi
-  if [ "x$BRgrub" = "x-1" ]; then
-    unset BRgrub
-  fi
-  if [ "x$BRsyslinux" = "x-1" ]; then
-    unset BRsyslinux
-  fi
+  unset_vars
 
   while [ -z "$BRmode" ]; do
     echo -e "\n${BR_CYAN}Select Mode:${BR_NORM}"
@@ -1857,13 +1865,18 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   exec 3>&1
 
-  while [ -z "$BRroot" ]; do
-    BRroot=$(dialog --cancel-label Quit --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-    if [ "$?" = "1" ]; then
-      BRroot=" "
-      exit
-    fi
-  done
+  if [ -n "$(part_list_dialog)" ]; then
+    while [ -z "$BRroot" ]; do
+      BRroot=$(dialog --cancel-label Quit --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+      if [ "$?" = "1" ]; then
+        BRroot=" "
+        exit
+      fi
+    done
+  else
+  dialog --title "Error" --msgbox "No partitions found." 5 24
+  exit
+  fi
 
   while [ -z "$BRmountoptions" ]; do
      dialog --yesno "Specify additional mount options?" 6 40
@@ -1951,21 +1964,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     dialog  --title "Warning" --msgbox "No bootloader selected, press ok to continue." 5 49
   fi
 
-  if [ "x$BRswap" = "x-1" ] || [[ "x$BRswap" == *"Error"* ]]; then
-    unset BRswap
-  fi
-  if [ "x$BRboot" = "x-1" ] || [[ "x$BRboot" == *"Error"* ]]; then
-    unset BRboot
-  fi
-  if [ "x$BRhome" = "x-1" ] || [[ "x$BRhome" == *"Error"* ]]; then
-    unset BRhome
-  fi
-  if [ "x$BRgrub" = "x-1" ]; then
-    unset BRgrub
-  fi
-  if [ "x$BRsyslinux" = "x-1" ]; then
-    unset BRsyslinux
-  fi
+  unset_vars
 
   while [ -z "$BRmode" ]; do
     BRmode=$(dialog --cancel-label Quit --menu "Select Mode:" 12 50 12 Restore "system from backup file" Transfer "this system with rsync" 2>&1 1>&3)

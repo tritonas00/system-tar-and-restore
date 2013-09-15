@@ -1,5 +1,10 @@
 Changelog:
 
+3.7.1
+    if no partitions found for root, abort
+    changed a warning message
+    code cleaning
+
 3.7
     merged clean_unmount_when_subvols in clean_unmount_in
     show distro and architecture in summary

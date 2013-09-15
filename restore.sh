@@ -1597,15 +1597,10 @@ if [ "$BRinterface" = "cli" ]; then
         fi
       done
 
-      if [ "x$BRhomesubvol" = "x-1" ]; then
-        unset BRhomesubvol
-      fi
-      if [ "x$BRusrsubvol" = "x-1" ]; then
-        unset BRusrsubvol
-      fi
-      if [ "x$BRhome" = "x-1" ]; then
-        unset BRvarsubvol
-      fi
+      if [ "x$BRhomesubvol" = "x-1" ]; then unset BRhomesubvol; fi
+      if [ "x$BRusrsubvol" = "x-1" ]; then unset BRusrsubvol; fi
+      if [ "x$BRvarsubvol" = "x-1" ]; then unset BRvarsubvol; fi
+
       create_subvols
     fi
   elif [ "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
@@ -2038,15 +2033,10 @@ elif [ "$BRinterface" = "dialog" ]; then
         fi
       done
 
-      if [ "x$BRhomesubvol" = "x-1" ]; then
-	unset BRhomesubvol
-      fi
-      if [ "x$BRusrsubvol" = "x-1" ]; then
-	unset BRusrsubvol
-      fi
-      if [ "x$BRhome" = "x-1" ]; then
-	unset BRvarsubvol
-      fi
+      if [ "x$BRhomesubvol" = "x-1" ]; then unset BRhomesubvol; fi
+      if [ "x$BRusrsubvol" = "x-1" ]; then unset BRusrsubvol; fi
+      if [ "x$BRvarsubvol" = "x-1" ]; then unset BRvarsubvol; fi
+
       if [ -z "$BRnocolor" ]; then
         color_variables
       fi

@@ -1357,7 +1357,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   update_part_list
 
-  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ] && [ "$BRhomesubvol" = "n" ]; then
+  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ] && [ -z "$BRhomesubvol" ]; then
     echo -e "\n${BR_CYAN}Select target home partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1906,7 +1906,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     dialog  --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
   fi
 
-  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ] && [ "$BRhomesubvol" = "n" ]; then
+  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ] && [ -z "$BRhomesubvol" ]; then
     BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
     if [ "$?" = "3" ]; then
       BRhome=" "

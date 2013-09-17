@@ -254,7 +254,7 @@ disk_list_dialog() {
 }
 
 update_part_list() {
-  list=(`part_list_dialog`)
+  list=(`part_list_dialog  2>/dev/null`)
 }
 
 check_input() {

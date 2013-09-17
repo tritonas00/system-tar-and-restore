@@ -553,7 +553,7 @@ show_summary() {
       echo "Var  Subvolume: Yes"
     fi
 
-    if [ "x$BRusrsubvol" = "xy" ]; then
+    if [ "$BRusrsubvol" = "y" ]; then
       echo "Usr  Subvolume: Yes"
     fi
   fi

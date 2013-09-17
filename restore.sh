@@ -1357,25 +1357,27 @@ if [ "$BRinterface" = "cli" ]; then
 
   update_part_list
 
-  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ] && [ -z "$BRhomesubvol" ]; then
-    echo -e "\n${BR_CYAN}Select target home partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
-    select c in ${list[@]}; do
-      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-        exit
-      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-        BRhome=(`echo $c | awk '{ print $1 }'`)
-        BRcustom="y"
-        BRcustomparts+=(/home="$BRhome")
-        echo -e "${BR_GREEN}You selected $BRhome as your home partition${BR_NORM}"
-        break
-      elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
-        echo -e "${BR_GREEN}No home partition${BR_NORM}"
-        break
-      else
-        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-      fi
-    done
+  if [ "$BRhomesubvol" = "n" ] || [ -z "$BRhomesubvol" ] ; then
+    if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ]; then
+      echo -e "\n${BR_CYAN}Select target home partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
+      select c in ${list[@]}; do
+        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+          exit
+        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
+          BRhome=(`echo $c | awk '{ print $1 }'`)
+          BRcustom="y"
+          BRcustomparts+=(/home="$BRhome")
+          echo -e "${BR_GREEN}You selected $BRhome as your home partition${BR_NORM}"
+          break
+        elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
+          echo -e "${BR_GREEN}No home partition${BR_NORM}"
+          break
+        else
+          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+        fi
+      done
+    fi
   fi
 
   update_part_list
@@ -1906,15 +1908,17 @@ elif [ "$BRinterface" = "dialog" ]; then
     dialog  --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
   fi
 
-  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ] && [ -z "$BRhomesubvol" ]; then
-    BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-    if [ "$?" = "3" ]; then
-      BRhome=" "
-      exit
-    fi
-    if [ -n "$BRhome" ]; then
-      BRcustom="y"
-      BRcustomparts+=(/home="$BRhome")
+  if [ "$BRhomesubvol" = "n" ] || [ -z "$BRhomesubvol" ] ; then
+    if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ]; then
+      BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+      if [ "$?" = "3" ]; then
+        BRhome=" "
+        exit
+      fi
+      if [ -n "$BRhome" ]; then
+        BRcustom="y"
+        BRcustomparts+=(/home="$BRhome")
+      fi
     fi
   fi
 

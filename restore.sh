@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.7.1"
+BR_VERSION="System Tar & Restore 3.7.2"
 BR_SEP="::"
 
 clear
@@ -70,7 +70,7 @@ show_path() {
 }
 
 detect_root_fs_size() {
-  BRfsystem=$(df -T | grep $BRroot | awk '{print $2}')
+  BRfsystem=$(blkid -s TYPE -o value $BRroot)
   BRfsize=$(lsblk -d -n -o size 2> /dev/null $BRroot)
 }
 
@@ -167,7 +167,7 @@ set_syslinux_flags_and_paths() {
 
 generate_syslinux_cfg() {
   echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
-  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
     syslinuxrootsubvol="rootflags=subvol=$BRrootsubvolname"
   fi
   for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
@@ -372,19 +372,19 @@ check_input() {
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont assign root partition as custom"
         BRSTOP=y
       fi
-      if [[ "$BRmpoint" == *var* ]] && [ "x$BRvarsubvol" = "xy" ]; then
+      if [[ "$BRmpoint" == *var* ]] && [ "$BRvarsubvol" = "y" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
         BRSTOP=y
       elif [[ "$BRmpoint" == *var* ]]; then
         BRvarsubvol="n"
       fi
-      if [[ "$BRmpoint" == *usr* ]] && [ "x$BRusrsubvol" = "xy" ]; then
+      if [[ "$BRmpoint" == *usr* ]] && [ "$BRusrsubvol" = "y" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
         BRSTOP=y
       elif [[ "$BRmpoint" == *usr* ]]; then
         BRusrsubvol="n"
       fi
-      if [[ "$BRmpoint" == *home* ]] && [ "x$BRhomesubvol" = "xy" ]; then
+      if [[ "$BRmpoint" == *home* ]] && [ "$BRhomesubvol" = "y" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
         BRSTOP=y
       elif [[ "$BRmpoint" == *home* ]]; then
@@ -474,6 +474,30 @@ mount_all() {
     exit
   fi
 
+  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
+    echo -n "Creating $BRrootsubvolname "
+    OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
+
+    if [ "$BRhomesubvol" = "y" ]; then
+      echo -n "Creating $BRrootsubvolname/home "
+      OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname/home 2>&1 1> /dev/null) && ok_status || error_status
+    fi
+    if [ "$BRvarsubvol" = "y" ]; then
+      echo -n "Creating $BRrootsubvolname/var "
+      OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname/var 2>&1 1> /dev/null) && ok_status || error_status
+    fi
+    if [ "$BRusrsubvol" = "y" ]; then
+      echo -n "Creating $BRrootsubvolname/usr "
+      OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname/usr 2>&1 1> /dev/null) && ok_status || error_status
+    fi
+
+    echo -n "Unmounting $BRroot "
+    OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
+
+    echo -n "Mounting $BRrootsubvolname "
+    OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
+  fi
+
   if [ "$BRcustom" = "y" ]; then
     BRsorted=(`for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =`)
     unset custom_ok
@@ -517,15 +541,15 @@ show_summary() {
     echo "swap partition: $BRswap"
   fi
 
-  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
     echo -e "\nSUBVOLUMES:"
     echo "Root Subvolume: $BRrootsubvolname"
 
-    if [ "x$BRhomesubvol" = "xy" ]; then
+    if [ "$BRhomesubvol" = "y" ]; then
       echo "Home Subvolume: Yes"
     fi
 
-    if [ "x$BRvarsubvol" = "xy" ]; then
+    if [ "$BRvarsubvol" = "y" ]; then
       echo "Var  Subvolume: Yes"
     fi
 
@@ -595,9 +619,9 @@ prepare_chroot() {
 
 generate_fstab() {
   mv /mnt/target/etc/fstab /mnt/target/etc/fstab-old
-  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
     echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
-  elif [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xn" ]; then
+  elif [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "n" ]; then
     echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,noatime  0  0" >> /mnt/target/etc/fstab
   else
     echo "$(detect_fstab_root)  /  $BRfsystem  $BR_MOUNT_OPTS,noatime  0  1" >> /mnt/target/etc/fstab
@@ -822,29 +846,28 @@ clean_unmount_in() {
     done < <( for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
   fi
 
-  if [ "x$BRfsystem" = "xbtrfs" ] && [ "x$BRrootsubvol" = "xy" ]; then
+  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
     echo -n "Unmounting $BRrootsubvolname "
     OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
     sleep 1
     echo -n "Mounting $BRroot "
     OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
 
-    if [ "x$BRhomesubvol" = "xy" ]; then
+    if [ "$BRhomesubvol" = "y" ]; then
       echo -n "Deleting $BRrootsubvolname/home "
       OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/home 2>&1 1> /dev/null) && ok_status || error_status
     fi
-    if [ "x$BRvarsubvol" = "xy" ]; then
+    if [ "$BRvarsubvol" = "y" ]; then
       echo -n "Deleting $BRrootsubvolname/var "
       OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/var 2>&1 1> /dev/null) && ok_status || error_status
     fi
-    if [ "x$BRusrsubvol" = "xy" ]; then
+    if [ "$BRusrsubvol" = "y" ]; then
       echo -n "Deleting $BRrootsubvolname/usr "
       OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname/usr 2>&1 1> /dev/null) && ok_status || error_status
     fi
-    if [ "x$BRrootsubvol" = "xy" ]; then
-      echo -n "Deleting $BRrootsubvolname "
-      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
-    fi
+
+    echo -n "Deleting $BRrootsubvolname "
+    OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
   fi
 
   if [ -z "$BRSTOP" ]; then
@@ -884,53 +907,6 @@ clean_unmount_out() {
   sleep 1
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
   exit
-}
-
-create_subvols() {
-  echo -e "\n${BR_SEP}CREATING SUBVOLUMES"
-  cd ~
-  if [ "$BRcustom" = "y" ]; then
-    while read ln; do
-      sleep 1
-      echo -n "Unmounting $ln "
-      OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-    done < <( for i in ${BRsorted[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
-  fi
-
-  if [ -z "$BRSTOP" ]; then
-    rm -r /mnt/target/* 2>/dev/null
-    echo -n "Creating $BRrootsubvolname "
-    OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
-
-    if [ "x$BRhomesubvol" = "xy" ]; then
-      echo -n "Creating $BRrootsubvolname/home "
-      OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname/home 2>&1 1> /dev/null) && ok_status || error_status
-    fi
-    if [ "x$BRvarsubvol" = "xy" ]; then
-      echo -n "Creating $BRrootsubvolname/var "
-      OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname/var 2>&1 1> /dev/null) && ok_status || error_status
-    fi
-    if [ "x$BRusrsubvol" = "xy" ]; then
-      echo -n "Creating $BRrootsubvolname/usr "
-      OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname/usr 2>&1 1> /dev/null) && ok_status || error_status
-    fi
-
-    echo -n "Unmounting $BRroot "
-    OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
-
-    echo -n "Mounting $BRrootsubvolname "
-    OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
-
-    if [ "$BRcustom" = "y" ]; then
-      for i in ${BRsorted[@]}; do
-        BRdevice=$(echo $i | cut -f2 -d"=")
-        BRmpoint=$(echo $i | cut -f1 -d"=")
-        echo -n "Mounting $BRdevice "
-        mkdir -p /mnt/target$BRmpoint
-        OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
-      done
-    fi
-  fi
 }
 
 unset_vars() {
@@ -1178,15 +1154,15 @@ fi
 
 if [ -n "$BRrootsubvol" ]; then
   if [ -z "$BRvarsubvol" ]; then
-    BRvarsubvol=-1
+    BRvarsubvol="n"
   fi
 
   if [ -z "$BRusrsubvol" ]; then
-    BRusrsubvol=-1
+    BRusrsubvol="n"
   fi
 
   if [ -z "$BRhomesubvol" ]; then
-    BRhomesubvol=-1
+    BRhomesubvol="n"
   fi
 fi
 
@@ -1239,7 +1215,7 @@ if [ "$BRinterface" = "cli" ]; then
   editorlist=(nano vi)
   update_part_list
 
-  if [ -n "$(part_list_dialog)" ]; then
+  if [ -n "$(part_list_dialog 2>/dev/null)" ]; then
     while [ -z "$BRroot" ]; do
       echo -e "\n${BR_CYAN}Select target root partition:${BR_NORM}"
       select c in ${list[@]}; do
@@ -1282,9 +1258,106 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   done
 
+  detect_root_fs_size
+
+  if [ -z "$BRfsystem" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system"
+    exit
+  fi
+
+  if [ "$BRfsystem" = "btrfs" ]; then
+    while [ -z "$BRrootsubvol" ]; do
+      echo -e "\n${BR_CYAN}BTRFS root file system detected. Create subvolume for root?${BR_NORM}"
+      read -p "(Y/n):" an
+
+      if [ -n "$an" ]; then
+        btrfsdef=$an
+      else
+        btrfsdef="y"
+      fi
+
+      if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
+        BRrootsubvol="y"
+      elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
+        BRrootsubvol="n"
+      else
+        echo -e "${BR_RED}Please select a valid option${BR_NORM}"
+      fi
+    done
+
+    if [ "$BRrootsubvol" = "y" ]; then
+      while [ -z "$BRrootsubvolname" ]; do
+        read -p "Enter subvolume name: " BRrootsubvolname
+        echo "Subvolume name: $BRrootsubvolname"
+        if [ -z "$BRrootsubvolname" ]; then
+          echo -e "\n${BR_CYAN}Please enter a name for the subvolume.${BR_NORM}"
+        fi
+      done
+
+      while [ -z "$BRhomesubvol" ]; do
+        echo -e "\n${BR_CYAN}Create subvolume for /home inside $BRrootsubvolname?${BR_NORM}"
+        read -p "(Y/n) " an
+
+        if [ -n "$an" ]; then
+          btrfsdef=$an
+        else
+          btrfsdef="y"
+        fi
+
+        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
+          BRhomesubvol="y"
+        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
+          BRhomesubvol="n"
+        else
+          echo -e "${BR_RED}Please select a valid option${BR_NORM}"
+        fi
+      done
+
+      while [ -z "$BRvarsubvol" ]; do
+        echo -e "\n${BR_CYAN}Create subvolume for /var inside $BRrootsubvolname?${BR_NORM}"
+        read -p "(Y/n):" an
+
+        if [ -n "$an" ]; then
+          btrfsdef=$an
+        else
+          btrfsdef="y"
+        fi
+
+        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
+          BRvarsubvol="y"
+        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
+          BRvarsubvol="n"
+        else
+          echo -e "${BR_RED}Please select a valid option${BR_NORM}"
+        fi
+      done
+
+      while [ -z "$BRusrsubvol" ]; do
+        echo -e "\n${BR_CYAN}Create subvolume for /usr inside $BRrootsubvolname?${BR_NORM}"
+        read -p "(Y/n):" an
+
+        if [ -n "$an" ]; then
+          btrfsdef=$an
+        else
+          btrfsdef="y"
+        fi
+
+        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
+          BRusrsubvol="y"
+        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
+          BRusrsubvol="n"
+        else
+          echo -e "${BR_RED}Please select a valid option${BR_NORM}"
+        fi
+      done
+    fi
+  elif [ "$BRrootsubvol" = "y" ] || [ "$BRhomesubvol" = "y" ] || [ "$BRvarsubvol" = "y" ] || [ "$BRusrsubvol" = "y" ]; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Not a btrfs root filesystem, proceeding without subvolumes..."
+  fi
+
   update_part_list
 
-  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ]; then
+  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ] && [ "$BRhomesubvol" = "n" ]; then
     echo -e "\n${BR_CYAN}Select target home partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1507,106 +1580,6 @@ if [ "$BRinterface" = "cli" ]; then
 
   check_input
   mount_all
-  detect_root_fs_size
-
-  if [ "x$BRfsystem" = "xbtrfs" ]; then
-    while [ -z "$BRrootsubvol" ]; do
-      echo -e "\n${BR_CYAN}BTRFS root file system detected. Create subvolume for root?${BR_NORM}"
-      read -p "(Y/n):" an
-
-      if [ -n "$an" ]; then
-        btrfsdef=$an
-      else
-        btrfsdef="y"
-      fi
-
-      if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
-        BRrootsubvol="y"
-      elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
-        BRrootsubvol="n"
-      else
-        echo -e "${BR_RED}Please select a valid option${BR_NORM}"
-      fi
-    done
-
-    if [ "x$BRrootsubvol" = "xy" ]; then
-      while [ -z "$BRrootsubvolname" ]; do
-        read -p "Enter subvolume name: " BRrootsubvolname
-        echo "Subvolume name: $BRrootsubvolname"
-        if [ -z "$BRrootsubvolname" ]; then
-          echo -e "\n${BR_CYAN}Please enter a name for the subvolume.${BR_NORM}"
-        fi
-      done
-
-      if [ -z "$BRhome" ]; then
-        while [ -z "$BRhomesubvol" ]; do
-          echo -e "\n${BR_CYAN}Create subvolume for /home inside $BRrootsubvolname?${BR_NORM}"
-          read -p "(Y/n) " an
-
-          if [ -n "$an" ]; then
-            btrfsdef=$an
-          else
-            btrfsdef="y"
-          fi
-
-          if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
-            BRhomesubvol="y"
-          elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
-            BRhomesubvol="n"
-          else
-            echo -e "${BR_RED}Please select a valid option${BR_NORM}"
-          fi
-        done
-      fi
-
-      while [ -z "$BRvarsubvol" ]; do
-        echo -e "\n${BR_CYAN}Create subvolume for /var inside $BRrootsubvolname?${BR_NORM}"
-        read -p "(Y/n):" an
-
-        if [ -n "$an" ]; then
-          btrfsdef=$an
-        else
-          btrfsdef="y"
-        fi
-
-        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
-          BRvarsubvol="y"
-        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
-          BRvarsubvol="n"
-        else
-          echo -e "${BR_RED}Please select a valid option${BR_NORM}"
-        fi
-      done
-
-      while [ -z "$BRusrsubvol" ]; do
-        echo -e "\n${BR_CYAN}Create subvolume for /usr inside $BRrootsubvolname?${BR_NORM}"
-        read -p "(Y/n):" an
-
-        if [ -n "$an" ]; then
-          btrfsdef=$an
-        else
-          btrfsdef="y"
-        fi
-
-        if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
-          BRusrsubvol="y"
-        elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
-          BRusrsubvol="n"
-        else
-          echo -e "${BR_RED}Please select a valid option${BR_NORM}"
-        fi
-      done
-
-      if [ "x$BRhomesubvol" = "x-1" ]; then unset BRhomesubvol; fi
-      if [ "x$BRusrsubvol" = "x-1" ]; then unset BRusrsubvol; fi
-      if [ "x$BRvarsubvol" = "x-1" ]; then unset BRvarsubvol; fi
-
-      create_subvols
-    fi
-  elif [ "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Not a btrfs root filesystem, proceeding without subvolumes..."
-    sleep 1
-  fi
 
   if [ "$BRmode" = "Restore" ]; then
     echo -e "\n${BR_SEP}GETTING TAR IMAGE"
@@ -1850,7 +1823,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   exec 3>&1
 
-  if [ -n "$(part_list_dialog)" ]; then
+  if [ -n "$(part_list_dialog 2>/dev/null)" ]; then
     while [ -z "$BRroot" ]; do
       BRroot=$(dialog --cancel-label Quit --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
       if [ "$?" = "1" ]; then
@@ -1874,7 +1847,66 @@ elif [ "$BRinterface" = "dialog" ]; then
      fi
    done
 
-  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ]; then
+  detect_root_fs_size
+
+  if [ -z "$BRfsystem" ]; then
+    if [ -z "$BRnocolor" ]; then
+      color_variables
+    fi
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system"
+    exit
+  fi
+
+  if [ "$BRfsystem" = "btrfs" ]; then
+    while [ -z "$BRrootsubvol" ]; do
+      dialog --yesno "BTRFS root file system detected. Create subvolume for root?" 5 68
+      if [ "$?" = "0" ]; then
+        BRrootsubvol="y"
+      else
+        BRrootsubvol="n"
+      fi
+    done
+
+    if [ "$BRrootsubvol" = "y" ]; then
+      while [ -z "$BRrootsubvolname" ]; do
+        BRrootsubvolname=$(dialog --no-cancel --inputbox "Enter subvolume name:" 8 50 2>&1 1>&3)
+        if [ -z "$BRrootsubvolname" ]; then
+          dialog --title "Warning" --msgbox "Please enter a name for the subvolume." 5 42
+        fi
+      done
+
+      while [ -z "$BRhomesubvol" ]; do
+        dialog --yesno "Create subvolume for /home inside $BRrootsubvolname?" 6 50
+        if [ "$?" = "0" ]; then
+          BRhomesubvol="y"
+        else
+          BRhomesubvol="n"
+        fi
+      done
+
+      while [ -z "$BRvarsubvol" ]; do
+        dialog --yesno "Create subvolume for /var inside $BRrootsubvolname?" 6 50
+        if [ "$?" = "0" ]; then
+          BRvarsubvol="y"
+        else
+          BRvarsubvol="n"
+        fi
+      done
+
+      while [ -z "$BRusrsubvol" ]; do
+        dialog --yesno "Create subvolume for /usr inside $BRrootsubvolname?" 6 50
+        if [ "$?" = "0" ]; then
+          BRusrsubvol="y"
+        else
+          BRusrsubvol="n"
+        fi
+      done
+    fi
+  elif [ "$BRrootsubvol" = "y" ] || [ "$BRhomesubvol" = "y" ] || [ "$BRvarsubvol" = "y" ] || [ "$BRusrsubvol" = "y" ]; then
+    dialog  --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
+  fi
+
+  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ] && [ "$BRhomesubvol" = "n" ]; then
     BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
     if [ "$?" = "3" ]; then
       BRhome=" "
@@ -1984,68 +2016,6 @@ elif [ "$BRinterface" = "dialog" ]; then
   check_input
   mount_all
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
-  detect_root_fs_size
-
-  if [ "x$BRfsystem" = "xbtrfs" ]; then
-    while [ -z "$BRrootsubvol" ]; do
-      dialog --yesno "BTRFS root file system detected. Create subvolume for root?" 5 68
-      if [ "$?" = "0" ]; then
-        BRrootsubvol="y"
-      else
-        BRrootsubvol="n"
-      fi
-    done
-
-    if [ "x$BRrootsubvol" = "xy" ]; then
-      while [ -z "$BRrootsubvolname" ]; do
-        BRrootsubvolname=$(dialog --no-cancel --inputbox "Enter subvolume name:" 8 50 2>&1 1>&3)
-        if [ -z "$BRrootsubvolname" ]; then
-          dialog --title "Warning" --msgbox "Please enter a name for the subvolume." 5 42
-        fi
-      done
-
-      if [ -z "$BRhome" ]; then
-        while [ -z "$BRhomesubvol" ]; do
-          dialog --yesno "Create subvolume for /home inside $BRrootsubvolname?" 6 50
-          if [ "$?" = "0" ]; then
-            BRhomesubvol="y"
-          else
-            BRhomesubvol="n"
-          fi
-        done
-      fi
-
-      while [ -z "$BRvarsubvol" ]; do
-        dialog --yesno "Create subvolume for /var inside $BRrootsubvolname?" 6 50
-        if [ "$?" = "0" ]; then
-          BRvarsubvol="y"
-        else
-          BRvarsubvol="n"
-        fi
-      done
-
-      while [ -z "$BRusrsubvol" ]; do
-        dialog --yesno "Create subvolume for /usr inside $BRrootsubvolname?" 6 50
-        if [ "$?" = "0" ]; then
-          BRusrsubvol="y"
-        else
-          BRusrsubvol="n"
-        fi
-      done
-
-      if [ "x$BRhomesubvol" = "x-1" ]; then unset BRhomesubvol; fi
-      if [ "x$BRusrsubvol" = "x-1" ]; then unset BRusrsubvol; fi
-      if [ "x$BRvarsubvol" = "x-1" ]; then unset BRvarsubvol; fi
-
-      if [ -z "$BRnocolor" ]; then
-        color_variables
-      fi
-      create_subvols
-      unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
-    fi
-  elif [ "x$BRrootsubvol" = "xy" ] || [ "x$BRhomesubvol" = "xy" ] || [ "x$BRvarsubvol" = "xy" ] || [ "x$BRusrsubvol" = "xy" ]; then
-    dialog  --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
-  fi
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRfile" ]; then

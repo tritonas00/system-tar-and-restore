@@ -800,6 +800,9 @@ check_archive() {
     fi
   else
     target_arch=$(grep -F 'target_architecture.' /tmp/filelist)
+    if [ -z "$target_arch" ]; then
+      target_arch="unknown"
+    fi
     if [ ! "$(uname -m)" == "$(echo ${target_arch#*.})" ]; then
       rm /mnt/target/fullbackup 2>/dev/null
       if [ "$BRinterface" = "cli" ]; then

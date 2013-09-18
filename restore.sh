@@ -790,6 +790,7 @@ set_bootloader() {
 }
 
 check_archive() {
+  echo " "
   if [ -f /tmp/tar_error ]; then
     rm /tmp/tar_error
     rm /mnt/target/fullbackup 2>/dev/null

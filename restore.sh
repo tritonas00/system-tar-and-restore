@@ -595,11 +595,11 @@ show_summary() {
     echo "Home: Only hidden files and folders"
   fi
   if [ "$BRdistro" = "Unsupported" ]; then
-    echo "System: $BRdistro (WARNING)"
+    echo -e "System: $BRdistro (WARNING)${BR_NORM}"
   elif [ "$BRmode" = "Restore" ]; then
-    echo "System: $BRdistro based ${target_arch#*.}"
+    echo -e "System: $BRdistro based ${target_arch#*.}${BR_NORM}"
   elif [ "$BRmode" = "Transfer" ]; then
-     echo "System: $BRdistro based $(uname -m)"
+     echo -e "System: $BRdistro based $(uname -m)${BR_NORM}"
   fi
 }
 

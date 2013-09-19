@@ -1188,7 +1188,7 @@ fi
 
 PS3="Enter number or Q to quit: "
 
-while [ -z "$BRinterface" ]; do
+if [ -z "$BRinterface" ]; then
   echo -e "\n${BR_CYAN}Select interface:${BR_NORM}"
   select c in "CLI" "Dialog"; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
@@ -1204,7 +1204,7 @@ while [ -z "$BRinterface" ]; do
       echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
     fi
   done
-done
+fi
 
 if [ "$BRinterface" = "cli" ]; then
   clear
@@ -1467,56 +1467,50 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "\n[${BR_YELLOW}WARNING${BR_NORM}] NO BOOTLOADER SELECTED"
         break
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-
-        while [ -z "$BRgrub" ]; do
-          echo -e "\n${BR_CYAN}Select target disk for Grub:${BR_NORM}"
-	  select c in ${disk_list[@]}; do
-	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-              echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-	      exit
-	    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
-	      BRgrub=(`echo $c | awk '{ print $1 }'`)
-              echo -e "${BR_GREEN}You selected $BRgrub to install Grub${BR_NORM}"
-	      break
-	    else
-              echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-	    fi
-	  done
-        done
+        echo -e "\n${BR_CYAN}Select target disk for Grub:${BR_NORM}"
+	select c in ${disk_list[@]}; do
+	  if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+            echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+	    exit
+	  elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
+	    BRgrub=(`echo $c | awk '{ print $1 }'`)
+            echo -e "${BR_GREEN}You selected $BRgrub to install Grub${BR_NORM}"
+	    break
+	  else
+            echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+	  fi
+	done
         break
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+        echo -e "\n${BR_CYAN}Select target disk Syslinux:${BR_NORM}"
+	select c in ${disk_list[@]}; do
+	if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+	  exit
+	elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
+	    BRsyslinux=(`echo $c | awk '{ print $1 }'`)
+            echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}"
+	    echo -e "\n${BR_CYAN}Enter additional kernel options?${BR_NORM}"
+            read -p "(y/N):" an
 
-        while [ -z "$BRsyslinux" ]; do
-          echo -e "\n${BR_CYAN}Select target disk Syslinux:${BR_NORM}"
-	  select c in ${disk_list[@]}; do
-	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-              echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-	      exit
-	    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
-	      BRsyslinux=(`echo $c | awk '{ print $1 }'`)
-              echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}"
-	      echo -e "\n${BR_CYAN}Enter additional kernel options?${BR_NORM}"
-              read -p "(y/N):" an
+            if [ -n "$an" ]; then
+              def=$an
+            else
+              def="n"
+            fi
 
-              if [ -n "$an" ]; then
-                def=$an
-              else
-                def="n"
-              fi
-
-              if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
-                read -p "Enter options:" BR_KERNEL_OPTS
-                break
-              elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-                break
-              else
-                echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
-              fi
-	    else
-              echo -e "${BR_RED}Please select a valid option from${BR_NORM}"
-	    fi
-	  done
-        done
+            if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
+              read -p "Enter options:" BR_KERNEL_OPTS
+              break
+            elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
+              break
+            else
+              echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+            fi
+	  else
+            echo -e "${BR_RED}Please select a valid option from${BR_NORM}"
+	  fi
+	done
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1526,7 +1520,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   unset_vars
 
-  while [ -z "$BRmode" ]; do
+  if [ -z "$BRmode" ]; then
     echo -e "\n${BR_CYAN}Select Mode:${BR_NORM}"
     select c in "Restore system from backup file" "Transfer this system with rsync"; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1544,13 +1538,16 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
       fi
     done
-  done
+  fi
 
   if [ "$BRmode" = "Restore" ]; then
-    while [ -z "$BRarchiver" ]; do
+    if [ -z "$BRarchiver" ]; then
       echo -e "\n${BR_CYAN}Select the archiver you used to create the backup archive:${BR_NORM}"
       select c in "tar (GNU Tar)" "bsdtar (Libarchive Tar)"; do
-        if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+          exit
+        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
           BRarchiver="tar"
           echo -e "${BR_GREEN}You selected $BRarchiver${BR_NORM}"
           break
@@ -1562,7 +1559,7 @@ if [ "$BRinterface" = "cli" ]; then
           echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
         fi
       done
-    done
+    fi
   fi
 
   if [ "$BRmode" = "Transfer" ]; then
@@ -1779,7 +1776,7 @@ if [ "$BRinterface" = "cli" ]; then
     done
 
     if [ "$BRedit" = "y" ]; then
-      while [ -z "$BReditor" ]; do
+      if [ -z "$BReditor" ]; then
         echo -e "\n${BR_CYAN}Select editor${BR_NORM}"
         select c in ${editorlist[@]}; do
           if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#editorlist[@]} ]; then
@@ -1790,7 +1787,7 @@ if [ "$BRinterface" = "cli" ]; then
             echo -e "${BR_RED}Please select a valid option${BR_NORM}"
           fi
         done
-      done
+      fi
     fi
 
     ( prepare_chroot
@@ -1951,22 +1948,18 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$?" = "3" ]; then exit; fi
 
     if [ "$REPLY" = "1" ]; then
-      if [ -z "$BRgrub" ]; then
-        BRgrub=$(dialog --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
-        if [ "$?" = "1" ]; then exit; fi
-      fi
+      BRgrub=$(dialog --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
+      if [ "$?" = "1" ]; then exit; fi
     elif [ "$REPLY" = "2" ]; then
-      if [ -z "$BRsyslinux" ]; then
-        BRsyslinux=$(dialog --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
-        if [ "$?" = "1" ]; then
-          exit
-        else
-          dialog --yesno "Specify additional kernel options?" 6 40
-          if [ "$?" = "0" ]; then
-            BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Enter additional kernel options:" 8 70 2>&1 1>&3)
-          fi
+      BRsyslinux=$(dialog --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
+      if [ "$?" = "1" ]; then
+        exit
+      else
+        dialog --yesno "Specify additional kernel options?" 6 40
+        if [ "$?" = "0" ]; then
+          BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Enter additional kernel options:" 8 70 2>&1 1>&3)
         fi
-      fi
+      fi  
     fi
   fi
 

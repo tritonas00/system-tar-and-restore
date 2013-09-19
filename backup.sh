@@ -275,7 +275,7 @@ fi
 
 PS3="Enter number or Q to quit: "
 
-while [ -z "$BRinterface" ]; do
+if [ -z "$BRinterface" ]; then
   echo -e "\n${BR_CYAN}Select interface:${BR_NORM}"
   select c in "CLI" "Dialog"; do
     if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
@@ -291,7 +291,7 @@ while [ -z "$BRinterface" ]; do
       echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
     fi
   done
-done
+fi
 
 if [ "$BRinterface" = "cli" ]; then
   clear
@@ -331,7 +331,7 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   done
 
-  while [ -z "$BRhome" ] ; do
+  if [ -z "$BRhome" ]; then
     echo -e "\n${BR_CYAN}Home (/home) directory options:${BR_NORM}"
     select c in "Include" "Only hidden files and folders" "Exclude"; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
@@ -352,9 +352,9 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
       fi
     done
-  done
+  fi
 
-  while [ -z "$BRarchiver" ]; do
+  if [ -z "$BRarchiver" ]; then
     echo -e "\n${BR_CYAN}Select archiver:${BR_NORM}"
     select c in "tar    (GNU Tar)" "bsdtar (Libarchive Tar)"; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
@@ -370,14 +370,14 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
       fi
     done
-  done
+  fi
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
     exit
   fi
 
-  while [ -z "$BRcompression" ]; do
+  if [ -z "$BRcompression" ]; then
     echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
     select c in "gzip (Fast, big file)" "xz   (Slow, smaller file)"; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
@@ -393,7 +393,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
       fi
     done
-  done
+  fi
 
   while [ -z "$BRuseroptions" ]; do
     echo -e "\n${BR_CYAN}Enter additional $BRarchiver options?${BR_NORM}"

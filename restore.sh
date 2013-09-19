@@ -1137,15 +1137,6 @@ if [ -n "$BRroot" ]; then
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
     BRgrub="-1"
     BRsyslinux="-1"
-    if [ -n "$BR_KERNEL_OPTS" ]; then
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] No bootloader selected, skipping kernel options"
-      sleep 1
-    fi
-  fi
-
-  if [ -n "$BRgrub" ] && [ -z "$BRsyslinux" ] && [ -n "$BR_KERNEL_OPTS" ]; then
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Grub selected, skipping kernel options"
-    sleep 1
   fi
 
   if [ -z "$BRfile" ] && [ -z "$BRurl" ] && [ -z "$BRrestore" ]; then
@@ -1170,6 +1161,14 @@ if [ -n "$BRrootsubvol" ]; then
   if [ -z "$BRhomesubvol" ]; then
     BRhomesubvol="n"
   fi
+fi
+
+if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ] && [ -n "$BR_KERNEL_OPTS" ]; then
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] No bootloader selected, skipping kernel options"
+fi
+
+if [ -n "$BRgrub" ] && [ -z "$BRsyslinux" ] && [ -n "$BR_KERNEL_OPTS" ]; then
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Grub selected, skipping kernel options"
 fi
 
 if [ $(id -u) -gt 0 ]; then

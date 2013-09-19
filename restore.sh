@@ -284,7 +284,7 @@ check_input() {
     BRSTOP=y
   fi
 
-  if [ "x$BRmode" = "xTransfer" ]; then
+  if [ "$BRmode" = "Transfer" ]; then
     if [ -z $(which rsync 2> /dev/null) ];then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package rsync is not installed. Install the package and re-run the script"
       BRSTOP=y
@@ -916,11 +916,11 @@ clean_unmount_out() {
 }
 
 unset_vars() {
-  if [ "x$BRswap" = "x-1" ]; then unset BRswap; fi
-  if [ "x$BRboot" = "x-1" ]; then unset BRboot; fi
-  if [ "x$BRhome" = "x-1" ]; then unset BRhome; fi
-  if [ "x$BRgrub" = "x-1" ]; then unset BRgrub; fi
-  if [ "x$BRsyslinux" = "x-1" ]; then unset BRsyslinux; fi
+  if [ "$BRswap" = "-1" ]; then unset BRswap; fi
+  if [ "$BRboot" = "-1" ]; then unset BRboot; fi
+  if [ "$BRhome" = "-1" ]; then unset BRhome; fi
+  if [ "$BRgrub" = "-1" ]; then unset BRgrub; fi
+  if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
 }
 
 BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:HVUqtoNm:k:c:a:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,homesubvol,varsubvol,usrsubvol,transfer,only-hidden,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:" -n "$1" -- "$@"`
@@ -1123,20 +1123,20 @@ if [ -n "$BRroot" ]; then
   fi
 
   if [ -z "$BRswap" ]; then
-    BRswap=-1
+    BRswap="-1"
   fi
 
   if [ -z "$BRboot" ]; then
-    BRboot=-1
+    BRboot="-1"
   fi
 
   if [ -z "$BRhome" ]; then
-    BRhome=-1
+    BRhome="-1"
   fi
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    BRgrub=-1
-    BRsyslinux=-1
+    BRgrub="-1"
+    BRsyslinux="-1"
     if [ -n "$BR_KERNEL_OPTS" ]; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] No bootloader selected, skipping kernel options"
       sleep 1
@@ -1154,7 +1154,7 @@ if [ -n "$BRroot" ]; then
   fi
 fi
 
-if [ "x$BRmode" = "xTransfer" ] && [ -z "$BRhidden" ]; then
+if [ "$BRmode" = "Transfer" ] && [ -z "$BRhidden" ]; then
   BRhidden="n"
 fi
 
@@ -1724,9 +1724,9 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   done
 
-  if [ "x$BRcontinue" = "xn" ]; then
+  if [ "$BRcontinue" = "n" ]; then
     clean_unmount_in
-  elif [ "x$BRcontinue" = "xy" ]; then
+  elif [ "$BRcontinue" = "y" ]; then
     echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
     echo " " >> /tmp/restore.log
     if [ "$BRmode" = "Restore" ]; then

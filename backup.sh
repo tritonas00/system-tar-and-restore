@@ -483,7 +483,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 22 70
   fi
 
-  while [ -z "$BRFOLDER" ]; do
+  if [ -z "$BRFOLDER" ]; then
     dialog --yesno "The default folder for creating the backup image is / (root).\n\nSave in the default folder?" 8 65
     if [ "$?" = "0" ]; then
       BRFOLDER="/"
@@ -511,14 +511,12 @@ elif [ "$BRinterface" = "dialog" ]; then
         fi
       done
     fi
-  done
+  fi
 
-  while [ -z "$BRhome" ]; do
+  if [ -z "$BRhome" ]; then
     REPLY=$(dialog --cancel-label Quit --menu "Home (/home) directory options:" 13 50 13 1 Include 2 "Only hidden files and folders" 3 Exclude 2>&1 1>&3)
-    if [ "$?" = "1" ]; then
-      BRhome=" "
-      exit
-    fi
+    if [ "$?" = "1" ]; then exit; fi
+
     if [ "$REPLY" = "1" ]; then
       BRhome="Yes"
     elif [ "$REPLY" = "2" ]; then
@@ -528,15 +526,12 @@ elif [ "$BRinterface" = "dialog" ]; then
       BRhome="No"
       BRhidden="No"
     fi
-  done
+  fi
 
-  while [ -z "$BRarchiver" ]; do
+  if [ -z "$BRarchiver" ]; then
     BRarchiver=$(dialog --cancel-label Quit --menu "Select archiver:" 12 35 12 tar "GNU Tar" bsdtar "Libarchive Tar" 2>&1 1>&3)
-    if [ "$?" = "1" ]; then
-      BRarchiver=" "
-      exit
-    fi
-  done
+    if [ "$?" = "1" ]; then exit; fi
+  fi
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
     if [ -z "$BRnocolor" ]; then
@@ -546,15 +541,12 @@ elif [ "$BRinterface" = "dialog" ]; then
     exit
   fi
 
-  while [ -z "$BRcompression" ]; do
+  if [ -z "$BRcompression" ]; then
     BRcompression=$(dialog --cancel-label Quit --menu "Select compression type:" 12 35 12 gzip "Fast, big file" xz "Slow, smaller file" 2>&1 1>&3)
-    if [ "$?" = "1" ]; then
-      BRcompression=" "
-      exit
-    fi
-  done
+    if [ "$?" = "1" ]; then exit; fi
+  fi
 
-  while [ -z "$BRuseroptions" ]; do
+  if [ -z "$BRuseroptions" ]; then
     dialog --yesno "Specify additional $BRarchiver options?" 6 39
     if [ "$?" = "0" ]; then
       BRuseroptions="Yes"
@@ -562,7 +554,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     else
       BRuseroptions="No"
     fi
-  done
+  fi
 
   dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0
   if [ "$?" = "1" ]; then

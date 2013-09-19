@@ -1222,7 +1222,7 @@ if [ "$BRinterface" = "cli" ]; then
   update_part_list
 
   if [ -n "$(part_list_dialog 2>/dev/null)" ]; then
-    while [ -z "$BRroot" ]; do
+    if [ -z "$BRroot" ]; then
       echo -e "\n${BR_CYAN}Select target root partition:${BR_NORM}"
       select c in ${list[@]}; do
         if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1236,7 +1236,7 @@ if [ "$BRinterface" = "cli" ]; then
           echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
         fi
       done
-    done
+    fi
   else
     echo -e "[${BR_RED}ERROR${BR_NORM}] No partitions found"
     exit
@@ -1832,19 +1832,16 @@ elif [ "$BRinterface" = "dialog" ]; then
   exec 3>&1
 
   if [ -n "$(part_list_dialog 2>/dev/null)" ]; then
-    while [ -z "$BRroot" ]; do
+    if [ -z "$BRroot" ]; then
       BRroot=$(dialog --cancel-label Quit --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-      if [ "$?" = "1" ]; then
-        BRroot=" "
-        exit
-      fi
-    done
+      if [ "$?" = "1" ]; then exit; fi
+    fi
   else
     dialog --title "Error" --msgbox "No partitions found." 5 24
     exit
   fi
 
-  while [ -z "$BRmountoptions" ]; do
+  if [ -z "$BRmountoptions" ]; then
      dialog --yesno "Specify additional mount options?" 6 40
      if [ "$?" = "0" ]; then
        BRmountoptions="Yes"
@@ -1853,7 +1850,7 @@ elif [ "$BRinterface" = "dialog" ]; then
        BRmountoptions="No"
        BR_MOUNT_OPTS="defaults"
      fi
-   done
+   fi
 
   detect_root_fs_size
 
@@ -1866,14 +1863,14 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ "$BRfsystem" = "btrfs" ]; then
-    while [ -z "$BRrootsubvol" ]; do
+    if [ -z "$BRrootsubvol" ]; then
       dialog --yesno "BTRFS root file system detected. Create subvolume for root?" 5 68
       if [ "$?" = "0" ]; then
         BRrootsubvol="y"
       else
         BRrootsubvol="n"
       fi
-    done
+    fi
 
     if [ "$BRrootsubvol" = "y" ]; then
       while [ -z "$BRrootsubvolname" ]; do
@@ -1883,32 +1880,32 @@ elif [ "$BRinterface" = "dialog" ]; then
         fi
       done
 
-      while [ -z "$BRhomesubvol" ]; do
+      if [ -z "$BRhomesubvol" ]; then
         dialog --yesno "Create subvolume for /home inside $BRrootsubvolname?" 6 50
         if [ "$?" = "0" ]; then
           BRhomesubvol="y"
         else
           BRhomesubvol="n"
         fi
-      done
+      fi
 
-      while [ -z "$BRvarsubvol" ]; do
+      if [ -z "$BRvarsubvol" ]; then
         dialog --yesno "Create subvolume for /var inside $BRrootsubvolname?" 6 50
         if [ "$?" = "0" ]; then
           BRvarsubvol="y"
         else
           BRvarsubvol="n"
         fi
-      done
+      fi
 
-      while [ -z "$BRusrsubvol" ]; do
+      if [ -z "$BRusrsubvol" ]; then
         dialog --yesno "Create subvolume for /usr inside $BRrootsubvolname?" 6 50
         if [ "$?" = "0" ]; then
           BRusrsubvol="y"
         else
           BRusrsubvol="n"
         fi
-      done
+      fi
     fi
   elif [ "$BRrootsubvol" = "y" ] || [ "$BRhomesubvol" = "y" ] || [ "$BRvarsubvol" = "y" ] || [ "$BRusrsubvol" = "y" ]; then
     dialog  --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
@@ -1917,10 +1914,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   if [ "$BRhomesubvol" = "n" ] || [ -z "$BRhomesubvol" ] ; then
     if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ]; then
       BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-      if [ "$?" = "3" ]; then
-        BRhome=" "
-        exit
-      fi
+      if [ "$?" = "3" ]; then exit; fi
       if [ -n "$BRhome" ]; then
         BRcustom="y"
         BRcustomparts+=(/home="$BRhome")
@@ -1930,10 +1924,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ -z "$BRboot" ] && [ -n "$(part_list_dialog)" ]; then
     BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-    if [ "$?" = "3" ]; then
-      BRboot=" "
-      exit
-    fi
+    if [ "$?" = "3" ]; then exit; fi
     if [ -n "$BRboot" ]; then
       BRcustom="y"
       BRcustomparts+=(/boot="$BRboot")
@@ -1942,10 +1933,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ -z "$BRswap" ] && [ -n "$(part_list_dialog)" ]; then
     BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set swap partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-    if [ "$?" = "3" ]; then
-      BRswap=" "
-      exit
-    fi
+    if [ "$?" = "3" ]; then exit; fi
   fi
 
   if [ -z "$BRother" ] && [ -n "$(part_list_dialog)" ]; then
@@ -1960,22 +1948,17 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
     REPLY=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select bootloader:" 10 0 10 1 Grub 2 Syslinux 2>&1 1>&3)
-    if [ "$?" = "3" ]; then
-      exit
-    fi
+    if [ "$?" = "3" ]; then exit; fi
+
     if [ "$REPLY" = "1" ]; then
-      while [ -z "$BRgrub" ]; do
+      if [ -z "$BRgrub" ]; then
         BRgrub=$(dialog --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
-        if [ "$?" = "1" ]; then
-          BRgrub=" "
-          exit
-        fi
-      done
+        if [ "$?" = "1" ]; then exit; fi
+      fi
     elif [ "$REPLY" = "2" ]; then
-      while [ -z "$BRsyslinux" ]; do
+      if [ -z "$BRsyslinux" ]; then
         BRsyslinux=$(dialog --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
         if [ "$?" = "1" ]; then
-          BRsyslinux=" "
           exit
         else
           dialog --yesno "Specify additional kernel options?" 6 40
@@ -1983,7 +1966,7 @@ elif [ "$BRinterface" = "dialog" ]; then
             BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Enter additional kernel options:" 8 70 2>&1 1>&3)
           fi
         fi
-      done
+      fi
     fi
   fi
 
@@ -1993,29 +1976,26 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   unset_vars
 
-  while [ -z "$BRmode" ]; do
+  if [ -z "$BRmode" ]; then
     BRmode=$(dialog --cancel-label Quit --menu "Select Mode:" 12 50 12 Restore "system from backup file" Transfer "this system with rsync" 2>&1 1>&3)
-    if [ "$?" = "1" ]; then
-      BRmode=" "
-      exit
-    fi
-  done
+    if [ "$?" = "1" ]; then exit; fi
+  fi
 
   if [ "$BRmode" = "Restore" ]; then
-    while [ -z "$BRarchiver" ]; do
+    if [ -z "$BRarchiver" ]; then
       BRarchiver=$(dialog --no-cancel --menu "Select the archiver you used to create the backup archive:" 12 45 12 tar "GNU Tar" bsdtar "Libarchive Tar" 2>&1 1>&3)
-    done
+    fi
   fi
 
   if [ "$BRmode" = "Transfer" ]; then
-    while [ -z "$BRhidden" ]; do
+    if [ -z "$BRhidden" ]; then
       dialog --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 9 50
       if [ "$?" = "0" ]; then
         BRhidden="n"
       else
         BRhidden="y"
       fi
-    done
+    fi
   fi
 
   IFS=$'\n'
@@ -2202,7 +2182,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   else
     dialog --title "GENERATING FSTAB" --yesno "$(echo -e "Edit fstab? Generated fstab:\n\n`cat /mnt/target/etc/fstab`")" 13 100
     if [ "$?" = "0" ]; then
-      while [ -z "$BRdeditor" ]; do
+      if [ -z "$BRdeditor" ]; then
         REPLY=$(dialog --no-cancel --menu "Select editor:" 10 25 10 1 nano 2 vi 2>&1 1>&3)
         if [ "$REPLY" = "1" ]; then
           BRdeditor="nano"
@@ -2210,7 +2190,7 @@ elif [ "$BRinterface" = "dialog" ]; then
           BRdeditor="vi"
         fi
         $BRdeditor /mnt/target/etc/fstab
-      done
+      fi
     fi
   fi
 

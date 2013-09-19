@@ -441,7 +441,7 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   done
 
-  if [  "x$BRcontinue" = "xy" ]; then
+  if [  "$BRcontinue" = "y" ]; then
     prepare
     set_tar_options
     run_calc

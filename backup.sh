@@ -238,22 +238,22 @@ fi
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Directory does not exist: $BRFOLDER"
-  BRSTOP=y
+  BRSTOP="y"
 fi
 
 if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Supported compressors: gzip xz"
-  BRSTOP=y
+  BRSTOP="y"
 fi
 
 if [ -n "$BRarchiver" ] && [ ! "$BRarchiver" = "tar" ] && [ ! "$BRarchiver" = "bsdtar" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong archiver: $BRarchiver. Available options: tar bsdtar"
-  BRSTOP=y
+  BRSTOP="y"
 fi
 
 if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" = "dialog" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong interface name: $BRinterface. Available options: cli dialog"
-  BRSTOP=y
+  BRSTOP="y"
 fi
 
 if [ -n "$BRSTOP" ]; then

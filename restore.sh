@@ -38,12 +38,12 @@ instruct_screen(){
 
 ok_status() {
   echo -e "[${BR_GREEN}OK${BR_NORM}]"
-  custom_ok=y
+  custom_ok="y"
 }
 
 error_status() {
   echo -e "[${BR_RED}FAILED${BR_NORM}]\n$OUTPUT"
-  BRSTOP=y
+  BRSTOP="y"
 }
 
 item_type() {
@@ -63,7 +63,7 @@ file_list() {
 
 show_path() {
   if [ "$BRpath" = "/" ]; then
-    BRcurrentpath=/
+    BRcurrentpath="/"
   else
     BRcurrentpath="${BRpath#*/}/"
   fi
@@ -260,41 +260,41 @@ update_part_list() {
 check_input() {
   if [ -n "$BRfile" ] && [ ! -f "$BRfile" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] File not found: $BRfile"
-    BRSTOP=y
+    BRSTOP="y"
   elif [ -n "$BRfile" ]; then
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type. File must be a gzip or xz compressed archive"
-      BRSTOP=y
+      BRSTOP="y"
     fi
   fi
 
   if [ -n "$BRfile" ] && [ -n "$BRurl" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use both local file and url at the same time"
-    BRSTOP=y
+    BRSTOP="y"
   fi
 
   if [ -n "$BRfile" ] || [ -n "$BRurl" ] && [ -z "$BRarchiver" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify archiver"
-    BRSTOP=y
+    BRSTOP="y"
   fi
 
   if [ -n "$BRfile" ] || [ -n "$BRurl" ] && [ -n "$BRrestore" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use local file / url and transfer mode at the same time"
-    BRSTOP=y
+    BRSTOP="y"
   fi
 
   if [ "$BRmode" = "Transfer" ]; then
     if [ -z $(which rsync 2> /dev/null) ];then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package rsync is not installed. Install the package and re-run the script"
-      BRSTOP=y
+      BRSTOP="y"
     fi
     if [ -n "$BRgrub" ] && [ ! -d /usr/lib/grub/i386-pc ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found"
-      BRSTOP=y
+      BRSTOP="y"
     elif [ -n "$BRsyslinux" ] && [ -z $(which extlinux 2> /dev/null) ];then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found"
-      BRSTOP=y
+      BRSTOP="y"
     fi
   fi
 
@@ -304,13 +304,13 @@ check_input() {
     for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong root partition: $BRroot"
-      BRSTOP=y
+      BRSTOP="y"
     elif pvdisplay 2>&1 | grep -w $BRroot > /dev/null; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRroot contains lvm physical volume, refusing to use it. Use a logical volume instead"
-      BRSTOP=y
+      BRSTOP="y"
     elif [[ ! -z `lsblk -d -n -o mountpoint 2> /dev/null $BRroot` ]]; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2> /dev/null $BRroot), refusing to use it"
-      BRSTOP=y
+      BRSTOP="y"
     fi
   fi
 
@@ -320,14 +320,14 @@ check_input() {
     for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong swap partition: $BRswap"
-      BRSTOP=y
+      BRSTOP="y"
     elif pvdisplay 2>&1 | grep -w $BRswap > /dev/null; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRswap contains lvm physical volume, refusing to use it. Use a logical volume instead"
-      BRSTOP=y
+      BRSTOP="y"
     fi
     if [ "$BRswap" == "$BRroot" ]; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRswap already used"
-      BRSTOP=y
+      BRSTOP="y"
     fi
   fi
 
@@ -337,13 +337,13 @@ check_input() {
     if [ -n "$BRdevused" ]; then
       for a in ${BRdevused[@]}; do
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $a already used"
-        BRSTOP=y
+        BRSTOP="y"
       done
     fi
     if [ -n "$BRmpointused" ]; then
       for a in ${BRmpointused[@]}; do
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Duplicate mountpoint: $a"
-        BRSTOP=y
+        BRSTOP="y"
       done
     fi
 
@@ -356,43 +356,43 @@ check_input() {
       for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
       if [ ! "$BRcustomcheck" = "true" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong $BRmpoint partition: $BRdevice"
-        BRSTOP=y
+        BRSTOP="y"
       elif pvdisplay 2>&1 | grep -w $BRdevice > /dev/null; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice contains lvm physical volume, refusing to use it. Use a logical volume instead"
-        BRSTOP=y
+        BRSTOP="y"
       elif [[ ! -z `lsblk -d -n -o mountpoint 2> /dev/null $BRdevice` ]]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice is already mounted as $(lsblk -d -n -o mountpoint 2> /dev/null $BRdevice), refusing to use it"
-        BRSTOP=y
+        BRSTOP="y"
       fi
       if [ "$BRdevice" == "$BRroot" ] || [ "$BRdevice" == "$BRswap" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
-        BRSTOP=y
+        BRSTOP="y"
       fi
       if [ "$BRmpoint" = "/" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont assign root partition as custom"
-        BRSTOP=y
+        BRSTOP="y"
       fi
       if [[ "$BRmpoint" == *var* ]] && [ "$BRvarsubvol" = "y" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
-        BRSTOP=y
+        BRSTOP="y"
       elif [[ "$BRmpoint" == *var* ]]; then
         BRvarsubvol="n"
       fi
       if [[ "$BRmpoint" == *usr* ]] && [ "$BRusrsubvol" = "y" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
-        BRSTOP=y
+        BRSTOP="y"
       elif [[ "$BRmpoint" == *usr* ]]; then
         BRusrsubvol="n"
       fi
       if [[ "$BRmpoint" == *home* ]] && [ "$BRhomesubvol" = "y" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
-        BRSTOP=y
+        BRSTOP="y"
       elif [[ "$BRmpoint" == *home* ]]; then
         BRhomesubvol="n"
       fi
       if [[ ! "$BRmpoint" == /* ]]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Wrong mountpoint syntax: $BRmpoint"
-        BRSTOP=y
+        BRSTOP="y"
       fi
       unset BRcustomcheck
     done < <( for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); BRdevice=$(echo $a | cut -f2 -d"="); echo "$BRmpoint=$BRdevice"; done )
@@ -403,7 +403,7 @@ check_input() {
     for i in $(find /dev -regex "/dev/md[0-9]+"); do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
-      BRSTOP=y
+      BRSTOP="y"
     fi
   fi
 
@@ -412,7 +412,7 @@ check_input() {
     for i in $(find /dev -regex "/dev/md[0-9]+"); do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
     if [ ! "$BRsyslinuxcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for syslinux: $BRsyslinux"
-      BRSTOP=y
+      BRSTOP="y"
     fi
     if [[ "$BRsyslinux" == *md* ]]; then
       for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z][0-9]'` ; do
@@ -422,28 +422,28 @@ check_input() {
     detect_partition_table
     if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2> /dev/null) ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
-      BRSTOP=y
+      BRSTOP="y"
     fi
   fi
 
   if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use both bootloaders at the same time"
-    BRSTOP=y
+    BRSTOP="y"
   fi
 
   if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" = "dialog" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong interface name: $BRinterface. Available options: cli dialog"
-    BRSTOP=y
+    BRSTOP="y"
   fi
 
   if [ -n "$BRarchiver" ] && [ ! "$BRarchiver" = "tar" ] && [ ! "$BRarchiver" = "bsdtar" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong archiver: $BRarchiver. Available options: tar bsdtar"
-    BRSTOP=y
+    BRSTOP="y"
   fi
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
-    BRSTOP=y
+    BRSTOP="y"
   fi
 
   if [ -n "$BRSTOP" ]; then
@@ -655,7 +655,7 @@ build_initramfs() {
   echo -e "\n${BR_SEP}REBUILDING INITRAMFS IMAGES"
   if grep -q dev/md /mnt/target/etc/fstab; then
     echo "Generating mdadm.conf..."
-    if [ $BRdistro = Debian ]; then
+    if [ "$BRdistro" = "Debian" ]; then
       if [ -f /mnt/target/etc/mdadm/mdadm.conf ]; then
         mv /mnt/target/etc/mdadm/mdadm.conf /mnt/target/etc/mdadm/mdadm.conf-old
       fi
@@ -767,9 +767,9 @@ install_bootloader() {
 
 set_bootloader() {
   if [ -n "$BRgrub" ]; then
-    BRbootloader=Grub
+    BRbootloader="Grub"
   elif [ -n "$BRsyslinux" ]; then
-    BRbootloader=Syslinux
+    BRbootloader="Syslinux"
   fi
 
   if [ "$BRmode" = "Restore" ]; then

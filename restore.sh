@@ -1956,7 +1956,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       BRgrub=$(dialog --title "Available Disks:" --cancel-label Quit --menu "$disk_report $(echo -e "\n\nSelect disk for Grub:")" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
       if [ "$?" = "1" ]; then exit; fi
     elif [ "$REPLY" = "2" ]; then
-      BRsyslinux=$(dialog --title "Available Disks:" --cancel-label Quit --menu "$(echo -e "\n\nSelect disk for Syslinux:")" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
+      BRsyslinux=$(dialog --title "Available Disks:" --cancel-label Quit --menu "$disk_report $(echo -e "\n\nSelect disk for Syslinux:")" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
       if [ "$?" = "1" ]; then
         exit
       else

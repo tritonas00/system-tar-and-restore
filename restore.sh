@@ -1819,6 +1819,12 @@ elif [ "$BRinterface" = "dialog" ]; then
     exit
   fi
 
+  disk_report=$(
+    for i in /dev/[hs]d[a-z]; do 
+      echo -e "\n$i  $(lsblk -d -n -o model $i)  $(lsblk -d -n -o size $i)"
+      for f in $i[0-9]; do echo -e "\t\t$f  $(blkid -s TYPE -o value $f)  $(lsblk -d -n -o size $f)  $(lsblk -d -n -o mountpoint 2> /dev/null $f)"; done
+    done)
+
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
@@ -1829,7 +1835,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ -n "$(part_list_dialog 2>/dev/null)" ]; then
     if [ -z "$BRroot" ]; then
-      BRroot=$(dialog --cancel-label Quit --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+      BRroot=$(dialog --title "Available Partitions:" --cancel-label Quit --menu "$disk_report $(echo -e "\n\nSelect target root partition:")" 0 0 0 `part_list_dialog` 2>&1 1>&3)
       if [ "$?" = "1" ]; then exit; fi
     fi
   else
@@ -1909,7 +1915,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ "$BRhomesubvol" = "n" ] || [ -z "$BRhomesubvol" ] ; then
     if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ]; then
-      BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+      BRhome=$(dialog --title "Available Partitions:" --cancel-label Skip --extra-button --extra-label Quit --menu "$disk_report $(echo -e "\n\nSelect target home partition:")" 0 0 0 `part_list_dialog` 2>&1 1>&3)
       if [ "$?" = "3" ]; then exit; fi
       if [ -n "$BRhome" ]; then
         BRcustom="y"
@@ -1919,7 +1925,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRboot" ] && [ -n "$(part_list_dialog)" ]; then
-    BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+    BRboot=$(dialog --title "Available Partitions:" --cancel-label Skip --extra-button --extra-label Quit --menu "$disk_report $(echo -e "\n\nSelect target boot partition:")" 0 0 0 `part_list_dialog` 2>&1 1>&3)
     if [ "$?" = "3" ]; then exit; fi
     if [ -n "$BRboot" ]; then
       BRcustom="y"
@@ -1928,7 +1934,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRswap" ] && [ -n "$(part_list_dialog)" ]; then
-    BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set swap partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+    BRswap=$(dialog --title "Available Partitions:" --cancel-label Skip --extra-button --extra-label Quit --menu "$disk_report $(echo -e "\n\nSelect target swap partition:")" 0 0 0 `part_list_dialog` 2>&1 1>&3)
     if [ "$?" = "3" ]; then exit; fi
   fi
 
@@ -1947,10 +1953,10 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$?" = "3" ]; then exit; fi
 
     if [ "$REPLY" = "1" ]; then
-      BRgrub=$(dialog --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
+      BRgrub=$(dialog --title "Available Disks:" --cancel-label Quit --menu "$disk_report $(echo -e "\n\nSelect disk for Grub:")" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
       if [ "$?" = "1" ]; then exit; fi
     elif [ "$REPLY" = "2" ]; then
-      BRsyslinux=$(dialog --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
+      BRsyslinux=$(dialog --title "Available Disks:" --cancel-label Quit --menu "$(echo -e "\n\nSelect disk for Syslinux:")" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
       if [ "$?" = "1" ]; then
         exit
       else

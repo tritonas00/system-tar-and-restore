@@ -1301,7 +1301,7 @@ if [ "$BRinterface" = "cli" ]; then
 
       while [ -z "$BRhomesubvol" ]; do
         echo -e "\n${BR_CYAN}Create subvolume for /home inside $BRrootsubvolname?${BR_NORM}"
-        read -p "(Y/n) " an
+        read -p "(Y/n):" an
 
         if [ -n "$an" ]; then
           btrfsdef=$an

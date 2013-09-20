@@ -1821,7 +1821,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   disk_report=$(
     for i in /dev/[hs]d[a-z]; do 
-      echo -e "\n$i  $(lsblk -d -n -o model $i)  $(lsblk -d -n -o size $i)"
+      echo -e "\n$i  ($(lsblk -d -n -o model $i)  $(lsblk -d -n -o size $i))"
       for f in $i[0-9]; do echo -e "\t\t$f  $(blkid -s TYPE -o value $f)  $(lsblk -d -n -o size $f)  $(lsblk -d -n -o mountpoint 2> /dev/null $f)"; done
     done)
 

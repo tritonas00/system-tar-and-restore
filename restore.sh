@@ -20,9 +20,9 @@ info_screen() {
   echo -e "This script will restore a backup image of your system or transfer this\nsystem in user defined partitions."
   echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
   echo -e "\n==>Make sure that target LVM volume groups are activated and target\n   RAID arrays are properly assembled."
-  echo -e "\n==>If you didn't include /home directory in the backup\n   and you already have a seperate /home partition,\n   simply enter it when prompted."
-  echo -e "\n==>Also make sure that this system and the system you want\n   to restore have the same architecture."
-  echo -e "\n==>Fedora backups can only be restored from a Fedora enviroment,\n   due to extra tar options."
+  echo -e "\n==>If you didn't include /home directory in the backup and you already \n   have a seperate /home partition, simply enter it when prompted."
+  echo -e "\n==>Also make sure that this system and the system you want to restore\n   have the same architecture."
+  echo -e "\n==>In case of GNU tar, Fedora backups can only be restored from a Fedora\n   enviroment, due to extra tar options."
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
@@ -1828,7 +1828,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
-    dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 25 80
+    dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 23 80
   fi
 
   exec 3>&1

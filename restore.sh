@@ -258,7 +258,7 @@ update_part_list() {
 }
 
 disk_report() {
-  for i in /dev/[hs]d[a-z]; do 
+  for i in /dev/[hs]d[a-z]; do
     echo -e "\n$i  ($(lsblk -d -n -o model $i)  $(lsblk -d -n -o size $i))"
     for f in $i[0-9]; do echo -e "\t\t$f  $(blkid -s TYPE -o value $f)  $(lsblk -d -n -o size $f)  $(lsblk -d -n -o mountpoint 2> /dev/null $f)"; done
   done
@@ -1968,7 +1968,7 @@ elif [ "$BRinterface" = "dialog" ]; then
         if [ "$?" = "0" ]; then
           BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Enter additional kernel options:" 8 70 2>&1 1>&3)
         fi
-      fi  
+      fi
     fi
   fi
 

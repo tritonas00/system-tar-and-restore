@@ -1,5 +1,15 @@
 Changelog:
 
+3.7.2
+    early btrfs detection using blkid
+    mount_all now creates subvolumes
+    added "View Partition Table" option in dialog interface
+    fixed lsblk errors when no partitions found
+    fixed colors when -q is given
+    if architecture mismatch report both architectures
+    updated info dialogs
+    replaced unneeded while loops with if statements
+
 3.7.1
     if no partitions found for root, abort
     changed a warning message

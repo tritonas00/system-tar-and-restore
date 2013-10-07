@@ -38,14 +38,14 @@ disk_list() {
 }
 
 update_options() {
-  BR_RESTORE_OPTS="${BR_ROOT} ${BR_MOUNT_OPTIONS} ${BR_SWAP} ${BR_HOME} ${BR_BOOT} ${BR_CUSTOM_PARTS} ${BR_BOOTLOADER} ${BR_KERN_OPTIONS} ${BR_ROOT_SUBVOL} ${BR_HOME_SUBVOL} ${BR_VAR_SUBVOL} ${BR_USR_SUBVOL} ${BR_FILE} ${BR_URL} ${BR_PROTECTED_URL} ${BR_RESTORE_ARCH} ${BR_TRANSFER}"
+  BR_RESTORE_OPTS="${BR_ROOT} ${BR_MOUNT_OPTIONS} ${BR_SWAP} ${BR_HOME} ${BR_BOOT} ${BR_CUSTOM_PARTS} ${BR_BOOTLOADER} ${BR_KERN_OPTIONS} ${BR_ROOT_SUBVOL} ${BR_OTHER_SUBVOLS} ${BR_FILE} ${BR_URL} ${BR_PROTECTED_URL} ${BR_RESTORE_ARCH} ${BR_TRANSFER}"
 
   options=("Set target root partition" "$BRroot $BRuseroptions" \
 "(Optional) Set swap partition" "$BRswap" \
 "(Optional) Set target home partition" "$BRhome" \
 "(Optional) Set target boot partition" "$BRboot" \
 "(Optional) Set custom partitions" "$BRcustomparts" \
-"(Optional) Set btrfs subvolumes" "$BRrootsubvol $BR_HOME_SUBVOL $BR_VAR_SUBVOL $BR_USR_SUBVOL" \
+"(Optional) Set btrfs subvolumes" "$BRrootsubvol" \
 "(Optional) Set bootloader" "$BRbootloader $BRbootloader_disk $BRkerneloptions" \
 "Choose Backup File" "$BRfile" \
 "Enter URL" "$BRurl" \
@@ -134,26 +134,19 @@ while [[ "$BRrootckeck" != "ok" || "$BRsourceckeck" != "ok" ]]; do
           BRrootsubvol=$(zenity --title "Restore" --cancel-label="Reset" --entry --entry-text="$BRrootsubvol" --text "Enter root subvolume name:")
           if [ -n "$BRrootsubvol" ] && [ $? = "0" ]; then
             BR_ROOT_SUBVOL="-R $BRrootsubvol"
-            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /home?"
+            zenity --title "Restore" --question --no-wrap --text "Create other subvolumes?"
             if [ $? = "0" ]; then
-              BR_HOME_SUBVOL="-H"
+              BRothersubvols=$(zenity --width 550 --title "Restore" --cancel-label="Skip" --entry --entry-text="$BRothersubvols" --text "Set subvolumes (subvolume path e.g /home /var /usr ...)")
+              if [ -n "$BRothersubvols" ] && [ $? = "0" ]; then
+                BR_OTHER_SUBVOLS="-O '$BRothersubvols'"
+              else
+                unset BRothersubvols BR_OTHER_SUBVOLS
+              fi
             else
-              unset BR_HOME_SUBVOL
+              unset BRothersubvols BR_OTHER_SUBVOLS
             fi
-            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /var?"
-            if [ $? = "0" ]; then
-              BR_VAR_SUBVOL="-V"
-            else
-              unset BR_VAR_SUBVOL
-            fi
-            zenity --title "Restore" --question --no-wrap --text "Create subvolume for /usr?"
-            if [ $? = "0" ]; then
-              BR_USR_SUBVOL="-U"
-            else
-              unset BR_USR_SUBVOL
-            fi
-          else
-            unset BRrootsubvol BR_ROOT_SUBVOL BR_HOME_SUBVOL BR_VAR_SUBVOL BR_USR_SUBVOL
+          else 
+            unset BR_ROOT_SUBVOL BRrootsubvol BRothersubvols BR_OTHER_SUBVOLS
           fi
           update_options;;
       "${options[12]}" )

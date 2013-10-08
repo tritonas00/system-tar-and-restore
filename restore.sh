@@ -923,7 +923,7 @@ unset_vars() {
   if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:qtoNm:k:c:a:O:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:qtoNm:k:c:a:O:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then

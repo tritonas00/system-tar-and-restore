@@ -15,12 +15,12 @@ color_variables() {
 }
 
 info_screen() {
-  echo -e "\nThis script will restore a backup image of your system or transfer this\nsystem in user defined partitions."
+  echo -e "\n${BR_YELLOW}This script will restore a backup image of your system or transfer this\nsystem in user defined partitions."
   echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
   echo -e "\n==>Make sure that target LVM volume groups are activated and target\n   RAID arrays are properly assembled."
   echo -e "\n==>If you didn't include /home directory in the backup and you already \n   have a seperate /home partition, simply enter it when prompted."
   echo -e "\n==>Also make sure that this system and the system you want to restore\n   have the same architecture."
-  echo -e "\n==>In case of GNU tar, Fedora backups can only be restored from a Fedora\n   enviroment, due to extra tar options."
+  echo -e "\n==>In case of GNU tar, Fedora backups can only be restored from a Fedora\n   enviroment, due to extra tar options.${BR_NORM}"
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 

@@ -15,17 +15,17 @@ color_variables() {
 }
 
 info_screen() {
-  echo -e "\nThis script will make a tar backup image of this system."
+  echo -e "\n${BR_YELLOW}This script will make a tar backup image of this system."
   echo -e "\n==>Make sure you have enough free space."
   echo -e "\n==>Also make sure you have GRUB or SYSLINUX packages installed."
-  echo -e "\n${BR_YELLOW}GRUB PACKAGES:${BR_NORM}"
+  echo -e "\nGRUB PACKAGES:"
   echo "->Arch: grub-bios"
   echo "->Debian: grub-pc"
   echo "->Fedora: grub2"
-  echo -e "\n${BR_YELLOW}SYSLINUX PACKAGES:${BR_NORM}"
+  echo -e "\nSYSLINUX PACKAGES:"
   echo "->Arch: syslinux"
   echo "->Debian: syslinux extlinux"
-  echo "->Fedora: syslinux syslinux-extlinux"
+  echo "->Fedora: syslinux syslinux-extlinux${BR_NORM}"
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 

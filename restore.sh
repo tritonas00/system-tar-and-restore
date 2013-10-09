@@ -3,8 +3,6 @@
 BR_VERSION="System Tar & Restore 3.7.3"
 BR_SEP="::"
 
-clear
-
 color_variables() {
   BR_NORM='\e[00m'
   BR_RED='\e[00;31m'
@@ -17,7 +15,7 @@ color_variables() {
 }
 
 info_screen() {
-  echo -e "This script will restore a backup image of your system or transfer this\nsystem in user defined partitions."
+  echo -e "\nThis script will restore a backup image of your system or transfer this\nsystem in user defined partitions."
   echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
   echo -e "\n==>Make sure that target LVM volume groups are activated and target\n   RAID arrays are properly assembled."
   echo -e "\n==>If you didn't include /home directory in the backup and you already \n   have a seperate /home partition, simply enter it when prompted."
@@ -1170,6 +1168,8 @@ fi
 
 PS3="Enter number or Q to quit: "
 
+echo -e "\n${BR_BOLD}$BR_VERSION${BR_NORM}"
+
 if [ -z "$BRinterface" ]; then
   echo -e "\n${BR_CYAN}Select interface:${BR_NORM}"
   select c in "CLI" "Dialog"; do
@@ -1189,14 +1189,10 @@ if [ -z "$BRinterface" ]; then
 fi
 
 if [ "$BRinterface" = "cli" ]; then
-  clear
-  echo -e "${BR_BOLD}$BR_VERSION${BR_NORM}"
-  echo " "
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
     info_screen
     read -s a
-    clear
   fi
 
   disk_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f"; done; for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f"; done`)
@@ -1768,7 +1764,6 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
 elif [ "$BRinterface" = "dialog" ]; then
-  clear
   IFS=$DEFAULTIFS
 
   if [ -z $(which dialog 2> /dev/null) ];then
@@ -1779,7 +1774,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRrestore" ] && [ -z "$BRfile" ] && [ -z "$BRurl" ]; then
-    dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 23 80
+    dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 24 80
     if [ "$?" = "1" ]; then
       dialog --title "Partition Table" --msgbox "$(disk_report)" 0 0
     fi

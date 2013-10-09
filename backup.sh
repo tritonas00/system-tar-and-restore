@@ -1,9 +1,7 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.7.2"
+BR_VERSION="System Tar & Restore 3.7.3"
 BR_SEP="::"
-
-clear
 
 color_variables() {
   BR_NORM='\e[00m'
@@ -17,7 +15,7 @@ color_variables() {
 }
 
 info_screen() {
-  echo "This script will make a tar backup image of this system."
+  echo -e "\nThis script will make a tar backup image of this system."
   echo -e "\n==>Make sure you have enough free space."
   echo -e "\n==>Also make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\n${BR_YELLOW}GRUB PACKAGES:${BR_NORM}"
@@ -275,6 +273,8 @@ fi
 
 PS3="Enter number or Q to quit: "
 
+echo -e "\n${BR_BOLD}$BR_VERSION${BR_NORM}"
+
 if [ -z "$BRinterface" ]; then
   echo -e "\n${BR_CYAN}Select interface:${BR_NORM}"
   select c in "CLI" "Dialog"; do
@@ -294,16 +294,12 @@ if [ -z "$BRinterface" ]; then
 fi
 
 if [ "$BRinterface" = "cli" ]; then
-  clear
-  echo -e "${BR_BOLD}$BR_VERSION${BR_NORM}"
-  echo " "
   DEFAULTIFS=$IFS
   IFS=$'\n'
 
   if [ -z "$BRFOLDER" ]; then
     info_screen
     read -s a
-    clear
   fi
 
   while [ -z "$BRFOLDER" ]; do

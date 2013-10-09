@@ -25,7 +25,7 @@ info_screen() {
   echo -e "\nSYSLINUX PACKAGES:"
   echo "->Arch: syslinux"
   echo "->Debian: syslinux extlinux"
-  echo "->Fedora: syslinux syslinux-extlinux${BR_NORM}"
+  echo -e "->Fedora: syslinux syslinux-extlinux${BR_NORM}"
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 

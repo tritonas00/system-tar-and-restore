@@ -58,7 +58,7 @@ show_summary() {
 
   echo -e "\nFOUND BOOTLOADERS:"
   if [ -d /usr/lib/grub/i386-pc ]; then
-    echo "Grub"
+    echo -e "Grub"
   fi
   if which extlinux &>/dev/null; then
     echo "Syslinux"
@@ -66,6 +66,7 @@ show_summary() {
   if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
     echo "None or not supported"
   fi
+  echo -e "${BR_NORM}"
 }
 
 dir_list() {
@@ -142,7 +143,7 @@ prepare() {
   BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
 }
 
-BRargs=`getopt -o "i:d:c:u:hnNa:" -l "interface:,directory:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:c:u:hnNa:q" -l "interface:,directory:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -186,6 +187,11 @@ while true; do
       BRarchiver=$2
       shift 2
     ;;
+    -q|--quiet)
+      BRcontinue="y"
+      BRquiet="y"
+      shift
+    ;;
     --help)
       BR_BOLD='\033[1m'
       BR_NORM='\e[00m'
@@ -195,6 +201,7 @@ ${BR_BOLD}$BR_VERSION
 Interface:${BR_NORM}
   -i, --interface         interface to use (cli dialog)
   -N, --no-color          disable colors
+  -q, --quiet             dont ask, just run
 
 ${BR_BOLD}Destination:${BR_NORM}
   -d, --directory         backup folder path
@@ -457,14 +464,21 @@ if [ "$BRinterface" = "cli" ]; then
       cat /tmp/bsdtar_out >> "$BRFOLDER"/backup.log
     fi
 
-    if [ -f /tmp/b_error ]; then
-      echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details.\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
+    if [ -z "$BRquiet" ]; then
+      if [ -f /tmp/b_error ]; then
+        echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details.\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
+      else
+        echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER.\nPress ENTER to exit.${BR_NORM}"
+      fi
+      read -s a
     else
-      echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER.\nPress ENTER to exit.${BR_NORM}"
+      if [ -f /tmp/b_error ]; then
+        echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details${BR_NORM}"
+      else
+        echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER.${BR_NORM}"
+      fi
     fi
   fi
-
-  read -s a
 
 elif [ "$BRinterface" = "dialog" ]; then
   if [ -z $(which dialog 2> /dev/null) ];then
@@ -552,9 +566,9 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0
-  if [ "$?" = "1" ]; then
-    exit
+  if [ -z "$BRcontinue" ]; then
+    dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0
+    if [ "$?" = "1" ]; then exit; fi
   fi
 
   prepare
@@ -584,13 +598,21 @@ elif [ "$BRinterface" = "dialog" ]; then
     cat /tmp/bsdtar_out >> "$BRFOLDER"/backup.log
   fi
 
-  if [ -f /tmp/b_error ]; then
-    dialog --yes-label "OK" --no-label "View Log" --title "Error" --yesno "An error occurred.\n\nCheck $BRFOLDER/backup.log for details.\n\nPress OK to exit." 10 80
+  if [ -z "$BRquiet" ]; then
+    if [ -f /tmp/b_error ]; then
+      dialog --yes-label "OK" --no-label "View Log" --title "Error" --yesno "An error occurred.\n\nCheck $BRFOLDER/backup.log for details.\n\nPress OK to exit." 10 80
+    else
+      dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Completed.\n\nBackup archive and log saved in $BRFOLDER.\n\nPress OK to exit." 10 80
+    fi
+    if [ "$?" = "1" ]; then
+      dialog --textbox "$BRFOLDER"/backup.log 0 0
+    fi
   else
-    dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Completed.\n\nBackup archive and log saved in $BRFOLDER.\n\nPress OK to exit." 10 80
-  fi
-  if [ "$?" = "1" ]; then
-    dialog --textbox "$BRFOLDER"/backup.log 0 0
+    if [ -f /tmp/b_error ]; then
+      dialog --title "Error" --infobox "An error occurred.\n\nCheck $BRFOLDER/backup.log for details." 0 0
+    else
+      dialog --title "Info" --infobox "Completed.\n\nBackup archive and log saved in $BRFOLDER." 0 0
+    fi
   fi
 fi
 

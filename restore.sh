@@ -982,6 +982,7 @@ while true; do
     -q|--quiet)
       BRcontinue="y"
       BRedit="n"
+      BRquiet="y"
       shift
     ;;
     -R|--rootsubvolname)
@@ -1750,17 +1751,26 @@ if [ "$BRinterface" = "cli" ]; then
     install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1
     sleep 1
 
-    if [ -f /tmp/bl_error ]; then
-      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error installing $BRbootloader. Check /tmp/restore.log for details.\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
-    elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-      echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
+    if [ -z "$BRquiet" ]; then
+      if [ -f /tmp/bl_error ]; then
+        echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error installing $BRbootloader. Check /tmp/restore.log for details.\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
+      elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+        echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
+      else
+        instruct_screen
+      fi
+      read -s a
+      sleep 1
+      clean_unmount_out
     else
-      instruct_screen
+      if [ -f /tmp/bl_error ]; then
+        echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error installing $BRbootloader. Check /tmp/restore.log for details.${BR_NORM}"
+      else
+        echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log.${BR_NORM}"
+      fi
+      sleep 1
+      clean_unmount_out
     fi
-    read -s a
-
-    sleep 1
-    clean_unmount_out
   fi
 
 elif [ "$BRinterface" = "dialog" ]; then
@@ -2139,18 +2149,28 @@ elif [ "$BRinterface" = "dialog" ]; then
     sleep 2
   fi
 
-  if [ -f /tmp/bl_error ]; then
-    dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Error installing $BRbootloader. Check /tmp/restore.log for details.\n\nPress OK to unmount all remaining (engaged) devices." 8 70
-  elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Completed. Log: /tmp/restore.log\n\nPress OK to unmount all remaining (engaged) devices, then reboot your system." 8 90
+  if [ -z "$BRquiet" ]; then
+    if [ -f /tmp/bl_error ]; then
+      dialog --yes-label "OK" --no-label "View Log" --title "Error" --yesno "Error installing $BRbootloader. Check /tmp/restore.log for details.\n\nPress OK to unmount all remaining (engaged) devices." 8 70
+    elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+      dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Completed. Log: /tmp/restore.log\n\nPress OK to unmount all remaining (engaged) devices, then reboot your system." 8 90
+    else
+      dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "$(instruct_screen)" 22 80
+    fi
+
+    if [ "$?" = "1" ]; then
+      dialog --textbox /tmp/restore.log 0 0
+    fi
+
+    sleep 1
+    clean_unmount_out
   else
-    dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "$(instruct_screen)" 22 80
+    if [ -f /tmp/bl_error ]; then
+      dialog --title "Error" --infobox "Error installing $BRbootloader.\nCheck /tmp/restore.log for details." 4 39
+    else
+      dialog --title "Info" --infobox "Completed. Log: /tmp/restore.log." 3 37
+    fi
+    sleep 1
+    clean_unmount_out
   fi
-
-  if [ "$?" = "1" ]; then
-    dialog --textbox /tmp/restore.log 0 0
-  fi
-
-  sleep 1
-  clean_unmount_out
 fi

@@ -213,20 +213,9 @@ select the archiver you used to create the backup archive (tar bsdtar)
 subvolume name for root
 .RE
 .PP
-\fB\-H, \-\-homesubvol\fR
+\fB\-O, \-\-other-subvolumes\fR
 .RS 4
-make subvolume for 
-\fI/home\fR
-.RE
-.PP
-\fB\-V, \-\-varsubvol\fR
-.RS 4
-make subvolume for \fI/var\fR
-.RE
-.PP
-\fB\-U, \-\-usrsubvol\fR
-.RS 4
-make subvolume for \fI/usr\fR
+specify other subvolumes (subvolume path e.g /home /var /usr ...)
 .RE
 .PP
 \fB\-\-help\fR
@@ -317,7 +306,7 @@ Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be
 The root will be in __active subvolume, \fI/usr\fR\&, \fI/var\fR\&,
 \fI/home\fR will also be in subvolumes and btrfs compression will be enabled:
 .RS 4
-\fB./restore.sh \-t \-b /dev/sda1 \-r /dev/sda2 \-m compress=lzo \-S /dev/sda \-R __active \-V \-U \-H\fR
+\fB./restore.sh \-t \-b /dev/sda1 \-r /dev/sda2 \-m compress=lzo \-S /dev/sda \-R __active \-O "/usr /var /home"\fR
 .RE
 .sp
 Restore system in \fBRAID\fR partitions\&. The boot partition will be \fI/dev/md0\fR

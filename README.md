@@ -96,7 +96,9 @@ The script will ask for:
 
 - Interface to use (cli dialog)  
 
-- Target root partition  and additional mount options  
+- Target root partition  and additional mount options. If the root filesystem is btrfs, the script will ask if you
+    want to create a subvolume for it. If yes, it will ask for the subvolume's name and also if you want to
+    create other subvolumes. Just enter the subvolume path (e.g /home /var /usr ...) seperated by space.
 
 - (Optional) Target home partition   
 
@@ -111,10 +113,6 @@ The script will ask for:
    If a raid array is selected, the script will install the bootloader in all disks that the array contains.  
 
 - Select Mode
-
-- If the root filesystem is btrfs, the script will ask if you want to create a subvolume for it.
-   If yes, it will ask for the subvolume's name and also if you want to create seperate
-   subvolumes for /home, /usr and /var inside root subvolume.  
 
 - If Restore Mode is selected it will ask for the archiver you used to create the backup archive and the backup archive itself. 
    This can be obtained locally (by entering the full path of the file), or remotelly (by entering the url of the file).
@@ -190,14 +188,8 @@ select archiver (tar bsdtar)
 **-R, --rootsubvolname**   
 subvolume name for root
 
-**-H, --homesubvol**   
- make subvolume for /home
-
-**-V, --varsubvol**   
-make subvolume for /var
-
-**-U, --usrsubvol**   
-make subvolume for /usr
+**-O, --other-subvolumes**   
+ specify other subvolumes (subvolume path e.g /home /var /usr ...)
 
 **--help**   
  show all arguments
@@ -284,7 +276,7 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux  
 - transfer mode  
 
-<code>./restore.sh -t -b /dev/sda1 -r /dev/sda2 -m compress=lzo -S /dev/sda -R __active -V -U -H </code>  
+<code>./restore.sh -t -b /dev/sda1 -r /dev/sda2 -m compress=lzo -S /dev/sda -R __active -O "/var /usr /home"</code>  
 
 - root = /dev/md1
 - boot = /dev/md0

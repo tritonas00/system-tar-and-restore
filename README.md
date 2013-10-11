@@ -112,7 +112,7 @@ The script will ask for:
    If Syslinux is selected, it will ask for additional kernel options which will be written in syslinux.cfg.
    If a raid array is selected, the script will install the bootloader in all disks that the array contains.  
 
-- Select Mode. If **Restore Mode** is selected it will ask for the archiver you used to create the backup archive
+- Select Mode. If **Restore Mode** is selected it will ask the archiver you used to create the backup archive
     the backup archive itself.  This can be obtained locally (by entering the full path of the file), or remotelly
    (by entering the url of the file). Also protected url is supported, which will ask for server's username and password.
    If **Transfer Mode** is selected, it will ask if you want to transfer entire /home directory or only it's hidden files and folders.  

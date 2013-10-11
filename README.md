@@ -51,6 +51,9 @@ interface to use (cli dialog)
 **-N, --no-color**   
 disable colors
 
+**-q,  --quiet**  
+dont ask, just run  
+
 **-d, --directory**  
 backup folder path
 

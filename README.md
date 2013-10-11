@@ -292,19 +292,3 @@ In the target system, if distribution is Fedora and Grub is selected, old */etc/
 - syslinux  
 
 <code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0 -a bsdtar</code>  
-
-###WRAPPERS###
-
-There are available two zenity wrappers for the main scripts, **backup-zenity** and **restore-zenity**.
-Wrappers and main scripts must be in the same directory and executed as normal user.
-
-###REQUIREMENTS###
-
-- zenity
-- xterm
-
-###WRAPPER SCREENSHOTS###
-
-![ScreenShot] (https://raw.github.com/tritonas00/system-tar-and-restore/master/screenshots/backup.jpg)
-
-![ScreenShot] (https://raw.github.com/tritonas00/system-tar-and-restore/master/screenshots/restore.jpg)

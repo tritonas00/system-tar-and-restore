@@ -1,5 +1,13 @@
 Changelog:
 
+3.7.3
+    enhanced btrfs subvolumes subsystem
+    removed clear
+    colorized info screen
+    added quiet argument in backup.sh
+    dont wait user input to exit when -q is given
+    removed zenity wrappers
+
 3.7.2
     early btrfs detection using blkid
     mount_all now creates subvolumes

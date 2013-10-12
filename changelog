@@ -4,7 +4,7 @@ Changelog:
     enhanced btrfs subvolumes subsystem
     removed clear
     colorized info screen
-    added quiet argument in backup.sh
+    added -q, --quiet argument in backup.sh
     dont wait user input to exit when -q is given
     removed zenity wrappers
 

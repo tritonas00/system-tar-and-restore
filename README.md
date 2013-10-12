@@ -98,7 +98,7 @@ The script will ask for:
 
 - Target root partition  and additional mount options. If the root filesystem is btrfs, the script will ask if you
     want to create a subvolume for it. If yes, it will ask for the subvolume's name and also if you want to
-    create other subvolumes. Just enter the subvolume path (e.g /home /var /usr ...) seperated by space.
+    create other subvolumes. Just enter the subvolume paths (e.g /home /var /usr ...) seperated by space.
 
 - (Optional) Target home partition   
 

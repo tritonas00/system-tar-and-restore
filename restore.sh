@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.7.3"
+BR_VERSION="System Tar & Restore 3.7.4"
 BR_SEP="::"
 
 color_variables() {
@@ -1150,7 +1150,7 @@ if [ -n "$BRrootsubvol" ]; then
   fi
 fi
 
-if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ] && [ -n "$BR_KERNEL_OPTS" ]; then
+if [ "$BRgrub" = "-1" ] && [ "$BRsyslinux" = "-1" ] && [ -n "$BR_KERNEL_OPTS" ]; then
   echo -e "[${BR_YELLOW}WARNING${BR_NORM}] No bootloader selected, skipping kernel options"
 fi
 

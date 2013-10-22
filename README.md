@@ -193,7 +193,7 @@ subvolume name for root
 
 ###NOTES###
 
-- With GNU Tar 1.27, you can add --xattrs --acls --selinux in user options.
+- With GNU Tar 1.27, you can add --xattrs --acls --selinux in backup user options.
 
 - The system that runs the restore script and the target system (the one you want to restore), must have the same architecture (for chroot to work).
 

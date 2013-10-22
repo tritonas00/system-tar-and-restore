@@ -2141,10 +2141,10 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
  (prepare_chroot
-   build_initramfs
-   generate_locales
-   install_bootloader
-   sleep 2) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox 30 100
+  build_initramfs
+  generate_locales
+  install_bootloader
+  sleep 2) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox 30 100
 
   if [ -f /tmp/bl_error ]; then diag_tl="Error"; else diag_tl="Info"; fi
 

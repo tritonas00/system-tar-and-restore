@@ -31,17 +31,17 @@ info_screen() {
 
 exit_screen() {
   if [ -f /tmp/b_error ]; then
-    echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details.\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
+    echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details.\n\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
   else
-    echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER.\nPress ENTER to exit.${BR_NORM}"
+    echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER\n\nPress ENTER to exit.${BR_NORM}"
   fi
 }
 
 exit_screen_quiet() {
   if [ -f /tmp/b_error ]; then
-    echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details${BR_NORM}"
+    echo -e "${BR_RED}\nAn error occurred.\n\nCheck "$BRFOLDER"/backup.log for details${BR_NORM}"
   else
-    echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER.${BR_NORM}"
+    echo -e "${BR_CYAN}\nCompleted.\n\nBackup archive and log saved in $BRFOLDER${BR_NORM}"
   fi
 }
 

@@ -24,14 +24,28 @@ info_screen() {
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
-instruct_screen(){
-  echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log"
-  echo -e "\n${BR_YELLOW}No bootloader found, so this is the right time to install and\nupdate one. To do so:"
-  echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
-  echo -e "\n==>Then chroot into the restored system: chroot /mnt/target"
-  echo -e "\n==>Install and update a bootloader"
-  echo -e "\n==>When done, leave chroot: exit"
-  echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices.${BR_NORM}"
+exit_screen() {
+  if [ -f /tmp/bl_error ]; then
+    echo -e "\n${BR_RED}Error installing $BRbootloader. Check /tmp/restore.log for details.\n\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
+  elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+    echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log\n\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
+  else
+    echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log"
+    echo -e "\n${BR_YELLOW}No bootloader found, so this is the right time to install and\nupdate one. To do so:"
+    echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
+    echo -e "\n==>Then chroot into the restored system: chroot /mnt/target"
+    echo -e "\n==>Install and update a bootloader"
+    echo -e "\n==>When done, leave chroot: exit"
+    echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices.${BR_NORM}"
+  fi
+}
+
+exit_screen_quiet() {
+  if [ -f /tmp/bl_error ]; then
+    echo -e "\n${BR_RED}Error installing $BRbootloader.\nCheck /tmp/restore.log for details.${BR_NORM}"
+  else
+    echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log${BR_NORM}"
+  fi
 }
 
 ok_status() {
@@ -1674,109 +1688,91 @@ if [ "$BRinterface" = "cli" ]; then
     elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
       echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
       BRcontinue="n"
+      clean_unmount_in
     else
       echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
     fi
   done
 
-  if [ "$BRcontinue" = "n" ]; then
-    clean_unmount_in
-  elif [ "$BRcontinue" = "y" ]; then
-    echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
-    echo " " >> /tmp/restore.log
-    if [ "$BRmode" = "Restore" ]; then
-      echo -e "\n${BR_SEP}EXTRACTING"
-      total=$(cat /tmp/filelist | wc -l)
-      sleep 1
-
-      if [ "$BRarchiver" = "tar" ]; then
-        run_tar 2>>/tmp/restore.log
-      elif [ "$BRarchiver" = "bsdtar" ]; then
-        run_tar | tee /tmp/bsdtar_out
-      fi | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $(($a*100/$total))%"; done
-
-      if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
-        cat /tmp/bsdtar_out >> /tmp/restore.log
-      fi
-
-      echo " "
-    elif [ "$BRmode" = "Transfer" ]; then
-      echo -e "\n${BR_SEP}TRANSFERING"
-      run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
-      total=$(cat /tmp/filelist | wc -l)
-      sleep 1
-      echo " "
-      run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $(($b*100/$total))%"; done
-      echo " "
-    fi
-
-    echo -e "\n${BR_SEP}GENERATING FSTAB"
-    generate_fstab
-    cat /mnt/target/etc/fstab
-
-    while [ -z "$BRedit" ] ; do
-      echo -e "\n${BR_CYAN}Edit fstab?${BR_NORM}"
-      read -p "(y/N):" an
-
-      if [ -n "$an" ]; then
-        def=$an
-      else
-        def="n"
-      fi
-
-      if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
-        BRedit="y"
-      elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-        BRedit="n"
-      else
-        echo -e "${BR_RED}Please select a valid option${BR_NORM}"
-      fi
-    done
-
-    if [ "$BRedit" = "y" ]; then
-      if [ -z "$BReditor" ]; then
-        echo -e "\n${BR_CYAN}Select editor${BR_NORM}"
-        select c in ${editorlist[@]}; do
-          if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#editorlist[@]} ]; then
-            BReditor=$c
-            $BReditor /mnt/target/etc/fstab
-            break
-          else
-            echo -e "${BR_RED}Please select a valid option${BR_NORM}"
-          fi
-        done
-      fi
-    fi
-
-    ( prepare_chroot
-      build_initramfs
-      generate_locales
-      sleep 1 ) 1> >(tee -a /tmp/restore.log) 2>&1
-
-    install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1
+  echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
+  echo " " >> /tmp/restore.log
+  if [ "$BRmode" = "Restore" ]; then
+    echo -e "\n${BR_SEP}EXTRACTING"
+    total=$(cat /tmp/filelist | wc -l)
     sleep 1
 
-    if [ -z "$BRquiet" ]; then
-      if [ -f /tmp/bl_error ]; then
-        echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error installing $BRbootloader. Check /tmp/restore.log for details.\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
-      elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-        echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
-      else
-        instruct_screen
-      fi
-      read -s a
-      sleep 1
-      clean_unmount_out
+    if [ "$BRarchiver" = "tar" ]; then
+      run_tar 2>>/tmp/restore.log
+    elif [ "$BRarchiver" = "bsdtar" ]; then
+      run_tar | tee /tmp/bsdtar_out
+    fi | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $(($a*100/$total))%"; done
+
+    if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
+      cat /tmp/bsdtar_out >> /tmp/restore.log
+    fi
+
+    echo " "
+  elif [ "$BRmode" = "Transfer" ]; then
+    echo -e "\n${BR_SEP}TRANSFERING"
+    run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
+    total=$(cat /tmp/filelist | wc -l)
+    sleep 1
+    echo " "
+    run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $(($b*100/$total))%"; done
+    echo " "
+  fi
+
+  echo -e "\n${BR_SEP}GENERATING FSTAB"
+  generate_fstab
+  cat /mnt/target/etc/fstab
+
+  while [ -z "$BRedit" ] ; do
+    echo -e "\n${BR_CYAN}Edit fstab?${BR_NORM}"
+    read -p "(y/N):" an
+
+    if [ -n "$an" ]; then
+      def=$an
     else
-      if [ -f /tmp/bl_error ]; then
-        echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error installing $BRbootloader. Check /tmp/restore.log for details.${BR_NORM}"
-      else
-        echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log.${BR_NORM}"
-      fi
-      sleep 1
-      clean_unmount_out
+      def="n"
+    fi
+
+    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
+      BRedit="y"
+    elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
+      BRedit="n"
+    else
+      echo -e "${BR_RED}Please select a valid option${BR_NORM}"
+    fi
+  done
+
+  if [ "$BRedit" = "y" ]; then
+    if [ -z "$BReditor" ]; then
+      echo -e "\n${BR_CYAN}Select editor${BR_NORM}"
+      select c in ${editorlist[@]}; do
+        if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#editorlist[@]} ]; then
+          BReditor=$c
+          $BReditor /mnt/target/etc/fstab
+          break
+        else
+          echo -e "${BR_RED}Please select a valid option${BR_NORM}"
+        fi
+      done
     fi
   fi
+
+  (prepare_chroot
+   build_initramfs
+   generate_locales
+   install_bootloader
+   sleep 1) 1> >(tee -a /tmp/restore.log) 2>&1
+
+  if [ -z "$BRquiet" ]; then
+    exit_screen; read -s a
+  else
+    exit_screen_quiet
+  fi
+  sleep 1
+  clean_unmount_out
 
 elif [ "$BRinterface" = "dialog" ]; then
   IFS=$DEFAULTIFS
@@ -2144,38 +2140,21 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
- ( prepare_chroot
+ (prepare_chroot
    build_initramfs
    generate_locales
-   sleep 2 ) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox 30 100
+   install_bootloader
+   sleep 2) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox 30 100
 
-  if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    install_bootloader 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "INSTALLING AND CONFIGURING BOOTLOADER" --progressbox 30 70
-    sleep 2
-  fi
+  if [ -f /tmp/bl_error ]; then diag_tl="Error"; else diag_tl="Info"; fi
 
   if [ -z "$BRquiet" ]; then
-    if [ -f /tmp/bl_error ]; then
-      dialog --yes-label "OK" --no-label "View Log" --title "Error" --yesno "Error installing $BRbootloader. Check /tmp/restore.log for details.\n\nPress OK to unmount all remaining (engaged) devices." 8 70
-    elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-      dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Completed. Log: /tmp/restore.log\n\nPress OK to unmount all remaining (engaged) devices, then reboot your system." 8 90
-    else
-      dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "$(instruct_screen)" 22 80
-    fi
-
-    if [ "$?" = "1" ]; then
-      dialog --textbox /tmp/restore.log 0 0
-    fi
-
-    sleep 1
-    clean_unmount_out
+    dialog --yes-label "OK" --no-label "View Log" --title "$diag_tl" --yesno "$(exit_screen)" 0 0
+    if [ "$?" = "1" ]; then dialog --textbox /tmp/restore.log 0 0; fi
   else
-    if [ -f /tmp/bl_error ]; then
-      dialog --title "Error" --infobox "Error installing $BRbootloader.\nCheck /tmp/restore.log for details." 4 39
-    else
-      dialog --title "Info" --infobox "Completed. Log: /tmp/restore.log." 3 37
-    fi
-    sleep 1
-    clean_unmount_out
+    dialog --title "$diag_tl" --infobox "$(exit_screen_quiet)" 0 0
   fi
+
+  sleep 1
+  clean_unmount_out
 fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.7.3"
+BR_VERSION="System Tar & Restore 3.7.4"
 BR_SEP="::"
 
 color_variables() {
@@ -27,6 +27,22 @@ info_screen() {
   echo "->Debian: syslinux extlinux"
   echo -e "->Fedora: syslinux syslinux-extlinux${BR_NORM}"
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
+}
+
+exit_screen() {
+  if [ -f /tmp/b_error ]; then
+    echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details.\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
+  else
+    echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER.\nPress ENTER to exit.${BR_NORM}"
+  fi
+}
+
+exit_screen_quiet() {
+  if [ -f /tmp/b_error ]; then
+    echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details${BR_NORM}"
+  else
+    echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER.${BR_NORM}"
+  fi
 }
 
 show_summary() {
@@ -444,40 +460,29 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   done
 
-  if [  "$BRcontinue" = "y" ]; then
-    prepare
-    set_tar_options
-    run_calc
-    total=$(cat /tmp/filelist | wc -l)
-    sleep 1
-    echo " "
-    if [ "$BRarchiver" = "bsdtar" ]; then
-      run_tar | tee /tmp/bsdtar_out
-    elif [ "$BRarchiver" = "tar" ]; then
-      run_tar 2>>"$BRFOLDER"/backup.log
-    fi | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
+  prepare
+  set_tar_options
+  run_calc
+  total=$(cat /tmp/filelist | wc -l)
+  sleep 1
+  echo " "
+  if [ "$BRarchiver" = "bsdtar" ]; then
+    run_tar | tee /tmp/bsdtar_out
+  elif [ "$BRarchiver" = "tar" ]; then
+    run_tar 2>>"$BRFOLDER"/backup.log
+  fi | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
 
-    echo -ne "\nSetting permissions "
-    OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -e "[${BR_GREEN}OK${BR_NORM}]" || echo -e "[${BR_RED}FAILED${BR_NORM}]\n$OUTPUT"
+  echo -ne "\nSetting permissions "
+  OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -e "[${BR_GREEN}OK${BR_NORM}]" || echo -e "[${BR_RED}FAILED${BR_NORM}]\n$OUTPUT"
 
-    if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
-      cat /tmp/bsdtar_out >> "$BRFOLDER"/backup.log
-    fi
+  if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
+    cat /tmp/bsdtar_out >> "$BRFOLDER"/backup.log
+  fi
 
-    if [ -z "$BRquiet" ]; then
-      if [ -f /tmp/b_error ]; then
-        echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details.\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
-      else
-        echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER.\nPress ENTER to exit.${BR_NORM}"
-      fi
-      read -s a
-    else
-      if [ -f /tmp/b_error ]; then
-        echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details${BR_NORM}"
-      else
-        echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER.${BR_NORM}"
-      fi
-    fi
+  if [ -z "$BRquiet" ]; then
+    exit_screen; read -s a
+  else
+    exit_screen_quiet
   fi
 
 elif [ "$BRinterface" = "dialog" ]; then
@@ -598,21 +603,13 @@ elif [ "$BRinterface" = "dialog" ]; then
     cat /tmp/bsdtar_out >> "$BRFOLDER"/backup.log
   fi
 
+  if [ -f /tmp/b_error ]; then diag_tl="Error"; else diag_tl="Info"; fi
+
   if [ -z "$BRquiet" ]; then
-    if [ -f /tmp/b_error ]; then
-      dialog --yes-label "OK" --no-label "View Log" --title "Error" --yesno "An error occurred.\n\nCheck $BRFOLDER/backup.log for details.\n\nPress OK to exit." 10 80
-    else
-      dialog --yes-label "OK" --no-label "View Log" --title "Info" --yesno "Completed.\n\nBackup archive and log saved in $BRFOLDER.\n\nPress OK to exit." 10 80
-    fi
-    if [ "$?" = "1" ]; then
-      dialog --textbox "$BRFOLDER"/backup.log 0 0
-    fi
+    dialog --yes-label "OK" --no-label "View Log" --title "$diag_tl" --yesno "$(exit_screen)" 0 0
+    if [ "$?" = "1" ]; then dialog --textbox "$BRFOLDER"/backup.log 0 0; fi
   else
-    if [ -f /tmp/b_error ]; then
-      dialog --title "Error" --infobox "An error occurred.\n\nCheck $BRFOLDER/backup.log for details." 0 0
-    else
-      dialog --title "Info" --infobox "Completed.\n\nBackup archive and log saved in $BRFOLDER." 0 0
-    fi
+    dialog --title "$diag_tl" --infobox "$(exit_screen_quiet)" 0 0
   fi
 fi
 

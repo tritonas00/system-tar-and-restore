@@ -1,9 +1,9 @@
 Changelog:
 
 3.7.4
-    Fixed a warning message
-    Moved install_bootloader in "PROCESSING" dialog
-    Unified exit screen for both interfaces
+    fixed a warning message
+    moved install_bootloader in "PROCESSING" dialog
+    unified exit screen for both interfaces
 
 3.7.3
     enhanced btrfs subvolumes subsystem

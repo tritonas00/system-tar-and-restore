@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.7.4"
+BR_VERSION="System Tar & Restore 3.7.5"
 BR_SEP="::"
 
 color_variables() {
@@ -49,12 +49,12 @@ exit_screen_quiet() {
 }
 
 ok_status() {
-  echo -e "[${BR_GREEN}OK${BR_NORM}]"
+  echo -e "\033[100D[${BR_GREEN}SUCCESS${BR_NORM}"
   custom_ok="y"
 }
 
 error_status() {
-  echo -e "[${BR_RED}FAILED${BR_NORM}]\n$OUTPUT"
+  echo -e "\033[100D[${BR_RED}FAILURE${BR_NORM}\n$OUTPUT"
   BRSTOP="y"
 }
 
@@ -483,10 +483,10 @@ fi
 
 mount_all() {
   echo -e "\n${BR_SEP}MOUNTING"
-  echo -n "Making working directory "
+  echo -ne "${BR_SPC}Making working directory${BR_WRK}"
   OUTPUT=$(mkdir /mnt/target 2>&1) && ok_status || error_status
 
-  echo -n "Mounting $BRroot "
+  echo -ne "${BR_SPC}Mounting $BRroot${BR_WRK}"
   OUTPUT=$(mount -o $BR_MOUNT_OPTS $BRroot /mnt/target 2>&1) && ok_status || error_status
   if [ -n "$BRSTOP" ]; then
     echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
@@ -505,20 +505,20 @@ mount_all() {
   fi
 
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
-    echo -n "Creating $BRrootsubvolname "
+    echo -ne "${BR_SPC}Creating $BRrootsubvolname${BR_WRK}"
     OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
 
     if [ "$BRsubvolother" = "y" ]; then
       while read ln; do
-        echo -n "Creating $BRrootsubvolname$ln "
+        echo -ne "${BR_SPC}Creating $BRrootsubvolname$ln${BR_WRK}"
         OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname$ln 2>&1 1> /dev/null) && ok_status || error_status
       done< <(for a in "${BRsubvols[@]}"; do echo "$a"; done | sort)
     fi
 
-    echo -n "Unmounting $BRroot "
+    echo -ne "${BR_SPC}Unmounting $BRroot${BR_WRK}"
     OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
 
-    echo -n "Mounting $BRrootsubvolname "
+    echo -ne "${BR_SPC}Mounting $BRrootsubvolname${BR_WRK}"
     OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
     if [ -n "$BRSTOP" ]; then
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while making subvolumes"
@@ -533,7 +533,7 @@ mount_all() {
     for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
-      echo -n "Mounting $BRdevice "
+      echo -ne "${BR_SPC}Mounting $BRdevice${BR_WRK}"
       mkdir -p /mnt/target$BRmpoint
       OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
       if [ -n "$custom_ok" ]; then
@@ -869,27 +869,27 @@ clean_unmount_in() {
   if [ "$BRcustom" = "y" ]; then
     while read ln; do
       sleep 1
-      echo -n "Unmounting $ln "
+      echo -ne "${BR_SPC}Unmounting $ln${BR_WRK}"
       OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
     done < <( for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
   fi
 
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
-    echo -n "Unmounting $BRrootsubvolname "
+    echo -ne "${BR_SPC}Unmounting $BRrootsubvolname${BR_WRK}"
     OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
     sleep 1
-    echo -n "Mounting $BRroot "
+    echo -ne "${BR_SPC}Mounting $BRroot${BR_WRK}"
     OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
 
     if [ "$BRsubvolother" = "y" ]; then
       while read ln; do
         sleep 1
-        echo -n "Deleting $BRrootsubvolname$ln "
+        echo -ne "${BR_SPC}Deleting $BRrootsubvolname$ln${BR_WRK}"
         OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname$ln 2>&1 1> /dev/null) && ok_status || error_status
       done < <( for i in ${BRsubvols[@]}; do echo $i; done | sort | tac )
     fi
 
-    echo -n "Deleting $BRrootsubvolname "
+    echo -ne "${BR_SPC}Deleting $BRrootsubvolname${BR_WRK}"
     OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
   fi
 
@@ -898,7 +898,7 @@ clean_unmount_in() {
   fi
   clean_files
 
-  echo -n "Unmounting $BRroot "
+  echo -ne "${BR_SPC}Unmounting $BRroot${BR_WRK}"
   sleep 1
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
   exit
@@ -919,14 +919,14 @@ clean_unmount_out() {
   if [ "$BRcustom" = "y" ]; then
     while read ln; do
       sleep 1
-      echo -n "Unmounting $ln "
+      echo -ne "${BR_SPC}Unmounting $ln${BR_WRK}"
       OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
     done < <( for i in ${BRsorted[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
   fi
 
   clean_files
 
-  echo -n "Unmounting $BRroot "
+  echo -ne "${BR_SPC}Unmounting $BRroot${BR_WRK}"
   sleep 1
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
   exit
@@ -1102,6 +1102,8 @@ if [ -z "$BRnocolor" ]; then
   color_variables
 fi
 
+BR_SPC="          "
+BR_WRK="\033[100D[${BR_CYAN}WORKING${BR_NORM}]"
 DEFAULTIFS=$IFS
 IFS=$'\n'
 
@@ -1561,7 +1563,7 @@ if [ "$BRinterface" = "cli" ]; then
   if [ "$BRmode" = "Restore" ]; then
     echo -e "\n${BR_SEP}GETTING TAR IMAGE"
     if [ -n "$BRfile" ]; then
-      echo -n "Symlinking file "
+      echo -ne "${BR_SPC}Symlinking file${BR_WRK}"
       OUTPUT=$(ln -s "$BRfile" "/mnt/target/fullbackup" 2>&1) && ok_status || error_status
     fi
 
@@ -1615,7 +1617,7 @@ if [ "$BRinterface" = "cli" ]; then
       	  else
             detect_filetype
             if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ]; then
-              echo -n "Symlinking file "
+              echo -ne "${BR_SPC}Symlinking file${BR_WRK}"
               OUTPUT=$(ln -s $BRfile "/mnt/target/fullbackup" 2>&1) && ok_status || error_status
             else
               echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"

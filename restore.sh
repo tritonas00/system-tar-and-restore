@@ -829,9 +829,9 @@ check_archive() {
     if [ ! "$(uname -m)" == "$(echo ${target_arch#*.})" ]; then
       rm /mnt/target/fullbackup 2>/dev/null
       if [ "$BRinterface" = "cli" ]; then
-        echo -e "\n[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive"
         echo -e "[${BR_CYAN}INFO${BR_NORM}] Target  system: ${target_arch#*.}"
-        echo -e "[${BR_CYAN}INFO${BR_NORM}] Running system: $(uname -m)\n"
+        echo -e "[${BR_CYAN}INFO${BR_NORM}] Running system: $(uname -m)"
       elif [ "$BRinterface" = "dialog" ]; then
         dialog --title "Error" --msgbox "Running and target system architecture mismatch or invalid archive.\n\nTarget  system: ${target_arch#*.}\nRunning system: $(uname -m)" 8 71
       fi

@@ -817,7 +817,7 @@ check_archive() {
     rm /tmp/tar_error
     rm /mnt/target/fullbackup 2>/dev/null
     if [ "$BRinterface" = "cli" ]; then
-      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error reading archive\n"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
     elif [ "$BRinterface" = "dialog" ]; then
       dialog --title "Error" --msgbox "Error reading archive." 5 26
     fi

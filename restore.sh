@@ -496,9 +496,9 @@ mount_all() {
   fi
 
   if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
-    echo -e "\n[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it"
-    echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned\n"
-    echo -n "Unmounting $BRroot "
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it"
+    echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned"
+    echo -ne "${BR_SPC}Unmounting $BRroot${BR_WRK}"
     sleep 1
     OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
     exit

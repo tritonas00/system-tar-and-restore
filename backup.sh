@@ -248,8 +248,7 @@ if [ -z "$BRnocolor" ]; then
   color_variables
 fi
 
-BR_SPC="          "
-BR_WRK="\033[100D[${BR_CYAN}WORKING${BR_NORM}]"
+BR_WRK="[${BR_CYAN}WORKING${BR_NORM}]"
 
 if [ $(id -u) -gt 0 ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Script must run as root"
@@ -475,8 +474,8 @@ if [ "$BRinterface" = "cli" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
   fi | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
 
-  echo -ne "\n${BR_SPC}Setting permissions${BR_WRK}"
-  OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) &&   echo -e "\033[100D[${BR_GREEN}SUCCESS${BR_NORM}" || echo -e "\033[100D[${BR_RED}FAILURE${BR_NORM}\n$OUTPUT"
+  echo -ne "\n${BR_WRK}Setting permissions"
+  OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -e "\r[${BR_GREEN}SUCCESS${BR_NORM}]" || echo -e "\r[${BR_RED}FAILURE${BR_NORM}\n$OUTPUT]"
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
     cat /tmp/bsdtar_out >> "$BRFOLDER"/backup.log

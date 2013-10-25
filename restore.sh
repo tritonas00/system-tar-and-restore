@@ -1102,7 +1102,7 @@ if [ -z "$BRnocolor" ]; then
   color_variables
 fi
 
-BR_WRK="[${BR_CYAN}WORKING${BR_NORM}]"
+BR_WRK="[${BR_CYAN}WORKING${BR_NORM}] "
 DEFAULTIFS=$IFS
 IFS=$'\n'
 

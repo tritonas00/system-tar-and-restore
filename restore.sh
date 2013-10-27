@@ -257,12 +257,12 @@ hide_used_parts_lvm() {
 part_list_dialog() {
   for f in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | sort | hide_used_parts
   for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)"; done | hide_used_parts_lvm
-  for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | hide_used_parts
+  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | hide_used_parts
 }
 
 disk_list_dialog() {
   for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)"; done
-  for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)"; done
+  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done
 }
 
 update_part_list() {
@@ -318,9 +318,9 @@ check_input() {
   fi
 
   if [ -n "$BRroot" ]; then
-    for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
+    for i in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
-    for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
+    for i in $(find /dev -regex "^/dev/md[0-9]+$"); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong root partition: $BRroot"
       BRSTOP="y"
@@ -334,9 +334,9 @@ check_input() {
   fi
 
   if [ -n "$BRswap" ]; then
-    for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
+    for i in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
-    for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
+    for i in $(find /dev -regex "^/dev/md[0-9]+$"); do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong swap partition: $BRswap"
       BRSTOP="y"
@@ -370,9 +370,9 @@ check_input() {
       BRmpoint=$(echo $ln | cut -f1 -d"=")
       BRdevice=$(echo $ln | cut -f2 -d"=")
 
-      for i in /dev/[hs]d[a-z][0-9]; do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
+      for i in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
       for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
-      for i in $(find /dev -regex "/dev/md[0-9].*"); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
+      for i in $(find /dev -regex "^/dev/md[0-9]+$"); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
       if [ ! "$BRcustomcheck" = "true" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong $BRmpoint partition: $BRdevice"
         BRSTOP="y"
@@ -430,7 +430,7 @@ fi
 
   if [ -n "$BRgrub" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
-    for i in $(find /dev -regex "/dev/md[0-9]+"); do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
+    for i in $(find /dev -regex "^/dev/md[0-9]+$"); do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
       BRSTOP="y"
@@ -439,7 +439,7 @@ fi
 
   if [ -n "$BRsyslinux" ]; then
     for i in /dev/[hs]d[a-z]; do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
-    for i in $(find /dev -regex "/dev/md[0-9]+"); do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
+    for i in $(find /dev -regex "^/dev/md[0-9]+$"); do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
     if [ ! "$BRsyslinuxcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for syslinux: $BRsyslinux"
       BRSTOP="y"
@@ -1216,7 +1216,7 @@ if [ "$BRinterface" = "cli" ]; then
     read -s a
   fi
 
-  disk_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f"; done; for f in $(find /dev -regex "/dev/md[0-9]+"); do echo -e "$f"; done`)
+  disk_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f"; done; for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f"; done`)
   editorlist=(nano vi)
   update_part_list
 

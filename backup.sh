@@ -442,7 +442,7 @@ if [ "$BRinterface" = "cli" ]; then
   show_summary
 
   while [ -z "$BRcontinue" ]; do
-    echo -e "\n${BR_CYAN}Continue?${BR_NORM}"
+    echo -e "${BR_CYAN}Continue?${BR_NORM}"
     read -p "(Y/n):" an
 
     if [ -n "$an" ]; then

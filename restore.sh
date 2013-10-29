@@ -325,6 +325,7 @@ check_input() {
 
   if [ -n "$BRhome" ] || [ -n "$BRboot" ] || [ -n "$BRother" ] && [ -z "$BRroot" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a target root partition."
+    BRSTOP="y"
   fi
 
   if [ -n "$BRroot" ]; then

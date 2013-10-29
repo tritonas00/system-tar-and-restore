@@ -1820,22 +1820,15 @@ elif [ "$BRinterface" = "dialog" ]; then
             update_options;;
         "${options[2]}" )
             BRhome=$(dialog --column-separator "|" --cancel-label Unset --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-            BRcustom="y"
-            BRcustomparts+=(/home="$BRhome")
             update_options;;
         "${options[4]}" )
             BRboot=$(dialog --column-separator "|" --cancel-label Unset --menu "Set target boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-            BRcustom="y"
-            BRcustomparts+=(/boot="$BRboot")
             update_options;; 
         "${options[6]}" )
             BRswap=$(dialog --column-separator "|" --cancel-label Unset --menu "Set swap partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
             update_options;;   
         "${options[8]}" )
-            BRcustom="y"
-            BRother="y"
             BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 "$BRcustomold" 2>&1 1>&3)
-            BRcustomparts+=($BRcustompartslist)
             BRcustomold="$BRcustompartslist"
             update_options;;
         "${options[10]}" )
@@ -1847,6 +1840,22 @@ elif [ "$BRinterface" = "dialog" ]; then
       dialog --title "Error" --msgbox "You must specify a target root partition." 5 45
     fi
   done
+
+  if [ -n "$BRhome" ]; then
+    BRcustom="y"
+    BRcustomparts+=(/home="$BRhome")
+  fi
+
+  if [ -n "$BRboot" ]; then
+    BRcustom="y"
+    BRcustomparts+=(/boot="$BRboot")
+  fi
+
+  if [ -n "$BRcustompartslist" ]; then
+    BRcustom="y"
+    BRother="y"
+    BRcustomparts+=($BRcustompartslist)
+  fi
 
   if [ -z "$BRmountoptions" ]; then
      dialog --yesno "Specify additional mount options for root partition?" 5 56

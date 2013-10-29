@@ -323,7 +323,7 @@ check_input() {
     fi
   fi
 
-  if [ -n "$BRhome" ] || [ -n "$BRboot" ] || [ -n "$BRother" ] && [ -z "$BRroot" ]; then
+  if [ -n "$BRhome" ] || [ -n "$BRboot" ] || [ -n "$BRother" ] || [ -n "$BRrootsubvol" ] || [ -n "$BRsubvolother" ] && [ -z "$BRroot" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a target root partition."
     BRSTOP="y"
   fi

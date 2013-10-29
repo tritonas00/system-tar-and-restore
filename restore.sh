@@ -323,6 +323,10 @@ check_input() {
     fi
   fi
 
+  if [ -n "$BRhome" ] || [ -n "$BRboot" ] || [ -n "$BRother" ] && [ -z "$BRroot" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a target root partition."
+  fi
+
   if [ -n "$BRroot" ]; then
     for i in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
     for i in $(find /dev/mapper/ | grep '-'); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
@@ -1813,6 +1817,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   update_options
 
   while [ -z "$BRroot" ]; do
+    BRassign="y"
     while opt=$(dialog --ok-label Select --cancel-label Quit --menu "Set target partitions:" 0 0 0 "${options[@]}"  2>&1 1>&3); if [ $? = "1" ]; then exit; fi; do
       case "$opt" in
         "${options[0]}" )
@@ -1841,20 +1846,22 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   done
 
-  if [ -n "$BRhome" ]; then
-    BRcustom="y"
-    BRcustomparts+=(/home="$BRhome")
-  fi
+  if [ -n "$BRassign" ]; then
+    if [ -n "$BRhome" ]; then
+      BRcustom="y"
+      BRcustomparts+=(/home="$BRhome")
+    fi
 
-  if [ -n "$BRboot" ]; then
-    BRcustom="y"
-    BRcustomparts+=(/boot="$BRboot")
-  fi
+    if [ -n "$BRboot" ]; then
+      BRcustom="y"
+      BRcustomparts+=(/boot="$BRboot")
+    fi
 
-  if [ -n "$BRcustompartslist" ]; then
-    BRcustom="y"
-    BRother="y"
-    BRcustomparts+=($BRcustompartslist)
+    if [ -n "$BRcustompartslist" ]; then
+      BRcustom="y"
+      BRother="y"
+      BRcustomparts+=($BRcustompartslist)
+    fi
   fi
 
   if [ -z "$BRmountoptions" ]; then

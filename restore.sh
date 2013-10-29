@@ -254,10 +254,16 @@ hide_used_parts_lvm() {
   grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"` -e `echo /dev/mapper/"${BRboot##*/}"`
 }
 
-part_list_dialog() {
+part_list_cli() {
   for f in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | sort | hide_used_parts
   for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)"; done | hide_used_parts_lvm
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | hide_used_parts
+}
+
+part_list_dialog() {
+  for f in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done | sort
+  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done
+  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done
 }
 
 disk_list_dialog() {
@@ -266,7 +272,7 @@ disk_list_dialog() {
 }
 
 update_part_list() {
-  list=(`part_list_dialog 2>/dev/null`)
+  list=(`part_list_cli 2>/dev/null`)
 }
 
 disk_report() {
@@ -1035,6 +1041,7 @@ while true; do
       BRcustom="y"
       BRother="y"
       BRcustomparts=($2)
+      BRcustomold="$2"
       shift 2
     ;;
     -a|--archiver)
@@ -1220,25 +1227,25 @@ if [ "$BRinterface" = "cli" ]; then
   editorlist=(nano vi)
   update_part_list
 
-  if [ -n "$(part_list_dialog 2>/dev/null)" ]; then
-    if [ -z "$BRroot" ]; then
-      echo -e "\n${BR_CYAN}Select target root partition:${BR_NORM}"
-      select c in ${list[@]}; do
-        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-          exit
-        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-          BRroot=(`echo $c | awk '{ print $1 }'`)
-          echo -e "${BR_GREEN}You selected $BRroot as your root partition${BR_NORM}"
-          break
-        else
-          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-        fi
-      done
-    fi
-  else
+  if [ -z "$(part_list_cli 2>/dev/null)" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] No partitions found"
     exit
+  fi
+
+  if [ -z "$BRroot" ]; then
+    echo -e "\n${BR_CYAN}Select target root partition:${BR_NORM}"
+    select c in ${list[@]}; do
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+        exit
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
+        BRroot=(`echo $c | awk '{ print $1 }'`)
+        echo -e "${BR_GREEN}You selected $BRroot as your root partition${BR_NORM}"
+        break
+      else
+        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+      fi
+    done
   fi
 
   while [ -z "$BRmountoptions" ]; do
@@ -1338,7 +1345,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   update_part_list
 
-  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ]; then
+  if [ -z "$BRhome" ] && [ -n "$(part_list_cli)" ]; then
     echo -e "\n${BR_CYAN}Select target home partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1361,7 +1368,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   update_part_list
 
-  if [ -z "$BRboot" ] && [ -n "$(part_list_dialog)" ]; then
+  if [ -z "$BRboot" ] && [ -n "$(part_list_cli)" ]; then
     echo -e "\n${BR_CYAN}Select target boot partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1384,7 +1391,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   update_part_list
 
-  if [ -z "$BRswap" ] && [ -n "$(part_list_dialog)" ]; then
+  if [ -z "$BRswap" ] && [ -n "$(part_list_cli)" ]; then
     echo -e "\n${BR_CYAN}Select swap partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1403,7 +1410,7 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  if [ -n "$(part_list_dialog)" ]; then
+  if [ -n "$(part_list_cli)" ]; then
     while [ -z "$BRother" ]; do
       echo -e "\n${BR_CYAN}Specify custom partitions?${BR_NORM}"
       read -p "(y/N):" an
@@ -1794,15 +1801,57 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   exec 3>&1
 
-  if [ -n "$(part_list_dialog 2>/dev/null)" ]; then
-    if [ -z "$BRroot" ]; then
-      BRroot=$(dialog --cancel-label Quit --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-      if [ "$?" = "1" ]; then exit; fi
-    fi
-  else
+  if [ -z "$(part_list_dialog 2>/dev/null)" ]; then
     dialog --title "Error" --msgbox "No partitions found." 5 24
     exit
   fi
+
+  update_options() {
+    options=("Root partition" "$BRroot" \
+    "(Optional) Home partition" "$BRhome" \
+    "(Optional) Boot partition" "$BRboot" \
+    "(Optional) Swap partition" "$BRswap" \
+    "(Optional) Custom partitions" "$BRempty" \
+    "Done with partitions" "$BRempty")
+  }
+
+  update_options
+
+  while [ -z "$BRroot" ]; do
+    while opt=$(dialog --ok-label Select --cancel-label Quit --menu "Set target partitions:" 0 0 0 "${options[@]}"  2>&1 1>&3); if [ $? = "1" ]; then exit; fi; do
+      case "$opt" in
+        "${options[0]}" )
+            BRroot=$(dialog --column-separator "|" --cancel-label Unset --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+            update_options;;
+        "${options[2]}" )
+            BRhome=$(dialog --column-separator "|" --cancel-label Unset --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+            BRcustom="y"
+            BRcustomparts+=(/home="$BRhome")
+            update_options;;
+        "${options[4]}" )
+            BRboot=$(dialog --column-separator "|" --cancel-label Unset --menu "Set target boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+            BRcustom="y"
+            BRcustomparts+=(/boot="$BRboot")
+            update_options;; 
+        "${options[6]}" )
+            BRswap=$(dialog --column-separator "|" --cancel-label Unset --menu "Set swap partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+            update_options;;   
+        "${options[8]}" )
+            BRcustom="y"
+            BRother="y"
+            BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 "$BRcustomold" 2>&1 1>&3)
+            BRcustomparts+=($BRcustompartslist)
+            BRcustomold="$BRcustompartslist"
+            update_options;;
+        "${options[10]}" )
+           break;;
+      esac
+    done
+
+    if [ -z "$BRroot" ]; then
+      dialog --title "Error" --msgbox "You must specify a target root partition." 5 45
+    fi
+  done
 
   if [ -z "$BRmountoptions" ]; then
      dialog --yesno "Specify additional mount options?" 6 40
@@ -1844,7 +1893,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       done
 
       if [ -z "$BRsubvolother" ]; then
-        dialog --yesno "Create other subvolumes?" 6 28
+        dialog --yesno "Create other subvolumes?" 5 30
          if [ "$?" = "0" ]; then
            BRsubvolother="y"
            BRsubvolslist=$(dialog --no-cancel --inputbox "Set subvolumes (subvolume path e.g /home /var /usr ...)" 8 80 2>&1 1>&3)
@@ -1862,39 +1911,6 @@ elif [ "$BRinterface" = "dialog" ]; then
      fi
   elif [ "$BRrootsubvol" = "y" ] || [ "$BRsubvolother" = "y" ]; then
     dialog  --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
-  fi
-
-  if [ -z "$BRhome" ] && [ -n "$(part_list_dialog)" ]; then
-    BRhome=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-    if [ "$?" = "3" ]; then exit; fi
-    if [ -n "$BRhome" ]; then
-      BRcustom="y"
-      BRcustomparts+=(/home="$BRhome")
-    fi
-  fi
-
-  if [ -z "$BRboot" ] && [ -n "$(part_list_dialog)" ]; then
-    BRboot=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set target boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-    if [ "$?" = "3" ]; then exit; fi
-    if [ -n "$BRboot" ]; then
-      BRcustom="y"
-      BRcustomparts+=(/boot="$BRboot")
-    fi
-  fi
-
-  if [ -z "$BRswap" ] && [ -n "$(part_list_dialog)" ]; then
-    BRswap=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Set swap partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-    if [ "$?" = "3" ]; then exit; fi
-  fi
-
-  if [ -z "$BRother" ] && [ -n "$(part_list_dialog)" ]; then
-    dialog --yesno "Specify custom partitions?" 6 30
-    if [ "$?" = "0" ]; then
-      BRcustom="y"
-      BRother="y"
-      BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 2>&1 1>&3)
-      BRcustomparts+=($BRcustompartslist)
-    fi
   fi
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
@@ -1960,7 +1976,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
 
     if [ -n "$BRurl" ]; then
-      BRurlold=$BRurl
+      BRurlold="$BRurl"
       if [ -n "$BRusername" ]; then
        (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
         sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
@@ -2042,8 +2058,8 @@ elif [ "$BRinterface" = "dialog" ]; then
 
       elif [ "$REPLY" = "URL" ] || [ "$REPLY" = "Protected URL" ]; then
         unset BRfile
-        BRurl=$(dialog --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 $BRurlold 2>&1 1>&3)
-        BRurlold=$BRurl
+        BRurl=$(dialog --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 "$BRurlold" 2>&1 1>&3)
+        BRurlold="$BRurl"
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)

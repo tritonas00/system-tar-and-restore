@@ -1185,6 +1185,11 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
+if [ -z "$(part_list_cli 2>/dev/null)" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] No partitions found"
+  exit
+fi
+
 if [ -d /mnt/target ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] /mnt/target exists, aborting"
   exit
@@ -1226,11 +1231,6 @@ if [ "$BRinterface" = "cli" ]; then
   disk_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f"; done; for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f"; done`)
   editorlist=(nano vi)
   update_part_list
-
-  if [ -z "$(part_list_cli 2>/dev/null)" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] No partitions found"
-    exit
-  fi
 
   if [ -z "$BRroot" ]; then
     echo -e "\n${BR_CYAN}Select target root partition:${BR_NORM}"
@@ -1801,11 +1801,6 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   exec 3>&1
 
-  if [ -z "$(part_list_dialog 2>/dev/null)" ]; then
-    dialog --title "Error" --msgbox "No partitions found." 5 24
-    exit
-  fi
-
   update_options() {
     options=("Root partition" "$BRroot" \
     "(Optional) Home partition" "$BRhome" \
@@ -1854,7 +1849,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   done
 
   if [ -z "$BRmountoptions" ]; then
-     dialog --yesno "Specify additional mount options?" 6 40
+     dialog --yesno "Specify additional mount options for root partition?" 5 56
      if [ "$?" = "0" ]; then
        BRmountoptions="Yes"
        BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Enter options: (comma-separated list of mount options)" 8 70 2>&1 1>&3)

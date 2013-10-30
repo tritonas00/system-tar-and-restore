@@ -1579,7 +1579,7 @@ if [ "$BRinterface" = "cli" ]; then
       if [ -n "$BRusername" ]; then
         wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2
         if [ "$?" -ne "0" ]; then
-          echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
+          echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
           rm /mnt/target/fullbackup 2>/dev/null
         else
           detect_filetype_url
@@ -1591,7 +1591,7 @@ if [ "$BRinterface" = "cli" ]; then
       else
         wget -O /mnt/target/fullbackup $BRurl --tries=2
         if [ "$?" -ne "0" ]; then
-          echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
+          echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
           rm /mnt/target/fullbackup 2>/dev/null
         else
           detect_filetype_url
@@ -1643,7 +1643,7 @@ if [ "$BRinterface" = "cli" ]; then
             read -p "PASSWORD: " BRpassword
 	    wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2
             if [ "$?" -ne "0" ]; then
-              echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
+              echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
 	      rm /mnt/target/fullbackup 2>/dev/null
             else
               detect_filetype_url
@@ -1656,7 +1656,7 @@ if [ "$BRinterface" = "cli" ]; then
           fi
           wget -O /mnt/target/fullbackup $BRurl --tries=2
           if [ "$?" -ne "0" ]; then
-            echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
+            echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
 	    rm /mnt/target/fullbackup 2>/dev/null
           else
             detect_filetype_url

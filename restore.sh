@@ -1584,7 +1584,7 @@ if [ "$BRinterface" = "cli" ]; then
         else
           detect_filetype_url
           if [ "$BRfiletype" = "wrong" ]; then
-            echo -e "${BR_RED}Invalid file type${BR_NORM}"
+            echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
             rm /mnt/target/fullbackup 2>/dev/null
           fi
         fi
@@ -1648,7 +1648,7 @@ if [ "$BRinterface" = "cli" ]; then
             else
               detect_filetype_url
               if [ "$BRfiletype" = "wrong" ]; then
-                echo -e "${BR_RED}Invalid file type${BR_NORM}"
+                echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
                 rm /mnt/target/fullbackup 2>/dev/null
               fi
             fi

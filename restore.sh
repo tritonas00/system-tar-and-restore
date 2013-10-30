@@ -586,7 +586,7 @@ show_summary() {
     echo "root: $BRrootsubvolname"
     if [ "$BRsubvolother" = "y" ]; then
       while read ln; do
-        echo  "${ln#*/}"
+        echo "${ln#*/}"
       done< <(for a in "${BRsubvols[@]}"; do echo "$a"; done | sort)
     fi
   fi
@@ -1821,7 +1821,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   while [ -z "$BRroot" ]; do
     BRassign="y"
-    while opt=$(dialog --ok-label Select --cancel-label Quit --menu "Set target partitions:" 0 0 0 "${options[@]}"  2>&1 1>&3); if [ $? = "1" ]; then exit; fi; do
+    while opt=$(dialog --ok-label Select --cancel-label Quit --menu "Set target partitions:" 0 0 0 "${options[@]}" 2>&1 1>&3); if [ $? = "1" ]; then exit; fi; do
       case "$opt" in
         "${options[0]}" )
             BRroot=$(dialog --column-separator "|" --cancel-label Unset --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
@@ -1831,10 +1831,10 @@ elif [ "$BRinterface" = "dialog" ]; then
             update_options;;
         "${options[4]}" )
             BRboot=$(dialog --column-separator "|" --cancel-label Unset --menu "Set target boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-            update_options;; 
+            update_options;;
         "${options[6]}" )
             BRswap=$(dialog --column-separator "|" --cancel-label Unset --menu "Set swap partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-            update_options;;   
+            update_options;;
         "${options[8]}" )
             BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 "$BRcustomold" 2>&1 1>&3)
             BRcustomold="$BRcustompartslist"
@@ -1924,7 +1924,7 @@ elif [ "$BRinterface" = "dialog" ]; then
        fi
      fi
   elif [ "$BRrootsubvol" = "y" ] || [ "$BRsubvolother" = "y" ]; then
-    dialog  --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
+    dialog --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
   fi
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
@@ -1948,7 +1948,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    dialog  --title "Warning" --msgbox "No bootloader selected, press ok to continue." 5 49
+    dialog --title "Warning" --msgbox "No bootloader selected, press ok to continue." 5 49
   fi
 
   unset_vars

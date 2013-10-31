@@ -946,7 +946,7 @@ unset_vars() {
   if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:n:p:R:qtoNm:k:c:a:O:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:qtoNm:k:c:a:O:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -987,6 +987,11 @@ while true; do
       shift 2
     ;;
     -f|--file)
+      BRmode="Restore"
+      BRuri=$2
+      shift 2
+    ;;
+    -u|--url)
       BRmode="Restore"
       BRuri=$2
       shift 2
@@ -1060,10 +1065,11 @@ Interface:${BR_NORM}
   -q,  --quiet              dont ask, just run
 
 ${BR_BOLD}Restore Mode:${BR_NORM}
-  -f,  --file               backup file path or url
+  -f   --file               backup file path or url
   -n,  --username           username
   -p,  --password           password
   -a,  --archiver           select archiver (tar bsdtar)
+  -u   --url                same as -f (for compatibility)
 
 ${BR_BOLD}Transfer Mode:${BR_NORM}
   -t,  --transfer           activate transfer mode

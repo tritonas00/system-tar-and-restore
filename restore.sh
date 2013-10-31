@@ -1832,7 +1832,7 @@ elif [ "$BRinterface" = "dialog" ]; then
             elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then
               dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
             else
-              BRroot=$(dialog  --column-separator "|" --cancel-label Back --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+              BRroot=$(dialog --column-separator "|" --cancel-label Back --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
               if [ "$?" = "1" ]; then BRroot="$BRrootold"; fi
             fi
             update_options;;

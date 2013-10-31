@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 3.7.4
+.\"    Source: system-tar-and-restore 3.8
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "22 Oct 2013" "3.7.4" "General Manual"
+.TH "system-tar-and-restore" "1" "31 Oct 2013" "3.8" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -185,12 +185,7 @@ additional kernel options (syslinux)
 .PP
 \fB\-f, \-\-file\fR
 .RS 4
-backup file path
-.RE
-.PP
-\fB\-u, \-\-url\fR
-.RS 4
-url
+backup file path or url
 .RE
 .PP
 \fB\-n, \-\-username\fR
@@ -208,6 +203,11 @@ password
 select the archiver you used to create the backup archive (tar bsdtar)
 .RE
 .PP
+\fB\-u, \-\-url\fR
+.RS 4
+same as -f (for compatibility)
+.RE
+.PP
 \fB\-R, \-\-rootsubvolname\fR
 .RS 4
 subvolume name for root
@@ -223,6 +223,8 @@ specify other subvolumes (subvolume path e.g /home /var /usr ...)
 show all arguments
 .RE
 .SH NOTES
+.sp
+With \fBGNU Tar 1.27\fR\&, you can add \fB--xattrs --acls --selinux\fR\& in backup user options.
 .sp
 The system that runs the restore script and the target system (the one you 
 want to restore)\&, must have the same architecture (for \fIchroot\fR to work)\&.
@@ -281,7 +283,7 @@ Restore system in \fI/dev/sdb1\fR for \fI/\fR (root) partition\&, \fI/dev/sdb2\f
 for \fI/home\fR partition\&, \fI/dev/sdb3\fR for \fIswap\fR\& partition, using \fBsyslinux\fR 
 as bootloader and downloading backup file from ftp server:
 .RS 4
-\fB./restore.sh \-r /dev/sdb1 \-h /dev/sdb2 \-s /dev/sdb3 \-S /dev/sdb \-u 
+\fB./restore.sh \-r /dev/sdb1 \-h /dev/sdb2 \-s /dev/sdb3 \-S /dev/sdb \-f 
 ftp://server/data/backup.tar.xz -a bsdtar\fR
 .RE
 .sp
@@ -289,7 +291,7 @@ Restore system in  \fI/dev/sdb2\fR for \fI/\fR (root) partition, \fI/dev/sdb1\fR
 for \fI/boot\fR partition, \fI/dev/sdb3\fR for \fI/home\fR\&, using \fBsyslinux\fR 
 as bootloader and downloading backup file from protected http server\&.
 .RS 4
-\fB./restore.sh \-r /dev/sdb2 \-b /dev/sdb1 \-h /dev/sdb3 \-S /dev/sdb \-u 
+\fB./restore.sh \-r /dev/sdb2 \-b /dev/sdb1 \-h /dev/sdb3 \-S /dev/sdb \-f 
 http://server/backup.tar.gz \-n user \-p pass -a tar\fR
 .RE
 .sp

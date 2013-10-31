@@ -1,5 +1,15 @@
 Changelog:
 
+3.8
+    new, real time updated, output layout
+    improved partition detection (thanks to pmav)
+    new partition selection dialog
+    show partitions filesystem in dialog interface
+    check if root partition is given from arguments under certain scenarios
+    fixed kernel options warning
+    -f now accepts both local file path and url (-u is also kept for compatibility)
+    code cleaning 
+
 3.7.4
     fixed a warning message
     moved install_bootloader in "PROCESSING" dialog

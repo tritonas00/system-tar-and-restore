@@ -1065,11 +1065,11 @@ Interface:${BR_NORM}
   -q,  --quiet              dont ask, just run
 
 ${BR_BOLD}Restore Mode:${BR_NORM}
-  -f   --file               backup file path or url
+  -f,  --file               backup file path or url
   -n,  --username           username
   -p,  --password           password
   -a,  --archiver           select archiver (tar bsdtar)
-  -u   --url                same as -f (for compatibility)
+  -u,  --url                same as -f (for compatibility)
 
 ${BR_BOLD}Transfer Mode:${BR_NORM}
   -t,  --transfer           activate transfer mode

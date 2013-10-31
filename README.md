@@ -106,7 +106,7 @@ The script will ask for:
 
 - (Optional) Set custom partitions. Syntax is mountpoint=device (e.g /usr=/dev/sda3 /var/cache=/dev/sda4).  
 
-- (Optional) Additional mount options for the root partitions. 
+- (Optional) Additional mount options for the root partition. 
 
 - (Optional) If the root filesystem is btrfs, the script will ask if you want to create a subvolume for it. If yes, 
     it will ask for the subvolume's name and also if you want to create other subvolumes. Just enter the 

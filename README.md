@@ -96,9 +96,7 @@ The script will ask for:
 
 - Interface to use (cli dialog)  
 
-- Target root partition  and additional mount options. If the root filesystem is btrfs, the script will ask if you
-    want to create a subvolume for it. If yes, it will ask for the subvolume's name and also if you want to
-    create other subvolumes. Just enter the subvolume paths (e.g /home /var /usr ...) seperated by space.
+- Target root partition
 
 - (Optional) Target home partition   
 
@@ -107,6 +105,12 @@ The script will ask for:
 - (Optional) Swap partition   
 
 - (Optional) Set custom partitions. Syntax is mountpoint=device (e.g /usr=/dev/sda3 /var/cache=/dev/sda4).  
+
+- (Optional) Additional mount options for the root partitions. 
+
+- (Optional) If the root filesystem is btrfs, the script will ask if you want to create a subvolume for it. If yes, 
+    it will ask for the subvolume's name and also if you want to create other subvolumes. Just enter the 
+    subvolume paths (e.g /home /var /usr ...) seperated by space.
    
 - (Optional) Bootloader and target disk (MBR). Grub2 and Syslinux are both supported.
    If Syslinux is selected, it will ask for additional kernel options which will be written in syslinux.cfg.
@@ -168,10 +172,7 @@ target disk for syslinux
 additional kernel options (syslinux)
 
 **-f, --file**      
-backup file path
-
-**-u, --url**     
-url
+backup file path or url
 
 **-n, --username**     
 username
@@ -181,6 +182,9 @@ password
 
 **-a, --archiver**  
 select archiver (tar bsdtar)    
+
+**-u, --url**     
+same as -f (for compatibility)    
 
 **-R, --rootsubvolname**   
 subvolume name for root
@@ -252,14 +256,14 @@ Recommended subvolume name is: *__active*
 - syslinux 
 - remote file on ftp server
 
-<code>./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -u ftp://server/backup.tar.xz -a bsdtar</code>
+<code>./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -f ftp://server/backup.tar.xz -a bsdtar</code>
 
 - root = /dev/sdb2
 - boot = /dev/sdb1
 - syslinux 
 - remote file in protected http server
 
-<code>./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -u http://server/backup.tar.gz -n user -p pass -a tar</code>
+<code>./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -f http://server/backup.tar.gz -n user -p pass -a tar</code>
 
 - root = /dev/mapper/debian-root
 - boot = /dev/sdb1  

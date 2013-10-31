@@ -1822,8 +1822,9 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   while [ -z "$BRroot" ]; do
     BRassign="y"
-    while opt=$(dialog --ok-label Set --cancel-label Quit --extra-button --extra-label Unset --menu "Set target partitions:" 0 0 0 "${options[@]}" 2>&1 1>&3); diag_exit_code="$?"; do
+    while opt=$(dialog --ok-label Select --cancel-label Quit --extra-button --extra-label Unset --menu "Set target partitions:" 0 0 0 "${options[@]}" 2>&1 1>&3); diag_exit_code="$?"; do
       if [ "$diag_exit_code" = "1" ]; then exit; fi
+      BRrootold="$BRroot" BRhomeold="$BRhome" BRbootold="$BRboot" BRswapold="$BRswap"
       case "$opt" in
         "${options[0]}" )
             if [ "$diag_exit_code" = "3" ]; then
@@ -1831,7 +1832,8 @@ elif [ "$BRinterface" = "dialog" ]; then
             elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then
               dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
             else
-              BRroot=$(dialog --column-separator "|" --no-cancel --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+              BRroot=$(dialog  --column-separator "|" --cancel-label Back --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+              if [ "$?" = "1" ]; then BRroot="$BRrootold"; fi
             fi
             update_options;;
         "${options[2]}" )
@@ -1840,7 +1842,8 @@ elif [ "$BRinterface" = "dialog" ]; then
             elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then
               dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
             else
-              BRhome=$(dialog --column-separator "|" --no-cancel --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+              BRhome=$(dialog --column-separator "|" --cancel-label Back --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+              if [ "$?" = "1" ]; then BRhome="$BRhomeold"; fi
             fi
             update_options;;
         "${options[4]}" )
@@ -1849,7 +1852,8 @@ elif [ "$BRinterface" = "dialog" ]; then
             elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then
               dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
             else
-              BRboot=$(dialog --column-separator "|" --no-cancel --menu "Set target boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+              BRboot=$(dialog --column-separator "|" --cancel-label Back --menu "Set target boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+              if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi
             fi
             update_options;;
         "${options[6]}" )
@@ -1858,11 +1862,14 @@ elif [ "$BRinterface" = "dialog" ]; then
             elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then
               dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
             else
-              BRswap=$(dialog --column-separator "|" --no-cancel --menu "Set swap partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+              BRswap=$(dialog --column-separator "|" --cancel-label Back --menu "Set swap partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
+              if [ "$?" = "1" ]; then BRswap="$BRswapold"; fi
             fi
             update_options;;
         "${options[8]}" )
-            if [ -z "$(part_list_dialog 2>/dev/null)" ]; then
+            if [ "$diag_exit_code" = "3" ]; then
+              unset BRcustompartslist BRcustomold
+            elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then
               dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
             else
               BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 "$BRcustomold" 2>&1 1>&3)
@@ -1870,7 +1877,10 @@ elif [ "$BRinterface" = "dialog" ]; then
             fi
             update_options;;
         "${options[10]}" )
-           break;;
+            if [ ! "$diag_exit_code" = "3" ]; then
+              break
+            fi
+            ;;
       esac
     done
 

@@ -1835,27 +1835,27 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   while [ -z "$BRroot" ]; do
     BRassign="y"
-    while opt=$(dialog --ok-label Select --cancel-label Quit --extra-button --extra-label Unset --menu "Set target partitions:" 0 0 0 "${options[@]}" 2>&1 1>&3); diag_exit_code="$?"; do
-      if [ "$diag_exit_code" = "1" ]; then exit; fi
+    while opt=$(dialog --ok-label Select --cancel-label Quit --extra-button --extra-label Unset --menu "Set target partitions:" 0 0 0 "${options[@]}" 2>&1 1>&3); rtn="$?"; do
+      if [ "$rtn" = "1" ]; then exit; fi
       BRrootold="$BRroot" BRhomeold="$BRhome" BRbootold="$BRboot" BRswapold="$BRswap"
       case "$opt" in
         "${options[0]}" )
-            if [ "$diag_exit_code" = "3" ]; then unset BRroot; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRroot=$(part_sel_dialog root); if [ "$?" = "1" ]; then BRroot="$BRrootold"; fi; fi
+            if [ "$rtn" = "3" ]; then unset BRroot; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRroot=$(part_sel_dialog root); if [ "$?" = "1" ]; then BRroot="$BRrootold"; fi; fi
             update_options;;
         "${options[2]}" )
-            if [ "$diag_exit_code" = "3" ]; then unset BRhome; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRhome=$(part_sel_dialog home); if [ "$?" = "1" ]; then BRhome="$BRhomeold"; fi; fi
+            if [ "$rtn" = "3" ]; then unset BRhome; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRhome=$(part_sel_dialog home); if [ "$?" = "1" ]; then BRhome="$BRhomeold"; fi; fi
             update_options;;
         "${options[4]}" )
-            if [ "$diag_exit_code" = "3" ]; then unset BRboot; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
+            if [ "$rtn" = "3" ]; then unset BRboot; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
             update_options;;
         "${options[6]}" )
-            if [ "$diag_exit_code" = "3" ]; then unset BRswap; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRswap=$(part_sel_dialog swap); if [ "$?" = "1" ]; then BRswap="$BRswapold"; fi; fi
+            if [ "$rtn" = "3" ]; then unset BRswap; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRswap=$(part_sel_dialog swap); if [ "$?" = "1" ]; then BRswap="$BRswapold"; fi; fi
             update_options;;
         "${options[8]}" )
-            if [ "$diag_exit_code" = "3" ]; then unset BRcustompartslist BRcustomold; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else set_custom; fi
+            if [ "$rtn" = "3" ]; then unset BRcustompartslist BRcustomold; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else set_custom; fi
             update_options;;
         "${options[10]}" )
-            if [ ! "$diag_exit_code" = "3" ]; then break; fi
+            if [ ! "$rtn" = "3" ]; then break; fi
             ;;
       esac
     done

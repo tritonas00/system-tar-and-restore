@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.8"
+BR_VERSION="System Tar & Restore 3.8.1"
 BR_SEP="::"
 
 color_variables() {
@@ -54,7 +54,7 @@ ok_status() {
 }
 
 error_status() {
-  echo -e "\r[${BR_RED}FAILURE${BR_NORM}\n$OUTPUT]"
+  echo -e "\r[${BR_RED}FAILURE${BR_NORM}\n$OUTPUT"
   BRSTOP="y"
 }
 

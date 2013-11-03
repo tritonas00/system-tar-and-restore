@@ -1856,7 +1856,7 @@ elif [ "$BRinterface" = "dialog" ]; then
             update_options;;
         "${options[10]}" )
             if [ ! "$rtn" = "3" ]; then break; fi
-          ;;
+        ;;
       esac
     done
 

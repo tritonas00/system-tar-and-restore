@@ -271,6 +271,19 @@ disk_list_dialog() {
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done
 }
 
+part_sel_dialog() {
+  dialog --column-separator "|" --cancel-label Back --menu "Set target $1 partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3
+}
+
+set_custom() {
+  BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 "$BRcustomold" 2>&1 1>&3)
+  BRcustomold="$BRcustompartslist"
+}
+
+no_parts() {
+  dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
+}
+
 update_part_list() {
   list=(`part_list_cli 2>/dev/null`)
 }
@@ -1827,59 +1840,22 @@ elif [ "$BRinterface" = "dialog" ]; then
       BRrootold="$BRroot" BRhomeold="$BRhome" BRbootold="$BRboot" BRswapold="$BRswap"
       case "$opt" in
         "${options[0]}" )
-            if [ "$diag_exit_code" = "3" ]; then
-              unset BRroot
-            elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then
-              dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
-            else
-              BRroot=$(dialog --column-separator "|" --cancel-label Back --menu "Set target root partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-              if [ "$?" = "1" ]; then BRroot="$BRrootold"; fi
-            fi
+            if [ "$diag_exit_code" = "3" ]; then unset BRroot; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRroot=$(part_sel_dialog root); if [ "$?" = "1" ]; then BRroot="$BRrootold"; fi; fi
             update_options;;
         "${options[2]}" )
-            if [ "$diag_exit_code" = "3" ]; then
-              unset BRhome
-            elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then
-              dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
-            else
-              BRhome=$(dialog --column-separator "|" --cancel-label Back --menu "Set target home partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-              if [ "$?" = "1" ]; then BRhome="$BRhomeold"; fi
-            fi
+            if [ "$diag_exit_code" = "3" ]; then unset BRhome; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRhome=$(part_sel_dialog home); if [ "$?" = "1" ]; then BRhome="$BRhomeold"; fi; fi
             update_options;;
         "${options[4]}" )
-            if [ "$diag_exit_code" = "3" ]; then
-              unset BRboot
-            elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then
-              dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
-            else
-              BRboot=$(dialog --column-separator "|" --cancel-label Back --menu "Set target boot partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-              if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi
-            fi
+            if [ "$diag_exit_code" = "3" ]; then unset BRboot; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
             update_options;;
         "${options[6]}" )
-            if [ "$diag_exit_code" = "3" ]; then
-              unset BRswap
-            elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then
-              dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
-            else
-              BRswap=$(dialog --column-separator "|" --cancel-label Back --menu "Set swap partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3)
-              if [ "$?" = "1" ]; then BRswap="$BRswapold"; fi
-            fi
+            if [ "$diag_exit_code" = "3" ]; then unset BRswap; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRswap=$(part_sel_dialog swap); if [ "$?" = "1" ]; then BRswap="$BRswapold"; fi; fi
             update_options;;
         "${options[8]}" )
-            if [ "$diag_exit_code" = "3" ]; then
-              unset BRcustompartslist BRcustomold
-            elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then
-              dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
-            else
-              BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 "$BRcustomold" 2>&1 1>&3)
-              BRcustomold="$BRcustompartslist"
-            fi
+            if [ "$diag_exit_code" = "3" ]; then unset BRcustompartslist BRcustomold; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else set_custom; fi
             update_options;;
         "${options[10]}" )
-            if [ ! "$diag_exit_code" = "3" ]; then
-              break
-            fi
+            if [ ! "$diag_exit_code" = "3" ]; then break; fi
             ;;
       esac
     done

@@ -247,23 +247,13 @@ count_gauge_wget() {
 }
 
 hide_used_parts() {
-  grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"` -e `echo /dev/"${BRboot##*/}"`
+  grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"` -e `echo /dev/"${BRboot##*/}"` -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"` -e `echo /dev/mapper/"${BRboot##*/}"`
 }
 
-hide_used_parts_lvm() {
-  grep -vw -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"` -e `echo /dev/mapper/"${BRboot##*/}"`
-}
-
-part_list_cli() {
-  for f in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | sort | hide_used_parts
-  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)"; done | hide_used_parts_lvm
-  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | hide_used_parts
-}
-
-part_list_dialog() {
-  for f in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done | sort | hide_used_parts
-  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done | hide_used_parts_lvm
-  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done | hide_used_parts
+check_parts() {
+  for f in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do echo -e "$f"; done
+  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f"; done
+  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f"; done
 }
 
 disk_list_dialog() {
@@ -272,7 +262,7 @@ disk_list_dialog() {
 }
 
 part_sel_dialog() {
-  dialog --column-separator "|" --cancel-label Back --menu "Set target $1 partition:" 0 0 0 `part_list_dialog` 2>&1 1>&3
+  dialog --column-separator "|" --cancel-label Back --menu "Set target $1 partition:" 0 0 0 `echo "${list[@]}"` 2>&1 1>&3
 }
 
 set_custom() {
@@ -282,10 +272,6 @@ set_custom() {
 
 no_parts() {
   dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
-}
-
-update_part_list() {
-  list=(`part_list_cli 2>/dev/null`)
 }
 
 disk_report() {
@@ -1206,7 +1192,7 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
-if [ -z "$(part_list_cli 2>/dev/null)" ]; then
+if [ -z "$(check_parts 2>/dev/null)" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] No partitions found"
   exit
 fi
@@ -1249,9 +1235,19 @@ if [ "$BRinterface" = "cli" ]; then
     read -s a
   fi
 
-  disk_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f"; done; for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f"; done`)
+  partition_list=(
+   `for f in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | sort
+    for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)"; done
+    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done`
+  )
+
+  disk_list=(
+   `for f in /dev/[hs]d[a-z]; do echo -e "$f"; done
+    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f"; done`
+  )
+
   editorlist=(nano vi)
-  update_part_list
+  list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
   if [ -z "$BRroot" ]; then
     echo -e "\n${BR_CYAN}Select target root partition:${BR_NORM}"
@@ -1364,9 +1360,9 @@ if [ "$BRinterface" = "cli" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Not a btrfs root filesystem, proceeding without subvolumes..."
   fi
 
-  update_part_list
+  list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
-  if [ -z "$BRhome" ] && [ -n "$(part_list_cli)" ]; then
+  if [ -z "$BRhome" ] && [ -n "${list[*]}" ]; then
     echo -e "\n${BR_CYAN}Select target home partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1387,9 +1383,9 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  update_part_list
+  list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
-  if [ -z "$BRboot" ] && [ -n "$(part_list_cli)" ]; then
+  if [ -z "$BRboot" ] && [ -n "${list[*]}" ]; then
     echo -e "\n${BR_CYAN}Select target boot partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1410,9 +1406,9 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  update_part_list
+  list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
-  if [ -z "$BRswap" ] && [ -n "$(part_list_cli)" ]; then
+  if [ -z "$BRswap" ] && [ -n "${list[*]}" ]; then
     echo -e "\n${BR_CYAN}Select swap partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1431,7 +1427,9 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  if [ -n "$(part_list_cli)" ]; then
+  list=(`echo "${partition_list[*]}" | hide_used_parts`)
+
+  if [ -n "${list[*]}" ]; then
     while [ -z "$BRother" ]; do
       echo -e "\n${BR_CYAN}Specify custom partitions?${BR_NORM}"
       read -p "(y/N):" an
@@ -1804,6 +1802,12 @@ if [ "$BRinterface" = "cli" ]; then
   clean_unmount_out
 
 elif [ "$BRinterface" = "dialog" ]; then
+  partition_list=(
+   `for f in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done | sort
+    for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done
+    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done`
+  )
+
   IFS=$DEFAULTIFS
 
   if [ -z $(which dialog 2> /dev/null) ];then
@@ -1813,6 +1817,8 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
+  list=(`echo "${partition_list[*]}" | hide_used_parts`)
+
   if [ -z "$BRrestore" ] && [ -z "$BRuri" ]; then
     dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 24 80
     if [ "$?" = "1" ]; then
@@ -1821,6 +1827,12 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   exec 3>&1
+
+  update_list() {
+    IFS=$'\n'
+    list=(`echo "${partition_list[*]}" | hide_used_parts`)
+    IFS=$DEFAULTIFS
+}
 
   update_options() {
     options=("Root partition" "$BRroot" \
@@ -1840,19 +1852,23 @@ elif [ "$BRinterface" = "dialog" ]; then
       BRrootold="$BRroot" BRhomeold="$BRhome" BRbootold="$BRboot" BRswapold="$BRswap"
       case "$opt" in
         "${options[0]}" )
-            if [ "$rtn" = "3" ]; then unset BRroot; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRroot=$(part_sel_dialog root); if [ "$?" = "1" ]; then BRroot="$BRrootold"; fi; fi
+            if [ "$rtn" = "3" ]; then unset BRroot; elif [ -z "${list[*]}" ]; then no_parts; else BRroot=$(part_sel_dialog root); if [ "$?" = "1" ]; then BRroot="$BRrootold"; fi; fi
+            update_list
             update_options;;
         "${options[2]}" )
-            if [ "$rtn" = "3" ]; then unset BRhome; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRhome=$(part_sel_dialog home); if [ "$?" = "1" ]; then BRhome="$BRhomeold"; fi; fi
+            if [ "$rtn" = "3" ]; then unset BRhome; elif [ -z "${list[*]}" ]; then no_parts; else BRhome=$(part_sel_dialog home); if [ "$?" = "1" ]; then BRhome="$BRhomeold"; fi; fi
+            update_list
             update_options;;
         "${options[4]}" )
-            if [ "$rtn" = "3" ]; then unset BRboot; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
+            if [ "$rtn" = "3" ]; then unset BRboot; elif [ -z "${list[*]}" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
+            update_list
             update_options;;
         "${options[6]}" )
-            if [ "$rtn" = "3" ]; then unset BRswap; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else BRswap=$(part_sel_dialog swap); if [ "$?" = "1" ]; then BRswap="$BRswapold"; fi; fi
+            if [ "$rtn" = "3" ]; then unset BRswap; elif [ -z "${list[*]}" ]; then no_parts; else BRswap=$(part_sel_dialog swap); if [ "$?" = "1" ]; then BRswap="$BRswapold"; fi; fi
+            update_list
             update_options;;
         "${options[8]}" )
-            if [ "$rtn" = "3" ]; then unset BRcustompartslist BRcustomold; elif [ -z "$(part_list_dialog 2>/dev/null)" ]; then no_parts; else set_custom; fi
+            if [ "$rtn" = "3" ]; then unset BRcustompartslist BRcustomold; elif [ -z "${list[*]}" ]; then no_parts; else set_custom; fi
             update_options;;
         "${options[10]}" )
             if [ ! "$rtn" = "3" ]; then break; fi

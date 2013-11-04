@@ -1,5 +1,10 @@
 Changelog:
 
+3.8.1
+    fixed performance between partition dialogs
+    removed unused character from error messages
+    code cleaning
+
 3.8
     new, real time updated, output layout
     improved partition detection (thanks to pmav)

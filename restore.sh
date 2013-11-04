@@ -54,7 +54,7 @@ ok_status() {
 }
 
 error_status() {
-  echo -e "\r[${BR_RED}FAILURE${BR_NORM}\n$OUTPUT"
+  echo -e "\r[${BR_RED}FAILURE${BR_NORM}]\n$OUTPUT"
   BRSTOP="y"
 }
 
@@ -1809,6 +1809,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   )
 
   IFS=$DEFAULTIFS
+  list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
   if [ -z $(which dialog 2> /dev/null) ];then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package dialog is not installed. Install the package and re-run the script"
@@ -1816,8 +1817,6 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
-
-  list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
   if [ -z "$BRrestore" ] && [ -z "$BRuri" ]; then
     dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 24 80

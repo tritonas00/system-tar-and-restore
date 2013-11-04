@@ -1809,7 +1809,6 @@ elif [ "$BRinterface" = "dialog" ]; then
   )
 
   IFS=$DEFAULTIFS
-  list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
   if [ -z $(which dialog 2> /dev/null) ];then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package dialog is not installed. Install the package and re-run the script"
@@ -1831,7 +1830,9 @@ elif [ "$BRinterface" = "dialog" ]; then
     IFS=$'\n'
     list=(`echo "${partition_list[*]}" | hide_used_parts`)
     IFS=$DEFAULTIFS
-}
+  }
+
+  update_list
 
   update_options() {
     options=("Root partition" "$BRroot" \

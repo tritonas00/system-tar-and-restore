@@ -1624,7 +1624,7 @@ if [ "$BRinterface" = "cli" ]; then
           IFS=$'\n'
           if [ ! -f "$BRfile" ] || [ -z "$BRfile" ]; then
             echo -e "[${BR_RED}ERROR${BR_NORM}] File not found"
-      	  else
+          else
             detect_filetype
             if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ]; then
               echo -ne "${BR_WRK}Symlinking file"
@@ -1659,7 +1659,7 @@ if [ "$BRinterface" = "cli" ]; then
             wget -O /mnt/target/fullbackup $BRurl --tries=2
             if [ "$?" -ne "0" ]; then
               echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
-	      rm /mnt/target/fullbackup 2>/dev/null
+              rm /mnt/target/fullbackup 2>/dev/null
             else
               detect_filetype_url
               if [ "$BRfiletype" = "wrong" ]; then

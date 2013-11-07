@@ -1589,30 +1589,21 @@ if [ "$BRinterface" = "cli" ]; then
     if [ -n "$BRurl" ]; then
       if [ -n "$BRusername" ]; then
         wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2
-        if [ "$?" -ne "0" ]; then
-          echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
-          rm /mnt/target/fullbackup 2>/dev/null
-        else
-          detect_filetype_url
-          if [ "$BRfiletype" = "wrong" ]; then
-            echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
-            rm /mnt/target/fullbackup 2>/dev/null
-          fi
-        fi
       else
         wget -O /mnt/target/fullbackup $BRurl --tries=2
-        if [ "$?" -ne "0" ]; then
-          echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
+      fi
+      if [ "$?" -ne "0" ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
+        rm /mnt/target/fullbackup 2>/dev/null
+      else
+        detect_filetype_url
+        if [ "$BRfiletype" = "wrong" ]; then
+          echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
           rm /mnt/target/fullbackup 2>/dev/null
-        else
-          detect_filetype_url
-          if [ "$BRfiletype" = "wrong" ]; then
-            echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
-            rm /mnt/target/fullbackup 2>/dev/null
-          fi
         fi
       fi
     fi
+
     if [ -f /mnt/target/fullbackup ]; then
       ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
@@ -1663,24 +1654,26 @@ if [ "$BRinterface" = "cli" ]; then
                 rm /mnt/target/fullbackup 2>/dev/null
               fi
             fi
-	    break
-          fi
-          wget -O /mnt/target/fullbackup $BRurl --tries=2
-          if [ "$?" -ne "0" ]; then
-            echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
-	    rm /mnt/target/fullbackup 2>/dev/null
-          else
-            detect_filetype_url
-            if [ "$BRfiletype" = "wrong" ]; then
-              echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
-              rm /mnt/target/fullbackup 2>/dev/null
+            break
+          elif [ "$REPLY" = "2" ]; then
+            wget -O /mnt/target/fullbackup $BRurl --tries=2
+            if [ "$?" -ne "0" ]; then
+              echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
+	      rm /mnt/target/fullbackup 2>/dev/null
+            else
+              detect_filetype_url
+              if [ "$BRfiletype" = "wrong" ]; then
+                echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
+                rm /mnt/target/fullbackup 2>/dev/null
+              fi
             fi
+            break
           fi
-          break
         else
           echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
         fi
       done
+
       if [ -f /mnt/target/fullbackup ]; then
         ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
@@ -2020,35 +2013,23 @@ elif [ "$BRinterface" = "dialog" ]; then
       if [ -n "$BRusername" ]; then
        (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
         sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
-
-        if [ -f /tmp/wget_error ]; then
-          rm /tmp/wget_error
-          dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
-          rm /mnt/target/fullbackup 2>/dev/null
-        else
-          detect_filetype_url
-          if [ "$BRfiletype" = "wrong" ]; then
-            dialog --title "Error" --msgbox "Invalid file type." 5 22
-            rm /mnt/target/fullbackup 2>/dev/null
-          fi
-        fi
       else
        (wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
         sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
-
-        if [ -f /tmp/wget_error ]; then
-          rm /tmp/wget_error
-          dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
+      fi
+      if [ -f /tmp/wget_error ]; then
+        rm /tmp/wget_error
+        dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
+        rm /mnt/target/fullbackup 2>/dev/null
+      else
+        detect_filetype_url
+        if [ "$BRfiletype" = "wrong" ]; then
+          dialog --title "Error" --msgbox "Invalid file type." 5 22
           rm /mnt/target/fullbackup 2>/dev/null
-        else
-          detect_filetype_url
-          if [ "$BRfiletype" = "wrong" ]; then
-            dialog --title "Error" --msgbox "Invalid file type." 5 22
-            rm /mnt/target/fullbackup 2>/dev/null
-          fi
         fi
       fi
     fi
+
     if [ -f /mnt/target/fullbackup ]; then
       ($BRarchiver tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
@@ -2105,33 +2086,20 @@ elif [ "$BRinterface" = "dialog" ]; then
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
          (wget --user=$BRusername --password=$BRpassword -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
           sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
-
-          if [ -f /tmp/wget_error ]; then
-            rm /tmp/wget_error
-            dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
-            rm /mnt/target/fullbackup 2>/dev/null
-          else
-            detect_filetype_url
-            if [ "$BRfiletype" = "wrong" ]; then
-              dialog --title "Error" --msgbox "Invalid file type." 5 22
-              rm /mnt/target/fullbackup 2>/dev/null
-            fi
-          fi
-
         elif [ "$REPLY" = "URL" ]; then
          (wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
           sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
+        fi
 
-          if [ -f /tmp/wget_error ]; then
-            rm /tmp/wget_error
-            dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
+        if [ -f /tmp/wget_error ]; then
+          rm /tmp/wget_error
+          dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
+          rm /mnt/target/fullbackup 2>/dev/null
+        else
+          detect_filetype_url
+          if [ "$BRfiletype" = "wrong" ]; then
+            dialog --title "Error" --msgbox "Invalid file type." 5 22
             rm /mnt/target/fullbackup 2>/dev/null
-          else
-            detect_filetype_url
-            if [ "$BRfiletype" = "wrong" ]; then
-              dialog --title "Error" --msgbox "Invalid file type." 5 22
-              rm /mnt/target/fullbackup 2>/dev/null
-            fi
           fi
         fi
       fi

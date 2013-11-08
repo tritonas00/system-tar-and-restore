@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.8.1"
+BR_VERSION="System Tar & Restore 3.8.2"
 BR_SEP="::"
 
 color_variables() {
@@ -475,7 +475,7 @@ if [ "$BRinterface" = "cli" ]; then
   fi | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
 
   echo -ne "\n${BR_WRK}Setting permissions"
-  OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -e "\r[${BR_GREEN}SUCCESS${BR_NORM}]" || echo -e "\r[${BR_RED}FAILURE${BR_NORM}\n$OUTPUT"
+  OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -e "\r[${BR_GREEN}SUCCESS${BR_NORM}]" || echo -e "\r[${BR_RED}FAILURE${BR_NORM}]\n$OUTPUT"
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
     cat /tmp/bsdtar_out >> "$BRFOLDER"/backup.log

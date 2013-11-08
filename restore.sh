@@ -1603,9 +1603,9 @@ if [ "$BRinterface" = "cli" ]; then
 
     if [ -n "$BRurl" ]; then
       if [ -n "$BRusername" ]; then
-        wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
+        wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error
       else
-        wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
+        wget -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error
       fi
       check_wget
     fi
@@ -1649,11 +1649,11 @@ if [ "$BRinterface" = "cli" ]; then
           if [ "$REPLY" = "3" ]; then
 	    read -p "USERNAME: " BRusername
             read -p "PASSWORD: " BRpassword
-	    wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
+	    wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error
             check_wget
             break
           elif [ "$REPLY" = "2" ]; then
-            wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error
+            wget -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error
             check_wget
             break
           fi
@@ -1999,10 +1999,10 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -n "$BRurl" ]; then
       BRurlold="$BRurl"
       if [ -n "$BRusername" ]; then
-       (wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
+       (wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
         sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
       else
-       (wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
+       (wget -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
         sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
       fi
       check_wget
@@ -2062,10 +2062,10 @@ elif [ "$BRinterface" = "dialog" ]; then
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-         (wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
+         (wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
           sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
         elif [ "$REPLY" = "URL" ]; then
-         (wget -O /mnt/target/fullbackup $BRurl --tries=2 || touch /tmp/wget_error) 2>&1 |
+         (wget -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
           sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
         fi
         check_wget

@@ -1,5 +1,9 @@
 Changelog:
 
+3.8.2
+    show disk size in cli interface again
+    code cleaning
+
 3.8.1
     fixed performance between partition dialogs
     removed unused character from error messages

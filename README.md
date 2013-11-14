@@ -8,7 +8,7 @@ using tar or transfer an existing installation using rsync.
 Supported distributions: Arch, Debian, Fedora*   
 <sub>*Fedora 19 tar: xattrs patch bug(?), decompressed system can't login. Downgrading to 1.26-12.fc18 fixes the problem. Libarchive Tar and Transfer Mode works.</sub>
 
-[Demo Video](http://www.youtube.com/watch?v=KB5O_FQ65lo&hd=1)  
+[Demo Video](http://www.youtube.com/watch?v=hbsYweNSOUk&hd=1)  
 [Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)  
 
 ###LIMITATIONS###

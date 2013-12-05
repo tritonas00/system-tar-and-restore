@@ -53,7 +53,7 @@ show_summary() {
   echo "Archiver: $BRarchiver"
   echo "Compression: $BRcompression"
   if [ -n "$BR_USER_OPTS" ]; then
-    echo "User Options:$BR_USER_OPTS"
+    echo "User Options: $BR_USER_OPTS"
   fi
   if [ "$BRfedoratar" = "y" ] && [ "$BRarchiver" = "tar" ]; then
     echo "Extra Options: --acls --selinux --xattrs"

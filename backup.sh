@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.8.2"
+BR_VERSION="System Tar & Restore 3.8.3"
 BR_SEP="::"
 
 color_variables() {
@@ -327,28 +327,13 @@ if [ "$BRinterface" = "cli" ]; then
     read -s a
   fi
 
-  while [ -z "$BRFOLDER" ]; do
-    echo -e "\n${BR_CYAN}The default folder for creating the backup image is / (root).\nSave in the default folder?${BR_NORM}"
-    read -p "(Y/n): " an
-
-    if [ -n "$an" ]; then
-      def=$an
-    else
-      def="y"
-    fi
-
-    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
+  while [ -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
+    echo -e "\n${BR_CYAN}Enter path to save the backup image (leave blank for default '/')${BR_NORM}"
+    read -e -p "Path: " BRFOLDER
+    if [ -z "$BRFOLDER" ]; then
       BRFOLDER="/"
-    elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-      while [ -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-        echo -e "\n${BR_CYAN}Enter the path where the backup will be created${BR_NORM}"
-        read -e -p "Path: " BRFOLDER
-        if [ ! -d "$BRFOLDER" ]; then
-          echo -e "${BR_RED}Directory does not exist${BR_NORM}"
-        fi
-      done
-    else
-      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+    elif [ ! -d "$BRFOLDER" ]; then
+      echo -e "${BR_RED}Directory does not exist${BR_NORM}"
     fi
   done
 
@@ -416,25 +401,15 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  while [ -z "$BRuseroptions" ]; do
-    echo -e "\n${BR_CYAN}Enter additional $BRarchiver options?${BR_NORM}"
-    read -p "(y/N):" an
-
-    if [ -n "$an" ]; then
-      def=$an
-    else
-      def="n"
-    fi
-
-    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
-      BRuseroptions="Yes"
-      read -p "Enter options (See tar --help or man bsdtar):" BR_USER_OPTS
-    elif [ $def = "n" ] || [ $def = "N" ]; then
+  if [ -z "$BRuseroptions" ]; then
+    echo -e "\n${BR_CYAN}Enter additional $BRarchiver options (leave blank for defaults)${BR_NORM}"
+    read -p "Options (see tar --help or man bsdtar):" BR_USER_OPTS
+    if [ -z "$BR_USER_OPTS" ]; then
       BRuseroptions="No"
-    else
-      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+    elif [ -n "$BR_USER_OPTS" ]; then
+      BRuseroptions="Yes"
     fi
-  done
+  fi
 
   IFS=$DEFAULTIFS
 

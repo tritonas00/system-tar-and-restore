@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.8.2"
+BR_VERSION="System Tar & Restore 3.8.3"
 BR_SEP="::"
 
 color_variables() {
@@ -1274,27 +1274,16 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  while [ -z "$BRmountoptions" ]; do
-    echo -e "\n${BR_CYAN}Enter additional mount options?${BR_NORM}"
-    read -p "(y/N):" an
-
-    if [ -n "$an" ]; then
-      def=$an
-    else
-      def="n"
-    fi
-
-    if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
-      BRmountoptions="Yes"
-      echo -e "\n${BR_CYAN}Enter options (comma-separated list of mount options)${BR_NORM}"
-      read -p "Options: " BR_MOUNT_OPTS
-    elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
+  if [ -z "$BRmountoptions" ]; then
+    echo -e "\n${BR_CYAN}Enter additional mount options (leave blank for defaults)${BR_NORM}"
+    read -p "Options (comma-separated list): " BR_MOUNT_OPTS
+    if [ -z "$BR_MOUNT_OPTS" ]; then
       BRmountoptions="No"
       BR_MOUNT_OPTS="defaults"
-    else
-      echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+    elif [ -n "$BR_MOUNT_OPTS" ]; then
+      BRmountoptions="Yes"
     fi
-  done
+  fi
 
   detect_root_fs_size
 
@@ -1496,33 +1485,19 @@ if [ "$BRinterface" = "cli" ]; then
           echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	  exit
 	elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
-	    BRsyslinux=(`echo $c | awk '{ print $1 }'`)
-            echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}"
-	    echo -e "\n${BR_CYAN}Enter additional kernel options?${BR_NORM}"
-            read -p "(y/N):" an
-
-            if [ -n "$an" ]; then
-              def=$an
-            else
-              def="n"
-            fi
-
-            if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
-              read -p "Enter options:" BR_KERNEL_OPTS
-              break
-            elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-              break
-            else
-              echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
-            fi
-	  else
-            echo -e "${BR_RED}Please select a valid option from${BR_NORM}"
-	  fi
-	done
-        break
-      else
-        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-      fi
+	  BRsyslinux=(`echo $c | awk '{ print $1 }'`)
+          echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}"
+	  echo -e "\n${BR_CYAN}Enter additional kernel options (leave blank for defaults)${BR_NORM}"
+          read -p "Enter options:" BR_KERNEL_OPTS
+          break
+	else
+          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+	fi
+      done
+      break
+    else
+      echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+    fi
     done
   fi
 

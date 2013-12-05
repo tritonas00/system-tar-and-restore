@@ -52,6 +52,12 @@ show_summary() {
   echo -e "\nARCHIVER OPTIONS:"
   echo "Archiver: $BRarchiver"
   echo "Compression: $BRcompression"
+  if [ -n "$BR_USER_OPTS" ]; then
+    echo "User Options:$BR_USER_OPTS"
+  fi
+  if [ "$BRfedoratar" = "y" ] && [ "$BRarchiver" = "tar" ]; then
+    echo "Extra Options: --acls --selinux --xattrs"
+  fi
 
   echo -e "\nHOME DIRECTORY:"
   if [ "$BRhome" = "Yes" ]; then
@@ -60,16 +66,6 @@ show_summary() {
     echo "Only hidden files and folders"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
     echo "Exclude"
-  fi
-
-  if [ "$BRfedoratar" = "y" ] && [ "$BRarchiver" = "tar" ]; then
-    echo -e "\nEXTRA OPTIONS:"
-    echo "--acls --selinux --xattrs"
-  fi
-
-  if [ -n "$BR_USER_OPTS" ]; then
-    echo -e "\nUSER OPTIONS:"
-    echo "$BR_USER_OPTS"
   fi
 
   echo -e "\nFOUND BOOTLOADERS:"

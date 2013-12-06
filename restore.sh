@@ -1686,18 +1686,16 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   if [ "$BRedit" = "y" ]; then
-    if [ -z "$BReditor" ]; then
-      echo -e "\n${BR_CYAN}Select editor${BR_NORM}"
-      select c in ${editorlist[@]}; do
-        if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#editorlist[@]} ]; then
-          BReditor=$c
-          $BReditor /mnt/target/etc/fstab
-          break
-        else
-          echo -e "${BR_RED}Please select a valid option${BR_NORM}"
-        fi
-      done
-    fi
+    echo -e "\n${BR_CYAN}Select editor${BR_NORM}"
+    select c in ${editorlist[@]}; do
+      if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#editorlist[@]} ]; then
+        BReditor=$c
+        $BReditor /mnt/target/etc/fstab
+        break
+      else
+        echo -e "${BR_RED}Please select a valid option${BR_NORM}"
+      fi
+    done
   fi
 
   (prepare_chroot
@@ -2056,15 +2054,13 @@ elif [ "$BRinterface" = "dialog" ]; then
   else
     dialog --title "GENERATING FSTAB" --yesno "$(echo -e "Edit fstab? Generated fstab:\n\n`cat /mnt/target/etc/fstab`")" 13 100
     if [ "$?" = "0" ]; then
-      if [ -z "$BRdeditor" ]; then
-        REPLY=$(dialog --no-cancel --menu "Select editor:" 10 25 10 1 nano 2 vi 2>&1 1>&3)
-        if [ "$REPLY" = "1" ]; then
-          BRdeditor="nano"
-        elif [ "$REPLY" = "2" ]; then
-          BRdeditor="vi"
-        fi
-        $BRdeditor /mnt/target/etc/fstab
+      REPLY=$(dialog --no-cancel --menu "Select editor:" 10 25 10 1 nano 2 vi 2>&1 1>&3)
+      if [ "$REPLY" = "1" ]; then
+        BReditor="nano"
+      elif [ "$REPLY" = "2" ]; then
+        BReditor="vi"
       fi
+      $BReditor /mnt/target/etc/fstab
     fi
   fi
 

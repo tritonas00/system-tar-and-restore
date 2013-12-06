@@ -16,11 +16,9 @@ color_variables() {
 
 info_screen() {
   echo -e "\n${BR_YELLOW}This script will restore a backup image of your system or transfer this\nsystem in user defined partitions."
-  echo -e "\n==>Make sure you have created and formatted at least one partition\n   for root (/) and optionally partitions for /home and /boot."
+  echo -e "\n==>Make sure you have created one target root (/) partition. Optionally\n   you can create or use any other partition (/boot /home /var etc)."
   echo -e "\n==>Make sure that target LVM volume groups are activated and target\n   RAID arrays are properly assembled."
-  echo -e "\n==>If you didn't include /home directory in the backup and you already \n   have a seperate /home partition, simply enter it when prompted."
-  echo -e "\n==>Also make sure that this system and the system you want to restore\n   have the same architecture."
-  echo -e "\n==>In case of GNU tar, Fedora backups can only be restored from a Fedora\n   enviroment, due to extra tar options.${BR_NORM}"
+  echo -e "\n==>If the target system is Fedora (or variant), select bsdtar archiver.${BR_NORM}"
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
@@ -813,15 +811,11 @@ set_bootloader() {
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRgrub" ] && ! grep -Fq "usr/lib/grub/i386-pc" /tmp/filelist 2>/dev/null; then
-      if [ -z "$BRnocolor" ]; then
-        color_variables
-      fi
+      if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system\n"
       clean_unmount_in
     elif [ -n "$BRsyslinux" ] && ! grep -Fq "bin/extlinux" /tmp/filelist 2>/dev/null; then
-      if [ -z "$BRnocolor" ]; then
-        color_variables
-      fi
+      if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system\n"
       clean_unmount_in
     fi
@@ -878,9 +872,7 @@ clean_files() {
  }
 
 clean_unmount_in() {
-  if [ -z "$BRnocolor" ]; then
-    color_variables
-  fi
+  if [ -z "$BRnocolor" ]; then color_variables; fi
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   if [ "$BRcustom" = "y" ]; then
@@ -922,9 +914,7 @@ clean_unmount_in() {
 }
 
 clean_unmount_out() {
-  if [ -z "$BRnocolor" ]; then
-    color_variables
-  fi
+  if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   umount /mnt/target/dev/pts
@@ -1768,7 +1758,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRrestore" ] && [ -z "$BRuri" ]; then
-    dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 24 80
+    dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 17 80
     if [ "$?" = "1" ]; then
       dialog --title "Partition Table" --msgbox "$(disk_report)" 0 0
     fi
@@ -1863,9 +1853,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   detect_root_fs_size
 
   if [ -z "$BRfsystem" ]; then
-    if [ -z "$BRnocolor" ]; then
-      color_variables
-    fi
+    if [ -z "$BRnocolor" ]; then color_variables; fi
     echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system"
     exit
   fi

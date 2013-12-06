@@ -17,7 +17,7 @@ color_variables() {
 info_screen() {
   echo -e "\n${BR_YELLOW}This script will make a tar backup image of this system."
   echo -e "\n==>Make sure you have enough free space."
-  echo -e "\n==>Also make sure you have GRUB or SYSLINUX packages installed."
+  echo -e "\n==>Make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\nGRUB PACKAGES:"
   echo "->Arch: grub-bios"
   echo "->Debian: grub-pc"
@@ -54,9 +54,6 @@ show_summary() {
   echo "Compression: $BRcompression"
   if [ -n "$BR_USER_OPTS" ]; then
     echo "User Options: $BR_USER_OPTS"
-  fi
-  if [ "$BRfedoratar" = "y" ] && [ "$BRarchiver" = "tar" ]; then
-    echo "Extra Options: --acls --selinux --xattrs"
   fi
 
   echo -e "\nHOME DIRECTORY:"
@@ -104,9 +101,6 @@ set_tar_options() {
       find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
       BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/excludelist"
     fi
-    if [ "$BRfedoratar" = "y" ]; then
-      BR_TAROPTS="${BR_TAROPTS} --acls --selinux --xattrs"
-    fi
   elif [ "$BRarchiver" = "bsdtar" ]; then
     BR_TAROPTS=("$BR_USER_OPTS" --exclude=/run/*?* --exclude=/dev/*?* --exclude=/proc/*?* --exclude=/sys/*?* --exclude=/media/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found)
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
@@ -153,6 +147,14 @@ prepare() {
   echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
   sleep 1
   BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
+}
+
+options_info() {
+  if [ "$BRarchiver" = "tar" ]; then
+    BRoptinfo="see tar --help"
+  elif [ "$BRarchiver" = "bsdtar" ]; then
+    BRoptinfo="see man bsdtar"
+  fi
 }
 
 BRargs=`getopt -o "i:d:c:u:hnNa:q" -l "interface:,directory:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,help" -n "$1" -- "$@"`
@@ -252,7 +254,7 @@ if [ $(id -u) -gt 0 ]; then
 fi
 
 if [ -f /etc/yum.conf ]; then
-  BRfedoratar="y"
+  BRarchiver="bsdtar"
 fi
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
@@ -272,6 +274,12 @@ fi
 
 if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" = "dialog" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong interface name: $BRinterface. Available options: cli dialog"
+  BRSTOP="y"
+fi
+
+if [ -f /etc/yum.conf ] && [ -z $(which bsdtar 2> /dev/null) ]; then
+  if [ -z "$BRnocolor" ]; then color_variables; fi
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
   BRSTOP="y"
 fi
 
@@ -397,9 +405,11 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
+  options_info
+
   if [ -z "$BRuseroptions" ]; then
     echo -e "\n${BR_CYAN}Enter additional $BRarchiver options (leave blank for defaults)${BR_NORM}"
-    read -p "Options (see tar --help or man bsdtar):" BR_USER_OPTS
+    read -p "Options ($BRoptinfo):" BR_USER_OPTS
     if [ -z "$BR_USER_OPTS" ]; then
       BRuseroptions="No"
     elif [ -n "$BR_USER_OPTS" ]; then
@@ -472,7 +482,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --yesno "The default folder for creating the backup image is / (root).\n\nSave in the default folder?" 8 65
+    dialog --yesno "The default folder for creating the backup image is / (root).\n\nSave in the default folder?" 7 65
     if [ "$?" = "0" ]; then
       BRFOLDER="/"
     else
@@ -522,9 +532,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
-    if [ -z "$BRnocolor" ]; then
-      color_variables
-    fi
+    if [ -z "$BRnocolor" ]; then color_variables; fi
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
     exit
   fi
@@ -534,11 +542,13 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$?" = "1" ]; then exit; fi
   fi
 
+  options_info
+
   if [ -z "$BRuseroptions" ]; then
     dialog --yesno "Specify additional $BRarchiver options?" 6 39
     if [ "$?" = "0" ]; then
       BRuseroptions="Yes"
-      BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter options: (See tar --help or man bsdtar)" 8 70 2>&1 1>&3)
+      BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter options: ($BRoptinfo)" 8 70 2>&1 1>&3)
     else
       BRuseroptions="No"
     fi

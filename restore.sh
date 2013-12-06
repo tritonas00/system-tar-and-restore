@@ -1311,39 +1311,23 @@ if [ "$BRinterface" = "cli" ]; then
         fi
       done
 
-      while [ -z "$BRsubvolother" ]; do
-        echo -e "\n${BR_CYAN}Create other subvolumes?${BR_NORM}"
-        read -p "(y/N):" an
-
-       if [ -n "$an" ]; then
-         def=$an
-       else
-         def="n"
-       fi
-
-       if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
-         BRsubvolother="y"
-         IFS=$DEFAULTIFS
-         echo -e "\n${BR_CYAN}Set subvolumes (subvolume path e.g /home /var /usr ...)${BR_NORM}"
-         read -p "Subvolumes: " BRsubvolslist
-         BRsubvols+=($BRsubvolslist)
-         IFS=$'\n'
-
-         for item in "${BRsubvols[@]}"; do
-           if [[ "$item" == *"/home"* ]]; then
-             BRhome="-1"
-           fi
-           if [[ "$item" == *"/boot"* ]]; then
-             BRboot="-1"
-           fi
-         done
-       elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-         BRsubvolother="n"
-       else
-         echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
-       fi
-     done
-   fi
+      if [ -z "$BRsubvolother" ]; then
+        echo -e "\n${BR_CYAN}Set other subvolumes (leave blank for none)${BR_NORM}"
+        read -p "Paths (e.g /home /var /usr ...): " BRsubvolslist
+        if [ -z "$BRsubvolslist" ]; then
+          BRsubvolother="n"
+        elif [ -n "$BRsubvolslist" ]; then
+          BRsubvolother="y"
+          IFS=$DEFAULTIFS
+          BRsubvols+=($BRsubvolslist)
+          IFS=$'\n'
+          for item in "${BRsubvols[@]}"; do
+            if [[ "$item" == *"/home"* ]]; then BRhome="-1"; fi
+            if [[ "$item" == *"/boot"* ]]; then BRboot="-1"; fi
+          done
+        fi
+      fi
+    fi
   elif [ "$BRrootsubvol" = "y" ] || [ "$BRsubvolother" = "y" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Not a btrfs root filesystem, proceeding without subvolumes..."
   fi

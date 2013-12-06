@@ -1402,30 +1402,19 @@ if [ "$BRinterface" = "cli" ]; then
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
   if [ -n "${list[*]}" ]; then
-    while [ -z "$BRother" ]; do
-      echo -e "\n${BR_CYAN}Specify custom partitions?${BR_NORM}"
-      read -p "(y/N):" an
-
-      if [ -n "$an" ]; then
-        def=$an
-      else
-        def="n"
-      fi
-
-      if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
+    if [ -z "$BRother" ]; then
+      echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3 (leave blank for none)${BR_NORM}"
+      read -p "Partitions: " BRcustompartslist
+      if [ -z "$BRcustompartslist" ]; then
+        BRother="n"
+      elif [ -n "$BRcustompartslist" ]; then
         BRcustom="y"
         BRother="y"
         IFS=$DEFAULTIFS
-        echo -e "\n${BR_CYAN}Set partitions (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)${BR_NORM}"
-        read -p "Partitions: " BRcustompartslist
         BRcustomparts+=($BRcustompartslist)
         IFS=$'\n'
-      elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-        BRother="n"
-      else
-        echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
       fi
-    done
+    fi
   fi
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then

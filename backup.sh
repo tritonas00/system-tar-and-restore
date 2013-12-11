@@ -253,9 +253,7 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
-
 if [ -f /etc/yum.conf ] && [ "$BRarchiver" = "tar" ]; then
-  if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "[${BR_RED}ERROR${BR_NORM}] Only bsdtar is supported on Fedora"
   BRSTOP="y"
 fi
@@ -281,7 +279,6 @@ if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" =
 fi
 
 if [ -f /etc/yum.conf ] && [ -z $(which bsdtar 2> /dev/null) ]; then
-  if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
   BRSTOP="y"
 fi

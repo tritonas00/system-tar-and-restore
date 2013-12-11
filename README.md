@@ -5,8 +5,7 @@ System tar & restore contains two bash scripts, **backup.sh** and **restore.sh**
 The purpose is to make the process of backing up and restoring a full GNU/Linux installation easier 
 using tar or transfer an existing installation using rsync.
 
-Supported distributions: Arch, Debian, Fedora*   
-<sub>*Fedora 19 tar: xattrs patch bug(?), decompressed system can't login. Downgrading to 1.26-12.fc18 fixes the problem. Libarchive Tar and Transfer Mode works.</sub>
+Supported distributions: Arch, Debian, Fedora       
 
 [Demo Video](http://www.youtube.com/watch?v=hbsYweNSOUk&hd=1)  
 [Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)  
@@ -36,7 +35,7 @@ The script will ask for:
 
 - What to do with /home directory
 
-- Archiver: tar and bsdtar are supported. 
+- Archiver: tar and bsdtar are supported. (In case of Fedora, bsdtar is pre-selected automatically)   
 
 - Compression type: gzip and xz are supported.
 

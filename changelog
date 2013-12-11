@@ -1,5 +1,11 @@
 Changelog:
 
+3.8.3
+    force bsdtar on Fedora
+    updated info screen
+    reduced questions in cli interface
+    code cleaning
+
 3.8.2
     show disk size in cli interface again
     code cleaning

@@ -283,12 +283,12 @@ if [ -f /etc/yum.conf ] && [ -z $(which bsdtar 2> /dev/null) ]; then
   BRSTOP="y"
 fi
 
-if [ -f /etc/yum.conf ]; then
-  BRarchiver="bsdtar"
-fi
-
 if [ -n "$BRSTOP" ]; then
   exit
+fi
+
+if [ -f /etc/yum.conf ]; then
+  BRarchiver="bsdtar"
 fi
 
 if [ -z "$BRhidden" ]; then

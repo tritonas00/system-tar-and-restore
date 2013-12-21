@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.8.3"
+BR_VERSION="System Tar & Restore 3.8.4"
 BR_SEP="::"
 
 color_variables() {
@@ -743,13 +743,10 @@ install_bootloader() {
 
     if [ "$BRdistro" = "Fedora" ]; then
       if [ -f /mnt/target/etc/default/grub ]; then
-        mv /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old
+        cp /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old
       fi
-      echo 'GRUB_TIMEOUT=5' > /mnt/target/etc/default/grub
-      echo 'GRUB_DEFAULT=saved' >> /mnt/target/etc/default/grub
-      echo 'GRUB_CMDLINE_LINUX="vconsole.keymap=us quiet"' >> /mnt/target/etc/default/grub
-      echo 'GRUB_DISABLE_RECOVERY="true"' >> /mnt/target/etc/default/grub
-      echo -e "\n${BR_SEP}Generated grub2 config" >> /tmp/restore.log
+      sed -i 's/GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="vconsole.keymap=us quiet"/' /mnt/target/etc/default/grub
+      echo -e "\n${BR_SEP}Modified grub2 config" >> /tmp/restore.log
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
     else

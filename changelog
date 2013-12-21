@@ -1,5 +1,8 @@
 Changelog:
 
+3.8.4
+    better handling of fedora's grub config file
+
 3.8.3
     force bsdtar on Fedora
     updated info screen

@@ -7,7 +7,8 @@ using tar or transfer an existing installation using rsync.
 
 Supported distributions: Arch, Debian, Fedora       
 
-[Demo Video](http://www.youtube.com/watch?v=hbsYweNSOUk&hd=1)  
+[![Demo Video](http://img.youtube.com/vi/hbsYweNSOUk/0.jpg)](http://www.youtube.com/watch?v=hbsYweNSOUk&hd=1)  
+
 [Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)  
 
 ###LIMITATIONS###

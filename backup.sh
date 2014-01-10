@@ -138,7 +138,11 @@ run_tar() {
 set_paths() {
   BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
   BRFOLDER="${BRFOLDER_IN[@]}"
-  BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
+  if [ -n "$BRNAME" ]; then
+    BRFile="$BRFOLDER"/"$BRNAME"
+  else
+    BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
+  fi
 }
 
 prepare() {
@@ -157,7 +161,7 @@ options_info() {
   fi
 }
 
-BRargs=`getopt -o "i:d:c:u:hnNa:q" -l "interface:,directory:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNa:q" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -179,6 +183,10 @@ while true; do
     ;;
     -d|--directory)
       BRFOLDER=$2
+      shift 2
+    ;;
+    -f|--filename)
+      BRNAME=$2
       shift 2
     ;;
     -c|--compression)
@@ -219,6 +227,7 @@ Interface:${BR_NORM}
 
 ${BR_BOLD}Destination:${BR_NORM}
   -d, --directory         backup folder path
+  -f, --filename          backup file name (without extension)
 
 ${BR_BOLD}Home Directory:${BR_NORM}
   -h, --exclude-home	  exclude /home directory (keep hidden files and folders)
@@ -227,7 +236,7 @@ ${BR_BOLD}Home Directory:${BR_NORM}
 ${BR_BOLD}Archiver Options:${BR_NORM}
   -a, --archiver          select archiver (tar bsdtar)
   -c, --compression       compression type (gzip xz)
-  -u, --user-options      additional tar options (See tar --help or man bsdtar)
+  -u, --user-options      additional tar options (see tar --help or man bsdtar)
 
 --help	print this page
 "
@@ -302,6 +311,9 @@ if [ -n "$BRFOLDER" ]; then
   if [ -z "$BRuseroptions" ]; then
     BRuseroptions="No"
   fi
+  if [ -z "$BRNAME" ]; then
+    BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"
+  fi
 fi
 
 PS3="Enter number or Q to quit: "
@@ -344,6 +356,11 @@ if [ "$BRinterface" = "cli" ]; then
       echo -e "${BR_RED}Directory does not exist${BR_NORM}"
     fi
   done
+
+  if [ -z "$BRNAME" ]; then
+    echo -e "\n${BR_CYAN}Enter archive name (leave blank for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)')${BR_NORM}"
+    read -e -p "Name (without extension): " BRNAME
+  fi
 
   if [ -z "$BRhome" ]; then
     echo -e "\n${BR_CYAN}Home (/home) directory options:${BR_NORM}"
@@ -414,11 +431,6 @@ if [ "$BRinterface" = "cli" ]; then
   if [ -z "$BRuseroptions" ]; then
     echo -e "\n${BR_CYAN}Enter additional $BRarchiver options (leave blank for defaults)${BR_NORM}"
     read -p "Options ($BRoptinfo):" BR_USER_OPTS
-    if [ -z "$BR_USER_OPTS" ]; then
-      BRuseroptions="No"
-    elif [ -n "$BR_USER_OPTS" ]; then
-      BRuseroptions="Yes"
-    fi
   fi
 
   IFS=$DEFAULTIFS
@@ -515,6 +527,10 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
+  if [ -z "$BRNAME" ]; then
+    BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)'." 8 70 2>&1 1>&3)
+  fi
+
   if [ -z "$BRhome" ]; then
     REPLY=$(dialog --cancel-label Quit --menu "Home (/home) directory options:" 13 50 13 1 Include 2 "Only hidden files and folders" 3 Exclude 2>&1 1>&3)
     if [ "$?" = "1" ]; then exit; fi
@@ -549,13 +565,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   options_info
 
   if [ -z "$BRuseroptions" ]; then
-    dialog --yesno "Specify additional $BRarchiver options?" 6 39
-    if [ "$?" = "0" ]; then
-      BRuseroptions="Yes"
-      BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter options: ($BRoptinfo)" 8 70 2>&1 1>&3)
-    else
-      BRuseroptions="No"
-    fi
+    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRarchiver options. Leave empty for defaults.\n($BRoptinfo)" 8 70 2>&1 1>&3)
   fi
 
   set_paths

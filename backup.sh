@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.8.4"
+BR_VERSION="System Tar & Restore 3.9"
 BR_SEP="::"
 
 color_variables() {
@@ -46,35 +46,34 @@ exit_screen_quiet() {
 }
 
 show_summary() {
-  echo -e "${BR_YELLOW}DESTINATION:"
-  echo "$BRFOLDER"
-
-  echo -e "\nARCHIVER OPTIONS:"
-  echo "Archiver: $BRarchiver"
-  echo "Compression: $BRcompression"
-  if [ -n "$BR_USER_OPTS" ]; then
-    echo "User Options: $BR_USER_OPTS"
+  echo -e "${BR_YELLOW}Archive to create:"
+  if [ "$BRcompression" = "gzip" ]; then
+    echo "$BRFile.tar.gz"
+  elif [ "$BRcompression" = "xz" ]; then
+    echo "$BRFile.tar.xz"
   fi
+ 
+  echo -e "\nArchiver:           $BRarchiver"
+  echo "Compression:        $BRcompression"
 
-  echo -e "\nHOME DIRECTORY:"
   if [ "$BRhome" = "Yes" ]; then
-    echo "Include"
+    echo "Home Directory:     Include"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
-    echo "Only hidden files and folders"
+    echo "Home Directory:     Only hidden files and folders"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
-    echo "Exclude"
+    echo "Home Directory:     Exclude"
   fi
 
-  echo -e "\nFOUND BOOTLOADERS:"
-  if [ -d /usr/lib/grub/i386-pc ]; then
-    echo -e "Grub"
-  fi
-  if which extlinux &>/dev/null; then
-    echo "Syslinux"
-  fi
+  if [ -d /usr/lib/grub/i386-pc ]; then BRbootloaders+=(Grub); fi
+  if which extlinux &>/dev/null; then  BRbootloaders+=(Syslinux); fi
   if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
-    echo "None or not supported"
+    BRbootloaders+=("None or not supported")
   fi
+  echo -e "\nFound Bootloaders:  ${BRbootloaders[@]}"
+
+  echo -e "\nArchiver Options:"
+  echo "--exclude=$BRFOLDER"
+  echo "${BR_TAROPTS[@]}" | sed -r -e 's/\s+/\n/g'
   echo -e "${BR_NORM}"
 }
 
@@ -94,7 +93,7 @@ show_path() {
 
 set_tar_options() {
   if [ "$BRarchiver" = "tar" ]; then
-    BR_TAROPTS="$BR_USER_OPTS --sparse --exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=lost+found --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs"
+    BR_TAROPTS="--exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=lost+found --sparse $BR_USER_OPTS"
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
     elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
@@ -102,7 +101,7 @@ set_tar_options() {
       BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/excludelist"
     fi
   elif [ "$BRarchiver" = "bsdtar" ]; then
-    BR_TAROPTS=("$BR_USER_OPTS" --exclude=/run/*?* --exclude=/dev/*?* --exclude=/proc/*?* --exclude=/sys/*?* --exclude=/media/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found)
+    BR_TAROPTS=(--exclude=/run/*?* --exclude=/dev/*?* --exclude=/proc/*?* --exclude=/sys/*?* --exclude=/media/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found "$BR_USER_OPTS")
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS+=(--exclude=/home/*?*)
     elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
@@ -136,17 +135,18 @@ run_tar() {
   fi
 }
 
-prepare() {
-  touch /target_architecture.$(uname -m)
+set_paths() {
   BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
   BRFOLDER="${BRFOLDER_IN[@]}"
-  if [ "$BRinterface" = "cli" ]; then
-    echo -e "\n${BR_SEP}CREATING ARCHIVE"
-  fi
+  BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
+}
+
+prepare() {
+  touch /target_architecture.$(uname -m)
+  if [ "$BRinterface" = "cli" ]; then echo -e "\n${BR_SEP}CREATING ARCHIVE"; fi
   mkdir -p "$BRFOLDER"
   echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
   sleep 1
-  BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
 }
 
 options_info() {
@@ -422,7 +422,8 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   IFS=$DEFAULTIFS
-
+  set_tar_options
+  set_paths
   echo -e "\n${BR_SEP}SUMMARY"
   show_summary
 
@@ -448,7 +449,6 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   prepare
-  set_tar_options
   run_calc
   total=$(cat /tmp/filelist | wc -l)
   sleep 1
@@ -558,13 +558,15 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
+  set_paths
+  set_tar_options
+
   if [ -z "$BRcontinue" ]; then
-    dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0
+    dialog --no-collapse --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0
     if [ "$?" = "1" ]; then exit; fi
   fi
 
   prepare
-  set_tar_options
   run_calc | dialog --progressbox 3 40
   total=$(cat /tmp/filelist | wc -l)
   sleep 1

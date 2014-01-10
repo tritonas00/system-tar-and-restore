@@ -15,7 +15,7 @@ color_variables() {
 }
 
 info_screen() {
-  echo -e "\n${BR_YELLOW}This script will make a tar backup image of this system."
+  echo -e "\n${BR_YELLOW}This script will make a tar backup archive of this system."
   echo -e "\n==>Make sure you have enough free space."
   echo -e "\n==>Make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\nGRUB PACKAGES:"
@@ -348,7 +348,7 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   while [ -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-    echo -e "\n${BR_CYAN}Enter path to save the backup image (leave blank for default '/')${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter path to save the backup archive (leave blank for default '/')${BR_NORM}"
     read -e -p "Path: " BRFOLDER
     if [ -z "$BRFOLDER" ]; then
       BRFOLDER="/"
@@ -498,7 +498,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --yesno "The default folder for creating the backup image is / (root).\n\nSave in the default folder?" 7 65
+    dialog --yesno "The default folder for creating the backup archive is / (root).\n\nSave in the default folder?" 7 65
     if [ "$?" = "0" ]; then
       BRFOLDER="/"
     else

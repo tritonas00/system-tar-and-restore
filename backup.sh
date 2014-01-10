@@ -498,7 +498,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --yesno "The default folder for creating the backup archive is / (root).\n\nSave in the default folder?" 7 65
+    dialog --yesno "The default folder for creating the backup archive is / (root).\n\nSave in the default folder?" 8 65
     if [ "$?" = "0" ]; then
       BRFOLDER="/"
     else

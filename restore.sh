@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.8.4"
+BR_VERSION="System Tar & Restore 3.9"
 BR_SEP="::"
 
 color_variables() {
@@ -1808,15 +1808,14 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRmountoptions" ]; then
-     dialog --yesno "Specify additional mount options for root partition?" 5 56
-     if [ "$?" = "0" ]; then
-       BRmountoptions="Yes"
-       BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Enter options: (comma-separated list of mount options)" 8 70 2>&1 1>&3)
-     else
-       BRmountoptions="No"
-       BR_MOUNT_OPTS="defaults"
-     fi
-   fi
+    BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Specify additional mount options for root partition.\nLeave empty for defaults.\n\n(comma-separated list)" 10 70 2>&1 1>&3)
+    if [ -z "$BR_MOUNT_OPTS" ]; then
+      BRmountoptions="No"
+      BR_MOUNT_OPTS="defaults"
+    elif [ -n "$BR_MOUNT_OPTS" ]; then
+      BRmountoptions="Yes"
+    fi
+  fi
 
   detect_root_fs_size
 
@@ -1845,22 +1844,19 @@ elif [ "$BRinterface" = "dialog" ]; then
       done
 
       if [ -z "$BRsubvolother" ]; then
-        dialog --yesno "Create other subvolumes?" 5 30
-         if [ "$?" = "0" ]; then
-           BRsubvolother="y"
-           BRsubvolslist=$(dialog --no-cancel --inputbox "Set subvolumes (subvolume path e.g /home /var /usr ...)" 8 80 2>&1 1>&3)
-           BRsubvols+=($BRsubvolslist)
-           for item in "${BRsubvols[@]}"; do
-             if [[ "$item" == *"/home"* ]]; then
-               BRhome="-1"
-             fi
-             if [[ "$item" == *"/boot"* ]]; then
-               BRboot="-1"
-             fi
-           done
-         fi
-       fi
-     fi
+        BRsubvolslist=$(dialog --no-cancel --inputbox "Specify other subvolumes. Leave empty for none.\n\n(subvolume path e.g /home /var /usr ...)" 9 70 2>&1 1>&3)
+        if [ -z "$BRsubvolslist" ]; then
+          BRsubvolother="n"  
+        elif [ -n "$BRsubvolslist" ]; then
+          BRsubvolother="y"
+          BRsubvols+=($BRsubvolslist)
+          for item in "${BRsubvols[@]}"; do
+            if [[ "$item" == *"/home"* ]]; then BRhome="-1"; fi
+            if [[ "$item" == *"/boot"* ]]; then BRboot="-1"; fi
+          done
+        fi
+      fi
+    fi
   elif [ "$BRrootsubvol" = "y" ] || [ "$BRsubvolother" = "y" ]; then
     dialog --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
   fi
@@ -1877,11 +1873,8 @@ elif [ "$BRinterface" = "dialog" ]; then
       if [ "$?" = "1" ]; then
         exit
       else
-        dialog --yesno "Specify additional kernel options?" 6 40
-        if [ "$?" = "0" ]; then
-          BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Enter additional kernel options:" 8 70 2>&1 1>&3)
-        fi
-      fi
+         BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Specify additional kernel options. Leave empty for defaults." 8 70 2>&1 1>&3)
+       fi
     fi
   fi
 

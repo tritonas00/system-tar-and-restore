@@ -568,8 +568,16 @@ mount_all() {
 }
 
 show_summary() {
-  echo -e "${BR_YELLOW}PARTITIONS:"
-  echo -e "root partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
+  echo -e "${BR_YELLOW}Target Partition Scheme:"
+  printf '%-10s %-10s %-10s %-10s %-10s\n' $BRroot / $BRfsystem $BRfsize $BR_MOUNT_OPTS
+  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
+    echo " ^$BRrootsubvolname"
+    if [ "$BRsubvolother" = "y" ]; then
+      while read ln; do
+        echo " ^$BRrootsubvolname$ln"
+      done< <(for a in "${BRsubvols[@]}"; do echo "$a"; done | sort)
+    fi
+  fi
 
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRsorted[@]}; do
@@ -577,66 +585,46 @@ show_summary() {
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
       BRcustomsize=$(lsblk -d -n -o size 2> /dev/null $BRdevice)
-      echo "${BRmpoint#*/} partition: $BRdevice $BRcustomfs $BRcustomsize"
+      printf '%-10s %-10s %-10s %-10s\n' $BRdevice $BRmpoint $BRcustomfs $BRcustomsize
     done
   fi
 
   if [ -n "$BRswap" ]; then
-    echo "swap partition: $BRswap"
+    printf '%-10s %-10s %-10s\n' $BRswap swap swap
   fi
-
-  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
-    echo -e "\nSUBVOLUMES:"
-    echo "root: $BRrootsubvolname"
-    if [ "$BRsubvolother" = "y" ]; then
-      while read ln; do
-        echo "${ln#*/}"
-      done< <(for a in "${BRsubvols[@]}"; do echo "$a"; done | sort)
-    fi
-  fi
-
-  echo -e "\nBOOTLOADER:"
 
   if [ -n "$BRgrub" ]; then
-    echo "$BRbootloader"
     if [[ "$BRgrub" == *md* ]]; then
-      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+      echo -e "\nBootloader: Grub on $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
     else
-      echo "Location: $BRgrub"
+      echo -e "\nBootloader: Grub on $BRgrub"
     fi
   elif [ -n "$BRsyslinux" ]; then
-    echo "$BRbootloader"
     if [[ "$BRsyslinux" == *md* ]]; then
-      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+      echo -e "\nBootloader: Syslinux on $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
     else
-      echo "Location: $BRsyslinux"
-    fi
-    if [ -n "$BR_KERNEL_OPTS" ]; then
-      echo "Kernel Options: $BR_KERNEL_OPTS"
+      echo -e "\nBootloader: Syslinux on $BRsyslinux $BR_KERNEL_OPTS"
     fi
   else
-    echo "None (WARNING)"
+    echo -e "\nBootloader: None (WARNING)"
   fi
 
-  echo -e "\nPROCESS:"
-
-  if [ "$BRmode" = "Restore" ]; then
-    echo "Mode: $BRmode"
-    echo "Archiver: $BRarchiver"
-    echo "Archive: $BRfiletype compressed"
-  elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "n" ]; then
-    echo "Mode: $BRmode"
-    echo "Home: Include"
-  elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "y" ]; then
-    echo "Mode: $BRmode"
-    echo "Home: Only hidden files and folders"
-  fi
+  
   if [ "$BRdistro" = "Unsupported" ]; then
-    echo -e "System: $BRdistro (WARNING)${BR_NORM}"
+    echo -e "\nSystem:     $BRdistro (WARNING)"
   elif [ "$BRmode" = "Restore" ]; then
-    echo -e "System: $BRdistro based ${target_arch#*.}${BR_NORM}"
+    echo -e "\nSystem:     $BRdistro based ${target_arch#*.}"
   elif [ "$BRmode" = "Transfer" ]; then
-     echo -e "System: $BRdistro based $(uname -m)${BR_NORM}"
+     echo -e "\nSystem:     $BRdistro based $(uname -m)"
+  fi
+  echo "Mode:       $BRmode"
+  if [ "$BRmode" = "Restore" ]; then
+    echo "Archiver:   $BRarchiver"
+    echo -e "Archive:    $BRfiletype compressed${BR_NORM}"
+  elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "n" ]; then
+     echo -e "Home:       Include${BR_NORM}"
+  elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "y" ]; then
+     echo -e "Home:       Only hidden files and folders${BR_NORM}"
   fi
 }
 
@@ -2007,7 +1995,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   set_bootloader
 
   if [ -z "$BRcontinue" ]; then
-    dialog --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0
+    dialog --no-collapse --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0
     if [ "$?" = "1" ]; then
       clean_unmount_in
     fi

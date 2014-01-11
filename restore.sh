@@ -608,19 +608,24 @@ show_summary() {
   else
     echo -e "\nBootloader: None (WARNING)"
   fi
-
-  
-  if [ "$BRdistro" = "Unsupported" ]; then
-    echo -e "\nSystem:     $BRdistro (WARNING)"
-  elif [ "$BRmode" = "Restore" ]; then
-    echo -e "\nSystem:     $BRdistro based ${target_arch#*.}"
-  elif [ "$BRmode" = "Transfer" ]; then
-     echo -e "\nSystem:     $BRdistro based $(uname -m)"
-  fi
-  echo "Mode:       $BRmode"
   if [ "$BRmode" = "Restore" ]; then
-    echo "Archiver:   $BRarchiver"
-    echo -e "Archive:    $BRfiletype compressed${BR_NORM}"
+    if [[ "$BRuri" == /* ]]; then
+      BRsource="from local file"
+    else
+      BRsource="from remote file"
+    fi
+  fi
+  echo -e "\nMode:       $BRmode $BRsource"
+  if [ "$BRdistro" = "Unsupported" ]; then
+    echo "System:     $BRdistro (WARNING)"
+  elif [ "$BRmode" = "Restore" ]; then
+    echo "System:     $BRdistro based ${target_arch#*.}"
+  elif [ "$BRmode" = "Transfer" ]; then
+     echo "System:     $BRdistro based $(uname -m)"
+  fi
+  if [ "$BRmode" = "Restore" ]; then
+    echo "Archive:    $BRfiletype compressed"
+    echo -e "Archiver:   $BRarchiver${BR_NORM}"
   elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "n" ]; then
      echo -e "Home:       Include${BR_NORM}"
   elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "y" ]; then

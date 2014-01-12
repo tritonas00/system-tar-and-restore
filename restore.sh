@@ -2,6 +2,7 @@
 
 BR_VERSION="System Tar & Restore 3.9"
 BR_SEP="::"
+BR_SM_SEP="* "
 
 color_variables() {
   BR_NORM='\e[00m'
@@ -568,7 +569,48 @@ mount_all() {
 }
 
 show_summary() {
-  echo -e "${BR_YELLOW}Target Partition Scheme:"
+  if [ "$BRmode" = "Restore" ]; then
+    if [[ "$BRuri" == /* ]]; then
+      BRsource="from local file"
+    else
+      BRsource="from remote file"
+    fi
+  fi
+
+  echo -e "${BR_YELLOW}${BR_SM_SEP}Mode:        $BRmode $BRsource"
+  if [ "$BRdistro" = "Unsupported" ]; then
+    echo "${BR_SM_SEP}System:      $BRdistro (WARNING)"
+  elif [ "$BRmode" = "Restore" ]; then
+    echo "${BR_SM_SEP}System:      $BRdistro based ${target_arch#*.}"
+  elif [ "$BRmode" = "Transfer" ]; then
+     echo "${BR_SM_SEP}System:      $BRdistro based $(uname -m)"
+  fi
+  if [ "$BRmode" = "Restore" ]; then
+    echo "${BR_SM_SEP}Archive:     $BRfiletype compressed"
+    echo "${BR_SM_SEP}Archiver:    $BRarchiver"
+  elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "n" ]; then
+     echo "${BR_SM_SEP}Home Dir:    Include"
+  elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "y" ]; then
+     echo "${BR_SM_SEP}Home Dir:    Only hidden files and folders"
+  fi
+
+  if [ -n "$BRgrub" ]; then
+    if [[ "$BRgrub" == *md* ]]; then
+      echo -e "\n${BR_SM_SEP}Bootloader:  Grub on $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+    else
+      echo -e "\n${BR_SM_SEP}Bootloader:  Grub on $BRgrub"
+    fi
+  elif [ -n "$BRsyslinux" ]; then
+    if [[ "$BRsyslinux" == *md* ]]; then
+      echo -e "\n${BR_SM_SEP}Bootloader:  Syslinux on $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+    else
+      echo -e "\n${BR_SM_SEP}Bootloader:  Syslinux on $BRsyslinux $BR_KERNEL_OPTS"
+    fi
+  else
+    echo -e "\n${BR_SM_SEP}Bootloader:  None (WARNING)"
+  fi
+
+  echo -e "\n${BR_SM_SEP}Target Partition Scheme:"
   printf '%-10s %-10s %-10s %-10s %-10s\n' $BRroot / $BRfsystem $BRfsize $BR_MOUNT_OPTS
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
     echo " ^$BRrootsubvolname"
@@ -592,45 +634,7 @@ show_summary() {
   if [ -n "$BRswap" ]; then
     printf '%-10s %-10s %-10s\n' $BRswap swap swap
   fi
-
-  if [ -n "$BRgrub" ]; then
-    if [[ "$BRgrub" == *md* ]]; then
-      echo -e "\nBootloader: Grub on $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
-    else
-      echo -e "\nBootloader: Grub on $BRgrub"
-    fi
-  elif [ -n "$BRsyslinux" ]; then
-    if [[ "$BRsyslinux" == *md* ]]; then
-      echo -e "\nBootloader: Syslinux on $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
-    else
-      echo -e "\nBootloader: Syslinux on $BRsyslinux $BR_KERNEL_OPTS"
-    fi
-  else
-    echo -e "\nBootloader: None (WARNING)"
-  fi
-  if [ "$BRmode" = "Restore" ]; then
-    if [[ "$BRuri" == /* ]]; then
-      BRsource="from local file"
-    else
-      BRsource="from remote file"
-    fi
-  fi
-  echo -e "\nMode:       $BRmode $BRsource"
-  if [ "$BRdistro" = "Unsupported" ]; then
-    echo "System:     $BRdistro (WARNING)"
-  elif [ "$BRmode" = "Restore" ]; then
-    echo "System:     $BRdistro based ${target_arch#*.}"
-  elif [ "$BRmode" = "Transfer" ]; then
-     echo "System:     $BRdistro based $(uname -m)"
-  fi
-  if [ "$BRmode" = "Restore" ]; then
-    echo "Archive:    $BRfiletype compressed"
-    echo -e "Archiver:   $BRarchiver${BR_NORM}"
-  elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "n" ]; then
-     echo -e "Home:       Include${BR_NORM}"
-  elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "y" ]; then
-     echo -e "Home:       Only hidden files and folders${BR_NORM}"
-  fi
+  echo -e "${BR_NORM}"
 }
 
 prepare_chroot() {

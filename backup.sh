@@ -2,6 +2,7 @@
 
 BR_VERSION="System Tar & Restore 3.9"
 BR_SEP="::"
+BR_SM_SEP="* "
 
 color_variables() {
   BR_NORM='\e[00m'
@@ -46,22 +47,22 @@ exit_screen_quiet() {
 }
 
 show_summary() {
-  echo -e "${BR_YELLOW}Archive to create:"
+  echo -e "${BR_YELLOW}${BR_SM_SEP}Archive to create:"
   if [ "$BRcompression" = "gzip" ]; then
     echo "$BRFile.tar.gz"
   elif [ "$BRcompression" = "xz" ]; then
     echo "$BRFile.tar.xz"
   fi
  
-  echo -e "\nArchiver:           $BRarchiver"
-  echo "Compression:        $BRcompression"
+  echo -e "\n${BR_SM_SEP}Archiver:           $BRarchiver"
+  echo "${BR_SM_SEP}Compression:        $BRcompression"
 
   if [ "$BRhome" = "Yes" ]; then
-    echo "Home Directory:     Include"
+    echo "${BR_SM_SEP}Home Directory:     Include"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
-    echo "Home Directory:     Only hidden files and folders"
+    echo "${BR_SM_SEP}Home Directory:     Only hidden files and folders"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
-    echo "Home Directory:     Exclude"
+    echo "${BR_SM_SEP}Home Directory:     Exclude"
   fi
 
   if [ -d /usr/lib/grub/i386-pc ]; then BRbootloaders+=(Grub); fi
@@ -69,9 +70,9 @@ show_summary() {
   if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
     BRbootloaders+=("None or not supported")
   fi
-  echo -e "\nFound Bootloaders:  ${BRbootloaders[@]}"
+  echo -e "\n${BR_SM_SEP}Found Bootloaders:  ${BRbootloaders[@]}"
 
-  echo -e "\nArchiver Options:"
+  echo -e "\n${BR_SM_SEP}Archiver Options:"
   echo "--exclude=$BRFOLDER"
   echo "${BR_TAROPTS[@]}" | sed -r -e 's/\s+/\n/g'
   echo -e "${BR_NORM}"

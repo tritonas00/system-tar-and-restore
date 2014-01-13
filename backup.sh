@@ -71,18 +71,13 @@ show_summary() {
   fi
 
   echo -e "\nFOUND BOOTLOADERS:"
-  if [ -d /usr/lib/grub/i386-pc ]; then
-    echo -e "Grub"
-  fi
-  if which extlinux &>/dev/null; then
-    echo "Syslinux"
-  fi
+  if [ -d /usr/lib/grub/i386-pc ]; then echo -e "Grub"; fi
+  if which extlinux &>/dev/null; then; fi
   if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
     echo "None or not supported"
   fi
   echo -e "${BR_NORM}"
 }
-#| sed -r -e 's/\s+/\n/g'
 
 dir_list() {
   DEFAULTIFS=$IFS

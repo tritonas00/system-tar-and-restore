@@ -53,13 +53,14 @@ show_summary() {
     echo "$BRFile.tar.xz"
   fi
 
-  echo -e "\nARCHIVER INFO:"
+  echo -e "\nARCHIVER OPTIONS:"
   echo "Archiver:    $BRarchiver"
   echo "Compression: $BRcompression"
 
-  echo -e "\nARCHIVER OPTIONS:"
-  echo "--exclude=$BRFOLDER"
-  echo "${BR_TAROPTS[@]}" | sed -r -e 's/\s+/\n/g'
+  if [ -n "$BR_USER_OPTS" ]; then
+    echo -e "\nUSER OPTIONS:"
+    echo "$BR_USER_OPTS" | sed -r -e 's/\s+/\n/g'
+  fi
 
   echo -e "\nHOME DIRECTORY:"
   if [ "$BRhome" = "Yes" ]; then

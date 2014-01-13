@@ -611,7 +611,7 @@ show_summary() {
   fi
 
   echo -e "\n${BR_SM_SEP}Target Partition Scheme:"
-  printf '%-15s %-5s %-10s %-5s %-5s\n' $BRroot $BRfsystem $BRfsize / $BR_MOUNT_OPTS
+  echo "$BRroot  /   ($BRfsystem $BRfsize $BR_MOUNT_OPTS)"
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
     echo " ^$BRrootsubvolname"
     if [ "$BRsubvolother" = "y" ]; then
@@ -627,12 +627,12 @@ show_summary() {
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
       BRcustomsize=$(lsblk -d -n -o size 2> /dev/null $BRdevice)
-      printf '%-15s %-5s %-10s %-5s\n' $BRdevice $BRcustomfs $BRcustomsize $BRmpoint
+      echo "$BRdevice  $BRmpoint   ($BRcustomfs $BRcustomsize)"
     done
   fi
 
   if [ -n "$BRswap" ]; then
-    printf '%-10s %-10s %-10s\n' $BRswap swap swap
+    echo "$BRswap  swap"
   fi
   echo -e "${BR_NORM}"
 }

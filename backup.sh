@@ -2,7 +2,6 @@
 
 BR_VERSION="System Tar & Restore 3.9"
 BR_SEP="::"
-BR_SM_SEP="* "
 
 color_variables() {
   BR_NORM='\e[00m'
@@ -47,36 +46,43 @@ exit_screen_quiet() {
 }
 
 show_summary() {
-  echo -e "${BR_YELLOW}${BR_SM_SEP}Archive to create:"
+  echo -e "${BR_YELLOW}ARCHIVE:"
   if [ "$BRcompression" = "gzip" ]; then
     echo "$BRFile.tar.gz"
   elif [ "$BRcompression" = "xz" ]; then
     echo "$BRFile.tar.xz"
   fi
- 
-  echo -e "\n${BR_SM_SEP}Archiver:           $BRarchiver"
-  echo "${BR_SM_SEP}Compression:        $BRcompression"
 
-  if [ "$BRhome" = "Yes" ]; then
-    echo "${BR_SM_SEP}Home Directory:     Include"
-  elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
-    echo "${BR_SM_SEP}Home Directory:     Only hidden files and folders"
-  elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
-    echo "${BR_SM_SEP}Home Directory:     Exclude"
-  fi
+  echo -e "\nARCHIVER INFO:"
+  echo "Archiver:    $BRarchiver"
+  echo "Compression: $BRcompression"
 
-  if [ -d /usr/lib/grub/i386-pc ]; then BRbootloaders+=(Grub); fi
-  if which extlinux &>/dev/null; then  BRbootloaders+=(Syslinux); fi
-  if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
-    BRbootloaders+=("None or not supported")
-  fi
-  echo "${BR_SM_SEP}Found Bootloaders:  ${BRbootloaders[@]}"
-
-  echo -e "\n${BR_SM_SEP}Archiver Options:"
+  echo -e "\nARCHIVER OPTIONS:"
   echo "--exclude=$BRFOLDER"
   echo "${BR_TAROPTS[@]}" | sed -r -e 's/\s+/\n/g'
+
+  echo -e "\nHOME DIRECTORY:"
+  if [ "$BRhome" = "Yes" ]; then
+    echo "Include"
+  elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
+    echo "Only hidden files and folders"
+  elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
+    echo "Exclude"
+  fi
+
+  echo -e "\nFOUND BOOTLOADERS:"
+  if [ -d /usr/lib/grub/i386-pc ]; then
+    echo -e "Grub"
+  fi
+  if which extlinux &>/dev/null; then
+    echo "Syslinux"
+  fi
+  if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
+    echo "None or not supported"
+  fi
   echo -e "${BR_NORM}"
 }
+#| sed -r -e 's/\s+/\n/g'
 
 dir_list() {
   DEFAULTIFS=$IFS

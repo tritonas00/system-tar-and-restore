@@ -1035,6 +1035,7 @@ while true; do
       shift
     ;;
     -U|--user-options)
+      BRuseroptions="Yes"
       BR_USER_OPTS=($2)
       shift 2
     ;;
@@ -1158,6 +1159,10 @@ if [ -n "$BRroot" ]; then
   if [ -z "$BRmountoptions" ]; then
     BRmountoptions="No"
     BR_MOUNT_OPTS="defaults"
+  fi
+
+  if [ -z "$BRuseroptions" ]; then
+    BRuseroptions="No"
   fi
 
   if [ -z "$BRswap" ]; then
@@ -1541,6 +1546,11 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_RED}Please select a valid option${BR_NORM}"
       fi
     done
+
+    if [ -z "$BRuseroptions" ]; then
+      echo -e "\n${BR_CYAN}Enter additional rsync options (leave blank for defaults)${BR_NORM}"
+      read -p "Options (see rsync --help):" BR_USER_OPTS
+    fi
   fi
 
   check_input
@@ -1914,12 +1924,16 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ "$BRmode" = "Transfer" ]; then
     if [ -z "$BRhidden" ]; then
-      dialog --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 9 50
+      dialog --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 8 50
       if [ "$?" = "0" ]; then
         BRhidden="n"
       else
         BRhidden="y"
       fi
+    fi
+
+    if [ -z "$BRuseroptions" ]; then
+      BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional rsync options. Leave empty for defaults.\n(see rsync --help)" 8 70 2>&1 1>&3)
     fi
   fi
 

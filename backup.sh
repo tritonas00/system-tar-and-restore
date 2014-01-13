@@ -433,7 +433,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ -z "$BRuseroptions" ]; then
     echo -e "\n${BR_CYAN}Enter additional $BRarchiver options (leave blank for defaults)${BR_NORM}"
-    read -p "Options ($BRoptinfo):" BR_USER_OPTS
+    read -p "Options (see rsync --help):" BR_USER_OPTS
   fi
 
   IFS=$DEFAULTIFS
@@ -568,7 +568,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   options_info
 
   if [ -z "$BRuseroptions" ]; then
-    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRarchiver options. Leave empty for defaults.\n($BRoptinfo)" 8 70 2>&1 1>&3)
+    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRarchiver options. Leave empty for defaults.\n(see rsync --help)" 8 60 2>&1 1>&3)
   fi
 
   set_paths

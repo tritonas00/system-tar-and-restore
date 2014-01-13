@@ -70,7 +70,7 @@ show_summary() {
   if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
     BRbootloaders+=("None or not supported")
   fi
-  echo -e "\n${BR_SM_SEP}Found Bootloaders:  ${BRbootloaders[@]}"
+  echo "${BR_SM_SEP}Found Bootloaders:  ${BRbootloaders[@]}"
 
   echo -e "\n${BR_SM_SEP}Archiver Options:"
   echo "--exclude=$BRFOLDER"

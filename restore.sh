@@ -225,17 +225,17 @@ run_tar() {
 
 run_calc() {
   if [ "$BRhidden" = "n" ]; then
-    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} --dry-run 2> /dev/null | tee /tmp/filelist
+    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} ${BR_USER_OPTS[@]} --dry-run 2> /dev/null | tee /tmp/filelist
   elif [ "$BRhidden" = "y" ]; then
-    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} --dry-run 2> /dev/null | tee /tmp/filelist
+    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} ${BR_USER_OPTS[@]} --dry-run 2> /dev/null | tee /tmp/filelist
   fi
 }
 
 run_rsync() {
   if [ "$BRhidden" = "n" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} && (echo "System transferred successfully" >> /tmp/restore.log)
+    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} ${BR_USER_OPTS[@]} && (echo "System transferred successfully" >> /tmp/restore.log)
   elif [ "$BRhidden" = "y" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} && (echo "System transferred successfully" >> /tmp/restore.log)
+    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} ${BR_USER_OPTS[@]} && (echo "System transferred successfully" >> /tmp/restore.log)
   fi
 }
 
@@ -645,6 +645,11 @@ show_summary() {
   elif [ "$BRmode" = "Transfer" ]; then
      echo -e "System:   $BRdistro based $(uname -m)${BR_NORM}"
   fi
+
+  if [ "$BRmode" = "Transfer" ] && [ -n "$BR_USER_OPTS" ]; then
+    echo -e "\n${BR_YELLOW}USER OPTIONS:"
+    echo -e "${BR_USER_OPTS[@]}${BR_NORM}" | sed -r -e 's/\s+/\n/g'
+  fi
 }
 
 prepare_chroot() {
@@ -951,7 +956,7 @@ unset_vars() {
   if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:qtoNm:k:c:a:O:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1029,6 +1034,10 @@ while true; do
       BRhidden="y"
       shift
     ;;
+    -U|--user-options)
+      BR_USER_OPTS=($2)
+      shift 2
+    ;;
     -N|--no-color)
       BRnocolor="y"
       shift
@@ -1079,6 +1088,7 @@ ${BR_BOLD}Restore Mode:${BR_NORM}
 ${BR_BOLD}Transfer Mode:${BR_NORM}
   -t,  --transfer           activate transfer mode
   -o,  --only-hidden        transfer /home's hidden files and folders only
+  -U,  --user-options       rsync additional options (see rsync --help)
 
 ${BR_BOLD}Partitions:${BR_NORM}
   -r,  --root               target root partition

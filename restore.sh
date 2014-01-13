@@ -1088,7 +1088,7 @@ ${BR_BOLD}Restore Mode:${BR_NORM}
 ${BR_BOLD}Transfer Mode:${BR_NORM}
   -t,  --transfer           activate transfer mode
   -o,  --only-hidden        transfer /home's hidden files and folders only
-  -U,  --user-options       rsync additional options (see rsync --help)
+  -U,  --user-options       additional rsync options (see rsync --help)
 
 ${BR_BOLD}Partitions:${BR_NORM}
   -r,  --root               target root partition

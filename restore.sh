@@ -594,22 +594,6 @@ show_summary() {
      echo "${BR_SM_SEP}Home Dir:    Only hidden files and folders"
   fi
 
-  if [ -n "$BRgrub" ]; then
-    if [[ "$BRgrub" == *md* ]]; then
-      echo -e "\n${BR_SM_SEP}Bootloader:  Grub on $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
-    else
-      echo -e "\n${BR_SM_SEP}Bootloader:  Grub on $BRgrub"
-    fi
-  elif [ -n "$BRsyslinux" ]; then
-    if [[ "$BRsyslinux" == *md* ]]; then
-      echo -e "\n${BR_SM_SEP}Bootloader:  Syslinux on $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
-    else
-      echo -e "\n${BR_SM_SEP}Bootloader:  Syslinux on $BRsyslinux $BR_KERNEL_OPTS"
-    fi
-  else
-    echo -e "\n${BR_SM_SEP}Bootloader:  None (WARNING)"
-  fi
-
   echo -e "\n${BR_SM_SEP}Target Partition Scheme:"
   echo "$BRroot  /   ($BRfsystem $BRfsize $BR_MOUNT_OPTS)"
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
@@ -633,6 +617,22 @@ show_summary() {
 
   if [ -n "$BRswap" ]; then
     echo "$BRswap  swap"
+  fi
+
+  if [ -n "$BRgrub" ]; then
+    if [[ "$BRgrub" == *md* ]]; then
+      echo -e "\n${BR_SM_SEP}Bootloader:  Grub on $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+    else
+      echo -e "\n${BR_SM_SEP}Bootloader:  Grub on $BRgrub"
+    fi
+  elif [ -n "$BRsyslinux" ]; then
+    if [[ "$BRsyslinux" == *md* ]]; then
+      echo -e "\n${BR_SM_SEP}Bootloader:  Syslinux on $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+    else
+      echo -e "\n${BR_SM_SEP}Bootloader:  Syslinux on $BRsyslinux $BR_KERNEL_OPTS"
+    fi
+  else
+    echo -e "\n${BR_SM_SEP}Bootloader:  None (WARNING)"
   fi
   echo -e "${BR_NORM}"
 }

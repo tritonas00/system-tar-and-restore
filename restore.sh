@@ -1757,12 +1757,16 @@ if [ "$BRinterface" = "cli" ]; then
       if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#editorlist[@]} ]; then
         BReditor=$c
         $BReditor /mnt/target/etc/fstab
+        echo -e "\n${BR_SEP}EDITED FSTAB" >> /tmp/restore.log
+        cat /mnt/target/etc/fstab >> /tmp/restore.log
         break
       else
         echo -e "${BR_RED}Please select a valid option${BR_NORM}"
       fi
     done
   fi
+
+
 
   (prepare_chroot
    build_initramfs
@@ -2126,6 +2130,8 @@ elif [ "$BRinterface" = "dialog" ]; then
         BReditor="vi"
       fi
       $BReditor /mnt/target/etc/fstab
+      echo -e "\n${BR_SEP}EDITED FSTAB" >> /tmp/restore.log
+      cat /mnt/target/etc/fstab >> /tmp/restore.log
     fi
   fi
 

@@ -57,10 +57,9 @@ show_summary() {
   echo "Archiver:    $BRarchiver"
   echo "Compression: $BRcompression"
 
-  if [ -n "$BR_USER_OPTS" ]; then
-    echo -e "\nUSER OPTIONS:"
-    echo "$BR_USER_OPTS" | sed -r -e 's/\s+/\n/g'
-  fi
+  echo -e "\nARCHIVER OPTIONS:"
+  echo "--exclude=$BRFOLDER"
+  echo "${BR_TAROPTS[@]}" | sed -r -e 's/\s+/\n/g' |  sed 'N;s/\n/ /'
 
   echo -e "\nHOME DIRECTORY:"
   if [ "$BRhome" = "Yes" ]; then
@@ -96,7 +95,7 @@ show_path() {
 
 set_tar_options() {
   if [ "$BRarchiver" = "tar" ]; then
-    BR_TAROPTS="--exclude=/run/* --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/media/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=lost+found --sparse $BR_USER_OPTS"
+    BR_TAROPTS="--exclude=/run/* --exclude=/proc/* --exclude=/dev/*  --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=lost+found --sparse $BR_USER_OPTS"
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
     elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
@@ -104,7 +103,7 @@ set_tar_options() {
       BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/excludelist"
     fi
   elif [ "$BRarchiver" = "bsdtar" ]; then
-    BR_TAROPTS=(--exclude=/run/*?* --exclude=/dev/*?* --exclude=/proc/*?* --exclude=/sys/*?* --exclude=/media/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found "$BR_USER_OPTS")
+    BR_TAROPTS=(--exclude=/run/*?*  --exclude=/proc/*?* --exclude=/dev/*?* --exclude=/media/*?* --exclude=/sys/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found "$BR_USER_OPTS")
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS+=(--exclude=/home/*?*)
     elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then

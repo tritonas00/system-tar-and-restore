@@ -983,9 +983,9 @@ report_vars_log() {
   echo "Rsync Options: ${BR_RSYNCOPTS[@]}"
   echo "Distro: $BRdistro"
   if [ "$BRmode" = "Restore" ]; then
-    echo "Achitecture: ${target_arch#*.}"
+    echo "Architecture: ${target_arch#*.}"
   elif [ "$BRmode" = "Transfer" ]; then
-    echo "Achitecture: $(uname -m)"
+    echo "Architecture: $(uname -m)"
   fi
   if [ -n "$BRfile" ]; then
     echo "Source: local file"

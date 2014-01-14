@@ -1471,7 +1471,7 @@ if [ "$BRinterface" = "cli" ]; then
 	  BRsyslinux=(`echo $c | awk '{ print $1 }'`)
           echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}"
 	  echo -e "\n${BR_CYAN}Enter additional kernel options (leave blank for defaults)${BR_NORM}"
-          read -p "Options:" BR_KERNEL_OPTS
+          read -p "Options: " BR_KERNEL_OPTS
           break
 	else
           echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"

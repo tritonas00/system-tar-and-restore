@@ -155,6 +155,20 @@ prepare() {
   sleep 1
 }
 
+report_vars_log() {
+  echo "Archive:  $BRFile"
+  echo "Archiver: $BRarchiver"
+  echo "Compression: $BRcompression"
+  echo "Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"
+  echo "Home: $BRhome"
+  echo "Hidden: $BRhidden"
+  if [ -d /usr/lib/grub/i386-pc ]; then echo -e "Bootloader: Grub"; fi
+  if which extlinux &>/dev/null; then echo -e "Bootloader: Syslinux"; fi
+  if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
+    echo "Bootloader: None or not supported"
+  fi
+}
+
 options_info() {
   if [ "$BRarchiver" = "tar" ]; then
     BRoptinfo="see tar --help"
@@ -463,6 +477,7 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   prepare
+  report_vars_log >> "$BRFOLDER"/backup.log
   run_calc
   total=$(cat /tmp/filelist | wc -l)
   sleep 1
@@ -579,6 +594,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   prepare
+  report_vars_log >> "$BRFOLDER"/backup.log
   run_calc | dialog --progressbox 3 40
   total=$(cat /tmp/filelist | wc -l)
   sleep 1

@@ -570,7 +570,7 @@ mount_all() {
 
 show_summary() {
   echo -e "${BR_YELLOW}PARTITIONS:"
-  echo -e "root partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
+  echo "root partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
 
   if [ "$BRcustom" = "y" ]; then
     for i in ${BRsorted[@]}; do
@@ -622,9 +622,9 @@ show_summary() {
   echo -e "\nPROCESS:"
 
   if [ "$BRmode" = "Restore" ]; then
-    if [[ "$BRuri" == /* ]]; then
+    if [ -n "$BRfile" ]; then
       BRsource="from local file"
-    else
+    elif [ -n "$BRurl" ]; then
       BRsource="from remote file"
     fi
   fi
@@ -955,6 +955,44 @@ unset_vars() {
   if [ "$BRhome" = "-1" ]; then unset BRhome; fi
   if [ "$BRgrub" = "-1" ]; then unset BRgrub; fi
   if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
+}
+
+report_vars_log() {
+  echo "Root partition: $BRroot $BRfsystem $BR_MOUNT_OPTS"
+  echo "Swap partition: $BRswap"
+  echo "Partitions Array: ${BRsorted[@]}"
+  echo "Root Subvolume: $BRrootsubvolname"
+  echo "Subvolumes Array: ${BRsubvols[@]}"
+  if [ -n "$BRgrub" ]; then
+    if [[ "$BRgrub" == *md* ]]; then
+      echo "Bootloader: $BRbootloader $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+    else
+      echo "Bootloader: $BRbootloader $BRgrub"
+    fi
+  elif [ -n "$BRsyslinux" ]; then
+    if [[ "$BRsyslinux" == *md* ]]; then
+      echo "Bootloader: $BRbootloader $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+    else
+      echo "Bootloader: $BRbootloader $BRsyslinux"
+    fi
+  else
+    echo "Bootloader: None"
+  fi
+  echo "Kernel Options: $BR_KERNEL_OPTS"
+  echo "Mode: $BRmode"
+  echo "Rsync Options: ${BR_RSYNCOPTS[@]}"
+  echo "Distro: $BRdistro"
+  if [ "$BRmode" = "Restore" ]; then
+    echo "Achitecture: ${target_arch#*.}"
+  elif [ "$BRmode" = "Transfer" ]; then
+    echo "Achitecture: $(uname -m)"
+  fi
+  if [ -n "$BRfile" ]; then
+    echo "Source: local file"
+  elif [ -n "$BRurl" ]; then
+    echo "Source: remote file"
+  fi
+  echo "Archiver: $BRarchiver"
 }
 
 BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:" -n "$1" -- "$@"`
@@ -1663,6 +1701,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
   echo " " >> /tmp/restore.log
+  report_vars_log  >> /tmp/restore.log
   if [ "$BRmode" = "Restore" ]; then
     echo -e "\n${BR_SEP}EXTRACTING"
     total=$(cat /tmp/filelist | wc -l)
@@ -2050,6 +2089,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
   echo " " >> /tmp/restore.log
+  report_vars_log  >> /tmp/restore.log
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1

@@ -59,7 +59,7 @@ show_summary() {
 
   echo -e "\nARCHIVER OPTIONS:"
   echo "--exclude=$BRFOLDER"
-  echo "${BR_TAROPTS[@]}" | sed -r -e 's/\s+/\n/g' |  sed 'N;s/\n/ /'
+  echo "${BR_TAROPTS[@]}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
 
   echo -e "\nHOME DIRECTORY:"
   if [ "$BRhome" = "Yes" ]; then

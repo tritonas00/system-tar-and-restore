@@ -156,6 +156,7 @@ prepare() {
 }
 
 report_vars_log() {
+  echo "Archive:  $BRNAME"
   echo "Archiver: $BRarchiver"
   echo "Compression: $BRcompression"
   echo "Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"

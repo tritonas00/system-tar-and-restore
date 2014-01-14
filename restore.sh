@@ -223,20 +223,21 @@ run_tar() {
   fi
 }
 
-run_calc() {
-  if [ "$BRhidden" = "n" ]; then
-    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} ${BR_USER_OPTS[@]} --dry-run 2> /dev/null | tee /tmp/filelist
-  elif [ "$BRhidden" = "y" ]; then
-    rsync -av / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} ${BR_USER_OPTS[@]} --dry-run 2> /dev/null | tee /tmp/filelist
+set_rsync_opts() {
+  BR_RSYNCOPTS=(--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=/home/*/.gvfs --exclude=lost+found "$BR_USER_OPTS")
+  if [ "$BRhidden" = "y" ]; then
+    BR_RSYNCOPTS+=(--exclude=/home/*/[^.]*)
   fi
 }
 
+run_calc() {
+  IFS=$DEFAULTIFS
+  rsync -av / /mnt/target ${BR_RSYNCOPTS[@]} --dry-run 2> /dev/null | tee /tmp/filelist
+}
+
 run_rsync() {
-  if [ "$BRhidden" = "n" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs} ${BR_USER_OPTS[@]} && (echo "System transferred successfully" >> /tmp/restore.log)
-  elif [ "$BRhidden" = "y" ]; then
-    rsync -aAXv / /mnt/target --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/mnt/*,/media/*,lost+found,/home/*/.gvfs,/home/*/[^.]*} ${BR_USER_OPTS[@]} && (echo "System transferred successfully" >> /tmp/restore.log)
-  fi
+  IFS=$DEFAULTIFS
+  rsync -aAXv / /mnt/target ${BR_RSYNCOPTS[@]} && (echo "System transferred successfully" >> /tmp/restore.log) 
 }
 
 count_gauge() {
@@ -646,9 +647,9 @@ show_summary() {
      echo -e "System:   $BRdistro based $(uname -m)${BR_NORM}"
   fi
 
-  if [ "$BRmode" = "Transfer" ] && [ -n "$BR_USER_OPTS" ]; then
-    echo -e "\n${BR_YELLOW}USER OPTIONS:"
-    echo -e "${BR_USER_OPTS[@]}${BR_NORM}" | sed -r -e 's/\s+/\n/g'
+  if [ "$BRmode" = "Transfer" ]; then
+    echo -e "\n${BR_YELLOW}RSYNC OPTIONS:"
+    echo -e "${BR_RSYNCOPTS[@]}${BR_NORM}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
   fi
 }
 
@@ -1036,7 +1037,7 @@ while true; do
     ;;
     -U|--user-options)
       BRuseroptions="Yes"
-      BR_USER_OPTS=($2)
+      BR_USER_OPTS=$2
       shift 2
     ;;
     -N|--no-color)
@@ -1634,6 +1635,8 @@ if [ "$BRinterface" = "cli" ]; then
 
   detect_distro
   set_bootloader
+  if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
+
   echo -e "\n${BR_SEP}SUMMARY"
   show_summary
 
@@ -2036,6 +2039,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   detect_distro
   set_bootloader
+  if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
 
   if [ -z "$BRcontinue" ]; then
     dialog --no-collapse --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0

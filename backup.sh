@@ -432,7 +432,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ -z "$BRuseroptions" ]; then
     echo -e "\n${BR_CYAN}Enter additional $BRarchiver options (leave blank for defaults)${BR_NORM}"
-    read -p "Options ($BRoptinfo):" BR_USER_OPTS
+    read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
 
   IFS=$DEFAULTIFS

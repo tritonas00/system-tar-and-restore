@@ -987,7 +987,7 @@ report_vars_log() {
     if [[ "$BRgrub" == *md* ]]; then
       echo "Bootloader: $BRbootloader $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
     else
-      echo "Bootloader: $BRbootloader $BRgrub"
+      echo "Bootloader: $BRbootloader $BRgrubefiarch $BRgrub"
     fi
   elif [ -n "$BRsyslinux" ]; then
     if [[ "$BRsyslinux" == *md* ]]; then
@@ -1862,22 +1862,31 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   update_list
 
-  update_options() {
-    options=("Root partition" "$BRroot" \
-    "(Optional) Home partition" "$BRhome" \
-    "(Optional) Boot partition" "$BRboot" \
-    "(Optional) Swap partition" "$BRswap" \
-    "(Optional) Custom partitions" "$BRempty" \
-    "Done with partitions" "$BRempty")
+    update_options() {
+      if [ -d /sys/firmware/efi/efivars ]; then
+        options=("Root partition" "$BRroot" \
+        "(Optional) Home partition" "$BRhome" \
+        "EFI system partition" "$BRefisp" \
+        "(Optional) Swap partition" "$BRswap" \
+        "(Optional) Custom partitions" "$BRempty" \
+        "Done with partitions" "$BRempty")
+      else
+        options=("Root partition" "$BRroot" \
+        "(Optional) Home partition" "$BRhome" \
+        "(Optional) Boot partition" "$BRboot" \
+        "(Optional) Swap partition" "$BRswap" \
+        "(Optional) Custom partitions" "$BRempty" \
+        "Done with partitions" "$BRempty")
+      fi
   }
 
   update_options
 
-  while [ -z "$BRroot" ]; do
+  while [ -z "$BRroot" ] || [ -z "$BReficheck" ]; do
     BRassign="y"
     while opt=$(dialog --ok-label Select --cancel-label Quit --extra-button --extra-label Unset --menu "Set target partitions:" 0 0 0 "${options[@]}" 2>&1 1>&3); rtn="$?"; do
       if [ "$rtn" = "1" ]; then exit; fi
-      BRrootold="$BRroot" BRhomeold="$BRhome" BRbootold="$BRboot" BRswapold="$BRswap"
+      BRrootold="$BRroot" BRhomeold="$BRhome" BRbootold="$BRboot" BRefispold="$BRefisp" BRswapold="$BRswap"
       case "$opt" in
         "${options[0]}" )
             if [ "$rtn" = "3" ]; then unset BRroot; elif [ -z "${list[*]}" ]; then no_parts; else BRroot=$(part_sel_dialog root); if [ "$?" = "1" ]; then BRroot="$BRrootold"; fi; fi
@@ -1888,7 +1897,11 @@ elif [ "$BRinterface" = "dialog" ]; then
             update_list
             update_options;;
         "${options[4]}" )
-            if [ "$rtn" = "3" ]; then unset BRboot; elif [ -z "${list[*]}" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
+            if [ -d /sys/firmware/efi/efivars ]; then
+              if [ "$rtn" = "3" ]; then unset BRefisp; elif [ -z "${list[*]}" ]; then no_parts; else BRefisp=$(part_sel_dialog efi); if [ "$?" = "1" ]; then BRefisp="$BRefispold"; fi; fi
+            else
+              if [ "$rtn" = "3" ]; then unset BRboot; elif [ -z "${list[*]}" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
+            fi
             update_list
             update_options;;
         "${options[6]}" )
@@ -1907,6 +1920,15 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -z "$BRroot" ]; then
       dialog --title "Error" --msgbox "You must specify a target root partition." 5 45
     fi
+    if [ ! -d /sys/firmware/efi/efivars ]; then
+      BReficheck="no"
+    fi
+    if [ -d /sys/firmware/efi/efivars ] &&  [ -z "$BRefisp" ]; then
+      dialog --title "Error" --msgbox "You must specify a target system efi partition." 5 51
+    fi
+    if [ -d /sys/firmware/efi/efivars ] && [ -n "$BRefisp" ]; then
+      BReficheck="yes"
+    fi
   done
 
   if [ -n "$BRassign" ]; then
@@ -1918,6 +1940,11 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -n "$BRboot" ]; then
       BRcustom="y"
       BRcustomparts+=(/boot="$BRboot")
+    fi
+
+    if [ -n "$BRefisp" ]; then
+      BRcustom="y"
+      BRcustomparts+=(/boot/efi="$BRefisp")
     fi
 
     if [ -n "$BRcustompartslist" ]; then
@@ -1986,9 +2013,13 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$?" = "3" ]; then exit; fi
 
     if [ "$REPLY" = "1" ]; then
-      BRgrub=$(dialog --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
-      if [ "$?" = "1" ]; then exit; fi
-    elif [ "$REPLY" = "2" ]; then
+      if [ -z "$BRefisp" ]; then 
+        BRgrub=$(dialog --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
+        if [ "$?" = "1" ]; then exit; fi
+      else
+        BRgrub="/boot/efi" 
+      fi
+   elif [ "$REPLY" = "2" ]; then
       BRsyslinux=$(dialog --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
       if [ "$?" = "1" ]; then
         exit
@@ -2129,6 +2160,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   detect_distro
   set_bootloader
+  if [ -n "$BRefisp" ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then set_efi_bootloader_arch; fi
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
 
   if [ -z "$BRcontinue" ]; then

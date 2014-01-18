@@ -749,7 +749,6 @@ set_efi_bootloader_arch() {
   fi
 }
   
-
 install_bootloader() {
   if [ -n "$BRgrub" ]; then
     echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
@@ -1720,7 +1719,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   detect_distro
   set_bootloader
-  set_efi_bootloader_arch
+  if [ -n "$BRefisp" ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then set_efi_bootloader_arch; fi
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
 
   echo -e "\n${BR_SEP}SUMMARY"

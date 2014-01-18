@@ -1919,7 +1919,8 @@ elif [ "$BRinterface" = "dialog" ]; then
       BReficheck="no"
     fi
     if [ -d /sys/firmware/efi/efivars ] &&  [ -z "$BRefisp" ]; then
-      dialog --title "Error" --msgbox "You must specify a target system efi partition." 5 51
+      dialog --title "Error" --msgbox "You must specify a target EFI system partition." 5 51
+      unset BReficheck
     fi
     if [ -d /sys/firmware/efi/efivars ] && [ -n "$BRefisp" ]; then
       BReficheck="yes"

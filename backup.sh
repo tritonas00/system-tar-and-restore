@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9"
+BR_VERSION="System Tar & Restore 3.9 (NOT FULLY TESTED)"
 BR_SEP="::"
 
 color_variables() {
@@ -19,13 +19,14 @@ info_screen() {
   echo -e "\n==>Make sure you have enough free space."
   echo -e "\n==>Make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\nGRUB PACKAGES:"
-  echo "->Arch: grub-bios"
+  echo "->Arch: grub dosfstools* efibootmgr*"
   echo "->Debian: grub-pc"
   echo "->Fedora: grub2"
   echo -e "\nSYSLINUX PACKAGES:"
   echo "->Arch: syslinux"
   echo "->Debian: syslinux extlinux"
-  echo -e "->Fedora: syslinux syslinux-extlinux${BR_NORM}"
+  echo -e "->Fedora: syslinux syslinux-extlinux"
+  echo -e "\n*Required for UEFI systems"
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
@@ -511,7 +512,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 22 70
+    dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 24 70
   fi
 
   if [ -z "$BRFOLDER" ]; then

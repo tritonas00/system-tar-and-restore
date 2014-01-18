@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9"
+BR_VERSION="System Tar & Restore 3.9 (NOT FULLY TESTED)"
 BR_SEP="::"
 
 color_variables() {
@@ -160,7 +160,7 @@ detect_fstab_root() {
   fi
 }
 
-detect_partition_table() {
+detect_partition_table_syslinux() {
   if [[ "$BRsyslinux" == *md* ]]; then
     BRsyslinuxdisk="$BRdev"
   else
@@ -261,7 +261,7 @@ count_gauge_wget() {
 }
 
 hide_used_parts() {
-  grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"` -e `echo /dev/"${BRboot##*/}"` -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"` -e `echo /dev/mapper/"${BRboot##*/}"`
+  grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"` -e `echo /dev/"${BRboot##*/}"` -e `echo /dev/"${BRefisp##*/}"` -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"` -e `echo /dev/mapper/"${BRboot##*/}"`
 }
 
 check_parts() {
@@ -465,7 +465,7 @@ check_input() {
         BRdev=`echo /dev/$f | cut -c -8`
       done
     fi
-    detect_partition_table
+    detect_partition_table_syslinux
     if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2> /dev/null) ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
       BRSTOP="y"
@@ -599,7 +599,7 @@ show_summary() {
   echo -e "\nBOOTLOADER:"
 
   if [ -n "$BRgrub" ]; then
-    echo "$BRbootloader"
+    echo "$BRbootloader $BRgrubefiarch"
     if [[ "$BRgrub" == *md* ]]; then
       echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
     else
@@ -733,6 +733,23 @@ build_initramfs() {
   done
 }
 
+set_efi_bootloader_arch() {
+  if [ "$BRmode" = "Restore" ]; then
+    if [ "$(echo ${target_arch#*.})" == "x86_64" ]; then
+      BRgrubefiarch="x86_64-efi"
+    elif [ "$(echo ${target_arch#*.})" == "i686" ]; then
+      BRgrubefiarch="i386-efi"
+    fi
+  elif [ "$BRmode" = "Transfer" ]; then
+    if [ "$(uname -m)" == "x86_64" ]; then
+      BRgrubefiarch="x86_64-efi"
+    elif [ "$(uname -m)" == "i686" ]; then
+      BRgrubefiarch="i386-efi"
+    fi
+  fi
+}
+  
+
 install_bootloader() {
   if [ -n "$BRgrub" ]; then
     echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
@@ -785,7 +802,7 @@ install_bootloader() {
         for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z][0-9]'` ; do
           BRdev=`echo /dev/$f | cut -c -8`
           BRpart=`echo /dev/$f | cut -c 9-`
-          detect_partition_table
+          detect_partition_table_syslinux
           set_syslinux_flags_and_paths
           echo "Installing $BRsyslinuxmbr in $BRdev ($BRpartitiontable)"
           dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/bl_error
@@ -799,7 +816,7 @@ install_bootloader() {
           BRdev=`echo $BRroot | cut -c -8`
           BRpart=`echo $BRroot | cut -c 9-`
         fi
-        detect_partition_table
+        detect_partition_table_syslinux
         set_syslinux_flags_and_paths
         echo "Installing $BRsyslinuxmbr in $BRsyslinux ($BRpartitiontable)"
         dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/bl_error
@@ -1415,27 +1432,47 @@ if [ "$BRinterface" = "cli" ]; then
 
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
-  if [ -z "$BRboot" ] && [ -n "${list[*]}" ]; then
-    echo -e "\n${BR_CYAN}Select target boot partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
-    select c in ${list[@]}; do
-      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-        exit
-      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-        BRboot=(`echo $c | awk '{ print $1 }'`)
-        BRcustom="y"
-        BRcustomparts+=(/boot="$BRboot")
-        echo -e "${BR_GREEN}You selected $BRboot as your boot partition${BR_NORM}"
-        break
-      elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
-        echo -e "${BR_GREEN}No boot partition${BR_NORM}"
-        break
-      else
-        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-      fi
-    done
+  if [ -d /sys/firmware/efi/efivars ]; then
+    if [ -z "$BRefisp" ] && [ -n "${list[*]}" ]; then
+      echo -e "\n${BR_CYAN}Select target efi system partition:${BR_MAGENTA}${BR_NORM}"
+      select c in ${list[@]}; do
+        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+          exit
+        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
+          BRefisp=(`echo $c | awk '{ print $1 }'`)
+          BRcustom="y"
+          BRcustomparts+=(/boot/efi="$BRefisp")
+          echo -e "${BR_GREEN}You selected $BRefisp as your efi system partition${BR_NORM}"
+          break
+        else
+          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+        fi
+      done
+    fi
+  else
+    if [ -z "$BRboot" ] && [ -n "${list[*]}" ]; then
+      echo -e "\n${BR_CYAN}Select target boot partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
+      select c in ${list[@]}; do
+        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+          exit
+        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
+          BRboot=(`echo $c | awk '{ print $1 }'`)
+          BRcustom="y"
+          BRcustomparts+=(/boot="$BRboot")
+          echo -e "${BR_GREEN}You selected $BRboot as your boot partition${BR_NORM}"
+          break
+        elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
+          echo -e "${BR_GREEN}No boot partition${BR_NORM}"
+          break
+        else
+          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+        fi
+      done
+    fi
   fi
-
+    
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
   if [ -z "$BRswap" ] && [ -n "${list[*]}" ]; then
@@ -1673,6 +1710,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   detect_distro
   set_bootloader
+  set_efi_bootloader_arch
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
 
   echo -e "\n${BR_SEP}SUMMARY"

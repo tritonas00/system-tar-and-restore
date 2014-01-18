@@ -1476,7 +1476,6 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-    
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
   if [ -z "$BRswap" ] && [ -n "${list[*]}" ]; then

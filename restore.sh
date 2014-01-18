@@ -446,7 +446,7 @@ check_input() {
     done < <( for a in ${BRsubvols[@]}; do echo $a; done )
   fi
 
-  if [ -n "$BRgrub" ]; then
+  if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "/boot/efi" ]; then
     for i in $(check_disks); do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
@@ -764,7 +764,11 @@ install_bootloader() {
         fi
       done
     elif [ "$BRdistro" = "Arch" ]; then
-      chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/bl_error
+      if [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then
+        chroot /mnt/target grub-install --target=$BRgrubefiarch --efi-directory=$BRgrub --bootloader-id=grub --recheck || touch /tmp/bl_error
+      else
+        chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/bl_error
+      fi
     elif [ "$BRdistro" = "Debian" ]; then
       chroot /mnt/target grub-install --recheck $BRgrub || touch /tmp/bl_error
     elif [ "$BRdistro" = "Fedora" ]; then
@@ -1522,20 +1526,26 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "\n[${BR_YELLOW}WARNING${BR_NORM}] NO BOOTLOADER SELECTED"
         break
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-        echo -e "\n${BR_CYAN}Select target disk for Grub:${BR_NORM}"
-	select c in ${disk_list[@]}; do
-	  if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-            echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-	    exit
-	  elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
-	    BRgrub=(`echo $c | awk '{ print $1 }'`)
-            echo -e "${BR_GREEN}You selected $BRgrub to install Grub${BR_NORM}"
-	    break
-	  else
-            echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-	  fi
-	done
+        if [ -z "$BRefisp" ]; then 
+          echo -e "\n${BR_CYAN}Select target disk for Grub:${BR_NORM}"
+	  select c in ${disk_list[@]}; do
+	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+              echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+	      exit
+	    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
+	      BRgrub=(`echo $c | awk '{ print $1 }'`)
+              echo -e "${BR_GREEN}You selected $BRgrub to install Grub${BR_NORM}"
+	      break
+	    else
+              echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+	    fi
+	  done
+	else
+	  BRgrub="/boot/efi"
+	  echo -e "${BR_GREEN}Grub will install in /boot/efi ($BRefisp) partition${BR_NORM}"
+	fi
         break
+        
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
         echo -e "\n${BR_CYAN}Select target disk Syslinux:${BR_NORM}"
 	select c in ${disk_list[@]}; do

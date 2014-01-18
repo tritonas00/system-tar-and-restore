@@ -1412,6 +1412,26 @@ if [ "$BRinterface" = "cli" ]; then
 
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
+  if [ -d /sys/firmware/efi/efivars ]; then
+    if [ -z "$BRefisp" ] && [ -n "${list[*]}" ]; then
+      echo -e "\n${BR_CYAN}Select target EFI system partition:${BR_MAGENTA}${BR_NORM}"
+      select c in ${list[@]}; do
+        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+          exit
+        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
+          BRefisp=(`echo $c | awk '{ print $1 }'`)
+          BRcustom="y"
+          BRcustomparts+=(/boot/efi="$BRefisp")
+          echo -e "${BR_GREEN}You selected $BRefisp as your EFI system partition${BR_NORM}"
+          break
+        else
+          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+        fi
+      done
+    fi
+  fi
+
   if [ -z "$BRhome" ] && [ -n "${list[*]}" ]; then
     echo -e "\n${BR_CYAN}Select target home partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
@@ -1435,46 +1455,27 @@ if [ "$BRinterface" = "cli" ]; then
 
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
-  if [ -d /sys/firmware/efi/efivars ]; then
-    if [ -z "$BRefisp" ] && [ -n "${list[*]}" ]; then
-      echo -e "\n${BR_CYAN}Select target efi system partition:${BR_MAGENTA}${BR_NORM}"
-      select c in ${list[@]}; do
-        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-          exit
-        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-          BRefisp=(`echo $c | awk '{ print $1 }'`)
-          BRcustom="y"
-          BRcustomparts+=(/boot/efi="$BRefisp")
-          echo -e "${BR_GREEN}You selected $BRefisp as your efi system partition${BR_NORM}"
-          break
-        else
-          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-        fi
-      done
-    fi
-  else
-    if [ -z "$BRboot" ] && [ -n "${list[*]}" ]; then
-      echo -e "\n${BR_CYAN}Select target boot partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
-      select c in ${list[@]}; do
-        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-          exit
-        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-          BRboot=(`echo $c | awk '{ print $1 }'`)
-          BRcustom="y"
-          BRcustomparts+=(/boot="$BRboot")
-          echo -e "${BR_GREEN}You selected $BRboot as your boot partition${BR_NORM}"
-          break
-        elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
-          echo -e "${BR_GREEN}No boot partition${BR_NORM}"
-          break
-        else
-          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-        fi
-      done
-    fi
+  if [ -z "$BRboot" ] && [ -n "${list[*]}" ]; then
+    echo -e "\n${BR_CYAN}Select target boot partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
+    select c in ${list[@]}; do
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+        exit
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
+        BRboot=(`echo $c | awk '{ print $1 }'`)
+        BRcustom="y"
+        BRcustomparts+=(/boot="$BRboot")
+        echo -e "${BR_GREEN}You selected $BRboot as your boot partition${BR_NORM}"
+        break
+      elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
+        echo -e "${BR_GREEN}No boot partition${BR_NORM}"
+        break
+      else
+        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+      fi
+    done
   fi
+
     
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
@@ -1862,22 +1863,17 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   update_list
 
-    update_options() {
-      if [ -d /sys/firmware/efi/efivars ]; then
-        options=("Root partition" "$BRroot" \
-        "(Optional) Home partition" "$BRhome" \
-        "EFI system partition" "$BRefisp" \
-        "(Optional) Swap partition" "$BRswap" \
-        "(Optional) Custom partitions" "$BRempty" \
-        "Done with partitions" "$BRempty")
-      else
-        options=("Root partition" "$BRroot" \
-        "(Optional) Home partition" "$BRhome" \
-        "(Optional) Boot partition" "$BRboot" \
-        "(Optional) Swap partition" "$BRswap" \
-        "(Optional) Custom partitions" "$BRempty" \
-        "Done with partitions" "$BRempty")
-      fi
+  update_options() {
+    options=("Root partition" "$BRroot" \
+    "(Optional) Home partition" "$BRhome" \
+    "(Optional) Boot partition" "$BRboot" \
+    "(Optional) Swap partition" "$BRswap" \
+    "(Optional) Custom partitions" "$BRempty" \
+    "Done with partitions" "$BRempty")
+
+    if [ -d /sys/firmware/efi/efivars ]; then
+      options+=("EFI system partition" "$BRefisp")
+    fi
   }
 
   update_options
@@ -1897,11 +1893,7 @@ elif [ "$BRinterface" = "dialog" ]; then
             update_list
             update_options;;
         "${options[4]}" )
-            if [ -d /sys/firmware/efi/efivars ]; then
-              if [ "$rtn" = "3" ]; then unset BRefisp; elif [ -z "${list[*]}" ]; then no_parts; else BRefisp=$(part_sel_dialog efi); if [ "$?" = "1" ]; then BRefisp="$BRefispold"; fi; fi
-            else
               if [ "$rtn" = "3" ]; then unset BRboot; elif [ -z "${list[*]}" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
-            fi
             update_list
             update_options;;
         "${options[6]}" )
@@ -1913,8 +1905,12 @@ elif [ "$BRinterface" = "dialog" ]; then
             update_options;;
         "${options[10]}" )
             if [ ! "$rtn" = "3" ]; then break; fi
-        ;;
-      esac
+            ;;
+       "${options[12]}" )
+            if [ "$rtn" = "3" ]; then unset BRefisp; elif [ -z "${list[*]}" ]; then no_parts; else BRefisp=$(part_sel_dialog "EFI system"); if [ "$?" = "1" ]; then BRefisp="$BRefispold"; fi; fi
+            update_list
+            update_options;;
+        esac
     done
 
     if [ -z "$BRroot" ]; then

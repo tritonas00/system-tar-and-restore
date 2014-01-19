@@ -334,6 +334,16 @@ check_input() {
       echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found"
       BRSTOP="y"
     fi
+    if [ -d /sys/firmware/efi/efivars ]; then
+      if [ -z $(which mkfs.vfat 2> /dev/null) ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Package dosfstools is not installed. Install the package and re-run the script"
+        BRSTOP="y"
+      fi
+      if [ -z $(which efibootmgr 2> /dev/null) ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Package efibootmgr is not installed. Install the package and re-run the script"
+        BRSTOP="y"
+      fi
+    fi
   fi
 
   if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ] || [ -n "$BRswap" ] || [ -n "$BRhome" ] || [ -n "$BRboot" ] || [ -n "$BRother" ] || [ -n "$BRrootsubvol" ] || [ -n "$BRsubvolother" ] && [ -z "$BRroot" ]; then
@@ -489,6 +499,16 @@ check_input() {
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
+    BRSTOP="y"
+  fi
+
+  if [ ! -d /sys/firmware/efi/efivars ] && [ -n "$BRefisp" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Non-UEFI environment detected (/sys/firmware/efi/efivars is missing)"
+    BRSTOP="y"
+  fi
+
+  if [ -d /sys/firmware/efi/efivars ] && [ -n "$BRroot" ] && [ -z "$BRefisp" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a target EFI system partition"
     BRSTOP="y"
   fi
 
@@ -733,22 +753,6 @@ build_initramfs() {
   done
 }
 
-set_efi_bootloader_arch() {
-  if [ "$BRmode" = "Restore" ]; then
-    if [ "$(echo ${target_arch#*.})" == "x86_64" ]; then
-      BRgrubefiarch="x86_64-efi"
-    elif [ "$(echo ${target_arch#*.})" == "i686" ]; then
-      BRgrubefiarch="i386-efi"
-    fi
-  elif [ "$BRmode" = "Transfer" ]; then
-    if [ "$(uname -m)" == "x86_64" ]; then
-      BRgrubefiarch="x86_64-efi"
-    elif [ "$(uname -m)" == "i686" ]; then
-      BRgrubefiarch="i386-efi"
-    fi
-  fi
-}
-  
 install_bootloader() {
   if [ -n "$BRgrub" ]; then
     echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
@@ -848,6 +852,32 @@ set_bootloader() {
       if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system\n"
       clean_unmount_in
+    fi
+
+    if [ -d /sys/firmware/efi/efivars ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+      if  ! grep -Fq "bin/efibootmgr" /tmp/filelist 2>/dev/null; then
+        if [ -z "$BRnocolor" ]; then color_variables; fi
+        echo -e "\n[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system\n"
+        clean_unmount_in
+      fi
+      if  ! grep -Fq "bin/mkfs.vfat" /tmp/filelist 2>/dev/null; then
+        if [ -z "$BRnocolor" ]; then color_variables; fi
+        echo -e "\n[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system\n"
+        clean_unmount_in
+      fi
+      if [ "$(echo ${target_arch#*.})" == "x86_64" ]; then
+        BRgrubefiarch="x86_64-efi"
+      elif [ "$(echo ${target_arch#*.})" == "i686" ]; then
+        BRgrubefiarch="i386-efi"
+      fi
+    fi
+  fi
+
+  if [ "$BRmode" = "Transfer" ] && [ -d /sys/firmware/efi/efivars  ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+    if [ "$(uname -m)" == "x86_64" ]; then
+      BRgrubefiarch="x86_64-efi"
+    elif [ "$(uname -m)" == "i686" ]; then
+       BRgrubefiarch="i386-efi"
     fi
   fi
 }
@@ -970,6 +1000,7 @@ clean_unmount_out() {
 }
 
 unset_vars() {
+  if [ "$BRefisp" = "-1" ]; then unset BRefisp; fi
   if [ "$BRswap" = "-1" ]; then unset BRswap; fi
   if [ "$BRboot" = "-1" ]; then unset BRboot; fi
   if [ "$BRhome" = "-1" ]; then unset BRhome; fi
@@ -1015,7 +1046,7 @@ report_vars_log() {
   echo "Archiver: $BRarchiver"
 }
 
-BRargs=`getopt -o "i:r:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:" -l "interface:,root:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1033,6 +1064,10 @@ while true; do
     ;;
     -r|--root)
       BRroot=$2
+      shift 2
+    ;;
+    -e|--esp)
+      BRefisp=$2
       shift 2
     ;;
     -s|--swap)
@@ -1152,6 +1187,7 @@ ${BR_BOLD}Transfer Mode:${BR_NORM}
 
 ${BR_BOLD}Partitions:${BR_NORM}
   -r,  --root               target root partition
+  -e,  --esp                target EFI system partition
   -h,  --home               target home partition
   -b,  --boot               target boot partition
   -s,  --swap               swap partition
@@ -1194,6 +1230,11 @@ BR_WRK="[${BR_CYAN}WORKING${BR_NORM}] "
 DEFAULTIFS=$IFS
 IFS=$'\n'
 
+if [ -n "$BRefisp" ]; then
+  BRcustom="y"
+  BRcustomparts+=(/boot/efi="$BRefisp")
+fi
+
 if [ -n "$BRhome" ]; then
   BRcustom="y"
   BRcustomparts+=(/home="$BRhome")
@@ -1209,6 +1250,11 @@ check_input
 if [ -n "$BRroot" ]; then
   if [ -z "$BRrootsubvolname" ]; then
     BRrootsubvol="n"
+  fi
+
+  if [ -z "$BRefisp" ]; then
+    BRefisp="-1"
+    BReficheck="No"
   fi
 
   if [ -z "$BRother" ]; then
@@ -1719,7 +1765,6 @@ if [ "$BRinterface" = "cli" ]; then
 
   detect_distro
   set_bootloader
-  if [ -n "$BRefisp" ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then set_efi_bootloader_arch; fi
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
 
   echo -e "\n${BR_SEP}SUMMARY"
@@ -2156,7 +2201,6 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   detect_distro
   set_bootloader
-  if [ -n "$BRefisp" ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then set_efi_bootloader_arch; fi
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
 
   if [ -z "$BRcontinue" ]; then

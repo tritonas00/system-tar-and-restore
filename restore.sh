@@ -1,6 +1,8 @@
 #!/bin/bash
 
 BR_VERSION="System Tar & Restore 3.9 (NOT FULLY TESTED)"
+
+BR_EFI_DETECT_DIR="/sys/firmware/efi/efivars"
 BR_SEP="::"
 
 color_variables() {
@@ -334,7 +336,7 @@ check_input() {
       echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found"
       BRSTOP="y"
     fi
-    if [ -d /sys/firmware/efi/efivars ]; then
+    if [ -d "$BR_EFI_DETECT_DIR" ]; then
       if [ -z $(which mkfs.vfat 2> /dev/null) ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Package dosfstools is not installed. Install the package and re-run the script"
         BRSTOP="y"
@@ -502,12 +504,12 @@ check_input() {
     BRSTOP="y"
   fi
 
-  if [ ! -d /sys/firmware/efi/efivars ] && [ -n "$BRefisp" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Non-UEFI environment detected (/sys/firmware/efi/efivars is missing)"
+  if [ ! -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRefisp" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Non-UEFI environment detected ("$BR_EFI_DETECT_DIR" is missing)"
     BRSTOP="y"
   fi
 
-  if [ -d /sys/firmware/efi/efivars ] && [ -n "$BRroot" ] && [ -z "$BRefisp" ]; then
+  if [ -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRroot" ] && [ -z "$BRefisp" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a target EFI system partition"
     BRSTOP="y"
   fi
@@ -854,7 +856,7 @@ set_bootloader() {
       clean_unmount_in
     fi
 
-    if [ -d /sys/firmware/efi/efivars ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+    if [ -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
       if  ! grep -Fq "bin/efibootmgr" /tmp/filelist 2>/dev/null; then
         if [ -z "$BRnocolor" ]; then color_variables; fi
         echo -e "\n[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system\n"
@@ -873,7 +875,7 @@ set_bootloader() {
     fi
   fi
 
-  if [ "$BRmode" = "Transfer" ] && [ -d /sys/firmware/efi/efivars  ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+  if [ "$BRmode" = "Transfer" ] && [ -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
     if [ "$(uname -m)" == "x86_64" ]; then
       BRgrubefiarch="x86_64-efi"
     elif [ "$(uname -m)" == "i686" ]; then
@@ -1458,7 +1460,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
-  if [ -d /sys/firmware/efi/efivars ]; then
+  if [ -d "$BR_EFI_DETECT_DIR" ]; then
     if [ -z "$BRefisp" ] && [ -n "${list[*]}" ]; then
       echo -e "\n${BR_CYAN}Select target EFI system partition:${BR_MAGENTA}${BR_NORM}"
       select c in ${list[@]}; do
@@ -1915,7 +1917,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     "(Optional) Custom partitions" "$BRempty" \
     "Done with partitions" "$BRempty")
 
-    if [ -d /sys/firmware/efi/efivars ]; then
+    if [ -d "$BR_EFI_DETECT_DIR" ]; then
       options+=("EFI system partition" "$BRefisp")
     fi
   }
@@ -1960,14 +1962,14 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -z "$BRroot" ]; then
       dialog --title "Error" --msgbox "You must specify a target root partition." 5 45
     fi
-    if [ ! -d /sys/firmware/efi/efivars ]; then
+    if [ ! -d "$BR_EFI_DETECT_DIR" ]; then
       BReficheck="no"
     fi
-    if [ -d /sys/firmware/efi/efivars ] &&  [ -z "$BRefisp" ]; then
+    if [ -d "$BR_EFI_DETECT_DIR" ] &&  [ -z "$BRefisp" ]; then
       dialog --title "Error" --msgbox "You must specify a target EFI system partition." 5 51
       unset BReficheck
     fi
-    if [ -d /sys/firmware/efi/efivars ] && [ -n "$BRefisp" ]; then
+    if [ -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRefisp" ]; then
       BReficheck="yes"
     fi
   done

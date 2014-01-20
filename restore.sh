@@ -2,7 +2,7 @@
 
 BR_VERSION="System Tar & Restore 3.9 (NOT FULLY TESTED)"
 
-BR_EFI_DETECT_DIR="/sys/firmware/efi/efivars"
+BR_EFI_DETECT_DIR="/sys/firmware/"
 BR_SEP="::"
 
 color_variables() {
@@ -337,13 +337,15 @@ check_input() {
       BRSTOP="y"
     fi
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
-      if [ -z $(which mkfs.vfat 2> /dev/null) ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Package dosfstools is not installed. Install the package and re-run the script"
-        BRSTOP="y"
-      fi
-      if [ -z $(which efibootmgr 2> /dev/null) ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Package efibootmgr is not installed. Install the package and re-run the script"
-        BRSTOP="y"
+      if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ]; then
+        if [ -z $(which mkfs.vfat 2> /dev/null) ]; then
+          echo -e "[${BR_RED}ERROR${BR_NORM}] Package dosfstools is not installed. Install the package and re-run the script"
+          BRSTOP="y"
+        fi
+        if [ -z $(which efibootmgr 2> /dev/null) ]; then
+          echo -e "[${BR_RED}ERROR${BR_NORM}] Package efibootmgr is not installed. Install the package and re-run the script"
+          BRSTOP="y"
+        fi
       fi
     fi
   fi

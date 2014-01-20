@@ -856,30 +856,34 @@ set_bootloader() {
       clean_unmount_in
     fi
 
-    if [ -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-      if  ! grep -Fq "bin/efibootmgr" /tmp/filelist 2>/dev/null; then
-        if [ -z "$BRnocolor" ]; then color_variables; fi
-        echo -e "\n[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system\n"
-        clean_unmount_in
+    if [ -d "$BR_EFI_DETECT_DIR" ]; then
+      if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+        if  ! grep -Fq "bin/efibootmgr" /tmp/filelist 2>/dev/null; then
+          if [ -z "$BRnocolor" ]; then color_variables; fi
+          echo -e "\n[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system\n"
+          clean_unmount_in
+        fi
+        if  ! grep -Fq "bin/mkfs.vfat" /tmp/filelist 2>/dev/null; then
+          if [ -z "$BRnocolor" ]; then color_variables; fi
+          echo -e "\n[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system\n"
+          clean_unmount_in
+        fi
+        if [ "$(echo ${target_arch#*.})" == "x86_64" ]; then
+          BRgrubefiarch="x86_64-efi"
+        elif [ "$(echo ${target_arch#*.})" == "i686" ]; then
+          BRgrubefiarch="i386-efi"
+        fi
       fi
-      if  ! grep -Fq "bin/mkfs.vfat" /tmp/filelist 2>/dev/null; then
-        if [ -z "$BRnocolor" ]; then color_variables; fi
-        echo -e "\n[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system\n"
-        clean_unmount_in
-      fi
-      if [ "$(echo ${target_arch#*.})" == "x86_64" ]; then
-        BRgrubefiarch="x86_64-efi"
-      elif [ "$(echo ${target_arch#*.})" == "i686" ]; then
-        BRgrubefiarch="i386-efi"
-      fi
-    fi
+    fi  
   fi
 
-  if [ "$BRmode" = "Transfer" ] && [ -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-    if [ "$(uname -m)" == "x86_64" ]; then
-      BRgrubefiarch="x86_64-efi"
-    elif [ "$(uname -m)" == "i686" ]; then
-       BRgrubefiarch="i386-efi"
+  if [ "$BRmode" = "Transfer" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+    if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+      if [ "$(uname -m)" == "x86_64" ]; then
+        BRgrubefiarch="x86_64-efi"
+      elif [ "$(uname -m)" == "i686" ]; then
+        BRgrubefiarch="i386-efi"
+      fi
     fi
   fi
 }

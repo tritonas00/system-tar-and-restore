@@ -1922,12 +1922,12 @@ elif [ "$BRinterface" = "dialog" ]; then
     "(Optional) Home partition" "$BRhome" \
     "(Optional) Boot partition" "$BRboot" \
     "(Optional) Swap partition" "$BRswap" \
-    "(Optional) Custom partitions" "$BRempty" \
-    "Done with partitions" "$BRempty")
+    "(Optional) Custom partitions" "$BRempty")
 
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
       options+=("EFI system partition" "$BRefisp")
     fi
+    options+=("Done with partitions" "$BRempty")
   }
 
   update_options
@@ -1938,32 +1938,32 @@ elif [ "$BRinterface" = "dialog" ]; then
       if [ "$rtn" = "1" ]; then exit; fi
       BRrootold="$BRroot" BRhomeold="$BRhome" BRbootold="$BRboot" BRefispold="$BRefisp" BRswapold="$BRswap"
       case "$opt" in
-        "${options[0]}" )
+        "Root partition" )
             if [ "$rtn" = "3" ]; then unset BRroot; elif [ -z "${list[*]}" ]; then no_parts; else BRroot=$(part_sel_dialog root); if [ "$?" = "1" ]; then BRroot="$BRrootold"; fi; fi
             update_list
             update_options;;
-        "${options[2]}" )
+        "(Optional) Home partition" )
             if [ "$rtn" = "3" ]; then unset BRhome; elif [ -z "${list[*]}" ]; then no_parts; else BRhome=$(part_sel_dialog home); if [ "$?" = "1" ]; then BRhome="$BRhomeold"; fi; fi
             update_list
             update_options;;
-        "${options[4]}" )
+        "(Optional) Boot partition" )
               if [ "$rtn" = "3" ]; then unset BRboot; elif [ -z "${list[*]}" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
             update_list
             update_options;;
-        "${options[6]}" )
+        "(Optional) Swap partition" )
             if [ "$rtn" = "3" ]; then unset BRswap; elif [ -z "${list[*]}" ]; then no_parts; else BRswap=$(part_sel_dialog swap); if [ "$?" = "1" ]; then BRswap="$BRswapold"; fi; fi
             update_list
             update_options;;
-        "${options[8]}" )
+        "(Optional) Custom partitions" )
             if [ "$rtn" = "3" ]; then unset BRcustompartslist BRcustomold; elif [ -z "${list[*]}" ]; then no_parts; else set_custom; fi
             update_options;;
-        "${options[10]}" )
-            if [ ! "$rtn" = "3" ]; then break; fi
-            ;;
-       "${options[12]}" )
-            if [ "$rtn" = "3" ]; then unset BRefisp; elif [ -z "${list[*]}" ]; then no_parts; else BRefisp=$(part_sel_dialog "EFI system"); if [ "$?" = "1" ]; then BRefisp="$BRefispold"; fi; fi
+        "EFI system partition" )
+            if [ "$rtn" = "3" ]; then unset BRefisp; elif [ -z "${list[*]}" ]; then no_parts; else BRefisp=$(part_sel_dialog "EFI"); if [ "$?" = "1" ]; then BRefisp="$BRefispold"; fi; fi
             update_list
             update_options;;
+        "Done with partitions" )
+            if [ ! "$rtn" = "3" ]; then break; fi
+            ;;
         esac
     done
 

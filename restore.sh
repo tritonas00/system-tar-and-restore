@@ -1486,6 +1486,8 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   fi
 
+  list=(`echo "${partition_list[*]}" | hide_used_parts`)
+
   if [ -z "$BRhome" ] && [ -n "${list[*]}" ]; then
     echo -e "\n${BR_CYAN}Select target home partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do

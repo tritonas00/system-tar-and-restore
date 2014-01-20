@@ -1924,7 +1924,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       options+=("EFI system partition" "$BRefisp")
     fi
 
-    options+=( "(Optional) Home partition" "$BRhome" \
+    options+=("(Optional) Home partition" "$BRhome" \
     "(Optional) Boot partition" "$BRboot" \
     "(Optional) Swap partition" "$BRswap" \
     "(Optional) Custom partitions" "$BRempty" \

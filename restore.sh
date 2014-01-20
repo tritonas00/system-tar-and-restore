@@ -1918,16 +1918,17 @@ elif [ "$BRinterface" = "dialog" ]; then
   update_list
 
   update_options() {
-    options=("Root partition" "$BRroot" \
-    "(Optional) Home partition" "$BRhome" \
-    "(Optional) Boot partition" "$BRboot" \
-    "(Optional) Swap partition" "$BRswap" \
-    "(Optional) Custom partitions" "$BRempty")
+    options=("Root partition" "$BRroot")
 
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
       options+=("EFI system partition" "$BRefisp")
     fi
-    options+=("Done with partitions" "$BRempty")
+
+    options+=( "(Optional) Home partition" "$BRhome" \
+    "(Optional) Boot partition" "$BRboot" \
+    "(Optional) Swap partition" "$BRswap" \
+    "(Optional) Custom partitions" "$BRempty" \
+    "Done with partitions" "$BRempty")
   }
 
   update_options

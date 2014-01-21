@@ -475,7 +475,7 @@ check_input() {
   fi
 
   if [ -n "$BRgrub" ] && [ "$BRgrub" = "/boot/efi" ] && [ ! -d "$BR_EFI_DETECT_DIR" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Non-UEFI environment detected ("$BR_EFI_DETECT_DIR" is missing)"
     BRSTOP="y"
   fi
 

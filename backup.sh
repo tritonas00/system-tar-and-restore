@@ -72,9 +72,13 @@ show_summary() {
   fi
 
   echo -e "\nFOUND BOOTLOADERS:"
-  if [ -d /usr/lib/grub/i386-pc ]; then echo -e "Grub"; fi
-  if which extlinux &>/dev/null; then echo -e "Syslinux"; fi
-  if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
+  if [ -d /usr/lib/grub ]; then echo "Grub"; fi
+  if which extlinux &>/dev/null; then BRextlinux="y"; fi
+  if which syslinux &>/dev/null; then BRsyslinux="y"; fi
+  if [ -n "$BRextlinux" ] && [ -n "$BRsyslinux" ]; then
+    echo "Syslinux"
+  fi
+  if [ -z "$BRextlinux" ] || [ -z "$BRsyslinux" ] && [ ! -d /usr/lib/grub ]; then
     echo "None or not supported"
   fi
   echo -e "${BR_NORM}"
@@ -163,9 +167,14 @@ report_vars_log() {
   echo "Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"
   echo "Home: $BRhome"
   echo "Hidden: $BRhidden"
-  if [ -d /usr/lib/grub/i386-pc ]; then echo -e "Bootloader: Grub"; fi
-  if which extlinux &>/dev/null; then echo -e "Bootloader: Syslinux"; fi
-  if [ ! -d /usr/lib/grub/i386-pc ] && [ -z $(which extlinux 2> /dev/null) ];then
+  if [ -d /usr/lib/grub ]; then echo "Bootloader: Grub"; fi
+  if which extlinux &>/dev/null; then BRextlinux="y"; fi
+  if which syslinux &>/dev/null; then BRsyslinux="y"; fi 
+  if [ -n "$BRextlinux" ] && [ -n "$BRsyslinux" ]; then
+    echo "Bootloader: Syslinux"
+  fi
+
+  if [ -z "$BRextlinux" ] || [ -z "$BRsyslinux" ] && [ ! -d /usr/lib/grub ]; then
     echo "Bootloader: None or not supported"
   fi
 }

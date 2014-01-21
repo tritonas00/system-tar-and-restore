@@ -329,12 +329,18 @@ check_input() {
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package rsync is not installed. Install the package and re-run the script"
       BRSTOP="y"
     fi
-    if [ -n "$BRgrub" ] && [ ! -d /usr/lib/grub/i386-pc ]; then
+    if [ -n "$BRgrub" ] && [ ! -d /usr/lib/grub ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found"
       BRSTOP="y"
-    elif [ -n "$BRsyslinux" ] && [ -z $(which extlinux 2> /dev/null) ];then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found"
-      BRSTOP="y"
+    elif [ -n "$BRsyslinux" ]; then 
+      if [ -z $(which extlinux 2> /dev/null) ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Extlinux not found"
+        BRSTOP="y"
+      fi
+      if [ -z $(which syslinux 2> /dev/null) ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found"
+        BRSTOP="y"
+      fi
     fi
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
       if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ]; then
@@ -875,14 +881,21 @@ set_bootloader() {
   fi
 
   if [ "$BRmode" = "Restore" ]; then
-    if [ -n "$BRgrub" ] && ! grep -Fq "usr/lib/grub/i386-pc" /tmp/filelist 2>/dev/null; then
+    if [ -n "$BRgrub" ] && ! grep -Fq "usr/lib/grub" /tmp/filelist 2>/dev/null; then
       if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
       BRabort="y"
-    elif [ -n "$BRsyslinux" ] && ! grep -Fq "bin/extlinux" /tmp/filelist 2>/dev/null; then
-      if [ -z "$BRnocolor" ]; then color_variables; fi
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system"
-      BRabort="y"
+    elif [ -n "$BRsyslinux" ]; then
+      if ! grep -Fq "bin/extlinux" /tmp/filelist 2>/dev/null; then
+        if [ -z "$BRnocolor" ]; then color_variables; fi
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Extlinux not found in the archived system"
+        BRabort="y"
+      fi
+      if ! grep -Fq "bin/syslinux" /tmp/filelist 2>/dev/null; then
+        if [ -z "$BRnocolor" ]; then color_variables; fi
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system"
+        BRabort="y"
+      fi  
     fi
 
     if [ -d "$BR_EFI_DETECT_DIR" ]; then

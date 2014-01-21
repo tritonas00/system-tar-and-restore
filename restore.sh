@@ -2,7 +2,7 @@
 
 BR_VERSION="System Tar & Restore 3.9 (NOT FULLY TESTED)"
 
-BR_EFI_DETECT_DIR="/sys/firmware/efi"
+BR_EFI_DETECT_DIR="/sys/firmware/"
 BR_SEP="::"
 
 color_variables() {
@@ -868,7 +868,7 @@ set_bootloader() {
     elif [ "$BRmode" = "Restore" ]; then
       if [ "$BRpartitiontable" = "gpt" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist 2>/dev/null; then
         if [ -z "$BRnocolor" ]; then color_variables; fi
-        echo -e "\n[${BR_RED}ERROR${BR_NORM}] sgdisk not found in the archived system\n"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] sgdisk not found in the archived system"
         BRabort="y"
       fi
     fi
@@ -877,11 +877,11 @@ set_bootloader() {
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRgrub" ] && ! grep -Fq "usr/lib/grub/i386-pc" /tmp/filelist 2>/dev/null; then
       if [ -z "$BRnocolor" ]; then color_variables; fi
-      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system\n"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
       BRabort="y"
     elif [ -n "$BRsyslinux" ] && ! grep -Fq "bin/extlinux" /tmp/filelist 2>/dev/null; then
       if [ -z "$BRnocolor" ]; then color_variables; fi
-      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system\n"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system"
       BRabort="y"
     fi
 
@@ -889,12 +889,12 @@ set_bootloader() {
       if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
         if  ! grep -Fq "bin/efibootmgr" /tmp/filelist 2>/dev/null; then
           if [ -z "$BRnocolor" ]; then color_variables; fi
-          echo -e "\n[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system\n"
+          echo -e "[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system"
           BRabort="y"
         fi
         if  ! grep -Fq "bin/mkfs.vfat" /tmp/filelist 2>/dev/null; then
           if [ -z "$BRnocolor" ]; then color_variables; fi
-          echo -e "\n[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system\n"
+          echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
           BRabort="y"
         fi
         if [ "$(echo ${target_arch#*.})" == "x86_64" ]; then
@@ -1108,6 +1108,7 @@ while true; do
     ;;
     -e|--esp)
       BRefisp=$2
+      BReficheck="yes"
       shift 2
     ;;
     -s|--swap)
@@ -1294,7 +1295,7 @@ if [ -n "$BRroot" ]; then
 
   if [ -z "$BRefisp" ]; then
     BRefisp="-1"
-    BReficheck="No"
+    BReficheck="no"
   fi
 
   if [ -z "$BRother" ]; then

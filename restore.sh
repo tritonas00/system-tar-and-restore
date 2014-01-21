@@ -861,6 +861,7 @@ set_bootloader() {
     detect_partition_table_syslinux
     if [ "$BRmode" = "Transfer" ]; then
       if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2> /dev/null) ]; then
+        if [ -z "$BRnocolor" ]; then color_variables; fi
         echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
         BRabort="y"
       fi

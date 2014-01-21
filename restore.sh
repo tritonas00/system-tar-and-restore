@@ -623,14 +623,18 @@ show_summary() {
   echo -e "\nBOOTLOADER:"
 
   if [ -n "$BRgrub" ]; then
-    echo "$BRbootloader $BRgrubefiarch"
+    if [ -d "$BR_EFI_DETECT_DIR" ]; then
+      echo "$BRbootloader ($BRgrubefiarch)"
+    else
+      echo "$BRbootloader (i386-pc)"
+    fi
     if [[ "$BRgrub" == *md* ]]; then
       echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
     else
       echo "Location: $BRgrub"
     fi
   elif [ -n "$BRsyslinux" ]; then
-    echo "$BRbootloader"
+    echo "$BRbootloader ($BRpartitiontable)"
     if [[ "$BRsyslinux" == *md* ]]; then
       echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
     else
@@ -1066,22 +1070,25 @@ unset_vars() {
 }
 
 report_vars_log() {
-  echo "Root partition: $BRroot $BRfsystem $BR_MOUNT_OPTS"
-  echo "Swap partition: $BRswap"
-  echo "Partitions Array: ${BRsorted[@]}"
+  echo "Root Partition: $BRroot $BRfsystem $BR_MOUNT_OPTS"
+  echo "Swap Partition: $BRswap"
+  echo "Other Partitions Array: ${BRsorted[@]}"
   echo "Root Subvolume: $BRrootsubvolname"
   echo "Subvolumes Array: ${BRsubvols[@]}"
   if [ -n "$BRgrub" ]; then
     if [[ "$BRgrub" == *md* ]]; then
       echo "Bootloader: $BRbootloader $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
     else
-      echo "Bootloader: $BRbootloader $BRgrubefiarch $BRgrub"
+      if [ ! -d "$BR_EFI_DETECT_DIR" ]; then
+        BRgrubios="i386-pc"
+      fi
+      echo "Bootloader: $BRbootloader $BRgrubefiarch $BRgrubios $BRgrub"
     fi
   elif [ -n "$BRsyslinux" ]; then
     if [[ "$BRsyslinux" == *md* ]]; then
-      echo "Bootloader: $BRbootloader $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+      echo "Bootloader: $BRbootloader $BRpartitiontable $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
     else
-      echo "Bootloader: $BRbootloader $BRsyslinux"
+      echo "Bootloader: $BRbootloader $BRpartitiontable $BRsyslinux"
     fi
   else
     echo "Bootloader: None"

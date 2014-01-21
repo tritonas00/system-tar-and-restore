@@ -2,7 +2,7 @@
 
 BR_VERSION="System Tar & Restore 3.9 (NOT FULLY TESTED)"
 
-BR_EFI_DETECT_DIR="/sys/firmware/"
+BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
 
 color_variables() {

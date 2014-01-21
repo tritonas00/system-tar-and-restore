@@ -474,6 +474,11 @@ check_input() {
     fi
   fi
 
+  if [ -n "$BRgrub" ] && [ "$BRgrub" = "/boot/efi" ] && [ ! -d "$BR_EFI_DETECT_DIR" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
+    BRSTOP="y"
+  fi
+
   if [ -n "$BRsyslinux" ]; then
     for i in $(check_disks); do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
     if [ ! "$BRsyslinuxcheck" = "true" ]; then

@@ -480,7 +480,7 @@ check_input() {
   fi
 
   if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "/boot/efi" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] In UEFI enviroment use /boot/efi for grub location"
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] In UEFI enviroment use /boot/efi for grub location"
     BRSTOP="y"
   fi
 

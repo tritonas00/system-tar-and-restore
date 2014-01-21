@@ -474,16 +474,6 @@ check_input() {
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for syslinux: $BRsyslinux"
       BRSTOP="y"
     fi
-    if [[ "$BRsyslinux" == *md* ]]; then
-      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z][0-9]'` ; do
-        BRdev=`echo /dev/$f | cut -c -8`
-      done
-    fi
-    detect_partition_table_syslinux
-    if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2> /dev/null) ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
-      BRSTOP="y"
-    fi
   fi
 
   if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
@@ -847,15 +837,51 @@ set_bootloader() {
     BRbootloader="Syslinux"
   fi
 
+  if [ -n "$BRsyslinux" ]; then
+    if [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Debian" ]; then
+      if [[ "$BRsyslinux" == *md* ]]; then
+        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z][0-9]'` ; do
+          BRdev=`echo /dev/$f | cut -c -8`
+        done
+      fi
+      detect_partition_table_syslinux
+      if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2> /dev/null) ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
+        BRabort="y"
+      fi
+    fi
+  fi
+
+  if [ -n "$BRsyslinux" ] && [ "$BRdistro" = "Arch" ]; then
+    if [[ "$BRsyslinux" == *md* ]]; then
+      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z][0-9]'` ; do
+        BRdev=`echo /dev/$f | cut -c -8`
+      done
+    fi
+    detect_partition_table_syslinux
+    if [ "$BRmode" = "Transfer" ]; then
+      if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2> /dev/null) ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
+        BRabort="y"
+      fi
+    elif [ "$BRmode" = "Restore" ]; then
+      if [ "$BRpartitiontable" = "gpt" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist 2>/dev/null; then
+        if [ -z "$BRnocolor" ]; then color_variables; fi
+        echo -e "\n[${BR_RED}ERROR${BR_NORM}] sgdisk not found in the archived system\n"
+        BRabort="y"
+      fi
+    fi
+  fi
+
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRgrub" ] && ! grep -Fq "usr/lib/grub/i386-pc" /tmp/filelist 2>/dev/null; then
       if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system\n"
-      clean_unmount_in
+      BRabort="y"
     elif [ -n "$BRsyslinux" ] && ! grep -Fq "bin/extlinux" /tmp/filelist 2>/dev/null; then
       if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "\n[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system\n"
-      clean_unmount_in
+      BRabort="y"
     fi
 
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
@@ -863,12 +889,12 @@ set_bootloader() {
         if  ! grep -Fq "bin/efibootmgr" /tmp/filelist 2>/dev/null; then
           if [ -z "$BRnocolor" ]; then color_variables; fi
           echo -e "\n[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system\n"
-          clean_unmount_in
+          BRabort="y"
         fi
         if  ! grep -Fq "bin/mkfs.vfat" /tmp/filelist 2>/dev/null; then
           if [ -z "$BRnocolor" ]; then color_variables; fi
           echo -e "\n[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system\n"
-          clean_unmount_in
+          BRabort="y"
         fi
         if [ "$(echo ${target_arch#*.})" == "x86_64" ]; then
           BRgrubefiarch="x86_64-efi"
@@ -887,6 +913,11 @@ set_bootloader() {
         BRgrubefiarch="i386-efi"
       fi
     fi
+  fi
+
+  if [ -n "$BRabort" ]; then
+    if [ -z "$BRnocolor" ]; then color_variables; fi
+    clean_unmount_in
   fi
 }
 

@@ -480,6 +480,10 @@ check_input() {
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for syslinux: $BRsyslinux"
       BRSTOP="y"
     fi
+    if [ -d "$BR_EFI_DETECT_DIR" ]; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] The script does not support Syslinux as UEFI bootloader yet"
+      BRSTOP="y"
+    fi
   fi
 
   if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
@@ -1646,7 +1650,9 @@ if [ "$BRinterface" = "cli" ]; then
 	  echo -e "${BR_GREEN}Grub will install in /boot/efi ($BRefisp) partition${BR_NORM}"
 	fi
         break
-        
+
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] The script does not support Syslinux as UEFI bootloader yet"
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
         echo -e "\n${BR_CYAN}Select target disk Syslinux:${BR_NORM}"
 	select c in ${disk_list[@]}; do
@@ -1658,7 +1664,7 @@ if [ "$BRinterface" = "cli" ]; then
           echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}"
 	  echo -e "\n${BR_CYAN}Enter additional kernel options (leave blank for defaults)${BR_NORM}"
           read -p "Options: " BR_KERNEL_OPTS
-          break
+          break        
 	else
           echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
 	fi
@@ -2106,8 +2112,14 @@ elif [ "$BRinterface" = "dialog" ]; then
     dialog --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
   fi
 
+  if [ -d "$BR_EFI_DETECT_DIR" ]; then
+    bootloader_list=(1 Grub)
+  else
+    bootloader_list=(1 Grub 2 Syslinux)
+  fi
+
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    REPLY=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select bootloader:" 10 0 10 1 Grub 2 Syslinux 2>&1 1>&3)
+    REPLY=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select bootloader:" 10 0 10 "${bootloader_list[@]}" 2>&1 1>&3)
     if [ "$?" = "3" ]; then exit; fi
 
     if [ "$REPLY" = "1" ]; then

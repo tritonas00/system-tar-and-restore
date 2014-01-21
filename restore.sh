@@ -2236,7 +2236,7 @@ elif [ "$BRinterface" = "dialog" ]; then
               if [ -f /tmp/ln_error ]; then
                 rm /tmp/ln_error
                 unset BRfile BRselect
-                dialog --title "Error" --msgbox "Error symlinking archive." 5 26
+                dialog --title "Error" --msgbox "Error symlinking archive." 5 29
               fi
             else
               dialog --title "Error" --msgbox "Invalid file type." 5 22

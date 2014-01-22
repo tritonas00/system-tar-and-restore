@@ -15,7 +15,7 @@ color_variables() {
 }
 
 info_screen() {
-  echo -e "\n${BR_YELLOW}This script will make a tar backup archive of this system."
+  echo -e "\n${BR_YELLOW}This script will make a tar backup image of this system."
   echo -e "\n==>Make sure you have enough free space."
   echo -e "\n==>Make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\nGRUB PACKAGES:"

@@ -771,6 +771,15 @@ build_initramfs() {
   done
 }
 
+cp_grub_efi() {
+  mkdir /mnt/target/boot/efi/EFI/boot
+  if [ -f /mnt/target/boot/efi/EFI/grub/grubx64.efi ]; then
+    cp /mnt/target/boot/efi/EFI/grub/grubx64.efi /mnt/target/boot/efi/EFI/boot/bootx64.efi
+  elif [ -f /mnt/target/boot/efi/EFI/grub/grubia32.efi ]; then
+    cp /mnt/target/boot/efi/EFI/grub/grubia32.efi /mnt/target/boot/efi/EFI/boot/bootx32.efi
+  fi
+}
+
 install_bootloader() {
   if [ -n "$BRgrub" ]; then
     echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
@@ -787,6 +796,7 @@ install_bootloader() {
     elif [ "$BRdistro" = "Arch" ]; then
       if [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then
         chroot /mnt/target grub-install --target=$BRgrubefiarch --efi-directory=$BRgrub --bootloader-id=grub --recheck || touch /tmp/bl_error
+        cp_grub_efi
       else
         chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/bl_error
       fi

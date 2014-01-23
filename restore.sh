@@ -772,11 +772,14 @@ build_initramfs() {
 }
 
 cp_grub_efi() {
-  mkdir /mnt/target/boot/efi/EFI/boot
-  if [ -f /mnt/target/boot/efi/EFI/grub/grubx64.efi ]; then
-    cp /mnt/target/boot/efi/EFI/grub/grubx64.efi /mnt/target/boot/efi/EFI/boot/bootx64.efi
-  elif [ -f /mnt/target/boot/efi/EFI/grub/grubia32.efi ]; then
-    cp /mnt/target/boot/efi/EFI/grub/grubia32.efi /mnt/target/boot/efi/EFI/boot/bootx32.efi
+  if [ "$BRdistro" = "Arch" ]; then
+    BRgrubpathefi="/mnt/target/boot/efi/EFI/grub"
+  fi
+
+  if [ -f "$BRgrubpathefi/grubx64.efi" ]; then
+    cp "$BRgrubpathefi/grubx64.efi" /mnt/target/boot/efi/EFI/boot/bootx64.efi
+  elif [ -f "$BRgrubpathefi/grubia32.efi" ]; then
+    cp "$BRgrubpathefi/grubia32.efi" /mnt/target/boot/efi/EFI/boot/bootx32.efi
   fi
 }
 
@@ -796,7 +799,6 @@ install_bootloader() {
     elif [ "$BRdistro" = "Arch" ]; then
       if [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then
         chroot /mnt/target grub-install --target=$BRgrubefiarch --efi-directory=$BRgrub --bootloader-id=grub --recheck || touch /tmp/bl_error
-        cp_grub_efi
       else
         chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/bl_error
       fi
@@ -805,6 +807,8 @@ install_bootloader() {
     elif [ "$BRdistro" = "Fedora" ]; then
       chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
     fi
+
+    if [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then cp_grub_efi; fi
 
     if [ "$BRdistro" = "Fedora" ]; then
       if [ -f /mnt/target/etc/default/grub ]; then

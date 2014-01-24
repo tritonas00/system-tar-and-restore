@@ -782,8 +782,6 @@ cp_grub_efi() {
     BRgrubpathefi="/mnt/target/boot/efi/EFI/debian"
   fi
 
-
-
   if [ -f "$BRgrubpathefi/grubx64.efi" ]; then
     cp "$BRgrubpathefi/grubx64.efi" /mnt/target/boot/efi/EFI/boot/bootx64.efi
   elif [ -f "$BRgrubpathefi/grubia32.efi" ]; then

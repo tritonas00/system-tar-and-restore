@@ -19,11 +19,11 @@ info_screen() {
   echo -e "\n==>Make sure you have enough free space."
   echo -e "\n==>Make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\nGRUB PACKAGES:"
-  echo "->Arch: grub efibootmgr* dosfstools*"
-  echo "->Debian: grub-pc grub-efi*"
-  echo "->Fedora: grub2"
+  echo "->Arch:   grub    efibootmgr* dosfstools*"
+  echo "->Debian: grub-pc grub-efi*   dosfstools*"
+  echo "->Fedora: grub2   efibootmgr* dosfstools*"
   echo -e "\nSYSLINUX PACKAGES:"
-  echo "->Arch: syslinux"
+  echo "->Arch:   syslinux"
   echo "->Debian: syslinux extlinux"
   echo -e "->Fedora: syslinux syslinux-extlinux"
   echo -e "\n*Required for UEFI systems"
@@ -521,7 +521,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --title "$BR_VERSION" --msgbox "$(info_screen)" 24 70
+    dialog --no-collapse --title "$BR_VERSION" --msgbox "$(info_screen)" 24 70
   fi
 
   if [ -z "$BRFOLDER" ]; then

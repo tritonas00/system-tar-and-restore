@@ -772,6 +772,8 @@ build_initramfs() {
 }
 
 cp_grub_efi() {
+  mkdir /mnt/target/boot/efi/EFI/boot
+
   if [ "$BRdistro" = "Arch" ]; then
     BRgrubpathefi="/mnt/target/boot/efi/EFI/grub"
   fi

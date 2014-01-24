@@ -223,7 +223,7 @@ Recommended subvolume name is: *__active*
 
 - In the target system, if distribution is Fedora and Grub is selected, old */etc/default/grub* is saved as */etc/default/grub-old*.  
 
-- In case of UEFI, you must boot in UEFI enviroment to restore a system. The script will check if /sys/firmware/efi exists and act accordingly.
+- In case of UEFI, you must boot in UEFI enviroment to restore a system. The script will check if */sys/firmware/efi* exists and act accordingly.
    You must create an [ESP (EFI System Partition)](https://wiki.archlinux.org/index.php/Unified_Extensible_Firmware_Interface#EFI_System_Partition).  
 
 

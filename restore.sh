@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9 (NOT FULLY TESTED)"
+BR_VERSION="System Tar & Restore 3.9"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"

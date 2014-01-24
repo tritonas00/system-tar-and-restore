@@ -11,10 +11,6 @@ Supported distributions: Arch, Debian, Fedora
 
 [Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)  
 
-###LIMITATIONS###
-
-- UEFI (not supported - not tested)
-
 ###REQUIREMENTS###
 
 - bsdtar (for libarchive tar)  
@@ -22,6 +18,8 @@ Supported distributions: Arch, Debian, Fedora
 - dialog (for ncurses interface)
 - wget   (for downloading backup archives)
 - gptfdisk/gdisk (for GPT)  
+- efibootmgr (for UEFI)  
+- dosfstools (for UEFI)  
 
 ###BACKUP###
 
@@ -33,6 +31,8 @@ The script will ask for:
 - Interface to use 
 
 - If you want to save the backup in the default folder (/), or enter your desired path
+
+- If you want to specify backup file name (without extension)  
 
 - What to do with /home directory
 
@@ -56,6 +56,9 @@ dont ask, just run
 
 **-d, --directory**  
 backup folder path
+
+**-f, --filename**  
+backup file name (without extension)  
 
 **-h, --exclude-home**  
 exclude /home directory (keep hidden files and folders)  
@@ -98,6 +101,8 @@ The script will ask for:
 
 - Target root partition
 
+- Target EFI system partition (if UEFI environment detected)  
+
 - (Optional) Target home partition   
 
 - (Optional) Target boot partition    
@@ -114,7 +119,8 @@ The script will ask for:
    
 - (Optional) Bootloader and target disk (MBR). Grub2 and Syslinux are both supported.
    If Syslinux is selected, it will ask for additional kernel options which will be written in syslinux.cfg.
-   If a raid array is selected, the script will install the bootloader in all disks that the array contains.  
+   If a raid array is selected, the script will install the bootloader in all disks that the array contains.
+   In case of UEFI, only Grub2 is supported by the script and /boot/efi will be used automatically.
 
 - Select Mode. If **Restore Mode** is selected it will ask the archiver you used to create the backup archive
     and the backup archive itself.  This can be obtained locally (by entering the full path of the file), or remotelly
@@ -146,6 +152,9 @@ transfer /home's hidden files and folders only
 
 **-r, --root**    
 target root partition
+
+**-e, --esp**    
+target EFI system partition
 
 **-b, --boot**     
 target boot partition
@@ -213,6 +222,9 @@ Recommended subvolume name is: *__active*
 - In the target system, in case of Syslinux, old */boot/syslinux/syslinux.cfg* is saved as */boot/syslinux.cfg-old*.  
 
 - In the target system, if distribution is Fedora and Grub is selected, old */etc/default/grub* is saved as */etc/default/grub-old*.  
+
+- In case of UEFI, you must boot in UEFI enviroment to restore a system. The script will check if /sys/firmware/efi exists and act accordingly.
+   You must create an [ESP (EFI System Partition)](https://wiki.archlinux.org/index.php/Unified_Extensible_Firmware_Interface#EFI_System_Partition).  
 
 
 ###EXAMPLES USING ARGUMENTS###
@@ -287,3 +299,10 @@ Recommended subvolume name is: *__active*
 - syslinux  
 
 <code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0 -a bsdtar</code>  
+
+- root = /dev/sda2
+- esp = /dev/sda1
+- local file  
+- grub
+
+<code>./restore.sh -r /dev/sda2  -e /dev/sda1 -g /boot/efi -f /home/john/Downloads/backup.tar.gz -a tar</code>   

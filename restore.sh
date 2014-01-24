@@ -772,11 +772,17 @@ build_initramfs() {
 }
 
 cp_grub_efi() {
-  mkdir /mnt/target/boot/efi/EFI/boot
+  if [ ! -d /mnt/target/boot/efi/EFI/boot ]; then
+    mkdir /mnt/target/boot/efi/EFI/boot
+  fi
 
   if [ "$BRdistro" = "Arch" ]; then
     BRgrubpathefi="/mnt/target/boot/efi/EFI/grub"
+  elif [ "$BRdistro" = "Debian" ]; then
+    BRgrubpathefi="/mnt/target/boot/efi/EFI/debian"
   fi
+
+
 
   if [ -f "$BRgrubpathefi/grubx64.efi" ]; then
     cp "$BRgrubpathefi/grubx64.efi" /mnt/target/boot/efi/EFI/boot/bootx64.efi

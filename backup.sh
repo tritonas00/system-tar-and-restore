@@ -20,7 +20,7 @@ info_screen() {
   echo -e "\n==>Make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\nGRUB PACKAGES:"
   echo "->Arch: grub dosfstools* efibootmgr*"
-  echo "->Debian: grub-pc"
+  echo "->Debian: grub-pc grub-efi*"
   echo "->Fedora: grub2"
   echo -e "\nSYSLINUX PACKAGES:"
   echo "->Arch: syslinux"

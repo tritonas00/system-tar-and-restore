@@ -344,6 +344,10 @@ check_input() {
     fi
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
       if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ]; then
+        if [ -z $(which mkfs.vfat 2> /dev/null) ]; then
+          echo -e "[${BR_RED}ERROR${BR_NORM}] Package dosfstools is not installed. Install the package and re-run the script"
+          BRSTOP="y"
+        fi
         if [ -z $(which efibootmgr 2> /dev/null) ]; then
           echo -e "[${BR_RED}ERROR${BR_NORM}] Package efibootmgr is not installed. Install the package and re-run the script"
           BRSTOP="y"
@@ -939,6 +943,11 @@ set_bootloader() {
         if  ! grep -Fq "bin/efibootmgr" /tmp/filelist 2>/dev/null; then
           if [ -z "$BRnocolor" ]; then color_variables; fi
           echo -e "[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system"
+          BRabort="y"
+        fi
+        if  ! grep -Fq "bin/mkfs.vfat" /tmp/filelist 2>/dev/null; then
+          if [ -z "$BRnocolor" ]; then color_variables; fi
+          echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
           BRabort="y"
         fi
         if [ "$(echo ${target_arch#*.})" == "x86_64" ]; then

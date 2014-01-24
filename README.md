@@ -17,7 +17,7 @@ Supported distributions: Arch, Debian, Fedora
 - rsync (for Transfer Mode)
 - dialog (for ncurses interface)
 - wget   (for downloading backup archives)
-- gptfdisk/gdisk (for GPT)  
+- gptfdisk/gdisk (for GPT and Syslinux)  
 - efibootmgr (for UEFI)  
 - dosfstools (for UEFI)  
 
@@ -32,7 +32,7 @@ The script will ask for:
 
 - If you want to save the backup in the default folder (/), or enter your desired path
 
-- If you want to specify backup file name (without extension)  
+- If you want to specify a backup file name (without extension) or use the default  
 
 - What to do with /home directory
 

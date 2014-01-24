@@ -19,7 +19,7 @@ info_screen() {
   echo -e "\n==>Make sure you have enough free space."
   echo -e "\n==>Make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\nGRUB PACKAGES:"
-  echo "->Arch: grub dosfstools* efibootmgr*"
+  echo "->Arch: grub efibootmgr*"
   echo "->Debian: grub-pc grub-efi*"
   echo "->Fedora: grub2"
   echo -e "\nSYSLINUX PACKAGES:"

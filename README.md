@@ -32,7 +32,7 @@ The script will ask for:
 
 - If you want to save the backup in the default folder (/), or enter your desired path
 
-- If you want to specify a backup file name (without extension) or use the default  
+- If you want to specify a backup filename (without extension) or use the default name  
 
 - What to do with /home directory
 

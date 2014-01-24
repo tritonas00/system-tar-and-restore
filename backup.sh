@@ -161,7 +161,7 @@ prepare() {
 }
 
 report_vars_log() {
-  echo "Archive:  $BRNAME"
+  echo "Archive: $BRNAME"
   echo "Archiver: $BRarchiver"
   echo "Compression: $BRcompression"
   echo "Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"
@@ -169,7 +169,7 @@ report_vars_log() {
   echo "Hidden: $BRhidden"
   if [ -d /usr/lib/grub ]; then echo "Bootloader: Grub"; fi
   if which extlinux &>/dev/null; then BRextlinux="y"; fi
-  if which syslinux &>/dev/null; then BRsyslinux="y"; fi 
+  if which syslinux &>/dev/null; then BRsyslinux="y"; fi
   if [ -n "$BRextlinux" ] && [ -n "$BRsyslinux" ]; then
     echo "Bootloader: Syslinux"
   fi

@@ -239,7 +239,7 @@ run_calc() {
 
 run_rsync() {
   IFS=$DEFAULTIFS
-  rsync -aAXv / /mnt/target ${BR_RSYNCOPTS[@]} && (echo "System transferred successfully" >> /tmp/restore.log) 
+  rsync -aAXv / /mnt/target ${BR_RSYNCOPTS[@]} && (echo "System transferred successfully" >> /tmp/restore.log)
 }
 
 count_gauge() {
@@ -332,7 +332,7 @@ check_input() {
     if [ -n "$BRgrub" ] && [ ! -d /usr/lib/grub ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found"
       BRSTOP="y"
-    elif [ -n "$BRsyslinux" ]; then 
+    elif [ -n "$BRsyslinux" ]; then
       if [ -z $(which extlinux 2> /dev/null) ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Extlinux not found"
         BRSTOP="y"
@@ -933,7 +933,7 @@ set_bootloader() {
         if [ -z "$BRnocolor" ]; then color_variables; fi
         echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system"
         BRabort="y"
-      fi  
+      fi
     fi
 
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
@@ -954,7 +954,7 @@ set_bootloader() {
           BRgrubefiarch="i386-efi"
         fi
       fi
-    fi  
+    fi
   fi
 
   if [ "$BRmode" = "Transfer" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
@@ -1668,7 +1668,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "\n[${BR_YELLOW}WARNING${BR_NORM}] NO BOOTLOADER SELECTED"
         break
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-        if [ -z "$BRefisp" ]; then 
+        if [ -z "$BRefisp" ]; then
           echo -e "\n${BR_CYAN}Select target disk for Grub:${BR_NORM}"
 	  select c in ${disk_list[@]}; do
 	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1701,7 +1701,7 @@ if [ "$BRinterface" = "cli" ]; then
           echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}"
 	  echo -e "\n${BR_CYAN}Enter additional kernel options (leave blank for defaults)${BR_NORM}"
           read -p "Options: " BR_KERNEL_OPTS
-          break        
+          break
 	else
           echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
 	fi
@@ -2063,7 +2063,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ ! -d "$BR_EFI_DETECT_DIR" ]; then
       BReficheck="no"
     fi
-    if [ -d "$BR_EFI_DETECT_DIR" ] &&  [ -z "$BRefisp" ]; then
+    if [ -d "$BR_EFI_DETECT_DIR" ] && [ -z "$BRefisp" ]; then
       dialog --title "Error" --msgbox "You must specify a target EFI system partition." 5 51
       unset BReficheck
     fi
@@ -2134,7 +2134,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       if [ -z "$BRsubvolother" ]; then
         BRsubvolslist=$(dialog --no-cancel --inputbox "Specify other subvolumes. Leave empty for none.\n\n(subvolume path e.g /home /var /usr ...)" 9 70 2>&1 1>&3)
         if [ -z "$BRsubvolslist" ]; then
-          BRsubvolother="n"  
+          BRsubvolother="n"
         elif [ -n "$BRsubvolslist" ]; then
           BRsubvolother="y"
           BRsubvols+=($BRsubvolslist)
@@ -2160,11 +2160,11 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$?" = "3" ]; then exit; fi
 
     if [ "$REPLY" = "1" ]; then
-      if [ -z "$BRefisp" ]; then 
+      if [ -z "$BRefisp" ]; then
         BRgrub=$(dialog --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
         if [ "$?" = "1" ]; then exit; fi
       else
-        BRgrub="/boot/efi" 
+        BRgrub="/boot/efi"
       fi
    elif [ "$REPLY" = "2" ]; then
       BRsyslinux=$(dialog --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
@@ -2318,7 +2318,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
   echo " " >> /tmp/restore.log
-  report_vars_log  >> /tmp/restore.log
+  report_vars_log >> /tmp/restore.log
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1

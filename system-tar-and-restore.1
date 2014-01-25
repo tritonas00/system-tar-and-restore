@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 3.8.4
+.\"    Source: system-tar-and-restore 3.9
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "21 Dec 2013" "3.8.4" "General Manual"
+.TH "system-tar-and-restore" "1" "25 Jan 2014" "3.9" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -64,6 +64,11 @@ dont ask, just run
 \fB\-d, \-\-directory\fR
 .RS 4
 backup folder path\&. Default path is \fI/\fR
+.RE
+.PP
+\fB\-f, \-\-filename\fR
+.RS 4
+backup file name (without extension)
 .RE
 .PP
 \fB\-h, \-\-exclude-home\fR
@@ -138,9 +143,19 @@ activate tranfer mode
 transfer /home's hidden files and folders only 
 .RE
 .PP
+\fB\-U, \-\-user-options\fR
+.RS 4
+additional rsync options (see rsync --help)
+.RE
+.PP
 \fB\-r, \-\-root\fR
 .RS 4
 target root partition
+.RE
+.PP
+\fB\-e, \-\-esp\fR
+.RS 4
+target EFI system partition
 .RE
 .PP
 \fB\-h, \-\-home\fR
@@ -317,8 +332,14 @@ and the root partition will be \fI/dev/md1\fR\&. The backup will be the local fi
 .RS 4
 \fB./restore.sh \-r /dev/md1 \-b /dev/md0 \-f /home/john/Downloads/backup.tar.gz \-S /dev/md0 -a bsdtar\fR
 .RE
-.SH LIMITATIONS
-\fBUEFI\fR not supported - not tested
+.RE
+.sp
+Restore system in \fBUEFI\fR environment\&. The EFI system  partition will be \fI/dev/sda1\fR
+and the root partition will be \fI/dev/sda2\fR\&. The backup will be the local file
+\fI/home/john/Downloads/backup.tar.gz\fR and \fBgrub\fR will be installed in \fI/boot/efi\fR\::
+.RS 4
+\fB./restore.sh \-r /dev/sda2 \-e /dev/sda1 \-f /home/john/Downloads/backup.tar.gz \-g /boot/efi -a tar\fR
+.RE
 .SH ONLINE DOCUMENTATION
 https://github.com/tritonas00/system-tar-and-restore#about
 .SH BUGS

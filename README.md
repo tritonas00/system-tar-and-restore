@@ -92,7 +92,7 @@ In **Restore Mode**, the script uses the above created archive to extract it in 
 In **Transfer Mode**, the script uses rsync to transfer the root filesystem (/) in user defined partitions.
 
 Then generates fstab, rebuilds initramfs image for every available kernel, re-generates locales, 
-installs and auto-configures Grub or Syslinux in MBR of given device and finally unmounts and cleans everything.
+installs and auto-configures Grub or Syslinux and finally unmounts and cleans everything.
 
 
 The script will ask for:

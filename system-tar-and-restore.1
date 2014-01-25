@@ -112,8 +112,8 @@ Restore script contains two modes: \fBRestore\fR and \fBTransfer\fR\&. In
 in user defined partitions\&. In \fBTransfer Mode\fR\&, the script uses 
 \fBRSYNC\fR to transfer the root filesystem \fI/\fR in user defined partitions\&.
 Then generates fstab\&, rebuilds initramfs image for every available kernel\&, 
-re-generates locales, installs and auto-configures Grub or Syslinux in MBR 
-of given device and finally unmounts and cleans everything\&.
+re-generates locales, installs and auto-configures Grub or Syslinux and finally 
+unmounts and cleans everything\&.
 .sp
 log file is saved as /tmp/restore.log
 .SH RESTORE OPERATIONS
@@ -262,6 +262,10 @@ is saved as /boot/syslinux.cfg-old\&.
 .sp
 In the target system, if distribution is \fBFedora\fR\& and \fBGrub\fR\& is selected\&, old 
 /etc/default/grub is saved as /etc/default/grub-old\&.
+.sp
+In case of \fBUEFI\fR\&, you must boot in UEFI enviroment to restore a system. 
+The script will check if /sys/firmware/efi exists and act accordingly. 
+You must create an \fBESP (EFI System Partition)\fR\&.
 .SH EXAMPLES USING ARGUMENTS
 .sp
 Backup system in the directory \fI/home/john/\fR and use \fBgzip\fR 

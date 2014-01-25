@@ -1100,6 +1100,7 @@ unset_vars() {
 }
 
 report_vars_log() {
+  echo "${BR_SEP}VERBOSE SUMMARY"
   echo "Root Partition: $BRroot $BRfsystem $BR_MOUNT_OPTS"
   echo "Swap Partition: $BRswap"
   echo "Other Partitions Array: ${BRsorted[@]}"
@@ -1138,6 +1139,8 @@ report_vars_log() {
     echo "Source: remote file"
   fi
   echo "Archiver: $BRarchiver"
+
+  echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 
 BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:" -n "$1" -- "$@"`

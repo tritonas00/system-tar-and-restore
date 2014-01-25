@@ -161,6 +161,7 @@ prepare() {
 }
 
 report_vars_log() {
+  echo -e "\n${BR_SEP}VERBOSE SUMMARY"
   echo "Archive: $BRNAME"
   echo "Archiver: $BRarchiver"
   echo "Compression: $BRcompression"
@@ -177,6 +178,8 @@ report_vars_log() {
   if [ -z "$BRextlinux" ] || [ -z "$BRsyslinux" ] && [ ! -d /usr/lib/grub ]; then
     echo "Bootloader: None or not supported"
   fi
+
+  echo -e "\n${BR_SEP}ARCHIVER STATUS"
 }
 
 options_info() {

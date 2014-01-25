@@ -36,11 +36,11 @@ The script will ask for:
 
 - What to do with /home directory
 
-- Archiver: tar and bsdtar are supported. (In case of Fedora, bsdtar is pre-selected automatically)   
+- Archiver: tar and bsdtar are supported. (in case of Fedora, bsdtar is pre-selected automatically)   
 
 - Compression type: gzip and xz are supported.
 
-- If you want to enter any additional tar options (See tar --help or man bsdtar)  
+- If you want to enter any additional tar options (see tar --help or man bsdtar)  
 
 
 The script also supports all input as arguments:
@@ -73,7 +73,7 @@ compression type (gzip xz)
 select archiver (tar bsdtar)    
 
 **-u, --user-options**   
-additional tar options (See tar --help or man bsdtar)  
+additional tar options (see tar --help or man bsdtar)  
 
 **--help**   
 show all arguments
@@ -125,7 +125,8 @@ The script will ask for:
 - Select Mode. If **Restore Mode** is selected it will ask the archiver you used to create the backup archive
     and the backup archive itself.  This can be obtained locally (by entering the full path of the file), or remotelly
    (by entering the url of the file). Also protected url is supported, which will ask for server's username and password.
-   If **Transfer Mode** is selected, it will ask if you want to transfer entire /home directory or only it's hidden files and folders.  
+   If **Transfer Mode** is selected, it will ask if you want to transfer entire /home directory or only it's hidden files and folders, 
+   and also if you want to specify additional rsync options (see rsync --help).  
 
 - Later it will ask you if you want to edit the generated fstab file further. Old fstab file is saved as */mnt/target/etc/fstab-old*.  
 
@@ -149,6 +150,9 @@ activate tranfer mode
 
 **-o,  --only-hidden**  
 transfer /home's hidden files and folders only  
+
+**-U,  --user-options**  
+additional rsync options (see rsync --help)  
 
 **-r, --root**    
 target root partition

@@ -1,5 +1,16 @@
 Changelog:
 
+3.9
+    added UEFI support (grub only)
+    added support for custom backup filename
+    added support for additional rsync options
+    better detection of bootloaders
+    reduced dialogs
+    show more info in summary
+    show more info in logs
+    moved bootloader dependencies checks in set_bootloader
+    fixed gptfdisk detection in Archlinux
+    
 3.8.4
     better handling of fedora's grub config file
 

@@ -83,7 +83,8 @@ show all arguments
 ###RESTORE###
 
 User must create and format partitions using his favorite partition manager before running the script.
-At least one / (root) partition is required and optionally a seperate partition for /home, /boot and a swap partition.
+At least one / (root) partition is required and optionally seperate partitions for any other desired 
+mountpoint (/home /boot /var etc...).
 
 Restore script contains two modes: **Restore** and **Transfer**.
 

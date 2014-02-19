@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9"
+BR_VERSION="System Tar & Restore 3.9.1"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -278,8 +278,8 @@ check_disks() {
 }
 
 disk_list_dialog() {
-  for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)"; done
-  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done
+  for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)|$BRempty"; done
+  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)|$BRempty"; done
 }
 
 part_sel_dialog() {
@@ -1466,7 +1466,7 @@ if [ "$BRinterface" = "cli" ]; then
     for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done`
   )
 
-  disk_list=(`disk_list_dialog`)
+  disk_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)"; done; for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done`)
 
   editorlist=(nano vi)
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
@@ -2165,13 +2165,13 @@ elif [ "$BRinterface" = "dialog" ]; then
 
     if [ "$REPLY" = "1" ]; then
       if [ -z "$BRefisp" ]; then
-        BRgrub=$(dialog --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
+        BRgrub=$(dialog --column-separator "|" --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
         if [ "$?" = "1" ]; then exit; fi
       else
         BRgrub="/boot/efi"
       fi
    elif [ "$REPLY" = "2" ]; then
-      BRsyslinux=$(dialog --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
+      BRsyslinux=$(dialog --column-separator "|" --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
       if [ "$?" = "1" ]; then
         exit
       else

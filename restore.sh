@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.1"
+BR_VERSION="System Tar & Restore 3.9.2"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -1100,6 +1100,22 @@ unset_vars() {
   if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
 }
 
+tar_pgrs_cli() {
+  if [ -n "$BRverb" ]; then
+    echo -e "\rDecompressing: $(($a*100/$total))% $ln"
+  else
+    echo -en "\rDecompressing: $(($a*100/$total))%"
+  fi
+}
+
+rsync_pgrs_cli() {
+  if [ -n "$BRverb" ]; then
+    echo -e "\rSyncing: $(($b*100/$total))% $ln"
+  else
+    echo -en "\rSyncing: $(($b*100/$total))%"
+  fi
+}
+
 report_vars_log() {
   echo "${BR_SEP}VERBOSE SUMMARY"
   echo "Root Partition: $BRroot $BRfsystem $BR_MOUNT_OPTS"
@@ -1144,7 +1160,7 @@ report_vars_log() {
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:v" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1261,6 +1277,10 @@ while true; do
       BRsubvols=($2)
       shift 2
     ;;
+    -v|--verbose)
+      BRverb="y"
+      shift
+    ;;
     --help)
     BR_BOLD='\033[1m'
     BR_NORM='\e[00m'
@@ -1271,6 +1291,7 @@ Interface:${BR_NORM}
   -i,  --interface          interface to use (cli dialog)
   -N,  --no-color           disable colors
   -q,  --quiet              dont ask, just run
+  -v,  --verbose            enable verbose tar/rsync output (cli only)
 
 ${BR_BOLD}Restore Mode:${BR_NORM}
   -f,  --file               backup file path or url
@@ -1906,7 +1927,7 @@ if [ "$BRinterface" = "cli" ]; then
       run_tar 2>>/tmp/restore.log
     elif [ "$BRarchiver" = "bsdtar" ]; then
       run_tar | tee /tmp/bsdtar_out
-    fi | while read ln; do a=$(( a + 1 )) && echo -en "\rDecompressing: $(($a*100/$total))%"; done
+    fi | while read ln; do a=$(( a + 1 )) && tar_pgrs_cli; done
 
     if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
       cat /tmp/bsdtar_out >> /tmp/restore.log
@@ -1919,7 +1940,7 @@ if [ "$BRinterface" = "cli" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     echo " "
-    run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && echo -en "\rSyncing: $(($b*100/$total))%"; done
+    run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && rsync_pgrs_cli; done
     echo " "
   fi
 

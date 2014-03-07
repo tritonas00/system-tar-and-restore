@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.1"
+BR_VERSION="System Tar & Restore 3.9.2"
 BR_SEP="::"
 
 color_variables() {
@@ -190,7 +190,15 @@ options_info() {
   fi
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNa:q" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,help" -n "$1" -- "$@"`
+out_pgrs_cli() {
+  if [ -n "$BRverb" ]; then
+    echo -e "\rCompressing: $(($b*100/$total))% $ln"
+  else
+    echo -en "\rCompressing: $(($b*100/$total))%"
+  fi
+}
+
+BRargs=`getopt -o "i:d:f:c:u:hnNa:qv" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -243,6 +251,10 @@ while true; do
       BRquiet="y"
       shift
     ;;
+    -v|--verbose)
+      BRverb="y"
+      shift
+    ;;
     --help)
       BR_BOLD='\033[1m'
       BR_NORM='\e[00m'
@@ -253,6 +265,7 @@ Interface:${BR_NORM}
   -i, --interface         interface to use (cli dialog)
   -N, --no-color          disable colors
   -q, --quiet             dont ask, just run
+  -v, --verbose           enable verbose archiver output (cli only)
 
 ${BR_BOLD}Destination:${BR_NORM}
   -d, --directory         backup folder path
@@ -499,7 +512,7 @@ if [ "$BRinterface" = "cli" ]; then
     run_tar | tee /tmp/bsdtar_out
   elif [ "$BRarchiver" = "tar" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
-  fi | while read ln; do b=$(( b + 1 )) && echo -en "\rCompressing: $(($b*100/$total))%"; done
+  fi | while read ln; do b=$(( b + 1 )) && out_pgrs_cli; done
 
   echo -ne "\n${BR_WRK}Setting permissions"
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -e "\r[${BR_GREEN}SUCCESS${BR_NORM}]" || echo -e "\r[${BR_RED}FAILURE${BR_NORM}]\n$OUTPUT"

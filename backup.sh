@@ -192,7 +192,7 @@ options_info() {
 
 out_pgrs_cli() {
   if [ -n "$BRverb" ]; then
-    echo -e "\rCompressing: $(($b*100/$total))% $ln"
+    echo -e "\rCompressing: $(($b*100/$total))% ${BR_GREEN}$ln${BR_NORM}"
   else
     echo -en "\rCompressing: $(($b*100/$total))%"
   fi

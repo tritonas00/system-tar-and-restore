@@ -1102,7 +1102,7 @@ unset_vars() {
 
 tar_pgrs_cli() {
   if [ -n "$BRverb" ]; then
-    echo -e "\rDecompressing: $(($a*100/$total))% $ln"
+    echo -e "\rDecompressing: $(($a*100/$total))% ${BR_GREEN}$ln${BR_NORM}"
   else
     echo -en "\rDecompressing: $(($a*100/$total))%"
   fi
@@ -1110,7 +1110,7 @@ tar_pgrs_cli() {
 
 rsync_pgrs_cli() {
   if [ -n "$BRverb" ]; then
-    echo -e "\rSyncing: $(($b*100/$total))% $ln"
+    echo -e "\rSyncing: $(($b*100/$total))% ${BR_GREEN}$ln${BR_NORM}"
   else
     echo -en "\rSyncing: $(($b*100/$total))%"
   fi

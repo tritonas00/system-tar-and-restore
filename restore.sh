@@ -1317,7 +1317,7 @@ ${BR_BOLD}Partitions:${BR_NORM}
 ${BR_BOLD}Bootloader:${BR_NORM}
   -g,  --grub               target disk for grub
   -S,  --syslinux           target disk for syslinux
-  -k,  --kernel-options     additional kernel options (syslinux)
+  -k,  --kernel-options     additional kernel options (syslinux only)
 
 ${BR_BOLD}Btrfs Subvolumes:${BR_NORM}
   -R,  --rootsubvolname     subvolume name for /

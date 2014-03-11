@@ -48,11 +48,7 @@ exit_screen_quiet() {
 
 show_summary() {
   echo -e "${BR_YELLOW}ARCHIVE:"
-  if [ "$BRcompression" = "gzip" ]; then
-    echo "$BRFile.tar.gz"
-  elif [ "$BRcompression" = "xz" ]; then
-    echo "$BRFile.tar.xz"
-  fi
+  echo "$BRFile.$BR_EXT"
 
   echo -e "\nARCHIVER INFO:"
   echo "Archiver:    $BRarchiver"
@@ -99,6 +95,17 @@ show_path() {
 }
 
 set_tar_options() {
+  if [ "$BRcompression" = "gzip" ]; then
+    BR_MAINOPTS="cvpzf"
+    BR_EXT="tar.gz"
+  elif [ "$BRcompression" = "xz" ]; then
+    BR_MAINOPTS="cvpJf"
+    BR_EXT="tar.xz"
+  elif [ "$BRcompression" = "bzip2" ]; then
+    BR_MAINOPTS="cvpjf"
+    BR_EXT="tar.bz2"
+  fi
+
   if [ "$BRarchiver" = "tar" ]; then
     BR_TAROPTS="--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=lost+found --sparse $BR_USER_OPTS"
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
@@ -128,17 +135,9 @@ run_calc() {
 
 run_tar() {
   if [ "$BRarchiver" = "tar" ]; then
-    if [ "$BRcompression" = "gzip" ]; then
-      $BRarchiver cvpzf "$BRFile".tar.gz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
-    elif [ "$BRcompression" = "xz" ]; then
-      $BRarchiver cvpJf "$BRFile".tar.xz ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
-    fi
+    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
   elif [ "$BRarchiver" = "bsdtar" ]; then
-    if [ "$BRcompression" = "gzip" ]; then
-      $BRarchiver cvpzf "$BRFile".tar.gz ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
-    elif [ "$BRcompression" = "xz" ]; then
-      $BRarchiver cvpJf "$BRFile".tar.xz ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
-    fi
+      $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
   fi
 }
 
@@ -162,7 +161,7 @@ prepare() {
 
 report_vars_log() {
   echo -e "\n${BR_SEP}VERBOSE SUMMARY"
-  echo "Archive: $BRNAME"
+  echo "Archive: $BRNAME.${BR_EXT}"
   echo "Archiver: $BRarchiver"
   echo "Compression: $BRcompression"
   echo "Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"
@@ -277,7 +276,7 @@ ${BR_BOLD}Home Directory:${BR_NORM}
 
 ${BR_BOLD}Archiver Options:${BR_NORM}
   -a, --archiver          select archiver (tar bsdtar)
-  -c, --compression       compression type (gzip xz)
+  -c, --compression       compression type (gzip bzip2 xz)
   -u, --user-options      additional tar options (see tar --help or man bsdtar)
 
 --help	print this page
@@ -314,8 +313,8 @@ if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
   BRSTOP="y"
 fi
 
-if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Supported compressors: gzip xz"
+if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ] && [ ! "$BRcompression" = "bzip2" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Supported compressors: gzip bzip2 xz"
   BRSTOP="y"
 fi
 
@@ -452,7 +451,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ -z "$BRcompression" ]; then
     echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
-    select c in "gzip (Fast, big file)" "xz   (Slow, smaller file)"; do
+    select c in "gzip  (Fast, big file)" "bzip2 (Slow, smaller file)" "xz    (Slow, smallest file)"; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
@@ -460,6 +459,9 @@ if [ "$BRinterface" = "cli" ]; then
         BRcompression="gzip"
         break
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+        BRcompression="bzip2"
+        break
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 3 ]; then
         BRcompression="xz"
         break
       else
@@ -601,7 +603,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRcompression" ]; then
-    BRcompression=$(dialog --cancel-label Quit --menu "Select compression type:" 12 35 12 gzip "Fast, big file" xz "Slow, smaller file" 2>&1 1>&3)
+    BRcompression=$(dialog --cancel-label Quit --menu "Select compression type:" 12 35 12 gzip "Fast, big file" bzip2 "Slow, smaller file" xz "Slow, smallest file" 2>&1 1>&3)
     if [ "$?" = "1" ]; then exit; fi
   fi
 

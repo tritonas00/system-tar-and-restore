@@ -89,6 +89,8 @@ detect_root_fs_size() {
 detect_filetype() {
   if file "$BRfile" | grep -w gzip > /dev/null; then
     BRfiletype="gz"
+  elif file "$BRfile" | grep -w bzip2 > /dev/null; then
+    BRfiletype="bz2"
   elif file "$BRfile" | grep -w XZ > /dev/null; then
     BRfiletype="xz"
   else
@@ -108,6 +110,8 @@ check_wget() {
   else
     if file /mnt/target/fullbackup | grep -w gzip > /dev/null; then
       BRfiletype="gz"
+    elif file /mnt/target/fullbackup | grep -w bzip2 > /dev/null; then
+      BRfiletype="bz2"
     elif file /mnt/target/fullbackup | grep -w XZ > /dev/null; then
       BRfiletype="xz"
     else
@@ -210,18 +214,18 @@ generate_syslinux_cfg() {
 }
 
 run_tar() {
+  if [ "$BRfiletype" = "gz" ]; then
+    BR_MAINOPTS="xvpfz"
+  elif [ "$BRfiletype" = "xz" ]; then
+    BR_MAINOPTS="xvpfJ"
+  elif [ "$BRfiletype" = "bz2" ]; then
+    BR_MAINOPTS="xvpfj"
+  fi
+
   if [ "$BRarchiver" = "tar" ]; then
-    if [ "$BRfiletype" = "gz" ]; then
-      $BRarchiver xvpfz /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
-    elif [ "$BRfiletype" = "xz" ]; then
-      $BRarchiver xvpfJ /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
-    fi
+    $BRarchiver ${BR_MAINOPTS} /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
   elif [ "$BRarchiver" = "bsdtar" ]; then
-    if [ "$BRfiletype" = "gz" ]; then
-      $BRarchiver xvpfz /mnt/target/fullbackup -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
-    elif [ "$BRfiletype" = "xz" ]; then
-      $BRarchiver xvpfJ /mnt/target/fullbackup -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
-    fi
+    $BRarchiver ${BR_MAINOPTS} /mnt/target/fullbackup -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
   fi
 }
 
@@ -309,7 +313,7 @@ check_input() {
   elif [ -n "$BRfile" ]; then
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type. File must be a gzip or xz compressed archive"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type. File must be a gzip, bzip2 or xz compressed archive"
       BRSTOP="y"
     fi
   fi
@@ -1151,9 +1155,9 @@ report_vars_log() {
     echo "Architecture: $(uname -m)"
   fi
   if [ -n "$BRfile" ]; then
-    echo "Source: local file"
+    echo "Source: local $BRfiletype archive"
   elif [ -n "$BRurl" ]; then
-    echo "Source: remote file"
+    echo "Source: remote $BRfiletype archive"
   fi
   echo "Archiver: $BRarchiver"
 
@@ -1849,7 +1853,7 @@ if [ "$BRinterface" = "cli" ]; then
             echo -e "[${BR_RED}ERROR${BR_NORM}] File not found"
           else
             detect_filetype
-            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ]; then
+            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ] || [ "$BRfiletype" = "bz2" ]; then
               echo -ne "${BR_WRK}Symlinking archive"
               OUTPUT=$(ln -s $BRfile "/mnt/target/fullbackup" 2>&1) && ok_status || error_status
             else
@@ -2286,7 +2290,7 @@ elif [ "$BRinterface" = "dialog" ]; then
             BRfile="$BRpath${BRselect//\\/ }"
             BRfile="${BRfile#*/}"
             detect_filetype
-            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ]; then
+            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ] || [ "$BRfiletype" = "bz2" ]; then
               ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null || touch /tmp/ln_error
               if [ -f /tmp/ln_error ]; then
                 rm /tmp/ln_error

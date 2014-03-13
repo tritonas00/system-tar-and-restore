@@ -1534,11 +1534,7 @@ if [ "$BRinterface" = "cli" ]; then
       echo -e "\n${BR_CYAN}BTRFS root file system detected. Create subvolume for root?${BR_NORM}"
       read -p "(Y/n):" an
 
-      if [ -n "$an" ]; then
-        btrfsdef=$an
-      else
-        btrfsdef="y"
-      fi
+      if [ -n "$an" ]; then btrfsdef=$an; else btrfsdef="y"; fi
 
       if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
         BRrootsubvol="y"
@@ -1776,11 +1772,7 @@ if [ "$BRinterface" = "cli" ]; then
       echo -e "\n${BR_CYAN}Transfer entire /home directory?\n(If no, only hidden files and folders will be transferred)${BR_NORM}"
       read -p "(Y/n):" an
 
-      if [ -n "$an" ]; then
-        def=$an
-      else
-        def="y"
-      fi
+      if [ -n "$an" ]; then def=$an; else def="y"; fi
 
       if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
         BRhidden="n"
@@ -1887,11 +1879,7 @@ if [ "$BRinterface" = "cli" ]; then
     echo -e "\n${BR_CYAN}Continue?${BR_NORM}"
     read -p "(Y/n):" an
 
-    if [ -n "$an" ]; then
-      def=$an
-    else
-      def="y"
-    fi
+    if [ -n "$an" ]; then def=$an; else def="y"; fi
 
     if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRcontinue="y"
@@ -1941,11 +1929,7 @@ if [ "$BRinterface" = "cli" ]; then
     echo -e "\n${BR_CYAN}Edit fstab?${BR_NORM}"
     read -p "(y/N):" an
 
-    if [ -n "$an" ]; then
-      def=$an
-    else
-      def="n"
-    fi
+    if [ -n "$an" ]; then def=$an; else def="n"; fi
 
     if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRedit="y"

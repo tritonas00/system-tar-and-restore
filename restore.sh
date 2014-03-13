@@ -1504,7 +1504,6 @@ if [ "$BRinterface" = "cli" ]; then
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
         BRroot=(`echo $c | awk '{ print $1 }'`)
-        echo -e "${BR_GREEN}You selected $BRroot as your root partition${BR_NORM}"
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1553,7 +1552,6 @@ if [ "$BRinterface" = "cli" ]; then
     if [ "$BRrootsubvol" = "y" ]; then
       while [ -z "$BRrootsubvolname" ]; do
         read -p "Enter subvolume name: " BRrootsubvolname
-        echo "Subvolume name: $BRrootsubvolname"
         if [ -z "$BRrootsubvolname" ]; then
           echo -e "\n${BR_CYAN}Please enter a name for the subvolume.${BR_NORM}"
         fi
@@ -1593,7 +1591,6 @@ if [ "$BRinterface" = "cli" ]; then
           BRefisp=(`echo $c | awk '{ print $1 }'`)
           BRcustom="y"
           BRcustomparts+=(/boot/efi="$BRefisp")
-          echo -e "${BR_GREEN}You selected $BRefisp as your EFI system partition${BR_NORM}"
           break
         else
           echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1614,10 +1611,8 @@ if [ "$BRinterface" = "cli" ]; then
         BRhome=(`echo $c | awk '{ print $1 }'`)
         BRcustom="y"
         BRcustomparts+=(/home="$BRhome")
-        echo -e "${BR_GREEN}You selected $BRhome as your home partition${BR_NORM}"
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
-        echo -e "${BR_GREEN}No home partition${BR_NORM}"
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1637,10 +1632,8 @@ if [ "$BRinterface" = "cli" ]; then
         BRboot=(`echo $c | awk '{ print $1 }'`)
         BRcustom="y"
         BRcustomparts+=(/boot="$BRboot")
-        echo -e "${BR_GREEN}You selected $BRboot as your boot partition${BR_NORM}"
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
-        echo -e "${BR_GREEN}No boot partition${BR_NORM}"
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1658,10 +1651,8 @@ if [ "$BRinterface" = "cli" ]; then
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
         BRswap=(`echo $c | awk '{ print $1 }'`)
-        echo -e "${BR_GREEN}You selected $BRswap as your swap partition${BR_NORM}"
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
-        echo -e "${BR_GREEN}No swap partition${BR_NORM}"
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1705,7 +1696,6 @@ if [ "$BRinterface" = "cli" ]; then
 	      exit
 	    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
 	      BRgrub=(`echo $c | awk '{ print $1 }'`)
-              echo -e "${BR_GREEN}You selected $BRgrub to install Grub${BR_NORM}"
 	      break
 	    else
               echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1727,7 +1717,6 @@ if [ "$BRinterface" = "cli" ]; then
 	  exit
 	elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
 	  BRsyslinux=(`echo $c | awk '{ print $1 }'`)
-          echo -e "${BR_GREEN}You selected $BRsyslinux to install Syslinux${BR_NORM}"
 	  echo -e "\n${BR_CYAN}Enter additional kernel options (leave blank for defaults)${BR_NORM}"
           read -p "Options: " BR_KERNEL_OPTS
           break
@@ -1751,11 +1740,9 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-        echo -e "${BR_GREEN}You selected Restore Mode${BR_NORM}"
         BRmode="Restore"
         break
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
-        echo -e "${BR_GREEN}You selected Transfer Mode${BR_NORM}"
         BRmode="Transfer"
         break
       else
@@ -1773,11 +1760,9 @@ if [ "$BRinterface" = "cli" ]; then
           exit
         elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
           BRarchiver="tar"
-          echo -e "${BR_GREEN}You selected $BRarchiver${BR_NORM}"
           break
         elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
           BRarchiver="bsdtar"
-          echo -e "${BR_GREEN}You selected $BRarchiver${BR_NORM}"
           break
         else
           echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"

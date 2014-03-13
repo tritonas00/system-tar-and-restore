@@ -144,11 +144,6 @@ run_tar() {
 set_paths() {
   BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
   BRFOLDER="${BRFOLDER_IN[@]}"
-  if [ -n "$BRNAME" ]; then
-    BRFile="$BRFOLDER"/"$BRNAME"
-  else
-    BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
-  fi
 }
 
 set_names() {

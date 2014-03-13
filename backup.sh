@@ -151,6 +151,14 @@ set_paths() {
   fi
 }
 
+set_names() {
+  if [ -n "$BRNAME" ]; then
+    BRFile="$BRFOLDER"/"$BRNAME"
+  else
+    BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
+  fi
+}
+
 prepare() {
   touch /target_architecture.$(uname -m)
   if [ "$BRinterface" = "cli" ]; then echo -e "\n${BR_SEP}CREATING ARCHIVE"; fi
@@ -480,6 +488,27 @@ if [ "$BRinterface" = "cli" ]; then
   IFS=$DEFAULTIFS
   set_tar_options
   set_paths
+  set_names
+
+  if [ -z "$BRquiet" ]; then
+    while [ -f "$BRFile.$BR_EXT" ]; do
+      echo -e "\n${BR_CYAN}File $BRFile.$BR_EXT already exists.\nOverwrite?${BR_NORM}"
+      read -p "(y/N):" an
+
+      if [ -n "$an" ]; then def=$an; else def="n"; fi
+
+      if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
+        break
+      elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
+        echo -e "\n${BR_CYAN}Enter archive name (leave blank for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)')${BR_NORM}"
+        read -e -p "Name (without extension): " BRNAME
+        set_names
+      else
+        echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+      fi
+    done
+  fi
+
   echo -e "\n${BR_SEP}SUMMARY"
   show_summary
 
@@ -487,11 +516,7 @@ if [ "$BRinterface" = "cli" ]; then
     echo -e "${BR_CYAN}Continue?${BR_NORM}"
     read -p "(Y/n):" an
 
-    if [ -n "$an" ]; then
-      def=$an
-    else
-      def="y"
-    fi
+    if [ -n "$an" ]; then def=$an; else def="y"; fi
 
     if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
       BRcontinue="y"
@@ -613,8 +638,21 @@ elif [ "$BRinterface" = "dialog" ]; then
     BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRarchiver options. Leave empty for defaults.\n($BRoptinfo)" 8 70 2>&1 1>&3)
   fi
 
-  set_paths
   set_tar_options
+  set_paths
+  set_names
+
+  if [ -z "$BRquiet" ]; then
+    while [ -f "$BRFile.$BR_EXT" ]; do
+      dialog --title "Warning" --yes-label "OK" --no-label "Rename" --yesno "$BRFile.$BR_EXT already exists. Overwrite?" 0 0
+      if [ "$?" = "1" ]; then
+        BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)'." 8 70 2>&1 1>&3)
+        set_names
+      else
+        break
+      fi
+    done
+  fi
 
   if [ -z "$BRcontinue" ]; then
     dialog --no-collapse --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0

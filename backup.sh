@@ -539,7 +539,7 @@ if [ "$BRinterface" = "cli" ]; then
   echo -ne "\n${BR_WRK}Setting permissions"
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -e "\r[${BR_GREEN}SUCCESS${BR_NORM}]" || echo -e "\r[${BR_RED}FAILURE${BR_NORM}]\n$OUTPUT"
 
-  if [ "$BRarchiver" = "bsdtar" ]; then
+  if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
     cat /tmp/bsdtar_out | grep -i ": " >> "$BRFOLDER"/backup.log
   fi
 
@@ -677,7 +677,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 
-  if [ "$BRarchiver" = "bsdtar" ]; then
+  if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
     cat /tmp/bsdtar_out | grep -i ": " >> "$BRFOLDER"/backup.log
   fi
 

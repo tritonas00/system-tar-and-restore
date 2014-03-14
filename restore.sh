@@ -646,6 +646,9 @@ show_summary() {
       echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
     else
       echo "Location: $BRgrub"
+      if [ -d "$BR_EFI_DETECT_DIR" ] && [ "$(ls -A /mnt/target/boot/efi)" ]; then
+        echo -e "Target EFI system partition is not empty.\nYou may have problems on boot (WARNING)"
+      fi
     fi
   elif [ -n "$BRsyslinux" ]; then
     echo "$BRbootloader ($BRpartitiontable)"

@@ -779,27 +779,17 @@ cp_grub_efi() {
   if [ ! -d /mnt/target/boot/efi/EFI/boot ]; then
     mkdir /mnt/target/boot/efi/EFI/boot
   fi
+  cd /mnt/target/boot
 
-  if [ "$BRdistro" = "Arch" ]; then
-    BRgrubpathefi="/mnt/target/boot/efi/EFI/grub"
-  elif [ "$BRdistro" = "Debian" ]; then
-    BRgrubpathefi="/mnt/target/boot/efi/EFI/debian"
+  BR_GRUBX64_EFI="$(ls efi/EFI/*/grubx64.efi 2>/dev/null | grep -v -e 'BOOT' -e 'boot')"
+  BR_GRUBIA32_EFI="$(ls efi/EFI/*/grubia32.efi 2>/dev/null | grep -v -e 'BOOT' -e 'boot')"
+
+  if [ -f "$BR_GRUBX64_EFI" ]; then
+    cp "$BR_GRUBX64_EFI" efi/EFI/boot/bootx64.efi
+  elif [ -f "$BR_GRUBIA32_EFI" ]; then
+    cp "$BR_GRUBIA32_EFI" efi/EFI/boot/bootx32.efi
   fi
-
-  if [ -f "$BRgrubpathefi/grubx64.efi" ]; then
-    cp "$BRgrubpathefi/grubx64.efi" /mnt/target/boot/efi/EFI/boot/bootx64.efi
-  elif [ -f "$BRgrubpathefi/grubia32.efi" ]; then
-    cp "$BRgrubpathefi/grubia32.efi" /mnt/target/boot/efi/EFI/boot/bootx32.efi
-  fi
-
-#  BR_GRUBX64_EFI="$(ls /mnt/target/boot/efi/EFI/*/grubx64.efi 2>/dev/null | grep -v -e 'BOOT' -e 'boot')"
-#  BR_GRUBIA32_EFI="$(ls /mnt/target/boot/efi/EFI/*/grubia32.efi 2>/dev/null | grep -v -e 'BOOT' -e 'boot')"
-
-#  if [ -f "$BR_GRUBX64_EFI" ]; then
-#    cp "$BR_GRUBX64_EFI" /mnt/target/boot/efi/EFI/boot/bootx64.efi
-#  elif [ -f "$BR_GRUBIA32_EFI" ]; then
-#    cp "$BR_GRUBIA32_EFI" /mnt/target/boot/efi/EFI/boot/bootx32.efi
-#  fi
+  cd ~
 }
 
 install_bootloader() {
@@ -827,7 +817,9 @@ install_bootloader() {
       chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
     fi
 
-    if [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then cp_grub_efi; fi
+    if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ]; then
+      if [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then cp_grub_efi; fi
+    fi
 
     if [ "$BRdistro" = "Fedora" ]; then
       if [ -f /mnt/target/etc/default/grub ]; then

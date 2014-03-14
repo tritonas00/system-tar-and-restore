@@ -1911,7 +1911,7 @@ if [ "$BRinterface" = "cli" ]; then
     fi | while read ln; do a=$(( a + 1 )) && tar_pgrs_cli; done
 
     if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
-      cat /tmp/bsdtar_out >> /tmp/restore.log
+      cat /tmp/bsdtar_out | grep -i ": " >> /tmp/restore.log
     fi
 
     echo " "
@@ -2221,7 +2221,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-      ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null || dialog --title "Error" --msgbox "Error symlinking archive." 5 26
+      ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null || dialog --title "Error" --msgbox "Error symlinking archive." 5 29
     fi
 
     if [ -n "$BRurl" ]; then
@@ -2332,7 +2332,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi | count_gauge | dialog --gauge "Decompressing..." 0 50
 
     if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
-      cat /tmp/bsdtar_out >> /tmp/restore.log
+      cat /tmp/bsdtar_out | grep -i ": " >> /tmp/restore.log
     fi
 
   elif [ "$BRmode" = "Transfer" ]; then

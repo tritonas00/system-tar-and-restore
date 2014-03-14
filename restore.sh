@@ -791,6 +791,15 @@ cp_grub_efi() {
   elif [ -f "$BRgrubpathefi/grubia32.efi" ]; then
     cp "$BRgrubpathefi/grubia32.efi" /mnt/target/boot/efi/EFI/boot/bootx32.efi
   fi
+
+#  BR_GRUBX64_EFI="$(ls /mnt/target/boot/efi/EFI/*/grubx64.efi 2>/dev/null | grep -v -e 'BOOT' -e 'boot')"
+#  BR_GRUBIA32_EFI="$(ls /mnt/target/boot/efi/EFI/*/grubia32.efi 2>/dev/null | grep -v -e 'BOOT' -e 'boot')"
+
+#  if [ -f "$BR_GRUBX64_EFI" ]; then
+#    cp "$BR_GRUBX64_EFI" /mnt/target/boot/efi/EFI/boot/bootx64.efi
+#  elif [ -f "$BR_GRUBIA32_EFI" ]; then
+#    cp "$BR_GRUBIA32_EFI" /mnt/target/boot/efi/EFI/boot/bootx32.efi
+#  fi
 }
 
 install_bootloader() {

@@ -487,7 +487,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ -z "$BRquiet" ]; then
     while [ -f "$BRFile.$BR_EXT" ]; do
-      echo -e "\n${BR_CYAN}File $BRFile.$BR_EXT already exists.\nOverwrite?${BR_NORM}"
+      echo -e "\n${BR_CYAN}Destination ($BRNAME.$BR_EXT) already exists.\nOverwrite?${BR_NORM}"
       read -p "(y/N):" an
 
       if [ -n "$an" ]; then def=$an; else def="n"; fi
@@ -639,7 +639,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ -z "$BRquiet" ]; then
     while [ -f "$BRFile.$BR_EXT" ]; do
-      dialog --title "Warning" --yes-label "OK" --no-label "Rename" --yesno "$BRFile.$BR_EXT already exists. Overwrite?" 0 0
+      dialog --title "Warning" --yes-label "OK" --no-label "Rename" --yesno "Destination ($BRNAME.$BR_EXT) already exists. Overwrite?" 6 70
       if [ "$?" = "1" ]; then
         BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)'." 8 70 2>&1 1>&3)
         set_names

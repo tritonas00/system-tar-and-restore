@@ -131,7 +131,7 @@ The script will ask for:
 
 - Later it will ask you if you want to edit the generated fstab file further. Old fstab file is saved as */mnt/target/etc/fstab-old*.  
 
-- At the end, if you didn't choose a bootloader or the selected bootloader not found in the target system, the script will help you to chroot and install a bootloader manually.
+- At the end, if you didn't choose a bootloader, the script will help you to chroot and install a bootloader manually.
 
 Log file is saved as */tmp/restore.log*
 

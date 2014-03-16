@@ -751,18 +751,15 @@ build_initramfs() {
   if grep -q dev/md /mnt/target/etc/fstab; then
     echo "Generating mdadm.conf..."
     if [ "$BRdistro" = "Debian" ]; then
-      if [ -f /mnt/target/etc/mdadm/mdadm.conf ]; then
-        mv /mnt/target/etc/mdadm/mdadm.conf /mnt/target/etc/mdadm/mdadm.conf-old
-      fi
-      mdadm --examine --scan > /mnt/target/etc/mdadm/mdadm.conf
-      cat /mnt/target/etc/mdadm/mdadm.conf
+      BR_MDADM_PATH="/mnt/target/etc/mdadm"
     else
-      if [ -f /mnt/target/etc/mdadm.conf ]; then
-        mv /mnt/target/etc/mdadm.conf /mnt/target/etc/mdadm.conf-old
-      fi
-      mdadm --examine --scan > /mnt/target/etc/mdadm.conf
-      cat /mnt/target/etc/mdadm.conf
+      BR_MDADM_PATH="/mnt/target/etc"
     fi
+    if [ -f "$BR_MDADM_PATH/mdadm.conf" ]; then
+      mv "$BR_MDADM_PATH/mdadm.conf" "$BR_MDADM_PATH/mdadm.conf-old"
+    fi
+    mdadm --examine --scan > "$BR_MDADM_PATH/mdadm.conf"
+    cat "$BR_MDADM_PATH/mdadm.conf"
     echo " "
   fi
 

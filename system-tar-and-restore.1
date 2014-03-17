@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 3.9.1
+.\"    Source: system-tar-and-restore 3.9.2
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "24 Feb 2014" "3.9.1" "General Manual"
+.TH "system-tar-and-restore" "1" "17 Mar 2014" "3.9.2" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -61,6 +61,11 @@ disable colors
 dont ask, just run 
 .RE
 .PP
+\fB\-v, \-\-verbose\fR
+.RS 4
+enable verbose archiver output (cli only)
+.RE
+.PP
 \fB\-d, \-\-directory\fR
 .RS 4
 backup folder path\&. Default path is \fI/\fR
@@ -88,7 +93,7 @@ select archiver\&: tar and bsdtar are supported (in case of Fedora, bsdtar is pr
 .PP
 \fB\-c, \-\-compression\fR
 .RS 4
-compression type\&: gzip and xz are supported
+compression type\&: gzip bzip2 and xz are supported
 .RE
 .PP
 \fB\-u, \-\-user-options\fR
@@ -131,6 +136,11 @@ disable colors
 \fB\-q, \-\-quiet\fR
 .RS 4
 dont ask, just run 
+.RE
+.PP
+\fB\-v, \-\-verbose\fR
+.RS 4
+enable verbose tar/rsync output (cli only)
 .RE
 .PP
 \fB\-t, \-\-transfer\fR

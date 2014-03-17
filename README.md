@@ -38,7 +38,7 @@ The script will ask for:
 
 - Archiver: tar and bsdtar are supported. (in case of Fedora, bsdtar is pre-selected automatically)   
 
-- Compression type: gzip and xz are supported.
+- Compression type: gzip bzip2 and xz are supported.
 
 - If you want to enter any additional tar options (see tar --help or man bsdtar)  
 
@@ -70,7 +70,7 @@ exclude /home directory (keep hidden files and folders)
 dont keep home's hidden files and folders (use with -h)  
 
 **-c, --compression**  
-compression type (gzip xz)  
+compression type (gzip bzip2 xz)  
 
 **-a, --archiver**  
 select archiver (tar bsdtar)    

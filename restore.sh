@@ -826,8 +826,9 @@ install_bootloader() {
         cp /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old
       fi
       sed -i 's/GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="vconsole.keymap=us quiet"/' /mnt/target/etc/default/grub
-      echo -e "\n${BR_SEP}Modified grub2 config" >> /tmp/restore.log
+      echo -e "\nModified grub2 config" >> /tmp/restore.log
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
+      echo " "
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
     else
       chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg

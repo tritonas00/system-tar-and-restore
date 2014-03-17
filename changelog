@@ -1,5 +1,16 @@
 Changelog:
 
+3.9.2
+    added bzip2 compression support
+    added verbose tar/rsync output argument
+    cleaned cli interface, user selections are shown in summary
+    warn if destination backup file exists and prompt to rename
+    better grub efi binary detection
+    warn if target ESP is not empty
+    bsdtar: if errors occur, capture only them in logs, not full output
+    fixed "error symlinking archive" dialog size
+    code cleaning
+
 3.9.1
     show disks in dialog interface even if sizes are unreadable (thanks to mask2011)
 

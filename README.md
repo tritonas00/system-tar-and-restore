@@ -54,6 +54,9 @@ disable colors
 **-q,  --quiet**  
 dont ask, just run  
 
+**-v, --verbose**           
+enable verbose archiver output (cli only)
+
 **-d, --directory**  
 backup folder path
 
@@ -145,6 +148,9 @@ disable colors
 
 **-q,  --quiet**  
 dont ask, just run  
+
+**-v,  --verbose**            
+enable verbose tar/rsync output (cli only)
 
 **-t, --transfer**   
 activate tranfer mode  

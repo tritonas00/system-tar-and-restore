@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.2"
+BR_VERSION="System Tar & Restore 3.9.3"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -20,7 +20,6 @@ info_screen() {
   echo -e "\n${BR_YELLOW}This script will restore a backup image of your system or transfer this\nsystem in user defined partitions."
   echo -e "\n==>Make sure you have created one target root (/) partition. Optionally\n   you can create or use any other partition (/boot /home /var etc)."
   echo -e "\n==>Make sure that target LVM volume groups are activated and target\n   RAID arrays are properly assembled."
-  echo -e "\n==>If the target system is Fedora (or variant), select bsdtar archiver.${BR_NORM}"
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
@@ -103,9 +102,9 @@ check_wget() {
     rm /tmp/wget_error
     rm /mnt/target/fullbackup 2>/dev/null
     if [ "$BRinterface" = "cli" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL or network is down"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL, network is down or package wget is not installed."
     elif [ "$BRinterface" = "dialog" ]; then
-      dialog --title "Error" --msgbox "Error downloading file. Wrong URL or network is down." 5 57
+      dialog --title "Error" --msgbox "Error downloading file. Wrong URL, network is down or package wget is not installed." 6 65
     fi
   else
     if file /mnt/target/fullbackup | grep -w gzip > /dev/null; then
@@ -222,10 +221,12 @@ run_tar() {
     BR_MAINOPTS="xvpfj"
   fi
 
+  IFS=$DEFAULTIFS
+
   if [ "$BRarchiver" = "tar" ]; then
-    $BRarchiver ${BR_MAINOPTS} /mnt/target/fullbackup -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
+    $BRarchiver ${BR_MAINOPTS} /mnt/target/fullbackup ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
   elif [ "$BRarchiver" = "bsdtar" ]; then
-    $BRarchiver ${BR_MAINOPTS} /mnt/target/fullbackup -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
+    $BRarchiver ${BR_MAINOPTS} /mnt/target/fullbackup ${BR_USER_OPTS[@]} -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
   fi
 }
 
@@ -695,6 +696,9 @@ show_summary() {
   if [ "$BRmode" = "Transfer" ]; then
     echo -e "\n${BR_YELLOW}RSYNC OPTIONS:"
     echo -e "${BR_RSYNCOPTS[@]}${BR_NORM}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
+  elif [ "$BRmode" = "Restore" ] && [ -n "$BR_USER_OPTS" ]; then
+     echo -e "\n${BR_YELLOW}ARCHIVER OPTIONS:"
+     echo -e "${BR_USER_OPTS[@]}${BR_NORM}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
   fi
 }
 
@@ -988,7 +992,7 @@ check_archive() {
     if [ "$BRinterface" = "cli" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
     elif [ "$BRinterface" = "dialog" ]; then
-      dialog --title "Error" --msgbox "Error reading archive." 5 26
+      dialog --title "Error" --msgbox "Error reading archive.\n\n$(cat /tmp/filelist | grep -i ": " )" 0 0
     fi
   else
     target_arch=$(grep -F 'target_architecture.' /tmp/filelist)
@@ -1149,7 +1153,11 @@ report_vars_log() {
   fi
   echo "Kernel Options: $BR_KERNEL_OPTS"
   echo "Mode: $BRmode"
-  echo "Rsync Options: ${BR_RSYNCOPTS[@]}"
+  if [ "$BRmode" = "Restore" ]; then
+    echo "Archiver Options: ${BR_USER_OPTS[@]}"
+  elif [ "$BRmode" = "Transfer" ]; then
+    echo "Rsync Options: ${BR_RSYNCOPTS[@]}"
+  fi
   echo "Distro: $BRdistro"
   if [ "$BRmode" = "Restore" ]; then
     echo "Architecture: ${target_arch#*.}"
@@ -1164,6 +1172,16 @@ report_vars_log() {
   echo "Archiver: $BRarchiver"
 
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
+}
+
+options_info() {
+  if [ "$BRarchiver" = "tar" ]; then
+    BRoptinfo="see tar --help"
+  elif [ "$BRarchiver" = "bsdtar" ]; then
+    BRoptinfo="see man bsdtar"
+  elif [ "$BRmode" = "Transfer" ]; then
+    BRoptinfo="see rsync --help"
+  fi
 }
 
 BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:v" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose" -n "$1" -- "$@"`
@@ -1293,11 +1311,12 @@ while true; do
     echo -e "
 ${BR_BOLD}$BR_VERSION
 
-Interface:${BR_NORM}
+General:${BR_NORM}
   -i,  --interface          interface to use (cli dialog)
   -N,  --no-color           disable colors
   -q,  --quiet              dont ask, just run
   -v,  --verbose            enable verbose tar/rsync output (cli only)
+  -U,  --user-options       additional tar/rsync options (see tar --help, man bsdtar or rsync --help)
 
 ${BR_BOLD}Restore Mode:${BR_NORM}
   -f,  --file               backup file path or url
@@ -1309,7 +1328,6 @@ ${BR_BOLD}Restore Mode:${BR_NORM}
 ${BR_BOLD}Transfer Mode:${BR_NORM}
   -t,  --transfer           activate transfer mode
   -o,  --only-hidden        transfer /home's hidden files and folders only
-  -U,  --user-options       additional rsync options (see rsync --help)
 
 ${BR_BOLD}Partitions:${BR_NORM}
   -r,  --root               target root partition
@@ -1784,11 +1802,16 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_RED}Please select a valid option${BR_NORM}"
       fi
     done
+  fi
 
-    if [ -z "$BRuseroptions" ]; then
-      echo -e "\n${BR_CYAN}Enter additional rsync options (leave blank for defaults)${BR_NORM}"
-      read -p "Options (see rsync --help): " BR_USER_OPTS
+  options_info
+
+  if [ -z "$BRuseroptions" ]; then
+    echo -e "\n${BR_CYAN}Enter additional tar/rsync options (leave blank for defaults)${BR_NORM}"
+    if [ "$BRarchiver" = "tar" ]; then
+      echo -e "[${BR_CYAN}INFO${BR_NORM}] If the target system is Fedora 19+, you should add ${BR_YELLOW}--xattrs-include='*'${BR_NORM}"
     fi
+    read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
 
   check_input
@@ -1811,8 +1834,10 @@ if [ "$BRinterface" = "cli" ]; then
     fi
 
     if [ -f /mnt/target/fullbackup ]; then
-      ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist |
+      IFS=$DEFAULTIFS
+      ($BRarchiver tf /mnt/target/fullbackup ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+      IFS=$'\n'
       check_archive
     fi
 
@@ -1863,8 +1888,10 @@ if [ "$BRinterface" = "cli" ]; then
       done
 
       if [ -f /mnt/target/fullbackup ]; then
-        ($BRarchiver tf /mnt/target/fullbackup || touch /tmp/tar_error) | tee /tmp/filelist |
+        IFS=$DEFAULTIFS
+        ($BRarchiver tf /mnt/target/fullbackup ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
+        IFS=$'\n'
         check_archive
       fi
     done
@@ -1990,7 +2017,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRrestore" ] && [ -z "$BRuri" ]; then
-    dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 17 80
+    dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 16 80
     if [ "$?" = "1" ]; then
       dialog --title "Partition Table" --msgbox "$(disk_report)" 0 0
     fi
@@ -2202,10 +2229,12 @@ elif [ "$BRinterface" = "dialog" ]; then
         BRhidden="y"
       fi
     fi
+  fi
 
-    if [ -z "$BRuseroptions" ]; then
-      BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional rsync options. Leave empty for defaults.\n(see rsync --help)" 8 70 2>&1 1>&3)
-    fi
+  options_info
+
+  if [ -z "$BRuseroptions" ]; then
+    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional tar/rsync options. Leave empty for defaults.$(if [ "$BRarchiver" = "tar" ]; then echo " If the target system is Fedora 19+, you should add --xattrs-include='*'"; fi)\n($BRoptinfo)" 10 74 2>&1 1>&3)
   fi
 
   IFS=$'\n'
@@ -2235,8 +2264,10 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
 
     if [ -f /mnt/target/fullbackup ]; then
-      ($BRarchiver tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
+      IFS=$DEFAULTIFS
+      ($BRarchiver tf /mnt/target/fullbackup ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
+      IFS=$'\n'
       sleep 1
       check_archive
     fi
@@ -2297,8 +2328,10 @@ elif [ "$BRinterface" = "dialog" ]; then
         check_wget
       fi
       if [ -f /mnt/target/fullbackup ]; then
-        ($BRarchiver tf /mnt/target/fullbackup 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
+        IFS=$DEFAULTIFS
+        ($BRarchiver tf /mnt/target/fullbackup ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
+        IFS=$'\n'
         sleep 1
         check_archive
       fi

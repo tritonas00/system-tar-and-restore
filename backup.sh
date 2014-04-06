@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.2"
+BR_VERSION="System Tar & Restore 3.9.3"
 BR_SEP="::"
 
 color_variables() {
@@ -108,6 +108,9 @@ set_tar_options() {
 
   if [ "$BRarchiver" = "tar" ]; then
     BR_TAROPTS="--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=lost+found --sparse $BR_USER_OPTS"
+    if [ -f /etc/yum.conf ]; then
+      BR_TAROPTS="${BR_TAROPTS} --acls --xattrs --selinux"
+    fi
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
     elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
@@ -263,7 +266,7 @@ while true; do
       echo -e "
 ${BR_BOLD}$BR_VERSION
 
-Interface:${BR_NORM}
+General:${BR_NORM}
   -i, --interface         interface to use (cli dialog)
   -N, --no-color          disable colors
   -q, --quiet             dont ask, just run
@@ -306,11 +309,6 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
-if [ -f /etc/yum.conf ] && [ "$BRarchiver" = "tar" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Only bsdtar is supported on Fedora"
-  BRSTOP="y"
-fi
-
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Directory does not exist: $BRFOLDER"
   BRSTOP="y"
@@ -331,17 +329,8 @@ if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" =
   BRSTOP="y"
 fi
 
-if [ -f /etc/yum.conf ] && [ -z $(which bsdtar 2> /dev/null) ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
-  BRSTOP="y"
-fi
-
 if [ -n "$BRSTOP" ]; then
   exit
-fi
-
-if [ -f /etc/yum.conf ]; then
-  BRarchiver="bsdtar"
 fi
 
 if [ -z "$BRhidden" ]; then

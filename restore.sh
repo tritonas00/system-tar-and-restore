@@ -1809,7 +1809,7 @@ if [ "$BRinterface" = "cli" ]; then
   if [ -z "$BRuseroptions" ]; then
     echo -e "\n${BR_CYAN}Enter additional tar/rsync options (leave blank for defaults)${BR_NORM}"
     if [ "$BRarchiver" = "tar" ]; then
-      echo -e "[${BR_CYAN}INFO${BR_NORM}] If the target system is Fedora 19+, you should add ${BR_YELLOW}--xattrs-include='*'${BR_NORM}"
+      echo -e "[${BR_CYAN}INFO${BR_NORM}] If the target system is Fedora 19+, you should add ${BR_YELLOW}--selinux --acls --xattrs-include='*'${BR_NORM}"
     fi
     read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
@@ -2234,7 +2234,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   options_info
 
   if [ -z "$BRuseroptions" ]; then
-    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional tar/rsync options. Leave empty for defaults.$(if [ "$BRarchiver" = "tar" ]; then echo " If the target system is Fedora 19+, you should add --xattrs-include='*'"; fi)\n($BRoptinfo)" 10 74 2>&1 1>&3)
+    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional tar/rsync options. Leave empty for defaults.\n$(if [ "$BRarchiver" = "tar" ]; then echo "If the target system is Fedora 19+, you should add --selinux --acls --xattrs-include='*'"; fi)\n($BRoptinfo)" 10 74 2>&1 1>&3)
   fi
 
   IFS=$'\n'

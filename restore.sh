@@ -100,21 +100,21 @@ detect_filetype() {
 check_wget() {
   if [ -f /tmp/wget_error ]; then
     rm /tmp/wget_error
-    rm /mnt/target/fullbackup 2>/dev/null
+    unset BRsource
     if [ "$BRinterface" = "cli" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL, network is down or package wget is not installed."
     elif [ "$BRinterface" = "dialog" ]; then
       dialog --title "Error" --msgbox "Error downloading file. Wrong URL, network is down or package wget is not installed." 6 65
     fi
   else
-    if file /mnt/target/fullbackup | grep -w gzip > /dev/null; then
+    if file "$BRsource" | grep -w gzip > /dev/null; then
       BRfiletype="gz"
-    elif file /mnt/target/fullbackup | grep -w bzip2 > /dev/null; then
+    elif file "$BRsource" | grep -w bzip2 > /dev/null; then
       BRfiletype="bz2"
-    elif file /mnt/target/fullbackup | grep -w XZ > /dev/null; then
+    elif file "$BRsource" | grep -w XZ > /dev/null; then
       BRfiletype="xz"
     else
-      rm /mnt/target/fullbackup 2>/dev/null
+      unset BRsource
       if [ "$BRinterface" = "cli" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
       elif [ "$BRinterface" = "dialog" ]; then
@@ -224,9 +224,9 @@ run_tar() {
   IFS=$DEFAULTIFS
 
   if [ "$BRarchiver" = "tar" ]; then
-    $BRarchiver ${BR_MAINOPTS} /mnt/target/fullbackup ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
+    $BRarchiver ${BR_MAINOPTS} "$BRsource" ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
   elif [ "$BRarchiver" = "bsdtar" ]; then
-    $BRarchiver ${BR_MAINOPTS} /mnt/target/fullbackup ${BR_USER_OPTS[@]} -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
+    $BRarchiver ${BR_MAINOPTS} "$BRsource" ${BR_USER_OPTS[@]} -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
   fi
 }
 
@@ -543,6 +543,7 @@ mount_all() {
 
   echo -ne "${BR_WRK}Mounting $BRroot"
   OUTPUT=$(mount -o $BR_MOUNT_OPTS $BRroot /mnt/target 2>&1) && ok_status || error_status
+  BRsizes+=(`lsblk -n -b -o size "$BRroot" 2> /dev/null`=/mnt/target)
   if [ -n "$BRSTOP" ]; then
     echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
     clean_files
@@ -591,6 +592,7 @@ mount_all() {
       echo -ne "${BR_WRK}Mounting $BRdevice"
       mkdir -p /mnt/target$BRmpoint
       OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
+      BRsizes+=(`lsblk -n -b -o size "$BRdevice" 2> /dev/null`=/mnt/target$BRmpoint)
       if [ -n "$custom_ok" ]; then
         unset custom_ok
         BRumountparts+=($BRmpoint=$BRdevice)
@@ -605,6 +607,7 @@ mount_all() {
       clean_unmount_in
     fi
   fi
+  BRmaxsize=$(for i in ${BRsizes[@]}; do echo $i; done | sort  -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")
 }
 
 show_summary() {
@@ -669,12 +672,12 @@ show_summary() {
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-      BRsource="from local file"
+      BR_source="from local file"
     elif [ -n "$BRurl" ]; then
-      BRsource="from remote file"
+      BR_source="from remote file"
     fi
   fi
-  echo "Mode:     $BRmode $BRsource"
+  echo "Mode:     $BRmode $BR_source"
 
   if [ "$BRmode" = "Restore" ]; then
     echo "Archiver: $BRarchiver"
@@ -988,7 +991,7 @@ check_archive() {
   if [ "$BRinterface" = "cli" ]; then echo " "; fi
   if [ -f /tmp/tar_error ]; then
     rm /tmp/tar_error
-    rm /mnt/target/fullbackup 2>/dev/null
+    unset BRsource
     if [ "$BRinterface" = "cli" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
     elif [ "$BRinterface" = "dialog" ]; then
@@ -1000,7 +1003,7 @@ check_archive() {
       target_arch="unknown"
     fi
     if [ ! "$(uname -m)" == "$(echo ${target_arch#*.})" ]; then
-      rm /mnt/target/fullbackup 2>/dev/null
+      unset BRsource
       if [ "$BRinterface" = "cli" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive"
         echo -e "[${BR_CYAN}INFO${BR_NORM}] Target  system: ${target_arch#*.}"
@@ -1025,7 +1028,6 @@ rm_work_dir() {
 }
 
 clean_files() {
-  if [ -f /mnt/target/fullbackup ]; then rm /mnt/target/fullbackup; fi
   if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
   if [ -f /tmp/r_error ]; then rm /tmp/r_error; fi
@@ -1037,6 +1039,7 @@ clean_unmount_in() {
   if [ -z "$BRnocolor" ]; then color_variables; fi
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
+  rm "$BRmaxsize/fullbackup" 2> /dev/null
   if [ "$BRcustom" = "y" ]; then
     while read ln; do
       sleep 1
@@ -1079,6 +1082,7 @@ clean_unmount_out() {
   if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
+  rm "$BRmaxsize/fullbackup" 2> /dev/null
   umount /mnt/target/dev/pts
   umount /mnt/target/proc
   umount /mnt/target/dev
@@ -1820,28 +1824,28 @@ if [ "$BRinterface" = "cli" ]; then
   if [ "$BRmode" = "Restore" ]; then
     echo -e "\n${BR_SEP}GETTING TAR IMAGE"
     if [ -n "$BRfile" ]; then
-      echo -ne "${BR_WRK}Symlinking archive"
-      OUTPUT=$(ln -s "$BRfile" "/mnt/target/fullbackup" 2>&1) && ok_status || error_status
+      BRsource="$BRfile"
     fi
 
     if [ -n "$BRurl" ]; then
+      BRsource="$BRmaxsize/fullbackup"
       if [ -n "$BRusername" ]; then
-        wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error
+        wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
       else
-        wget -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error
+        wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
       fi
       check_wget
     fi
 
-    if [ -f /mnt/target/fullbackup ]; then
+    if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
-      ($BRarchiver tf /mnt/target/fullbackup ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
+      ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
       IFS=$'\n'
       check_archive
     fi
 
-    while [ ! -f /mnt/target/fullbackup ]; do
+    while [ -z "$BRsource" ]; do
       echo -e "\n${BR_CYAN}Select backup file. Choose an option:${BR_NORM}"
       select c in "Local File" "URL" "Protected URL"; do
         if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1858,8 +1862,7 @@ if [ "$BRinterface" = "cli" ]; then
           else
             detect_filetype
             if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ] || [ "$BRfiletype" = "bz2" ]; then
-              echo -ne "${BR_WRK}Symlinking archive"
-              OUTPUT=$(ln -s $BRfile "/mnt/target/fullbackup" 2>&1) && ok_status || error_status
+              BRsource="$BRfile"
             else
               echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
             fi
@@ -1870,15 +1873,16 @@ if [ "$BRinterface" = "cli" ]; then
           unset BRfile
           echo -e "\n${BR_CYAN}Enter the URL for the backup file${BR_NORM}"
           read -p "URL:" BRurl
+          BRsource="$BRmaxsize/fullbackup"
           echo " "
           if [ "$REPLY" = "3" ]; then
 	    read -p "USERNAME: " BRusername
             read -p "PASSWORD: " BRpassword
-	    wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error
+	    wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
             check_wget
             break
           elif [ "$REPLY" = "2" ]; then
-            wget -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error
+            wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
             check_wget
             break
           fi
@@ -1887,9 +1891,9 @@ if [ "$BRinterface" = "cli" ]; then
         fi
       done
 
-      if [ -f /mnt/target/fullbackup ]; then
+      if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
-        ($BRarchiver tf /mnt/target/fullbackup ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
+        ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done
         IFS=$'\n'
         check_archive
@@ -2248,31 +2252,32 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRfile" ]; then
-      ln -s "${BRfile[@]}" "/mnt/target/fullbackup" 2> /dev/null || dialog --title "Error" --msgbox "Error symlinking archive." 5 29
+      BRsource="$BRfile"
     fi
 
     if [ -n "$BRurl" ]; then
       BRurlold="$BRurl"
+      BRsource="$BRmaxsize/fullbackup"
       if [ -n "$BRusername" ]; then
-       (wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
+       (wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
+        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 60
       else
-       (wget -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
+       (wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
+        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 60
       fi
       check_wget
     fi
 
-    if [ -f /mnt/target/fullbackup ]; then
+    if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
-      ($BRarchiver tf /mnt/target/fullbackup ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
+      ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
       IFS=$'\n'
       sleep 1
       check_archive
     fi
 
-    while [ ! -f /mnt/target/fullbackup ]; do
+    while [ -z "$BRsource" ]; do
       REPLY=$(dialog --cancel-label Quit --menu "Select backup file. Choose an option:" 13 50 13 File "local file" URL "remote file" "Protected URL" "protected remote file" 2>&1 1>&3)
       if [ "$?" = "1" ]; then
         clean_unmount_in
@@ -2293,12 +2298,7 @@ elif [ "$BRinterface" = "dialog" ]; then
             BRfile="${BRfile#*/}"
             detect_filetype
             if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ] || [ "$BRfiletype" = "bz2" ]; then
-              ln -s "$BRfile" "/mnt/target/fullbackup" 2> /dev/null || touch /tmp/ln_error
-              if [ -f /tmp/ln_error ]; then
-                rm /tmp/ln_error
-                unset BRfile BRselect
-                dialog --title "Error" --msgbox "Error symlinking archive." 5 29
-              fi
+              BRsource="$BRfile"
             else
               dialog --title "Error" --msgbox "Invalid file type." 5 22
               unset BRfile BRselect
@@ -2316,20 +2316,21 @@ elif [ "$BRinterface" = "dialog" ]; then
         unset BRfile
         BRurl=$(dialog --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 "$BRurlold" 2>&1 1>&3)
         BRurlold="$BRurl"
+        BRsource="$BRmaxsize/fullbackup"
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-         (wget --user="$BRusername" --password="$BRpassword" -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
+         (wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
+          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 60
         elif [ "$REPLY" = "URL" ]; then
-         (wget -O /mnt/target/fullbackup "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading..." 0 50
+         (wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
+          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 60
         fi
         check_wget
       fi
-      if [ -f /mnt/target/fullbackup ]; then
+      if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
-        ($BRarchiver tf /mnt/target/fullbackup ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
+        ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$(( a + 1 )) && echo -en "\rReading archive: $a Files "; done | dialog --progressbox 3 40
         IFS=$'\n'
         sleep 1

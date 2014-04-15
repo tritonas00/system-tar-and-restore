@@ -1,5 +1,12 @@
 Changelog:
 
+3.9.3
+    added support for additional tar/bsdtar options in restore.sh
+    allow GNU Tar in Fedora
+    show archive read errors in dialog interface
+    dont symlink local archive, use it directly
+    download archive in the biggest partition
+    
 3.9.2
     added bzip2 compression support
     added verbose tar/rsync output argument

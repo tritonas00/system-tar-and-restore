@@ -36,7 +36,7 @@ The script will ask for:
 
 - What to do with /home directory
 
-- Archiver: tar and bsdtar are supported. (in case of Fedora, bsdtar is pre-selected automatically)   
+- Archiver: tar and bsdtar are supported.  
 
 - Compression type: gzip bzip2 and xz are supported.
 
@@ -159,7 +159,7 @@ activate tranfer mode
 transfer /home's hidden files and folders only  
 
 **-U,  --user-options**  
-additional rsync options (see rsync --help)  
+additional tar/rsync options (see tar --help, man bsdtar or rsync --help)  
 
 **-r, --root**    
 target root partition
@@ -218,6 +218,9 @@ subvolume name for root
 ###NOTES###
 
 - With GNU Tar 1.27, you can add --xattrs --acls --selinux in backup user options.
+
+- In case of Fedora --xattrs --acls --selinux are added automatically in backup. In order to successfully restore the target system (Fedora 19+)
+you need to add --selinux --acls --xattrs-include='*' in restore user options.
 
 - The system that runs the restore script and the target system (the one you want to restore), must have the same architecture (for chroot to work).
 

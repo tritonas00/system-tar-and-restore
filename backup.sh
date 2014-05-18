@@ -1,7 +1,11 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.3"
+BR_VERSION="System Tar & Restore 3.9.4"
 BR_SEP="::"
+
+if [ -f /etc/backup.conf ]; then
+  source /etc/backup.conf
+fi
 
 color_variables() {
   BR_NORM='\e[00m'
@@ -152,6 +156,7 @@ set_paths() {
 set_names() {
   if [ -n "$BRNAME" ]; then
     BRFile="$BRFOLDER"/"$BRNAME"
+    BRcustomname="y"
   else
     BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
   fi
@@ -203,7 +208,7 @@ out_pgrs_cli() {
   fi
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNa:qv" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNa:qvg" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -260,6 +265,10 @@ while true; do
       BRverb="y"
       shift
     ;;
+    -g|--generate)
+      BRgen="y"
+      shift
+    ;;
     --help)
       BR_BOLD='\033[1m'
       BR_NORM='\e[00m'
@@ -271,6 +280,7 @@ General:${BR_NORM}
   -N, --no-color          disable colors
   -q, --quiet             dont ask, just run
   -v, --verbose           enable verbose archiver output (cli only)
+  -g, --generate          generate configuration file (in case of successful backup)
 
 ${BR_BOLD}Destination:${BR_NORM}
   -d, --directory         backup folder path
@@ -346,6 +356,8 @@ if [ -n "$BRFOLDER" ]; then
   fi
   if [ -z "$BRNAME" ]; then
     BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"
+  else
+    BRcustomname="y"
   fi
 fi
 
@@ -678,6 +690,16 @@ elif [ "$BRinterface" = "dialog" ]; then
   else
     dialog --title "$diag_tl" --infobox "$(exit_screen_quiet)" 0 0
   fi
+fi
+
+if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
+  echo -e "#Auto-generated configuration file for backup.sh.\n#Place it in /etc/backup.conf.\n\nBRinterface=$BRinterface\nBRFOLDER='$(dirname $BRFOLDER)'\nBRarchiver=$BRarchiver\nBRcompression=$BRcompression" > "$BRFOLDER"/backup.conf
+  if [ -n "$BRnocolor" ]; then echo "BRnocolor=Yes" >> "$BRFOLDER"/backup.conf; fi
+  if [ -n "$BRverb" ]; then echo "BRverb=Yes" >> "$BRFOLDER"/backup.conf; fi
+  if [ -n "$BRcustomname" ]; then echo "BRNAME='$BRNAME'" >> "$BRFOLDER"/backup.conf; fi
+  if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then echo "BRhome=No" >> "$BRFOLDER"/backup.conf; fi
+  if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then echo -e "BRhome=No\nBRhidden=No" >> "$BRFOLDER"/backup.conf; fi
+  if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'" >> "$BRFOLDER"/backup.conf; fi
 fi
 
 if [ -f /tmp/excludelist ]; then rm /tmp/excludelist; fi

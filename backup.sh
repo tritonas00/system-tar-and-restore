@@ -338,6 +338,16 @@ if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" =
   BRSTOP="y"
 fi
 
+if [ -n "$BRarchiver" ] || [ -n "$BRcompression" ] && [ -z "$BRFOLDER" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a destination directory"
+  BRSTOP="y"
+fi
+
+if [ -z "$BRarchiver" ] || [ -z "$BRcompression" ] && [ -n "$BRFOLDER" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify archiver and compressor"
+  BRSTOP="y"
+fi
+
 if [ -n "$BRSTOP" ]; then
   exit
 fi

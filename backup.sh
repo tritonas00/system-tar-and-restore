@@ -224,7 +224,6 @@ while true; do
       shift 2
     ;;
     -u|--user-options)
-      BRuseroptions="Yes"
       BR_USER_OPTS=$2
       shift 2
     ;;
@@ -351,8 +350,8 @@ if [ -n "$BRFOLDER" ]; then
   if [ -z "$BRhome" ]; then
     BRhome="Yes"
   fi
-  if [ -z "$BRuseroptions" ]; then
-    BRuseroptions="No"
+  if [ -z "$BR_USER_OPTS" ]; then
+    BR_USER_OPTS=" "
   fi
   if [ -z "$BRNAME" ]; then
     BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"
@@ -476,7 +475,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   options_info
 
-  if [ -z "$BRuseroptions" ]; then
+  if [ -z "$BR_USER_OPTS" ]; then
     echo -e "\n${BR_CYAN}Enter additional $BRarchiver options (leave blank for defaults)${BR_NORM}"
     read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
@@ -630,7 +629,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   options_info
 
-  if [ -z "$BRuseroptions" ]; then
+  if [ -z "$BR_USER_OPTS" ]; then
     BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRarchiver options. Leave empty for defaults.\n($BRoptinfo)" 8 70 2>&1 1>&3)
   fi
 

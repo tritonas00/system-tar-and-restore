@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.3"
+BR_VERSION="System Tar & Restore 3.9.4"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -1272,7 +1272,6 @@ while true; do
       shift
     ;;
     -U|--user-options)
-      BRuseroptions="Yes"
       BR_USER_OPTS=$2
       shift 2
     ;;
@@ -1414,8 +1413,8 @@ if [ -n "$BRroot" ]; then
     BR_MOUNT_OPTS="defaults"
   fi
 
-  if [ -z "$BRuseroptions" ]; then
-    BRuseroptions="No"
+  if [ -z "$BR_USER_OPTS" ]; then
+    BR_USER_OPTS=" "
   fi
 
   if [ -z "$BRswap" ]; then
@@ -1810,7 +1809,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   options_info
 
-  if [ -z "$BRuseroptions" ]; then
+  if [ -z "$BR_USER_OPTS" ]; then
     echo -e "\n${BR_CYAN}Enter additional tar/rsync options (leave blank for defaults)${BR_NORM}"
     if [ "$BRarchiver" = "tar" ]; then
       echo -e "[${BR_CYAN}INFO${BR_NORM}] If the target system is Fedora 19+, you should add ${BR_YELLOW}--selinux --acls --xattrs-include='*'${BR_NORM}"
@@ -2237,7 +2236,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   options_info
 
-  if [ -z "$BRuseroptions" ]; then
+  if [ -z "$BR_USER_OPTS" ]; then
     BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional tar/rsync options. Leave empty for defaults.\n$(if [ "$BRarchiver" = "tar" ]; then echo "If the target system is Fedora 19+, you should add --selinux --acls --xattrs-include='*' "; fi)($BRoptinfo)" 11 74 2>&1 1>&3)
   fi
 

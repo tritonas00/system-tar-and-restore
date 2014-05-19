@@ -156,10 +156,10 @@ set_paths() {
 set_names() {
   if [ -n "$BRNAME" ]; then
     BRFile="$BRFOLDER"/"$BRNAME"
-    BRcustomname="y"
   else
     BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
   fi
+  BRfiledefault="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
 }
 
 prepare() {
@@ -365,8 +365,6 @@ if [ -n "$BRFOLDER" ]; then
   fi
   if [ -z "$BRNAME" ]; then
     BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"
-  else
-    BRcustomname="y"
   fi
 fi
 
@@ -705,7 +703,7 @@ if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
   echo -e "#Auto-generated configuration file for backup.sh.\n#Place it in /etc/backup.conf.\n\nBRinterface=$BRinterface\nBRFOLDER='$(dirname $BRFOLDER)'\nBRarchiver=$BRarchiver\nBRcompression=$BRcompression" > "$BRFOLDER"/backup.conf
   if [ -n "$BRnocolor" ]; then echo "BRnocolor=Yes" >> "$BRFOLDER"/backup.conf; fi
   if [ -n "$BRverb" ]; then echo "BRverb=Yes" >> "$BRFOLDER"/backup.conf; fi
-  if [ -n "$BRcustomname" ]; then echo "BRNAME='$BRNAME'" >> "$BRFOLDER"/backup.conf; fi
+  if [ ! "$BRFile" = "$BRfiledefault" ]; then echo "BRNAME='$BRNAME'" >> "$BRFOLDER"/backup.conf; fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then echo "BRhome=No" >> "$BRFOLDER"/backup.conf; fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then echo -e "BRhome=No\nBRhidden=No" >> "$BRFOLDER"/backup.conf; fi
   if [ "$BR_USER_OPTS" = " " ]; then unset BR_USER_OPTS; fi

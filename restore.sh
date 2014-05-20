@@ -557,12 +557,16 @@ mount_all() {
   fi
 
   if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it"
-    echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned"
-    echo -ne "${BR_WRK}Unmounting $BRroot"
-    sleep 1
-    OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
-    exit
+    if [ -z "$BRdontckroot" ]; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it"
+      echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned"
+      echo -ne "${BR_WRK}Unmounting $BRroot"
+      sleep 1
+      OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
+      exit
+    else
+      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Root partition not empty"
+    fi
   fi
 
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
@@ -1073,7 +1077,9 @@ clean_unmount_in() {
   fi
 
   if [ -z "$BRSTOP" ]; then
-    rm -r /mnt/target/* 2>/dev/null
+    if [ -z "$BRdontckroot" ]; then
+      rm -r /mnt/target/* 2>/dev/null
+    fi
   fi
   clean_files
 
@@ -1195,7 +1201,7 @@ options_info() {
   fi
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:v" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:vd" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1310,6 +1316,10 @@ while true; do
       BRverb="y"
       shift
     ;;
+    -d|--dont-check-root)
+      BRdontckroot="y"
+      shift
+    ;;
     --help)
     BR_BOLD='\033[1m'
     BR_NORM='\e[00m'
@@ -1342,6 +1352,7 @@ ${BR_BOLD}Partitions:${BR_NORM}
   -s,  --swap               swap partition
   -c,  --custom-partitions  specify custom partitions (mountpoint=device)
   -m,  --mount-options      comma-separated list of mount options (root partition)
+  -d,  --dont-check-root    dont check if root partition is empty (dangerous)
 
 ${BR_BOLD}Bootloader:${BR_NORM}
   -g,  --grub               target disk for grub

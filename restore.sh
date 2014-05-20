@@ -2004,7 +2004,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
-  if [ -! "$BRmode" = "Transfer" ] && [ -z "$BRuri" ]; then
+  if [ ! "$BRmode" = "Transfer" ] && [ -z "$BRuri" ]; then
     dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 16 80
     if [ "$?" = "1" ]; then
       dialog --title "Partition Table" --msgbox "$(disk_report)" 0 0

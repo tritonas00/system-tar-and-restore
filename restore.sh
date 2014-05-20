@@ -395,7 +395,7 @@ check_input() {
     fi
   fi
 
-  if [ "$BRcustom" = "y" ]; then
+  if [ -n "$BRcustomparts" ]; then
     BRdevused=(`for i in ${BRcustomparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"=") && echo $BRdevice; done | sort | uniq -d`)
     BRmpointused=(`for i in ${BRcustomparts[@]}; do BRmpoint=$(echo $i | cut -f1 -d"=") && echo $BRmpoint; done | sort | uniq -d`)
     if [ -n "$BRdevused" ]; then
@@ -583,7 +583,7 @@ mount_all() {
     fi
   fi
 
-  if [ "$BRcustom" = "y" ]; then
+  if [ -n "$BRcustomparts" ]; then
     BRsorted=(`for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =`)
     unset custom_ok
     for i in ${BRsorted[@]}; do
@@ -614,7 +614,7 @@ show_summary() {
   echo -e "${BR_YELLOW}PARTITIONS:"
   echo "root partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
 
-  if [ "$BRcustom" = "y" ]; then
+  if [ -n "$BRcustomparts" ]; then
     for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
@@ -729,7 +729,7 @@ generate_fstab() {
     echo "$(detect_fstab_root)  /  $BRfsystem  $BR_MOUNT_OPTS,noatime  0  1" >> /mnt/target/etc/fstab
   fi
 
-  if [ "$BRcustom" = "y" ]; then
+  if [ -n "$BRcustomparts" ]; then
     for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
@@ -1040,7 +1040,7 @@ clean_unmount_in() {
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   rm "$BRmaxsize/fullbackup" 2> /dev/null
-  if [ "$BRcustom" = "y" ]; then
+  if [ -n "$BRcustomparts" ]; then
     while read ln; do
       sleep 1
       echo -ne "${BR_WRK}Unmounting $ln"
@@ -1089,7 +1089,7 @@ clean_unmount_out() {
   umount /mnt/target/sys
   umount /mnt/target/run
 
-  if [ "$BRcustom" = "y" ]; then
+  if [ -n "$BRcustomparts" ]; then
     while read ln; do
       sleep 1
       echo -ne "${BR_WRK}Unmounting $ln"
@@ -1112,6 +1112,7 @@ unset_vars() {
   if [ "$BRhome" = "-1" ]; then unset BRhome; fi
   if [ "$BRgrub" = "-1" ]; then unset BRgrub; fi
   if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
+  if [ "$BRcustomparts" = "-1" ]; then unset BRcustomparts; fi
   if [ "$BRcustompartslist" = "-1" ]; then unset BRcustompartslist; fi
   if [ "$BRsubvols" = "-1" ]; then unset BRsubvols; fi
   if [ "$BR_USER_OPTS" = "-1" ]; then unset BR_USER_OPTS; fi
@@ -1290,7 +1291,6 @@ while true; do
       shift 2
     ;;
     -c|--custom-partitions)
-      BRcustom="y"
       BRcustompartslist="$2"
       BRcustomparts=($2)
       shift 2
@@ -1377,17 +1377,14 @@ DEFAULTIFS=$IFS
 IFS=$'\n'
 
 if [ -n "$BRefisp" ]; then
-  BRcustom="y"
   BRcustomparts+=(/boot/efi="$BRefisp")
 fi
 
 if [ -n "$BRhome" ]; then
-  BRcustom="y"
   BRcustomparts+=(/home="$BRhome")
 fi
 
 if [ -n "$BRboot" ]; then
-  BRcustom="y"
   BRcustomparts+=(/boot="$BRboot")
 fi
 
@@ -1600,7 +1597,6 @@ if [ "$BRinterface" = "cli" ]; then
           exit
         elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
           BRefisp=(`echo $c | awk '{ print $1 }'`)
-          BRcustom="y"
           BRcustomparts+=(/boot/efi="$BRefisp")
           break
         else
@@ -1620,7 +1616,6 @@ if [ "$BRinterface" = "cli" ]; then
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
         BRhome=(`echo $c | awk '{ print $1 }'`)
-        BRcustom="y"
         BRcustomparts+=(/home="$BRhome")
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
@@ -1641,7 +1636,6 @@ if [ "$BRinterface" = "cli" ]; then
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
         BRboot=(`echo $c | awk '{ print $1 }'`)
-        BRcustom="y"
         BRcustomparts+=(/boot="$BRboot")
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
@@ -1678,7 +1672,6 @@ if [ "$BRinterface" = "cli" ]; then
       echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3 (leave blank for none)${BR_NORM}"
       read -p "Partitions: " BRcustompartslist
       if [ -n "$BRcustompartslist" ]; then
-        BRcustom="y"
         IFS=$DEFAULTIFS
         BRcustomparts+=($BRcustompartslist)
         IFS=$'\n'
@@ -2092,22 +2085,18 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ -n "$BRassign" ]; then
     if [ -n "$BRhome" ]; then
-      BRcustom="y"
       BRcustomparts+=(/home="$BRhome")
     fi
 
     if [ -n "$BRboot" ]; then
-      BRcustom="y"
       BRcustomparts+=(/boot="$BRboot")
     fi
 
     if [ -n "$BRefisp" ]; then
-      BRcustom="y"
       BRcustomparts+=(/boot/efi="$BRefisp")
     fi
 
     if [ -n "$BRcustompartslist" ]; then
-      BRcustom="y"
       BRcustomparts+=($BRcustompartslist)
     fi
   fi

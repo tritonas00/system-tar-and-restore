@@ -1117,7 +1117,6 @@ unset_vars() {
   if [ "$BRhome" = "-1" ]; then unset BRhome; fi
   if [ "$BRgrub" = "-1" ]; then unset BRgrub; fi
   if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
-  if [ "$BRcustompartslist" = "-1" ]; then unset BRcustompartslist; fi
   if [ "$BRsubvols" = "-1" ]; then unset BRsubvols; fi
   if [ "$BR_USER_OPTS" = "-1" ]; then unset BR_USER_OPTS; fi
 }

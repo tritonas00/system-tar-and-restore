@@ -324,7 +324,7 @@ check_input() {
     BRSTOP="y"
   fi
 
-  if [ -n "$BRuri" ] && [ -n "$BRrestore" ]; then
+  if [ -n "$BRuri" ] && [ "$BRmode" = "Transfer" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use local file / url and transfer mode at the same time"
     BRSTOP="y"
   fi
@@ -1265,7 +1265,6 @@ while true; do
     ;;
     -t|--transfer)
       BRmode="Transfer"
-      BRrestore="off"
       shift
     ;;
     -o|--only-hidden)
@@ -1281,7 +1280,6 @@ while true; do
       shift
     ;;
     -m|--mount-options)
-      BRmountoptions="Yes"
       BR_MOUNT_OPTS=$2
       shift 2
     ;;
@@ -1409,8 +1407,7 @@ if [ -n "$BRroot" ]; then
     BRother="n"
   fi
 
-  if [ -z "$BRmountoptions" ]; then
-    BRmountoptions="No"
+  if [ -z "$BR_MOUNT_OPTS" ]; then
     BR_MOUNT_OPTS="defaults"
   fi
 
@@ -1435,7 +1432,7 @@ if [ -n "$BRroot" ]; then
     BRsyslinux="-1"
   fi
 
-  if [ -z "$BRuri" ] && [ -z "$BRrestore" ]; then
+  if [ -z "$BRuri" ] && [ ! "$BRmode" = "Transfer" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify a backup file or enable transfer mode"
     exit
   fi
@@ -1504,7 +1501,7 @@ fi
 
 if [ "$BRinterface" = "cli" ]; then
 
-  if [ -z "$BRrestore" ] && [ -z "$BRuri" ]; then
+  if [ ! "$BRmode" = "Transfer" ] && [ -z "$BRuri" ]; then
     info_screen
     read -s a
   fi
@@ -1535,14 +1532,11 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  if [ -z "$BRmountoptions" ]; then
+  if [ -z "$BR_MOUNT_OPTS" ]; then
     echo -e "\n${BR_CYAN}Enter additional mount options (leave blank for defaults)${BR_NORM}"
     read -p "Options (comma-separated list): " BR_MOUNT_OPTS
     if [ -z "$BR_MOUNT_OPTS" ]; then
-      BRmountoptions="No"
       BR_MOUNT_OPTS="defaults"
-    elif [ -n "$BR_MOUNT_OPTS" ]; then
-      BRmountoptions="Yes"
     fi
   fi
 
@@ -2019,7 +2013,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
-  if [ -z "$BRrestore" ] && [ -z "$BRuri" ]; then
+  if [ -! "$BRmode" = "Transfer" ] && [ -z "$BRuri" ]; then
     dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 16 80
     if [ "$?" = "1" ]; then
       dialog --title "Partition Table" --msgbox "$(disk_report)" 0 0
@@ -2125,13 +2119,10 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  if [ -z "$BRmountoptions" ]; then
+  if [ -z "$BR_MOUNT_OPTS" ]; then
     BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Specify additional mount options for root partition.\nLeave empty for defaults.\n\n(comma-separated list)" 10 70 2>&1 1>&3)
     if [ -z "$BR_MOUNT_OPTS" ]; then
-      BRmountoptions="No"
       BR_MOUNT_OPTS="defaults"
-    elif [ -n "$BR_MOUNT_OPTS" ]; then
-      BRmountoptions="Yes"
     fi
   fi
 

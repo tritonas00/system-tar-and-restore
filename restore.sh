@@ -1112,6 +1112,7 @@ unset_vars() {
   if [ "$BRhome" = "-1" ]; then unset BRhome; fi
   if [ "$BRgrub" = "-1" ]; then unset BRgrub; fi
   if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
+  if [ "$BR_USER_OPTS" = "-1" ]; then unset BR_USER_OPTS; fi
 }
 
 tar_pgrs_cli() {
@@ -1414,7 +1415,7 @@ if [ -n "$BRroot" ]; then
   fi
 
   if [ -z "$BR_USER_OPTS" ]; then
-    BR_USER_OPTS=" "
+    BR_USER_OPTS="-1"
   fi
 
   if [ -z "$BRswap" ]; then
@@ -1750,8 +1751,6 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  unset_vars
-
   if [ -z "$BRmode" ]; then
     echo -e "\n${BR_CYAN}Select Mode:${BR_NORM}"
     select c in "Restore system from backup file" "Transfer this system with rsync"; do
@@ -1817,6 +1816,7 @@ if [ "$BRinterface" = "cli" ]; then
     read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
 
+  unset_vars
   check_input
   mount_all
 
@@ -2210,8 +2210,6 @@ elif [ "$BRinterface" = "dialog" ]; then
     dialog --title "Warning" --msgbox "No bootloader selected, press ok to continue." 5 49
   fi
 
-  unset_vars
-
   if [ -z "$BRmode" ]; then
     BRmode=$(dialog --cancel-label Quit --menu "Select Mode:" 12 50 12 Restore "system from backup file" Transfer "this system with rsync" 2>&1 1>&3)
     if [ "$?" = "1" ]; then exit; fi
@@ -2245,6 +2243,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     color_variables
   fi
 
+  unset_vars
   check_input
   mount_all
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD

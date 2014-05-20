@@ -450,6 +450,11 @@ check_input() {
     done < <( for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); BRdevice=$(echo $a | cut -f2 -d"="); echo "$BRmpoint=$BRdevice"; done )
   fi
 
+  if [ -n "$BRsubvols" ] && [ -z "$BRrootsubvolname" ]; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify a root subvolume name"
+    BRSTOP="y"
+  fi
+
   if [ -n "$BRsubvols" ]; then
     BRsubvolused=(`for i in ${BRsubvols[@]}; do echo $i; done | sort | uniq -d`)
     if [ -n "$BRsubvolused" ]; then
@@ -1581,7 +1586,7 @@ if [ "$BRinterface" = "cli" ]; then
         fi
       fi
     fi
-  elif [ "$BRrootsubvol" = "y" ] || [ -n "$BRsubvols" ]; then
+  elif [ "$BRrootsubvol" = "y" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Not a btrfs root filesystem, proceeding without subvolumes..."
   fi
 
@@ -2144,7 +2149,7 @@ elif [ "$BRinterface" = "dialog" ]; then
         fi
       fi
     fi
-  elif [ "$BRrootsubvol" = "y" ] || [ -n "$BRsubvols" ]; then
+  elif [ "$BRrootsubvol" = "y" ]; then
     dialog --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
   fi
 

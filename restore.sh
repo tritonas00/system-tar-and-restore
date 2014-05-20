@@ -361,7 +361,7 @@ check_input() {
     fi
   fi
 
-  if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ] || [ -n "$BRswap" ] || [ -n "$BRhome" ] || [ -n "$BRboot" ] || [ -n "$BRother" ] || [ -n "$BRrootsubvol" ] || [ -n "$BRsubvolother" ] && [ -z "$BRroot" ]; then
+  if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ] || [ -n "$BRswap" ] || [ -n "$BRhome" ] || [ -n "$BRboot" ] || [ -n "$BRcustompartslist" ] || [ -n "$BRrootsubvol" ] || [ -n "$BRsubvols" ] && [ -z "$BRroot" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a target root partition."
     BRSTOP="y"
   fi
@@ -434,7 +434,7 @@ check_input() {
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont assign root partition as custom"
         BRSTOP="y"
       fi
-      if [ "$BRsubvolother" = "y" ]; then
+      if [ -n "$BRsubvols" ]; then
         for item in "${BRsubvols[@]}"; do
           if [[ "$BRmpoint" == *"$item"* ]] && [[ "$item" == *"$BRmpoint"* ]]; then
             echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
@@ -450,7 +450,7 @@ check_input() {
     done < <( for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); BRdevice=$(echo $a | cut -f2 -d"="); echo "$BRmpoint=$BRdevice"; done )
   fi
 
-  if [ "$BRsubvolother" = "y" ]; then
+  if [ -n "$BRsubvols" ]; then
     BRsubvolused=(`for i in ${BRsubvols[@]}; do echo $i; done | sort | uniq -d`)
     if [ -n "$BRsubvolused" ]; then
       for a in ${BRsubvolused[@]}; do
@@ -564,7 +564,7 @@ mount_all() {
     echo -ne "${BR_WRK}Creating $BRrootsubvolname"
     OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
 
-    if [ "$BRsubvolother" = "y" ]; then
+    if [ -n "$BRsubvols" ]; then
       while read ln; do
         echo -ne "${BR_WRK}Creating $BRrootsubvolname$ln"
         OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname$ln 2>&1 1> /dev/null) && ok_status || error_status
@@ -631,7 +631,7 @@ show_summary() {
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
     echo -e "\nSUBVOLUMES:"
     echo "$BRrootsubvolname"
-    if [ "$BRsubvolother" = "y" ]; then
+    if [ -n "$BRsubvols" ]; then
       while read ln; do
         echo "$BRrootsubvolname$ln"
       done< <(for a in "${BRsubvols[@]}"; do echo "$a"; done | sort)
@@ -1055,7 +1055,7 @@ clean_unmount_in() {
     echo -ne "${BR_WRK}Mounting $BRroot"
     OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
 
-    if [ "$BRsubvolother" = "y" ]; then
+    if [ -n "$BRsubvols" ]; then
       while read ln; do
         sleep 1
         echo -ne "${BR_WRK}Deleting $BRrootsubvolname$ln"
@@ -1112,6 +1112,8 @@ unset_vars() {
   if [ "$BRhome" = "-1" ]; then unset BRhome; fi
   if [ "$BRgrub" = "-1" ]; then unset BRgrub; fi
   if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
+  if [ "$BRcustompartslist" = "-1" ]; then unset BRcustompartslist; fi
+  if [ "$BRsubvols" = "-1" ]; then unset BRsubvols; fi
   if [ "$BR_USER_OPTS" = "-1" ]; then unset BR_USER_OPTS; fi
 }
 
@@ -1289,9 +1291,8 @@ while true; do
     ;;
     -c|--custom-partitions)
       BRcustom="y"
-      BRother="y"
+      BRcustompartslist="$2"
       BRcustomparts=($2)
-      BRcustomold="$2"
       shift 2
     ;;
     -a|--archiver)
@@ -1299,7 +1300,6 @@ while true; do
       shift 2
     ;;
     -O|--other-subvolumes)
-      BRsubvolother="y"
       BRsubvols=($2)
       shift 2
     ;;
@@ -1403,8 +1403,8 @@ if [ -n "$BRroot" ]; then
     BReficheck="no"
   fi
 
-  if [ -z "$BRother" ]; then
-    BRother="n"
+  if [ -z "$BRcustompartslist" ]; then
+    BRcustompartslist="-1"
   fi
 
   if [ -z "$BR_MOUNT_OPTS" ]; then
@@ -1443,8 +1443,8 @@ if [ "$BRmode" = "Transfer" ] && [ -z "$BRhidden" ]; then
 fi
 
 if [ -n "$BRrootsubvol" ]; then
-  if [ -z "$BRsubvolother" ]; then
-    BRsubvolother="n"
+  if [ -z "$BRsubvols" ]; then
+    BRsubvols="-1"
   fi
 fi
 
@@ -1571,13 +1571,10 @@ if [ "$BRinterface" = "cli" ]; then
         fi
       done
 
-      if [ -z "$BRsubvolother" ]; then
+      if [ -z "$BRsubvols" ]; then
         echo -e "\n${BR_CYAN}Set other subvolumes (leave blank for none)${BR_NORM}"
         read -p "Paths (e.g /home /var /usr ...): " BRsubvolslist
-        if [ -z "$BRsubvolslist" ]; then
-          BRsubvolother="n"
-        elif [ -n "$BRsubvolslist" ]; then
-          BRsubvolother="y"
+        if [ -n "$BRsubvolslist" ]; then
           IFS=$DEFAULTIFS
           BRsubvols+=($BRsubvolslist)
           IFS=$'\n'
@@ -1588,7 +1585,7 @@ if [ "$BRinterface" = "cli" ]; then
         fi
       fi
     fi
-  elif [ "$BRrootsubvol" = "y" ] || [ "$BRsubvolother" = "y" ]; then
+  elif [ "$BRrootsubvol" = "y" ] || [ -n "$BRsubvols" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Not a btrfs root filesystem, proceeding without subvolumes..."
   fi
 
@@ -1677,14 +1674,11 @@ if [ "$BRinterface" = "cli" ]; then
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
   if [ -n "${list[*]}" ]; then
-    if [ -z "$BRother" ]; then
+    if [ -z "$BRcustompartslist" ]; then
       echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3 (leave blank for none)${BR_NORM}"
       read -p "Partitions: " BRcustompartslist
-      if [ -z "$BRcustompartslist" ]; then
-        BRother="n"
-      elif [ -n "$BRcustompartslist" ]; then
+      if [ -n "$BRcustompartslist" ]; then
         BRcustom="y"
-        BRother="y"
         IFS=$DEFAULTIFS
         BRcustomparts+=($BRcustompartslist)
         IFS=$'\n'
@@ -2114,7 +2108,6 @@ elif [ "$BRinterface" = "dialog" ]; then
 
     if [ -n "$BRcustompartslist" ]; then
       BRcustom="y"
-      BRother="y"
       BRcustomparts+=($BRcustompartslist)
     fi
   fi
@@ -2152,12 +2145,9 @@ elif [ "$BRinterface" = "dialog" ]; then
         fi
       done
 
-      if [ -z "$BRsubvolother" ]; then
+      if [ -z "$BRsubvols" ]; then
         BRsubvolslist=$(dialog --no-cancel --inputbox "Specify other subvolumes. Leave empty for none.\n\n(subvolume path e.g /home /var /usr ...)" 9 70 2>&1 1>&3)
-        if [ -z "$BRsubvolslist" ]; then
-          BRsubvolother="n"
-        elif [ -n "$BRsubvolslist" ]; then
-          BRsubvolother="y"
+        if [ -n "$BRsubvolslist" ]; then
           BRsubvols+=($BRsubvolslist)
           for item in "${BRsubvols[@]}"; do
             if [[ "$item" == *"/home"* ]]; then BRhome="-1"; fi
@@ -2166,7 +2156,7 @@ elif [ "$BRinterface" = "dialog" ]; then
         fi
       fi
     fi
-  elif [ "$BRrootsubvol" = "y" ] || [ "$BRsubvolother" = "y" ]; then
+  elif [ "$BRrootsubvol" = "y" ] || [ -n "$BRsubvols" ]; then
     dialog --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
   fi
 

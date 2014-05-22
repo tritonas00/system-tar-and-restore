@@ -34,6 +34,16 @@ info_screen() {
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
+clean_files() {
+  if [ -f /tmp/excludelist ]; then rm /tmp/excludelist; fi
+  if [ -f /tmp/b_error ]; then rm /tmp/b_error; fi
+  if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
+  if [ -f /tmp/bsdtar_out ]; then rm /tmp/bsdtar_out; fi
+  if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi
+}
+
+clean_files
+
 exit_screen() {
   if [ -f /tmp/b_error ]; then
     echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details.\n\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
@@ -710,8 +720,5 @@ if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
   if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'" >> "$BRFOLDER"/backup.conf; fi
 fi
 
-if [ -f /tmp/excludelist ]; then rm /tmp/excludelist; fi
-if [ -f /tmp/b_error ]; then rm /tmp/b_error; fi
-if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
-if [ -f /tmp/bsdtar_out ]; then rm /tmp/bsdtar_out; fi
-if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi
+clean_files
+

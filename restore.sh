@@ -23,6 +23,16 @@ info_screen() {
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
+clean_files() {
+  if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
+  if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
+  if [ -f /tmp/r_error ]; then rm /tmp/r_error; fi
+  if [ -f /tmp/bsdtar_out ]; then rm /tmp/bsdtar_out; fi
+  if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
+ }
+
+clean_files
+
 exit_screen() {
   if [ -f /tmp/bl_error ]; then
     echo -e "\n${BR_RED}Error installing $BRbootloader. Check /tmp/restore.log for details.\n\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
@@ -1035,14 +1045,6 @@ rm_work_dir() {
   sleep 1
   rm -r /mnt/target
 }
-
-clean_files() {
-  if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
-  if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
-  if [ -f /tmp/r_error ]; then rm /tmp/r_error; fi
-  if [ -f /tmp/bsdtar_out ]; then rm /tmp/bsdtar_out; fi
-  if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
- }
 
 clean_unmount_in() {
   if [ -z "$BRnocolor" ]; then color_variables; fi

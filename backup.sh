@@ -321,8 +321,6 @@ if [ -z "$BRnocolor" ]; then
   color_variables
 fi
 
-BR_WRK="[${BR_CYAN}WORKING${BR_NORM}] "
-
 if [ $(id -u) -gt 0 ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Script must run as root"
   exit
@@ -554,8 +552,7 @@ if [ "$BRinterface" = "cli" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
   fi | while read ln; do b=$(( b + 1 )) && out_pgrs_cli; done
 
-  echo -ne "\n${BR_WRK}Setting permissions"
-  OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -e "\r[${BR_GREEN}SUCCESS${BR_NORM}]" || echo -e "\r[${BR_RED}FAILURE${BR_NORM}]\n$OUTPUT"
+  OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
     cat /tmp/bsdtar_out | grep -i ": " >> "$BRFOLDER"/backup.log

@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 3.9.2
+.\"    Source: system-tar-and-restore 3.9.4
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "15 Apr 2014" "3.9.3" "General Manual"
+.TH "system-tar-and-restore" "1" "24 May 2014" "3.9.4" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -64,6 +64,11 @@ dont ask, just run
 \fB\-v, \-\-verbose\fR
 .RS 4
 enable verbose archiver output (cli only)
+.RE
+.PP
+\fB\-g, \-\-generate\fR
+.RS 4
+generate configuration file (in case of successful backup)
 .RE
 .PP
 \fB\-d, \-\-directory\fR
@@ -191,6 +196,11 @@ swap partition
 \fB\-m, \-\-mount-options\fR
 .RS 4
 comma-separated list of mount options (root partition)
+.RE
+.PP
+\fB\-d, \-\-dont-check-root\fR
+.RS 4
+dont check if root partition is empty (dangerous)
 .RE
 .PP
 \fB\-g, \-\-grub\fR

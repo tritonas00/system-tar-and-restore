@@ -1,5 +1,16 @@
 Changelog:
 
+3.9.4
+    backup.sh can now read input from /etc/backup.conf
+    added argument to generate backup configuration file
+    added argument to bypass the root partition check
+    added checks for basic paramaters in backup.sh
+    added check for btrfs subvolumes in restore.sh
+    clean temp files on startup
+    fixed archive name in backup.log
+    some cosmetic changes
+    code cleaning
+
 3.9.3
     added support for additional tar/bsdtar options in restore.sh
     allow GNU Tar in Fedora

@@ -57,8 +57,8 @@ dont ask, just run
 **-v, --verbose**           
 enable verbose archiver output (cli only)
 
-**-g, --generate** 
-generate configuration file (in case of successful backup)
+**-g, --generate**    
+generate configuration file (in case of successful backup)  
 
 **-d, --directory**  
 backup folder path

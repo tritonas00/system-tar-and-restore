@@ -57,6 +57,9 @@ dont ask, just run
 **-v, --verbose**           
 enable verbose archiver output (cli only)
 
+**-g, --generate** 
+generate configuration file (in case of successful backup)
+
 **-d, --directory**  
 backup folder path
 
@@ -81,6 +84,8 @@ additional tar options (see tar --help or man bsdtar)
 **--help**   
 show all arguments
 
+The script can also read input from */etc/backup.conf*.
+See the provided [sample](https://github.com/tritonas00/system-tar-and-restore/blob/master/backup.conf) or use -g to generate a configuration file. 
 
 
 ###RESTORE###
@@ -181,6 +186,9 @@ specify custom partitions (mountpoint=device)
 
 **-m, --mount-options**     
 comma-separated list of mount options (root partition)
+
+**-d,  --dont-check-root**  
+dont check if root partition is empty (dangerous)
 
 **-g, --grub**    
 target disk for grub

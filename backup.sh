@@ -182,7 +182,7 @@ prepare() {
 
 report_vars_log() {
   echo -e "\n${BR_SEP}VERBOSE SUMMARY"
-  echo "Archive: $BRNAME.${BR_EXT}"
+  echo "Archive: $(basename $BRFile.${BR_EXT})"
   echo "Archiver: $BRarchiver"
   echo "Compression: $BRcompression"
   echo "Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"

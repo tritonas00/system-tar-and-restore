@@ -43,7 +43,7 @@ Supported distributions:
 .sp
 Backup script makes a tar backup of \fI/\fR in a given location\&. It will make a folder 
 in that location which contains the \fBarchive\fR and the \fBlog\fR file "backup.log" 
-(usefull for tracking tar errors/warnings)\&.
+(usefull for tracking tar errors/warnings). The script can also read input from \fI/etc/backup.conf\fR. See the provided sample or use -g to generate a configuration file.\&
 .SH BACKUP OPERATIONS
 .PP
 \fB\-i, \-\-interface\fR
@@ -263,6 +263,10 @@ With \fBGNU Tar 1.27\fR\&, you can add \fB--xattrs --acls --selinux\fR\& in back
 .sp
 The system that runs the restore script and the target system (the one you 
 want to restore)\&, must have the same architecture (for \fIchroot\fR to work)\&.
+.sp
+In case of Fedora \fB--xattrs --acls --selinux\fR\& are added automatically in backup. 
+In order to successfully restore the target system (\fBFedora 19+\fR\&) using GNU Tar, 
+you need to add \fB--selinux --acls --xattrs-include='*'\fR\& in restore additional tar options\&.
 .sp
 For booting a \fBBTRFS\fR subvolumed root successfully with \fBSyslinux\fR\&,
 it is recommended to have a seperate \fI/boot\fR partition\&. Recommended 

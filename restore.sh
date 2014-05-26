@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.4"
+BR_VERSION="System Tar & Restore 3.9.5"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -1720,7 +1720,6 @@ if [ "$BRinterface" = "cli" ]; then
 	  done
 	else
 	  BRgrub="/boot/efi"
-	  echo -e "${BR_GREEN}Grub will install in /boot/efi ($BRefisp) partition${BR_NORM}"
 	fi
         break
 
@@ -1851,7 +1850,7 @@ if [ "$BRinterface" = "cli" ]; then
           unset BRurl
           echo -e "\n${BR_CYAN}Enter the path of the backup file${BR_NORM}"
           IFS=$DEFAULTIFS
-          read -e -p "Path:" BRfile
+          read -e -p "Path: " BRfile
           IFS=$'\n'
           if [ ! -f "$BRfile" ] || [ -z "$BRfile" ]; then
             echo -e "[${BR_RED}ERROR${BR_NORM}] File not found"
@@ -1868,7 +1867,7 @@ if [ "$BRinterface" = "cli" ]; then
         elif [ "$REPLY" = "2" ] || [ "$REPLY" = "3" ]; then
           unset BRfile
           echo -e "\n${BR_CYAN}Enter the URL for the backup file${BR_NORM}"
-          read -p "URL:" BRurl
+          read -p "URL: " BRurl
           BRsource="$BRmaxsize/fullbackup"
           echo " "
           if [ "$REPLY" = "3" ]; then
@@ -1970,6 +1969,7 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   if [ "$BRedit" = "y" ]; then
+    PS3="Enter number: "
     echo -e "\n${BR_CYAN}Select editor${BR_NORM}"
     select c in ${editorlist[@]}; do
       if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#editorlist[@]} ]; then

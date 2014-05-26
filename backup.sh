@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.4"
+BR_VERSION="System Tar & Restore 3.9.5"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -408,7 +408,7 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   while [ -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-    echo -e "\n${BR_CYAN}Enter path to save the backup archive (leave blank for default '/')${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter path to save the backup archive\n${BR_MAGENTA}(Leave blank for default '/')${BR_NORM}"
     read -e -p "Path: " BRFOLDER
     if [ -z "$BRFOLDER" ]; then
       BRFOLDER="/"
@@ -418,7 +418,7 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   if [ -z "$BRNAME" ]; then
-    echo -e "\n${BR_CYAN}Enter archive name (leave blank for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)')${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter archive name\n${BR_MAGENTA}(Leave blank for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)')${BR_NORM}"
     read -e -p "Name (without extension): " BRNAME
   fi
 
@@ -492,7 +492,7 @@ if [ "$BRinterface" = "cli" ]; then
   options_info
 
   if [ -z "$BR_USER_OPTS" ]; then
-    echo -e "\n${BR_CYAN}Enter additional $BRarchiver options (leave blank for defaults)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter additional $BRarchiver options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
     read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
 
@@ -511,7 +511,7 @@ if [ "$BRinterface" = "cli" ]; then
       if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
         break
       elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-        echo -e "\n${BR_CYAN}Enter archive name (leave blank for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)')${BR_NORM}"
+        echo -e "\n${BR_CYAN}Enter archive name\n${BR_MAGENTA}(Leave blank for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)')${BR_NORM}"
         read -e -p "Name (without extension): " BRNAME
         set_names
       else

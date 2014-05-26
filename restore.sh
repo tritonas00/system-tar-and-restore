@@ -1549,7 +1549,7 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   if [ -z "$BR_MOUNT_OPTS" ]; then
-    echo -e "\n${BR_CYAN}Enter additional mount options (leave blank for defaults)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter additional mount options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
     read -p "Options (comma-separated list): " BR_MOUNT_OPTS
     if [ -z "$BR_MOUNT_OPTS" ]; then
       BR_MOUNT_OPTS="defaults"
@@ -1588,7 +1588,7 @@ if [ "$BRinterface" = "cli" ]; then
       done
 
       if [ -z "$BRsubvols" ]; then
-        echo -e "\n${BR_CYAN}Set other subvolumes (leave blank for none)${BR_NORM}"
+        echo -e "\n${BR_CYAN}Set other subvolumes\n${BR_MAGENTA}(Leave blank for none)${BR_NORM}"
         read -p "Paths (e.g /home /var /usr ...): " BRsubvolslist
         if [ -n "$BRsubvolslist" ]; then
           IFS=$DEFAULTIFS
@@ -1609,7 +1609,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ -d "$BR_EFI_DETECT_DIR" ]; then
     if [ -z "$BRefisp" ] && [ -n "${list[*]}" ]; then
-      echo -e "\n${BR_CYAN}Select target EFI system partition:${BR_MAGENTA}${BR_NORM}"
+      echo -e "\n${BR_CYAN}Select target EFI system partition:${BR_NORM}"
       select c in ${list[@]}; do
         if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
           echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1688,7 +1688,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ -n "${list[*]}" ]; then
     if [ -z "$BRcustompartslist" ]; then
-      echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3 (leave blank for none)${BR_NORM}"
+      echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3\n${BR_MAGENTA}(Leave blank for none)${BR_NORM}"
       read -p "Partitions: " BRcustompartslist
       if [ -n "$BRcustompartslist" ]; then
         IFS=$DEFAULTIFS
@@ -1736,7 +1736,7 @@ if [ "$BRinterface" = "cli" ]; then
 	  exit
 	elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
 	  BRsyslinux=(`echo $c | awk '{ print $1 }'`)
-	  echo -e "\n${BR_CYAN}Enter additional kernel options (leave blank for defaults)${BR_NORM}"
+	  echo -e "\n${BR_CYAN}Enter additional kernel options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
           read -p "Options: " BR_KERNEL_OPTS
           break
 	else
@@ -1790,7 +1790,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ "$BRmode" = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
-      echo -e "\n${BR_CYAN}Transfer entire /home directory?\n(If no, only hidden files and folders will be transferred)${BR_NORM}"
+      echo -e "\n${BR_CYAN}Transfer entire /home directory?\n${BR_MAGENTA}(If no, only hidden files and folders will be transferred)${BR_NORM}"
       read -p "(Y/n):" an
 
       if [ -n "$an" ]; then def=$an; else def="y"; fi
@@ -1808,7 +1808,7 @@ if [ "$BRinterface" = "cli" ]; then
   options_info
 
   if [ -z "$BR_USER_OPTS" ]; then
-    echo -e "\n${BR_CYAN}Enter additional $BRtbr options (leave blank for defaults)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter additional $BRtbr options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
     if [ "$BRarchiver" = "tar" ]; then
       echo -e "[${BR_CYAN}INFO${BR_NORM}] If the target system is Fedora 19+, you should add ${BR_YELLOW}--selinux --acls --xattrs-include='*'${BR_NORM}"
     fi

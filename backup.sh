@@ -292,7 +292,7 @@ General:${BR_NORM}
   -g, --generate          generate configuration file (in case of successful backup)
 
 ${BR_BOLD}Destination:${BR_NORM}
-  -d, --directory         backup folder path
+  -d, --directory         backup destination path
   -f, --filename          backup file name (without extension)
 
 ${BR_BOLD}Home Directory:${BR_NORM}

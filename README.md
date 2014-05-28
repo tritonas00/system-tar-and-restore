@@ -255,14 +255,14 @@ Recommended subvolume name is: *__active*
 - Compression: gzip  
 - Archiver: tar
 
-<code>sudo ./backup.sh -d /home/john/ -c gzip -a tar</code>  
+<code>./backup.sh -d /home/john/ -c gzip -a tar</code>  
 
 - Backup directory=/home/john/
 - Compression: xz  
 - Archiver: bsdtar   
 - Exclude /home directory  
 
-<code>sudo ./backup.sh -d /home/john/ -c xz -hn -a bsdtar</code>   
+<code>./backup.sh -d /home/john/ -c xz -hn -a bsdtar</code>   
 
 - Backup directory=/home/john/
 - Compression: gzip  

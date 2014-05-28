@@ -251,79 +251,79 @@ Recommended subvolume name is: *__active*
 
 ###EXAMPLES USING ARGUMENTS###
 
-- Backup directory = /home/john/
+- Backup directory: /home/john/
 - Compression: gzip  
 - Archiver: tar
 
 <code>./backup.sh -d /home/john/ -c gzip -a tar</code>  
 
-- Backup directory = /home/john/
+- Backup directory: /home/john/
 - Compression: xz  
 - Archiver: bsdtar   
 - Exclude /home directory  
 
 <code>./backup.sh -d /home/john/ -c xz -hn -a bsdtar</code>   
 
-- Backup directory = /home/john/
+- Backup directory: /home/john/
 - Compression: gzip  
 - Archiver: tar  
 - Keep only /home's hidden files and folders
 
 <code>./backup.sh -d /home/john/ -c gzip -h -a tar</code>   
 
-- root = /dev/sdb1
+- root: /dev/sdb1
 - grub  
 - local file
 
 <code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -a tar</code>  
 
-- root = /dev/sda1 (ssd)
+- root: /dev/sda1 (ssd)
 - syslinux  
 - kernel options: nomodeset
 - transfer mode  
 
 <code>./restore.sh -r /dev/sda1 -m discard,errors=remount-ro -S /dev/sda -k nomodeset -t</code>  
 
-- root = /dev/sdb1
-- home = /dev/sdb2
-- swap = /dev/sdb3
+- root: /dev/sdb1
+- home: /dev/sdb2
+- swap: /dev/sdb3
 - syslinux 
 - remote file on ftp server
 
 <code>./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -f ftp://server/backup.tar.xz -a bsdtar</code>
 
-- root = /dev/sdb2
-- boot = /dev/sdb1
+- root: /dev/sdb2
+- boot: /dev/sdb1
 - syslinux 
 - remote file in protected http server
 
 <code>./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -f http://server/backup.tar.gz -n user -p pass -a tar</code>
 
-- root = /dev/mapper/debian-root
-- boot = /dev/sdb1  
+- root: /dev/mapper/debian-root
+- boot: /dev/sdb1  
 - grub  
 - transfer mode  
 
 <code>./restore.sh -r /dev/mapper/debian-root -b /dev/sdb1 -g /dev/sdb -t</code>  
 
-- root = /dev/sda2 (btrfs) with compression
-- boot = /dev/sda1
-- root subvolume = __active
+- root: /dev/sda2 (btrfs) with compression
+- boot: /dev/sda1
+- root subvolume: __active
 - /var, /usr and /home subvolumes
 - syslinux  
 - transfer mode  
 
 <code>./restore.sh -t -b /dev/sda1 -r /dev/sda2 -m compress=lzo -S /dev/sda -R __active -O "/var /usr /home"</code>  
 
-- root = /dev/md1
-- boot = /dev/md0
+- root: /dev/md1
+- boot: /dev/md0
 - local file  
 - syslinux  
 
 <code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0 -a bsdtar</code>  
 
-- root = /dev/sda2
-- esp = /dev/sda1
+- root: /dev/sda2
+- esp: /dev/sda1
 - local file  
 - grub
 

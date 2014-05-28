@@ -61,7 +61,7 @@ enable verbose archiver output (cli only)
 generate configuration file (in case of successful backup)  
 
 **-d, --directory**  
-backup folder path
+backup destination path
 
 **-f, --filename**  
 backup file name (without extension)  

@@ -262,7 +262,7 @@ Recommended subvolume name is: *__active*
 - Archiver: bsdtar   
 - Exclude /home directory  
 
-<code>sudo ./backup.sh -d /home/john/ -c xz -h -n -a bsdtar</code>   
+<code>sudo ./backup.sh -d /home/john/ -c xz -hn -a bsdtar</code>   
 
 - Backup directory=/home/john/
 - Compression: gzip  

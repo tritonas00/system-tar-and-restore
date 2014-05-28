@@ -251,20 +251,20 @@ Recommended subvolume name is: *__active*
 
 ###EXAMPLES USING ARGUMENTS###
 
-- Backup directory=/home/john/
+- Backup directory = /home/john/
 - Compression: gzip  
 - Archiver: tar
 
 <code>./backup.sh -d /home/john/ -c gzip -a tar</code>  
 
-- Backup directory=/home/john/
+- Backup directory = /home/john/
 - Compression: xz  
 - Archiver: bsdtar   
 - Exclude /home directory  
 
 <code>./backup.sh -d /home/john/ -c xz -hn -a bsdtar</code>   
 
-- Backup directory=/home/john/
+- Backup directory = /home/john/
 - Compression: gzip  
 - Archiver: tar  
 - Keep only /home's hidden files and folders

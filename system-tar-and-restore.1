@@ -301,7 +301,7 @@ compression and \fBtar\fR archiver:
 Backup system in the directory \fI/home/john/\fR\&, use \fBxz\fR compression, 
 \fBbsdtar\fR archiver and exclude \fI/home/\fR directory from backup tarball:
 .RS 4
-\fB./backup.sh \-d /home/john/ \-c xz \-h \-n -a bsdtar\fR 
+\fB./backup.sh \-d /home/john/ \-c xz \-hn -a bsdtar\fR 
 .RE
 .sp
 Backup system in the directory \fI/home/john/\fR\&, use \fBgzip\fR compression, 
@@ -324,7 +324,7 @@ Transfer running system using \fBrsync\fR\& in \fBssd\fR\&. The \fI/\fR partitio
 .sp
 Restore system in \fI/dev/sdb1\fR for \fI/\fR (root) partition\&, \fI/dev/sdb2\fR
 for \fI/home\fR partition\&, \fI/dev/sdb3\fR for \fIswap\fR\& partition, using \fBsyslinux\fR 
-as bootloader and downloading backup file from ftp server:
+as bootloader and download backup file from ftp server:
 .RS 4
 \fB./restore.sh \-r /dev/sdb1 \-h /dev/sdb2 \-s /dev/sdb3 \-S /dev/sdb \-f 
 ftp://server/data/backup.tar.xz -a bsdtar\fR
@@ -332,7 +332,7 @@ ftp://server/data/backup.tar.xz -a bsdtar\fR
 .sp
 Restore system in  \fI/dev/sdb2\fR for \fI/\fR (root) partition, \fI/dev/sdb1\fR
 for \fI/boot\fR partition, \fI/dev/sdb3\fR for \fI/home\fR\&, using \fBsyslinux\fR 
-as bootloader and downloading backup file from protected http server\&.
+as bootloader and download backup file from protected http server\&.
 .RS 4
 \fB./restore.sh \-r /dev/sdb2 \-b /dev/sdb1 \-h /dev/sdb3 \-S /dev/sdb \-f 
 http://server/backup.tar.gz \-n user \-p pass -a tar\fR
@@ -362,7 +362,7 @@ and the root partition will be \fI/dev/md1\fR\&. The backup will be the local fi
 .RE
 .RE
 .sp
-Restore system in \fBUEFI\fR environment\&. The EFI system  partition will be \fI/dev/sda1\fR
+Restore system in \fBUEFI\fR environment\&. The EFI system partition will be \fI/dev/sda1\fR
 and the root partition will be \fI/dev/sda2\fR\&. The backup will be the local file
 \fI/home/john/Downloads/backup.tar.gz\fR and \fBgrub\fR will be installed in \fI/boot/efi\fR\::
 .RS 4

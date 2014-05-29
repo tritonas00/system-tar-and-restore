@@ -134,8 +134,8 @@ The script will ask for:
 - Select Mode. If **Restore Mode** is selected it will ask the archiver you used to create the backup archive
     and the backup archive itself.  This can be obtained locally (by entering the full path of the file), or remotelly
    (by entering the url of the file). Also protected url is supported, which will ask for server's username and password.
-   If **Transfer Mode** is selected, it will ask if you want to transfer entire /home directory or only it's hidden files and folders, 
-   and also if you want to specify additional rsync options (see rsync --help).  
+   If **Transfer Mode** is selected, it will ask if you want to transfer entire /home directory or only it's hidden files and folders. 
+   Also it will ask if you want to specify additional tar/rsync options (see tar --help, man bsdtar or rsync --help).  
 
 - Later it will ask you if you want to edit the generated fstab file further. Old fstab file is saved as */mnt/target/etc/fstab-old*.  
 

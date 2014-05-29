@@ -328,3 +328,12 @@ Recommended subvolume name is: *__active*
 - grub
 
 <code>./restore.sh -r /dev/sda2  -e /dev/sda1 -g /boot/efi -f /home/john/Downloads/backup.tar.gz -a tar</code>   
+
+- root partition: /dev/sdb2
+- boot partition: /dev/sdb1
+- var partition: /dev/sdb4
+- usr partition: /dev/sdb3
+- transfer mode (/home's hidden files and folders only)
+- grub
+
+<code>./restore.sh -r /dev/sdb2 -b /dev/sdb1 -c "/var=/dev/sdb4 /usr=/dev/sdb3" -g /dev/sdb -to</code>

@@ -360,13 +360,19 @@ and the root partition will be \fI/dev/md1\fR\&. The backup will be the local fi
 .RS 4
 \fB./restore.sh \-r /dev/md1 \-b /dev/md0 \-f /home/john/Downloads/backup.tar.gz \-S /dev/md0 -a bsdtar\fR
 .RE
-.RE
 .sp
 Restore system in \fBUEFI\fR environment\&. The EFI system partition will be \fI/dev/sda1\fR
 and the root partition will be \fI/dev/sda2\fR\&. The backup will be the local file
 \fI/home/john/Downloads/backup.tar.gz\fR and \fBgrub\fR will be installed in \fI/boot/efi\fR\::
 .RS 4
 \fB./restore.sh \-r /dev/sda2 \-e /dev/sda1 \-f /home/john/Downloads/backup.tar.gz \-g /boot/efi -a tar\fR
+.RE
+.sp
+Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be
+\fI/dev/sdb2\fR, \fI/boot\fR partition \fI/dev/sdb1\fR, \fI/var\fR partition \fI/dev/sdb4\fR,
+\fI/usr\fR partition \fI/dev/sdb3\fR, using \fBgrub\fR as bootloader. Only hidden files and folders will be transferred from \fI/home/\fR:
+.RS 4
+\fB./restore.sh \-b /dev/sdb1 \-r /dev/sdb2 \-c "/var=/dev/sdb4 /usr=/dev/sdb3" \-g /dev/sdb \-to\fR
 .RE
 .SH ONLINE DOCUMENTATION
 https://github.com/tritonas00/system-tar-and-restore#about

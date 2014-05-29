@@ -578,14 +578,14 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --yesno "The default folder for creating the backup archive is / (root).\n\nSave in the default folder?" 8 65
+    dialog --yesno "The default directory for creating the backup archive is / (root).\n\nSave in the default directory?" 8 65
     if [ "$?" = "0" ]; then
       BRFOLDER="/"
     else
       BRpath=/
       while [ -z "$BRFOLDER" ]; do
         show_path
-        BRselect=$(dialog --title "$BRcurrentpath" --no-cancel --extra-button --extra-label Set --menu "Set destination folder: (Highlight a directory and press Set)" 30 90 30 "<--UP" .. $(dir_list) 2>&1 1>&3)
+        BRselect=$(dialog --title "$BRcurrentpath" --no-cancel --extra-button --extra-label Set --menu "Set destination directory: (Highlight a directory and press Set)" 30 90 30 "<--UP" .. $(dir_list) 2>&1 1>&3)
         if [ "$?" = "3" ]; then
           if [ "$BRselect" = "<--UP" ]; then
             BRpath="$BRpath"

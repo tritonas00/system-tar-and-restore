@@ -31,8 +31,6 @@ clean_files() {
   if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
  }
 
-clean_files
-
 exit_screen() {
   if [ -f /tmp/bl_error ]; then
     echo -e "\n${BR_RED}Error installing $BRbootloader. Check /tmp/restore.log for details.\n\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
@@ -1488,6 +1486,8 @@ if [ -d /mnt/target ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] /mnt/target exists, aborting"
   exit
 fi
+
+clean_files
 
 if [ -f /etc/pacman.conf ]; then
   PATH="$PATH:/usr/sbin:/bin"

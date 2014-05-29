@@ -42,8 +42,6 @@ clean_files() {
   if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi
 }
 
-clean_files
-
 exit_screen() {
   if [ -f /tmp/b_error ]; then
     echo -e "${BR_RED}\nAn error occurred. Check "$BRFOLDER"/backup.log for details.\n\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
@@ -325,6 +323,8 @@ if [ $(id -u) -gt 0 ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Script must run as root"
   exit
 fi
+
+clean_files
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Directory does not exist: $BRFOLDER"

@@ -30,7 +30,7 @@ The script will ask for:
 
 - Interface to use 
 
-- If you want to save the backup in the default folder (/), or enter your desired path
+- If you want to save the backup in the default directory (/), or enter your desired path
 
 - If you want to specify a backup filename (without extension) or use the default name  
 

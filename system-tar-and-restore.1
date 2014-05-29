@@ -330,7 +330,7 @@ as bootloader and download backup file from ftp server:
 ftp://server/data/backup.tar.xz -a bsdtar\fR
 .RE
 .sp
-Restore system in  \fI/dev/sdb2\fR for \fI/\fR (root) partition, \fI/dev/sdb1\fR
+Restore system in \fI/dev/sdb2\fR for \fI/\fR (root) partition, \fI/dev/sdb1\fR
 for \fI/boot\fR partition, \fI/dev/sdb3\fR for \fI/home\fR\&, using \fBsyslinux\fR 
 as bootloader and download backup file from protected http server\&.
 .RS 4
@@ -338,7 +338,7 @@ as bootloader and download backup file from protected http server\&.
 http://server/backup.tar.gz \-n user \-p pass -a tar\fR
 .RE
 .sp
-Transfer running  system using \fBrsync\fR\&. The \fI/\fR partition will be
+Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be
 \fI/dev/mapper/debian-root\fR which is a \fBLVM\fR partition\&, \fI/dev/sdb1\fR
 for \fI/boot\fR partition using \fBgrub\fR as bootloader:
 .RS 4

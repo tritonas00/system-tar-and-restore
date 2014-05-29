@@ -254,8 +254,9 @@ Recommended subvolume name is: *__active*
 - Destination: /home/john/
 - Compression: gzip  
 - Archiver: tar
+- --acls and --xattrs options
 
-<code>./backup.sh -d /home/john/ -c gzip -a tar</code>  
+<code>./backup.sh -d /home/john/ -c gzip -a tar -u "--acls --xattrs"</code>  
 
 - Destination: /home/john/
 - Compression: xz  

@@ -293,9 +293,9 @@ an \fBESP (EFI System Partition)\fR\&.
 .SH EXAMPLES USING ARGUMENTS
 .sp
 Backup system in the directory \fI/home/john/\fR, use \fBgzip\fR 
-compression and \fBtar\fR archiver:
+compression, \fBtar\fR archiver and enable \fB--acls\fR and \fB--xattrs\fR options:
 .RS 4
-\fB./backup.sh \-d /home/john/ \-c gzip -a tar\fR 
+\fB./backup.sh \-d /home/john/ \-c gzip -a tar \-u "--acls --xattrs"\fR 
 .RE
 .sp
 Backup system in the directory \fI/home/john/\fR\&, use \fBxz\fR compression, 

@@ -40,7 +40,7 @@ The script will ask for:
 
 - Compression type: gzip bzip2 and xz are supported.
 
-- If you want to enter any additional archiver options (see tar --help or man bsdtar)  
+- If you want to specify any additional archiver options (see tar --help or man bsdtar)  
 
 
 The script also supports all input as arguments:

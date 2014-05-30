@@ -4,7 +4,7 @@ Changelog:
     various refinements in cli interface
     cleaner verbose tar/rsync output layout
     clean temp files after the basic checks
-    use seperated temp files between the scripts
+    use separated temp files between the scripts
 
 3.9.4
     backup.sh can now read input from /etc/backup.conf

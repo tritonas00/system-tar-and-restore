@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 3.9.4
+.\"    Source: system-tar-and-restore 3.9.5
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "24 May 2014" "3.9.4" "General Manual"
+.TH "system-tar-and-restore" "1" "30 May 2014" "3.9.5" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -331,7 +331,7 @@ ftp://server/data/backup.tar.xz -a bsdtar\fR
 .RE
 .sp
 Restore system in \fI/dev/sdb2\fR for \fI/\fR (root) partition, \fI/dev/sdb1\fR
-for \fI/boot\fR partition, \fI/dev/sdb3\fR for \fI/home\fR\&, using \fBsyslinux\fR 
+for \fI/boot\fR partition, \fI/dev/sdb3\fR for \fI/home\fR\& partition, using \fBsyslinux\fR 
 as bootloader and download backup file from protected http server\&.
 .RS 4
 \fB./restore.sh \-r /dev/sdb2 \-b /dev/sdb1 \-h /dev/sdb3 \-S /dev/sdb \-f 
@@ -369,8 +369,8 @@ and the root partition will be \fI/dev/sda2\fR\&. The backup will be the local f
 .RE
 .sp
 Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be
-\fI/dev/sdb2\fR, \fI/boot\fR partition \fI/dev/sdb1\fR, \fI/var\fR partition \fI/dev/sdb4\fR,
-\fI/usr\fR partition \fI/dev/sdb3\fR, using \fBgrub\fR as bootloader. Only hidden files and folders will be transferred from \fI/home/\fR:
+\fI/dev/sdb2\fR, \fI/dev/sdb1\fR for \fI/boot\fR partition, \fI/dev/sdb4\fR for \fI/var\fR partition,
+\fI/dev/sdb3\fR for \fI/usr\fR partition, using \fBgrub\fR as bootloader. Only hidden files and folders will be transferred from \fI/home/\fR:
 .RS 4
 \fB./restore.sh \-b /dev/sdb1 \-r /dev/sdb2 \-c "/var=/dev/sdb4 /usr=/dev/sdb3" \-g /dev/sdb \-to\fR
 .RE

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.5"
+BR_VERSION="System Tar & Restore 3.9.6"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -180,7 +180,7 @@ prepare() {
 
 report_vars_log() {
   echo -e "\n${BR_SEP}VERBOSE SUMMARY"
-  echo "Archive: $(basename $BRFile.${BR_EXT})"
+  echo "Archive: $(basename "$BRFile".${BR_EXT})"
   echo "Archiver: $BRarchiver"
   echo "Compression: $BRcompression"
   echo "Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"

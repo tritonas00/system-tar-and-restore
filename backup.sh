@@ -194,7 +194,7 @@ report_vars_log() {
   if [ -z "$BRextlinux" ] || [ -z "$BRsyslinux" ] && [ ! -d /usr/lib/grub ]; then
     echo "Bootloader: None or not supported"
   fi
-  echo -e "Archiver Options:\n--exclude=$BRFOLDER \n$(for i in ${BR_TAROPTS[@]}; do echo "$i"; done)"
+  echo -e "Archiver Options:\n--exclude=$BRFOLDER\n$(for i in ${BR_TAROPTS[@]}; do echo "$i"; done)"
   echo -e "\n${BR_SEP}ARCHIVER STATUS"
 }
 

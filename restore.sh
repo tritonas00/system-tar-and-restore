@@ -1184,7 +1184,7 @@ report_vars_log() {
   echo "Archiver: $BRarchiver"
   IFS=$DEFAULTIFS
   if [ "$BRmode" = "Restore" ]; then
-    echo -e "Archiver Options:\n$(for i in ${BR_USER_OPTS[@]}; do echo -e "$i"; done)"
+    echo -e "Archiver Options:\n$(for i in ${BR_USER_OPTS[@]}; do echo "$i"; done)"
   elif [ "$BRmode" = "Transfer" ]; then
     echo -e "Rsync Options:\n$(for i in ${BR_RSYNCOPTS[@]}; do echo "$i"; done)"
   fi

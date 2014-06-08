@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.5"
+BR_VERSION="System Tar & Restore 3.9.6"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -1170,11 +1170,6 @@ report_vars_log() {
   fi
   echo "Kernel Options: $BR_KERNEL_OPTS"
   echo "Mode: $BRmode"
-  if [ "$BRmode" = "Restore" ]; then
-    echo "Archiver Options: ${BR_USER_OPTS[@]}"
-  elif [ "$BRmode" = "Transfer" ]; then
-    echo "Rsync Options: ${BR_RSYNCOPTS[@]}"
-  fi
   echo "Distro: $BRdistro"
   if [ "$BRmode" = "Restore" ]; then
     echo "Architecture: ${target_arch#*.}"
@@ -1187,7 +1182,13 @@ report_vars_log() {
     echo "Source: remote $BRfiletype archive"
   fi
   echo "Archiver: $BRarchiver"
-
+  IFS=$DEFAULTIFS
+  if [ "$BRmode" = "Restore" ]; then
+    echo -e "Archiver Options:\n$(for i in ${BR_USER_OPTS[@]}; do echo -e "$i"; done)"
+  elif [ "$BRmode" = "Transfer" ]; then
+    echo -e "Rsync Options:\n$(for i in ${BR_RSYNCOPTS[@]}; do echo "$i"; done)"
+  fi
+  IFS=$'\n'
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 

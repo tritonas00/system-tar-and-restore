@@ -183,7 +183,6 @@ report_vars_log() {
   echo "Archive: $(basename "$BRFile".${BR_EXT})"
   echo "Archiver: $BRarchiver"
   echo "Compression: $BRcompression"
-  echo "Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"
   echo "Home: $BRhome"
   echo "Hidden: $BRhidden"
   if [ -d /usr/lib/grub ]; then echo "Bootloader: Grub"; fi
@@ -192,11 +191,10 @@ report_vars_log() {
   if [ -n "$BRextlinux" ] && [ -n "$BRsyslinux" ]; then
     echo "Bootloader: Syslinux"
   fi
-
   if [ -z "$BRextlinux" ] || [ -z "$BRsyslinux" ] && [ ! -d /usr/lib/grub ]; then
     echo "Bootloader: None or not supported"
   fi
-
+  echo -e "Archiver Options:\n--exclude=$BRFOLDER \n$(for i in ${BR_TAROPTS[@]}; do echo "${i}"; done)"
   echo -e "\n${BR_SEP}ARCHIVER STATUS"
 }
 

@@ -69,9 +69,8 @@ show_summary() {
   echo -e "\nARCHIVER OPTIONS:"
   echo "--exclude=$BRFOLDER"
   echo "${BR_TAROPTS[@]}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
-  if [ -n "$BR_USER_OPTS" ]; then echo " "; fi
 
-  echo "HOME DIRECTORY:"
+  echo -e "\nHOME DIRECTORY:"
   if [ "$BRhome" = "Yes" ]; then
     echo "Include"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then

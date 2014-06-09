@@ -1144,6 +1144,7 @@ rsync_pgrs_cli() {
 }
 
 report_vars_log() {
+  echo -e "--------------$BR_VERSION {$(date +%d-%m-%Y-%T)}--------------\n"
   echo "${BR_SEP}VERBOSE SUMMARY"
   echo "Root Partition: $BRroot $BRfsystem $BR_MOUNT_OPTS"
   echo "Swap Partition: $BRswap"
@@ -1922,8 +1923,6 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   done
 
-  echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
-  echo " " >> /tmp/restore.log
   report_vars_log  >> /tmp/restore.log
   if [ "$BRmode" = "Restore" ]; then
     echo -e "\n${BR_SEP}EXTRACTING"
@@ -2336,8 +2335,6 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  echo "--------------$(date +%d-%m-%Y-%T)--------------" >> /tmp/restore.log
-  echo " " >> /tmp/restore.log
   report_vars_log >> /tmp/restore.log
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)

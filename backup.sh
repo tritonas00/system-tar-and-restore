@@ -174,16 +174,16 @@ prepare() {
   touch /target_architecture.$(uname -m)
   if [ "$BRinterface" = "cli" ]; then echo -e "\n${BR_SEP}CREATING ARCHIVE"; fi
   mkdir -p "$BRFOLDER"
-  echo "--------------$(date +%d-%m-%Y-%T)--------------" >> "$BRFOLDER"/backup.log
   sleep 1
 }
 
 report_vars_log() {
-  echo -e "\n${BR_SEP}VERBOSE SUMMARY"
+  echo -e "--------------$BR_VERSION {$(date +%d-%m-%Y-%T)}--------------\n"
+  echo "${BR_SEP}VERBOSE SUMMARY"
   echo "Archive: $(basename "$BRFile".${BR_EXT})"
   echo "Archiver: $BRarchiver"
   echo "Compression: $BRcompression"
-  echo "Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"
+  echo "Archiver Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"
   echo "Home: $BRhome"
   echo "Hidden: $BRhidden"
   if [ -d /usr/lib/grub ]; then echo "Bootloader: Grub"; fi

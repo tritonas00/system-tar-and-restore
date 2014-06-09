@@ -69,8 +69,9 @@ show_summary() {
   echo -e "\nARCHIVER OPTIONS:"
   echo "--exclude=$BRFOLDER"
   echo "${BR_TAROPTS[@]}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
+  if [ -n "$BR_USER_OPTS" ]; then echo " "; fi
 
-  echo -e "\nHOME DIRECTORY:"
+  echo "HOME DIRECTORY:"
   if [ "$BRhome" = "Yes" ]; then
     echo "Include"
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
@@ -117,6 +118,7 @@ set_tar_options() {
     BR_MAINOPTS="cvpjf"
     BR_EXT="tar.bz2"
   fi
+  if [ "$BR_USER_OPTS" = "-1" ]; then unset BR_USER_OPTS; fi
 
   if [ "$BRarchiver" = "tar" ]; then
     BR_TAROPTS="--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=lost+found --sparse $BR_USER_OPTS"
@@ -195,7 +197,8 @@ report_vars_log() {
     echo "Bootloader: None or not supported"
   fi
   echo -e "Archiver Options:\n--exclude=$BRFOLDER\n$(for i in ${BR_TAROPTS[@]}; do echo "$i"; done)"
-  echo -e "\n${BR_SEP}ARCHIVER STATUS"
+  if [ -n "$BR_USER_OPTS" ]; then echo " "; fi
+  echo "${BR_SEP}ARCHIVER STATUS"
 }
 
 options_info() {
@@ -367,7 +370,7 @@ if [ -n "$BRFOLDER" ]; then
     BRhome="Yes"
   fi
   if [ -z "$BR_USER_OPTS" ]; then
-    BR_USER_OPTS=" "
+    BR_USER_OPTS="-1"
   fi
   if [ -z "$BRNAME" ]; then
     BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"

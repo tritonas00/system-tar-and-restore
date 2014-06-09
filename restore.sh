@@ -1189,7 +1189,8 @@ report_vars_log() {
     echo -e "Rsync Options:\n$(for i in ${BR_RSYNCOPTS[@]}; do echo "$i"; done)"
   fi
   IFS=$'\n'
-  echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
+  if [ -n "$BR_USER_OPTS" ]; then echo " "; fi
+  echo "${BR_SEP}TAR/RSYNC STATUS"
 }
 
 options_info() {

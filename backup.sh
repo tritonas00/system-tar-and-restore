@@ -195,7 +195,7 @@ report_vars_log() {
   if [ -z "$BRextlinux" ] || [ -z "$BRsyslinux" ] && [ ! -d /usr/lib/grub ]; then
     echo "Bootloader: None or not supported"
   fi
-  echo "${BR_SEP}ARCHIVER STATUS"
+  echo -e "\n${BR_SEP}ARCHIVER STATUS"
 }
 
 options_info() {

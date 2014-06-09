@@ -117,7 +117,6 @@ set_tar_options() {
     BR_MAINOPTS="cvpjf"
     BR_EXT="tar.bz2"
   fi
-  if [ "$BR_USER_OPTS" = "-1" ]; then unset BR_USER_OPTS; fi
 
   if [ "$BRarchiver" = "tar" ]; then
     BR_TAROPTS="--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=lost+found --sparse $BR_USER_OPTS"
@@ -184,6 +183,7 @@ report_vars_log() {
   echo "Archive: $(basename "$BRFile".${BR_EXT})"
   echo "Archiver: $BRarchiver"
   echo "Compression: $BRcompression"
+  echo "Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"
   echo "Home: $BRhome"
   echo "Hidden: $BRhidden"
   if [ -d /usr/lib/grub ]; then echo "Bootloader: Grub"; fi
@@ -195,8 +195,6 @@ report_vars_log() {
   if [ -z "$BRextlinux" ] || [ -z "$BRsyslinux" ] && [ ! -d /usr/lib/grub ]; then
     echo "Bootloader: None or not supported"
   fi
-  echo -e "Archiver Options:\n--exclude=$BRFOLDER\n$(for i in ${BR_TAROPTS[@]}; do echo "$i"; done)"
-  if [ -n "$BR_USER_OPTS" ]; then echo " "; fi
   echo "${BR_SEP}ARCHIVER STATUS"
 }
 
@@ -369,7 +367,7 @@ if [ -n "$BRFOLDER" ]; then
     BRhome="Yes"
   fi
   if [ -z "$BR_USER_OPTS" ]; then
-    BR_USER_OPTS="-1"
+    BR_USER_OPTS=" "
   fi
   if [ -z "$BRNAME" ]; then
     BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"

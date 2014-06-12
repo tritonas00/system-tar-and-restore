@@ -1129,7 +1129,7 @@ unset_vars() {
 
 tar_pgrs_cli() {
   if [ -n "$BRverb" ]; then
-    echo -e "\r${BR_YELLOW}X: ${BR_MAGENTA}$(($a*100/$total))% ${BR_GREEN}$ln${BR_NORM}"
+    echo -e "\r${BR_YELLOW}[$(($a*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
   else
     echo -en "\rDecompressing: $(($a*100/$total))%"
   fi
@@ -1137,7 +1137,7 @@ tar_pgrs_cli() {
 
 rsync_pgrs_cli() {
   if [ -n "$BRverb" ]; then
-    echo -e "\r${BR_YELLOW}S: ${BR_MAGENTA}$(($b*100/$total))% ${BR_GREEN}$ln${BR_NORM}"
+    echo -e "\r${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
   else
     echo -en "\rSyncing: $(($b*100/$total))%"
   fi

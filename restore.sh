@@ -1048,7 +1048,7 @@ clean_unmount_in() {
   if [ -z "$BRnocolor" ]; then color_variables; fi
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
-  rm "$BRmaxsize/fullbackup" 2> /dev/null
+  rm "$BRmaxsize/downloaded_backup" 2> /dev/null
   if [ -n "$BRcustomparts" ]; then
     while read ln; do
       sleep 1
@@ -1093,7 +1093,7 @@ clean_unmount_out() {
   if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
-  rm "$BRmaxsize/fullbackup" 2> /dev/null
+  rm "$BRmaxsize/downloaded_backup" 2> /dev/null
   umount /mnt/target/dev/pts
   umount /mnt/target/proc
   umount /mnt/target/dev
@@ -1826,7 +1826,7 @@ if [ "$BRinterface" = "cli" ]; then
     fi
 
     if [ -n "$BRurl" ]; then
-      BRsource="$BRmaxsize/fullbackup"
+      BRsource="$BRmaxsize/downloaded_backup"
       if [ -n "$BRusername" ]; then
         wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
       else
@@ -1871,7 +1871,7 @@ if [ "$BRinterface" = "cli" ]; then
           unset BRfile
           echo -e "\n${BR_CYAN}Enter the URL for the backup file${BR_NORM}"
           read -p "URL: " BRurl
-          BRsource="$BRmaxsize/fullbackup"
+          BRsource="$BRmaxsize/downloaded_backup"
           echo " "
           if [ "$REPLY" = "3" ]; then
 	    read -p "USERNAME: " BRusername
@@ -2242,13 +2242,13 @@ elif [ "$BRinterface" = "dialog" ]; then
 
     if [ -n "$BRurl" ]; then
       BRurlold="$BRurl"
-      BRsource="$BRmaxsize/fullbackup"
+      BRsource="$BRmaxsize/downloaded_backup"
       if [ -n "$BRusername" ]; then
        (wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 60
+        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
       else
        (wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 60
+        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
       fi
       check_wget
     fi
@@ -2301,15 +2301,15 @@ elif [ "$BRinterface" = "dialog" ]; then
         unset BRfile
         BRurl=$(dialog --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 "$BRurlold" 2>&1 1>&3)
         BRurlold="$BRurl"
-        BRsource="$BRmaxsize/fullbackup"
+        BRsource="$BRmaxsize/downloaded_backup"
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
          (wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 60
+          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
         elif [ "$REPLY" = "URL" ]; then
          (wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 60
+          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
         fi
         check_wget
       fi

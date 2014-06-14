@@ -1,5 +1,12 @@
 Changelog:
 
+3.9.6
+    fixed backup filename with spaces in log
+    show version in logs
+    changed verbose tar/rsync output
+    renamed downloaded backup
+    code cleaning
+ 
 3.9.5
     various refinements in cli interface
     cleaner verbose tar/rsync output layout

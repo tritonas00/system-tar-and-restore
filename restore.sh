@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.6"
+BR_VERSION="System Tar & Restore 3.9.7"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -1771,7 +1771,7 @@ if [ "$BRinterface" = "cli" ]; then
   if [ "$BRmode" = "Restore" ]; then
     if [ -z "$BRarchiver" ]; then
       echo -e "\n${BR_CYAN}Select the archiver you used to create the backup archive:${BR_NORM}"
-      select c in "tar (GNU Tar)" "bsdtar (Libarchive Tar)"; do
+      select c in "tar    (GNU Tar)" "bsdtar (Libarchive Tar)"; do
         if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
           echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
           exit
@@ -2065,7 +2065,7 @@ elif [ "$BRinterface" = "dialog" ]; then
             update_list
             update_options;;
         "(Optional) Boot partition" )
-              if [ "$rtn" = "3" ]; then unset BRboot; elif [ -z "${list[*]}" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
+            if [ "$rtn" = "3" ]; then unset BRboot; elif [ -z "${list[*]}" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
             update_list
             update_options;;
         "(Optional) Swap partition" )

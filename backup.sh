@@ -333,7 +333,7 @@ if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
 fi
 
 if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ] && [ ! "$BRcompression" = "bzip2" ] && [ ! "$BRcompression" = "none" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Supported compressors: gzip bzip2 xz none"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Available options: gzip bzip2 xz none"
   BRSTOP="y"
 fi
 

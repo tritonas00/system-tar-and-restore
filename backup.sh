@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.6"
+BR_VERSION="System Tar & Restore 3.9.7"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -116,6 +116,9 @@ set_tar_options() {
   elif [ "$BRcompression" = "bzip2" ]; then
     BR_MAINOPTS="cvpjf"
     BR_EXT="tar.bz2"
+  elif [ "$BRcompression" = "none" ]; then
+    BR_MAINOPTS="cvpf"
+    BR_EXT="tar"
   fi
 
   if [ "$BRarchiver" = "tar" ]; then
@@ -297,7 +300,7 @@ ${BR_BOLD}Home Directory:${BR_NORM}
 
 ${BR_BOLD}Archiver Options:${BR_NORM}
   -a, --archiver          select archiver (tar bsdtar)
-  -c, --compression       compression type (gzip bzip2 xz)
+  -c, --compression       compression type (gzip bzip2 xz none)
   -u, --user-options      additional tar options (see tar --help or man bsdtar)
 
 --help	print this page
@@ -329,8 +332,8 @@ if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
   BRSTOP="y"
 fi
 
-if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ] && [ ! "$BRcompression" = "bzip2" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Supported compressors: gzip bzip2 xz"
+if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ] && [ ! "$BRcompression" = "bzip2" ] && [ ! "$BRcompression" = "none" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Supported compressors: gzip bzip2 xz none"
   BRSTOP="y"
 fi
 
@@ -344,13 +347,13 @@ if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" =
   BRSTOP="y"
 fi
 
-if [ -n "$BRarchiver" ] || [ -n "$BRcompression" ] && [ -z "$BRFOLDER" ]; then
+if [ -n "$BRarchiver" ] && [ -z "$BRFOLDER" ]; then
   echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify a destination directory"
   BRSTOP="y"
 fi
 
-if [ -z "$BRarchiver" ] || [ -z "$BRcompression" ] && [ -n "$BRFOLDER" ]; then
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify archiver and compressor"
+if [ -z "$BRarchiver" ]  && [ -n "$BRFOLDER" ]; then
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify archiver"
   BRSTOP="y"
 fi
 
@@ -371,6 +374,9 @@ if [ -n "$BRFOLDER" ]; then
   fi
   if [ -z "$BRNAME" ]; then
     BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"
+  fi
+  if [ -z "$BRcompression" ]; then
+    BRcompression="none"
   fi
 fi
 
@@ -468,7 +474,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ -z "$BRcompression" ]; then
     echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
-    select c in "gzip  (Fast, big file)" "bzip2 (Slow, smaller file)" "xz    (Slow, smallest file)"; do
+    select c in "gzip  (Fast, big file)" "bzip2 (Slow, smaller file)" "xz   (Slow, smallest file)" "none (No compression)"; do
       if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
@@ -480,6 +486,9 @@ if [ "$BRinterface" = "cli" ]; then
         break
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 3 ]; then
         BRcompression="xz"
+        break
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 4 ]; then
+        BRcompression="none"
         break
       else
         echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
@@ -636,7 +645,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRcompression" ]; then
-    BRcompression=$(dialog --cancel-label Quit --menu "Select compression type:" 12 35 12 gzip "Fast, big file" bzip2 "Slow, smaller file" xz "Slow, smallest file" 2>&1 1>&3)
+    BRcompression=$(dialog --cancel-label Quit --menu "Select compression type:" 12 35 12 gzip "Fast, big file" bzip2 "Slow, smaller file" xz "Slow, smallest file" none "No compression" 2>&1 1>&3)
     if [ "$?" = "1" ]; then exit; fi
   fi
 

@@ -100,6 +100,8 @@ detect_filetype() {
     BRfiletype="bz2"
   elif file "$BRfile" | grep -w XZ > /dev/null; then
     BRfiletype="xz"
+  elif file "$BRfile" | grep -w POSIX > /dev/null; then
+    BRfiletype="uncompressed"
   else
     BRfiletype="wrong"
   fi
@@ -121,6 +123,8 @@ check_wget() {
       BRfiletype="bz2"
     elif file "$BRsource" | grep -w XZ > /dev/null; then
       BRfiletype="xz"
+    elif file "$BRsource" | grep -w POSIX > /dev/null; then
+      BRfiletype="uncompressed"
     else
       unset BRsource
       if [ "$BRinterface" = "cli" ]; then
@@ -227,6 +231,8 @@ run_tar() {
     BR_MAINOPTS="xvpfJ"
   elif [ "$BRfiletype" = "bz2" ]; then
     BR_MAINOPTS="xvpfj"
+  elif [ "$BRfiletype" = "uncompressed" ]; then
+    BR_MAINOPTS="xvpf"
   fi
 
   IFS=$DEFAULTIFS
@@ -322,7 +328,7 @@ check_input() {
   elif [ -n "$BRfile" ]; then
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type. File must be a gzip, bzip2 or xz compressed archive"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type. File must be a gzip, bzip2, xz compressed or uncompressed archive"
       BRSTOP="y"
     fi
   fi
@@ -698,7 +704,11 @@ show_summary() {
 
   if [ "$BRmode" = "Restore" ]; then
     echo "Archiver: $BRarchiver"
-    echo "Archive:  $BRfiletype compressed"
+    if [ "$BRfiletype" = "uncompressed" ]; then
+      echo "Archive:  $BRfiletype"
+    else
+      echo "Archive:  $BRfiletype compressed"
+    fi
   elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "n" ]; then
      echo "Home:     Include"
   elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "y" ]; then
@@ -1859,7 +1869,7 @@ if [ "$BRinterface" = "cli" ]; then
             echo -e "[${BR_RED}ERROR${BR_NORM}] File not found"
           else
             detect_filetype
-            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ] || [ "$BRfiletype" = "bz2" ]; then
+            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ] || [ "$BRfiletype" = "bz2" ] || [ "$BRfiletype" = "uncompressed" ]; then
               BRsource="$BRfile"
             else
               echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
@@ -2282,7 +2292,7 @@ elif [ "$BRinterface" = "dialog" ]; then
             BRfile="$BRpath${BRselect//\\/ }"
             BRfile="${BRfile#*/}"
             detect_filetype
-            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ] || [ "$BRfiletype" = "bz2" ]; then
+            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ] || [ "$BRfiletype" = "bz2" ] || [ "$BRfiletype" = "uncompressed" ]; then
               BRsource="$BRfile"
             else
               dialog --title "Error" --msgbox "Invalid file type." 5 22

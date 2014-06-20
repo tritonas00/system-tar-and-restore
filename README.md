@@ -275,8 +275,9 @@ Recommended subvolume name is: *__active*
 - root partition: /dev/sdb1
 - grub  
 - local file
+- tar options: --acls --xattrs 
 
-<code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -a tar</code>  
+<code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -a tar -U "--acls --xattrs"</code>  
 
 - root partition: /dev/sda1 (ssd)
 - syslinux  

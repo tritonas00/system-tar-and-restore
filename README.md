@@ -225,10 +225,10 @@ subvolume name for root
 
 ###NOTES###
 
-- With GNU Tar 1.27, you can add --xattrs --acls (and --selinux if available) in backup and restore archiver options.
+- With GNU Tar 1.27, you can add *--xattrs --acls* (and *--selinux* if available) in backup and restore archiver options.
 
-- In case of Fedora --xattrs --acls --selinux are added automatically in backup. In order to successfully restore the target system (Fedora 19+)
-using GNU Tar, you need to add --selinux --acls --xattrs-include='*' in restore additional tar options.
+- In case of Fedora *--xattrs --acls --selinux* are added automatically in backup. In order to successfully restore the target system (Fedora 19+)
+using GNU Tar, you need to add *--selinux --acls --xattrs-include='*'* in restore additional tar options.
 
 - The system that runs the restore script and the target system (the one you want to restore), must have the same architecture (for chroot to work).
 

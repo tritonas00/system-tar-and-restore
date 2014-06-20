@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 3.9.6
+.\"    Source: system-tar-and-restore 3.9.7
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "14 June 2014" "3.9.6" "General Manual"
+.TH "system-tar-and-restore" "1" "20 June 2014" "3.9.7" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -259,7 +259,7 @@ show all arguments
 .RE
 .SH NOTES
 .sp
-With \fBGNU Tar 1.27\fR\&, you can add \fB--xattrs --acls --selinux\fR\& in backup user options.
+With \fBGNU Tar 1.27\fR\&, you can add \fB--xattrs --acls\fR (and \fB--selinux\fR)\& in backup and restore additional tar options.
 .sp
 In case of Fedora \fB--xattrs --acls --selinux\fR\& are added automatically in backup. 
 In order to successfully restore the target system (\fBFedora 19+\fR\&) using GNU Tar, 
@@ -310,10 +310,11 @@ Backup system in the directory \fI/home/john/\fR\&, use \fBgzip\fR compression,
 \fB./backup.sh \-d /home/john/ \-c gzip \-h -a tar\fR 
 .RE
 .sp
-Restore system in \fI/dev/sdb1\fR partition, using \fBgrub\fR as bootloader 
-and use \fI/home/john/Downloads/backup.tar.gz\fR as local backup file:
+Restore system in \fI/dev/sdb1\fR partition, use \fBgrub\fR as bootloader, 
+use \fI/home/john/Downloads/backup.tar.gz\fR as local backup file and enable 
+\fB--acls --xattrs\fR tar options:
 .RS 4
-\fB./restore.sh \-r /dev/sdb1 \-g /dev/sdb \-f /home/john/Downloads/backup.tar.gz -a tar\fR
+\fB./restore.sh \-r /dev/sdb1 \-g /dev/sdb \-f /home/john/Downloads/backup.tar.gz -a tar -U "--acls --xattrs"\fR
 .RE
 .sp
 Transfer running system using \fBrsync\fR\& in \fBssd\fR\&. The \fI/\fR partition will be

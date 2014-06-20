@@ -714,7 +714,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 fi
 
 if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
-  echo -e "#Auto-generated configuration file for backup.sh.\n#Place it in /etc/backup.conf.\n\nBRinterface=$BRinterface\nBRFOLDER='$(dirname $BRFOLDER)'\nBRarchiver=$BRarchiver\nBRcompression=$BRcompression" > "$BRFOLDER"/backup.conf
+  echo -e "#Auto-generated configuration file for backup.sh.\n#Place it in /etc/backup.conf.\n\nBRinterface=$BRinterface\nBRFOLDER='$(dirname "$BRFOLDER")'\nBRarchiver=$BRarchiver\nBRcompression=$BRcompression" > "$BRFOLDER"/backup.conf
   if [ -n "$BRnocolor" ]; then echo "BRnocolor=Yes" >> "$BRFOLDER"/backup.conf; fi
   if [ -n "$BRverb" ]; then echo "BRverb=Yes" >> "$BRFOLDER"/backup.conf; fi
   if [ ! "$BRFile" = "$BRfiledefault" ]; then echo "BRNAME='$BRNAME'" >> "$BRFOLDER"/backup.conf; fi

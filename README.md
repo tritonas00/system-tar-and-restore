@@ -38,7 +38,7 @@ The script will ask for:
 
 - Archiver: tar and bsdtar are supported.  
 
-- Compression type: gzip bzip2 and xz are supported.
+- Compression type: gzip bzip2 xz and none are supported.
 
 - If you want to specify any additional archiver options (see tar --help or man bsdtar)  
 
@@ -73,7 +73,7 @@ exclude /home directory (keep hidden files and folders)
 dont keep home's hidden files and folders (use with -h)  
 
 **-c, --compression**  
-compression type (gzip bzip2 xz)  
+compression type (gzip bzip2 xz none)  
 
 **-a, --archiver**  
 select archiver (tar bsdtar)    

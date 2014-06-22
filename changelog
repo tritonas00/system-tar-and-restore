@@ -1,5 +1,9 @@
 Changelog:
 
+3.9.7
+    added support for uncompressed archive
+    fixed destination with spaces in backup.conf generator
+
 3.9.6
     fixed backup filename with spaces in log
     show version in logs

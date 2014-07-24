@@ -815,7 +815,7 @@ build_initramfs() {
       echo "Building image for $BRinitrd..."
       chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd
     elif [ "$BRdistro" = "Suse" ]; then
-       chroot /mnt/target /sbin/mkinitrd -k vmlinuz-$BRinitrd -i initrd-$BRinitrd
+       chroot /mnt/target mkinitrd -k vmlinuz-$BRinitrd -i initrd-$BRinitrd
     fi
   done
 }
@@ -1513,9 +1513,7 @@ fi
 
 clean_files
 
-if [ -f /etc/pacman.conf ]; then
-  PATH="$PATH:/usr/sbin:/bin"
-fi
+PATH="$PATH:/usr/sbin:/bin:/sbin"
 
 PS3="Enter number or Q to quit: "
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.7"
+BR_VERSION="System Tar & Restore 4"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -144,6 +144,8 @@ detect_distro() {
       BRdistro="Arch"
     elif grep -Fxq "etc/apt/sources.list" /tmp/filelist 2>/dev/null; then
       BRdistro="Debian"
+    elif grep -Fxq "etc/zypp/zypp.conf" /tmp/filelist 2>/dev/null; then
+      BRdistro="Suse"
     else
       BRdistro="Unsupported"
     fi
@@ -155,6 +157,8 @@ detect_distro() {
       BRdistro="Arch"
     elif [ -f /etc/apt/sources.list ]; then
       BRdistro="Debian"
+    elif [ -f /etc/zypp/zypp.conf ]; then
+      BRdistro="Suse"
     else
       BRdistro="Unsupported"
     fi
@@ -202,7 +206,7 @@ set_syslinux_flags_and_paths() {
   fi
   if [ "$BRdistro" = Debian ]; then
     BRsyslinuxpath="/mnt/target/usr/lib/syslinux"
-  elif [ $BRdistro = Fedora ]; then
+  elif [ $BRdistro = Fedora ] || [ $BRdistro = Suse ]; then
     BRsyslinuxpath="/mnt/target/usr/share/syslinux"
   fi
 }
@@ -220,6 +224,8 @@ generate_syslinux_cfg() {
       echo -e "LABEL debian\n\tMENU LABEL Debian-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
     elif [ $BRdistro = Fedora ]; then
       echo -e "LABEL fedora\n\tMENU LABEL Fedora-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+    elif [ $BRdistro = Suse ]; then
+      echo -e "LABEL suse\n\tMENU LABEL Suse-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
     fi
   done
 }
@@ -246,6 +252,9 @@ run_tar() {
 
 set_rsync_opts() {
   BR_RSYNCOPTS=(--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=/home/*/.gvfs --exclude=lost+found "$BR_USER_OPTS")
+  if [ "$BRdistro" = "Suse" ]; then
+    BR_RSYNCOPTS+=(--exclude=/var/run/* --exclude=/var/lock/*)
+  fi
   if [ "$BRhidden" = "y" ]; then
     BR_RSYNCOPTS+=(--exclude=/home/*/[^.]*)
   fi
@@ -748,7 +757,7 @@ prepare_chroot() {
 
 generate_fstab() {
   mv /mnt/target/etc/fstab /mnt/target/etc/fstab-old
-  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
+  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ] && [ ! "$BRdistro" = "Suse" ]; then
     echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
   elif [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "n" ]; then
     echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,noatime  0  0" >> /mnt/target/etc/fstab
@@ -797,16 +806,20 @@ build_initramfs() {
     echo " "
   fi
 
-  for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
-    if [ "$BRdistro" = "Arch" ]; then
-      chroot /mnt/target mkinitcpio -p $BRinitrd
-    elif [ "$BRdistro" = "Debian" ]; then
-      chroot /mnt/target update-initramfs -u -k $BRinitrd
-    elif [ "$BRdistro" = "Fedora" ]; then
-      echo "Building image for $BRinitrd..."
-      chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd
-    fi
-  done
+  if [ ! "$BRdistro" = "Suse" ]; then
+    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
+      if [ "$BRdistro" = "Arch" ]; then
+        chroot /mnt/target mkinitcpio -p $BRinitrd
+      elif [ "$BRdistro" = "Debian" ]; then
+        chroot /mnt/target update-initramfs -u -k $BRinitrd
+      elif [ "$BRdistro" = "Fedora" ]; then
+        echo "Building image for $BRinitrd..."
+        chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd
+      fi
+    done
+  elif [ "$BRdistro" = "Suse" ]; then
+    chroot /mnt/target mkinitrd
+  fi
 }
 
 cp_grub_efi() {
@@ -835,7 +848,7 @@ install_bootloader() {
           chroot /mnt/target grub-install --target=i386-pc --recheck /dev/$f || touch /tmp/bl_error
         elif [ "$BRdistro" = "Debian" ]; then
           chroot /mnt/target grub-install --recheck /dev/$f || touch /tmp/bl_error
-        elif [ "$BRdistro" = "Fedora" ]; then
+        elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Suse" ]; then
           chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/bl_error
         fi
       done
@@ -847,11 +860,11 @@ install_bootloader() {
       fi
     elif [ "$BRdistro" = "Debian" ]; then
       chroot /mnt/target grub-install --recheck $BRgrub || touch /tmp/bl_error
-    elif [ "$BRdistro" = "Fedora" ]; then
+    elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Suse" ]; then
       chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
     fi
 
-    if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ]; then
+    if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Suse" ]; then
       if [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then cp_grub_efi; fi
     fi
 
@@ -859,10 +872,13 @@ install_bootloader() {
       if [ -f /mnt/target/etc/default/grub ]; then
         cp /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old
       fi
-      sed -i 's/GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="vconsole.keymap=us quiet"/' /mnt/target/etc/default/grub
+      sed -i 's/GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="quiet"/' /mnt/target/etc/default/grub
       echo -e "\nModified grub2 config" >> /tmp/restore.log
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
       echo " " >> /tmp/restore.log
+    fi
+
+    if [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Suse" ]; then
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
     else
       chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
@@ -922,7 +938,7 @@ set_bootloader() {
   fi
 
   if [ -n "$BRsyslinux" ]; then
-    if [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Debian" ]; then
+    if [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Suse" ]; then
       if [[ "$BRsyslinux" == *md* ]]; then
         for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z][0-9]'` ; do
           BRdev=`echo /dev/$f | cut -c -8`

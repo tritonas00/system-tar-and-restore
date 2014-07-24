@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 3.9.7"
+BR_VERSION="System Tar & Restore 4"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -21,15 +21,15 @@ color_variables() {
 info_screen() {
   echo -e "\n${BR_YELLOW}This script will make a tar backup image of this system."
   echo -e "\n==>Make sure you have enough free space."
-  echo -e "\n==>Make sure you have GRUB or SYSLINUX packages installed."
+  echo "==>Make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\nGRUB PACKAGES:"
-  echo "->Arch:   grub    efibootmgr* dosfstools*"
-  echo "->Debian: grub-pc grub-efi*   dosfstools*"
-  echo "->Fedora: grub2   efibootmgr* dosfstools*"
+  echo "->Arch:        grub    efibootmgr* dosfstools*"
+  echo "->Debian:      grub-pc grub-efi*   dosfstools*"
+  echo "->Fedora/Suse: grub2   efibootmgr* dosfstools*"
   echo -e "\nSYSLINUX PACKAGES:"
-  echo "->Arch:   syslinux"
-  echo "->Debian: syslinux extlinux"
-  echo -e "->Fedora: syslinux syslinux-extlinux"
+  echo "->Arch/Suse: syslinux"
+  echo "->Debian:    syslinux extlinux"
+  echo -e "->Fedora:    syslinux syslinux-extlinux"
   echo -e "\n*Required for UEFI systems"
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
@@ -126,6 +126,9 @@ set_tar_options() {
     if [ -f /etc/yum.conf ]; then
       BR_TAROPTS="${BR_TAROPTS} --acls --xattrs --selinux"
     fi
+    if [ -f /etc/zypp/zypp.conf ]; then
+      BR_TAROPTS="${BR_TAROPTS} --exclude=/var/run/* --exclude=/var/lock/*"
+    fi
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
     elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
@@ -134,6 +137,9 @@ set_tar_options() {
     fi
   elif [ "$BRarchiver" = "bsdtar" ]; then
     BR_TAROPTS=(--exclude=/run/*?* --exclude=/proc/*?* --exclude=/dev/*?* --exclude=/media/*?* --exclude=/sys/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found "$BR_USER_OPTS")
+    if [ -f /etc/zypp/zypp.conf ]; then
+      BR_TAROPTS+=(--exclude=/var/run/*?* --exclude=/var/lock/*?*)
+    fi
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS+=(--exclude=/home/*?*)
     elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
@@ -352,7 +358,7 @@ if [ -n "$BRarchiver" ] && [ -z "$BRFOLDER" ]; then
   BRSTOP="y"
 fi
 
-if [ -z "$BRarchiver" ]  && [ -n "$BRFOLDER" ]; then
+if [ -z "$BRarchiver" ] && [ -n "$BRFOLDER" ]; then
   echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify archiver"
   BRSTOP="y"
 fi

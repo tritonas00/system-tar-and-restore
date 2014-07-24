@@ -759,7 +759,7 @@ generate_fstab() {
   mv /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ] && [ ! "$BRdistro" = "Suse" ]; then
     echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
-  elif [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "n" ]; then
+  elif [ "$BRfsystem" = "btrfs" ]; then
     echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,noatime  0  0" >> /mnt/target/etc/fstab
   else
     echo "$(detect_fstab_root)  /  $BRfsystem  $BR_MOUNT_OPTS,noatime  0  1" >> /mnt/target/etc/fstab

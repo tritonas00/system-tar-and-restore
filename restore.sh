@@ -806,20 +806,18 @@ build_initramfs() {
     echo " "
   fi
 
-  if [ ! "$BRdistro" = "Suse" ]; then
-    for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
-      if [ "$BRdistro" = "Arch" ]; then
-        chroot /mnt/target mkinitcpio -p $BRinitrd
-      elif [ "$BRdistro" = "Debian" ]; then
-        chroot /mnt/target update-initramfs -u -k $BRinitrd
-      elif [ "$BRdistro" = "Fedora" ]; then
-        echo "Building image for $BRinitrd..."
-        chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd
-      fi
-    done
-  elif [ "$BRdistro" = "Suse" ]; then
-    chroot /mnt/target mkinitrd
-  fi
+  for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
+    if [ "$BRdistro" = "Arch" ]; then
+      chroot /mnt/target mkinitcpio -p $BRinitrd
+    elif [ "$BRdistro" = "Debian" ]; then
+      chroot /mnt/target update-initramfs -u -k $BRinitrd
+    elif [ "$BRdistro" = "Fedora" ]; then
+      echo "Building image for $BRinitrd..."
+      chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd
+    elif [ "$BRdistro" = "Suse" ]; then
+       chroot /mnt/target /sbin/mkinitrd -k vmlinuz-$BRinitrd -i initrd-$BRinitrd
+    fi
+  done
 }
 
 cp_grub_efi() {

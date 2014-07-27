@@ -21,15 +21,16 @@ color_variables() {
 info_screen() {
   echo -e "\n${BR_YELLOW}This script will make a tar backup image of this system."
   echo -e "\n==>Make sure you have enough free space."
-  echo "==>Make sure you have GRUB or SYSLINUX packages installed."
+  echo -e "\n==>If you plan to restore in btrfs/lvm/mdadm, make sure\n   that this system is capable to boot btrfs/lvm/mdadm."
+  echo -e "\n==>Make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\nGRUB PACKAGES:"
-  echo "->Arch:        grub    efibootmgr* dosfstools*"
+  echo "->Arch/Gentoo: grub    efibootmgr* dosfstools*"
   echo "->Debian:      grub-pc grub-efi*   dosfstools*"
   echo "->Fedora/Suse: grub2   efibootmgr* dosfstools*"
   echo -e "\nSYSLINUX PACKAGES:"
-  echo "->Arch/Suse: syslinux"
-  echo "->Debian:    syslinux extlinux"
-  echo -e "->Fedora:    syslinux syslinux-extlinux"
+  echo "->Arch/Suse/Gentoo: syslinux"
+  echo "->Debian:           syslinux extlinux"
+  echo "->Fedora:           syslinux syslinux-extlinux"
   echo -e "\n*Required for UEFI systems"
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
@@ -122,12 +123,9 @@ set_tar_options() {
   fi
 
   if [ "$BRarchiver" = "tar" ]; then
-    BR_TAROPTS="--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=lost+found --sparse $BR_USER_OPTS"
+    BR_TAROPTS="--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=/var/run/* --exclude=/var/lock/* --exclude=lost+found --sparse $BR_USER_OPTS"
     if [ -f /etc/yum.conf ]; then
       BR_TAROPTS="${BR_TAROPTS} --acls --xattrs --selinux"
-    fi
-    if [ -f /etc/zypp/zypp.conf ]; then
-      BR_TAROPTS="${BR_TAROPTS} --exclude=/var/run/* --exclude=/var/lock/*"
     fi
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
@@ -136,10 +134,7 @@ set_tar_options() {
       BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/excludelist"
     fi
   elif [ "$BRarchiver" = "bsdtar" ]; then
-    BR_TAROPTS=(--exclude=/run/*?* --exclude=/proc/*?* --exclude=/dev/*?* --exclude=/media/*?* --exclude=/sys/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=lost+found "$BR_USER_OPTS")
-    if [ -f /etc/zypp/zypp.conf ]; then
-      BR_TAROPTS+=(--exclude=/var/run/*?* --exclude=/var/lock/*?*)
-    fi
+    BR_TAROPTS=(--exclude=/run/*?* --exclude=/proc/*?* --exclude=/dev/*?* --exclude=/media/*?* --exclude=/sys/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=/var/run/*?* --exclude=/var/lock/*?* --exclude=lost+found "$BR_USER_OPTS")
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS+=(--exclude=/home/*?*)
     elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
@@ -360,6 +355,16 @@ fi
 
 if [ -z "$BRarchiver" ] && [ -n "$BRFOLDER" ]; then
   echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify archiver"
+  BRSTOP="y"
+fi
+
+if [ -f /etc/portage/make.conf ] && [ -z $(which genkernel 2> /dev/null) ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script"
+  BRSTOP="y"
+fi
+
+if [ -f /etc/portage/make.conf ] && [ -z $(which gcc 2> /dev/null) ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Package gcc is not installed. Install the package and re-run the script"
   BRSTOP="y"
 fi
 
@@ -587,7 +592,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --no-collapse --title "$BR_VERSION" --msgbox "$(info_screen)" 24 70
+    dialog --no-collapse --title "$BR_VERSION" --msgbox "$(info_screen)" 27 70
   fi
 
   if [ -z "$BRFOLDER" ]; then

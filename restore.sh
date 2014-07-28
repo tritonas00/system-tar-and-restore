@@ -146,7 +146,7 @@ detect_distro() {
       BRdistro="Debian"
     elif grep -Fxq "etc/zypp/zypp.conf" /tmp/filelist 2>/dev/null; then
       BRdistro="Suse"
-    elif grep -Fxq "etc/portage/make.conf" /tmp/filelist 2>/dev/null; then
+    elif grep -Fxq "etc/portage/make.conf" /tmp/filelist 2>/dev/null || grep -Fxq "etc/make.conf" /tmp/filelist 2>/dev/null; then
       BRdistro="Gentoo"
     else
       BRdistro="Unsupported"
@@ -161,7 +161,7 @@ detect_distro() {
       BRdistro="Debian"
     elif [ -f /etc/zypp/zypp.conf ]; then
       BRdistro="Suse"
-    elif [ -f /etc/portage/make.conf ]; then
+    elif [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
       BRdistro="Gentoo"
     else
       BRdistro="Unsupported"
@@ -371,6 +371,16 @@ check_input() {
     if [ -z $(which rsync 2> /dev/null) ];then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package rsync is not installed. Install the package and re-run the script"
       BRSTOP="y"
+    fi
+    if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
+      if [ -z $(which genkernel 2> /dev/null) ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script"
+        BRSTOP="y"
+      fi
+      if [ -z $(which gcc 2> /dev/null) ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Package gcc is not installed. Install the package and re-run the script"
+        BRSTOP="y"
+      fi
     fi
     if [ -n "$BRgrub" ] && [ ! -d /usr/lib/grub ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found"

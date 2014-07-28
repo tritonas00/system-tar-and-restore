@@ -358,14 +358,15 @@ if [ -z "$BRarchiver" ] && [ -n "$BRFOLDER" ]; then
   BRSTOP="y"
 fi
 
-if [ -f /etc/portage/make.conf ] && [ -z $(which genkernel 2> /dev/null) ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script"
-  BRSTOP="y"
-fi
-
-if [ -f /etc/portage/make.conf ] && [ -z $(which gcc 2> /dev/null) ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Package gcc is not installed. Install the package and re-run the script"
-  BRSTOP="y"
+if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
+  if [ -z $(which genkernel 2> /dev/null) ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script"
+    BRSTOP="y"
+  fi
+  if [ -z $(which gcc 2> /dev/null) ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Package gcc is not installed. Install the package and re-run the script"
+    BRSTOP="y"
+  fi
 fi
 
 if [ -n "$BRSTOP" ]; then

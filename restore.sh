@@ -222,17 +222,27 @@ generate_syslinux_cfg() {
   fi
 
   if [ "$BRdistro" = "Gentoo" ]; then
-    img_prefix="initramfs"
     if [[ "$BRroot" == *mapper* ]]; then
       BR_KERNEL_OPTS="${BR_KERNEL_OPTS} dolvm"
     elif [[ "$BRroot" == *dev/md* ]]; then
       BR_KERNEL_OPTS="${BR_KERNEL_OPTS} domdadm"
     fi
-  else
-    img_prefix="vmlinuz"
+
+    if [ "$BRgenkernel" = "y" ]; then
+      for BRinitrd in `find /mnt/target/boot -name initramfs* | sed "s_/mnt/target/boot/initramfs-*__"` ; do
+        echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$BRinitrd\n\tLINUX ../kernel-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+      done
+    elif [ "$BRgenkernel" = "n" ]; then
+      for FILE in /mnt/target/boot/*; do 
+        RESP=$(file "$FILE" | grep -w kernel)
+        if [ -n "$RESP" ]; then
+          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(basename "$FILE")\n\tLINUX ../$(basename "$FILE")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet" >> /mnt/target/boot/syslinux/syslinux.cfg
+        fi
+      done
+    fi
   fi
 
-  for BRinitrd in `find /mnt/target/boot -name ${img_prefix}* | sed "s_/mnt/target/boot/${img_prefix}-*__"` ; do
+  for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed "s_/mnt/target/boot/vmlinuz-*__"` ; do
     if [ "$BRdistro" = "Arch" ]; then
       echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
       echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
@@ -242,8 +252,6 @@ generate_syslinux_cfg() {
       echo -e "LABEL fedora\n\tMENU LABEL Fedora-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
     elif [ "$BRdistro" = "Suse" ]; then
       echo -e "LABEL suse\n\tMENU LABEL Suse-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
-    elif [ "$BRdistro" = "Gentoo" ]; then
-      echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$BRinitrd\n\tLINUX ../kernel-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
     fi
   done
 }
@@ -373,13 +381,11 @@ check_input() {
       BRSTOP="y"
     fi
     if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
-      if [ -z $(which genkernel 2> /dev/null) ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script"
-        BRSTOP="y"
-      fi
-      if [ -z $(which gcc 2> /dev/null) ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Package gcc is not installed. Install the package and re-run the script"
-        BRSTOP="y"
+      if [ "$BRgenkernel" = "y" ]; then
+        if [ -z $(which genkernel 2> /dev/null) ]; then
+          echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
+          BRSTOP="y"
+        fi
       fi
     fi
     if [ -n "$BRgrub" ] && [ ! -d /usr/lib/grub ]; then
@@ -756,6 +762,10 @@ show_summary() {
   elif [ "$BRmode" = "Transfer" ]; then
      echo -e "System:   $BRdistro based $(uname -m)${BR_NORM}"
   fi
+  
+  if [ "$BRdistro" = "Gentoo" ] && [ "$BRgenkernel" = "n" ]; then
+    echo -e "${BR_YELLOW}Info:     Skip initramfs building${BR_NORM}"
+  fi
 
   if [ "$BRmode" = "Transfer" ]; then
     echo -e "\n${BR_YELLOW}RSYNC OPTIONS:"
@@ -845,7 +855,11 @@ build_initramfs() {
   done
 
   if [ "$BRdistro" = "Gentoo" ]; then
-    chroot /mnt/target genkernel --install initramfs
+    if [ "$BRgenkernel" = "n" ]; then
+      echo  "Skipping..."
+    else
+      chroot /mnt/target genkernel --install initramfs
+    fi
   fi
 }
 
@@ -979,6 +993,14 @@ set_bootloader() {
         echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
         BRabort="y"
       fi
+    fi
+  fi
+
+  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ "$BRgenkernel" = "y" ]; then
+    if ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
+      if [ -z "$BRnocolor" ]; then color_variables; fi
+      echo -e "[${BR_RED}ERROR${BR_NORM}] genkernel not found in the archived system. (you can disable this check with -D)"
+      BRabort="y"
     fi
   fi
 
@@ -1259,7 +1281,7 @@ options_info() {
   fi
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:vd" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:vdD" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1378,6 +1400,10 @@ while true; do
       BRdontckroot="y"
       shift
     ;;
+    -D|--disable-genkernel)
+      BRgenkernel="n"
+      shift
+    ;;
     --help)
     BR_BOLD='\033[1m'
     BR_NORM='\e[00m'
@@ -1421,6 +1447,9 @@ ${BR_BOLD}Btrfs Subvolumes:${BR_NORM}
   -R,  --rootsubvolname     subvolume name for /
   -O,  --other-subvolumes   specify other subvolumes (subvolume path e.g /home /var /usr ...)
 
+${BR_BOLD}Misc Options:${BR_NORM}
+  -D,  --disable-genkernel  disable genkernel check and initramfs building in gentoo
+
 --help  print this page
 "
       unset BR_BOLD BR_NORM
@@ -1438,6 +1467,10 @@ if [[ "$BRuri" == /* ]]; then
   BRfile="$BRuri"
 else
   BRurl="$BRuri"
+fi
+
+if [ -z "$BRgenkernel" ]; then
+  BRgenkernel="y"
 fi
 
 if [ -z "$BRnocolor" ]; then

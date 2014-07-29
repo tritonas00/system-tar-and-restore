@@ -21,7 +21,7 @@ color_variables() {
 info_screen() {
   echo -e "\n${BR_YELLOW}This script will make a tar backup image of this system."
   echo -e "\n==>Make sure you have enough free space."
-  echo -e "\n==>If you plan to restore in btrfs/lvm/mdadm, make sure\n   that this system is capable to boot btrfs/lvm/mdadm."
+  echo -e "\n==>If you plan to restore in btrfs/lvm/mdadm, make sure that\n   this system is capable to boot from btrfs/lvm/mdadm."
   echo -e "\n==>Make sure you have GRUB or SYSLINUX packages installed."
   echo -e "\nGRUB PACKAGES:"
   echo "->Arch/Gentoo: grub    efibootmgr* dosfstools*"
@@ -218,7 +218,7 @@ out_pgrs_cli() {
   fi
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNa:qvg" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgD" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -278,6 +278,10 @@ while true; do
       BRgen="y"
       shift
     ;;
+    -D|--disable-genkernel)
+      BRgenkernel="n"
+      shift
+    ;;
     --help)
       BR_BOLD='\033[1m'
       BR_NORM='\e[00m'
@@ -285,24 +289,27 @@ while true; do
 ${BR_BOLD}$BR_VERSION
 
 General:${BR_NORM}
-  -i, --interface         interface to use (cli dialog)
-  -N, --no-color          disable colors
-  -q, --quiet             dont ask, just run
-  -v, --verbose           enable verbose archiver output (cli only)
-  -g, --generate          generate configuration file (in case of successful backup)
+  -i, --interface          interface to use (cli dialog)
+  -N, --no-color           disable colors
+  -q, --quiet              dont ask, just run
+  -v, --verbose            enable verbose archiver output (cli only)
+  -g, --generate           generate configuration file (in case of successful backup)
 
 ${BR_BOLD}Destination:${BR_NORM}
-  -d, --directory         backup destination path
-  -f, --filename          backup file name (without extension)
+  -d, --directory          backup destination path
+  -f, --filename           backup file name (without extension)
 
 ${BR_BOLD}Home Directory:${BR_NORM}
-  -h, --exclude-home	  exclude /home directory (keep hidden files and folders)
-  -n, --no-hidden         dont keep home's hidden files and folders (use with -h)
+  -h, --exclude-home	   exclude /home directory (keep hidden files and folders)
+  -n, --no-hidden          dont keep home's hidden files and folders (use with -h)
 
 ${BR_BOLD}Archiver Options:${BR_NORM}
-  -a, --archiver          select archiver (tar bsdtar)
-  -c, --compression       compression type (gzip bzip2 xz none)
-  -u, --user-options      additional tar options (see tar --help or man bsdtar)
+  -a, --archiver           select archiver (tar bsdtar)
+  -c, --compression        compression type (gzip bzip2 xz none)
+  -u, --user-options       additional tar options (see tar --help or man bsdtar)
+
+${BR_BOLD}Misc Options:${BR_NORM}
+  -D, --disable-genkernel  disable genkernel check in gentoo
 
 --help	print this page
 "
@@ -327,6 +334,10 @@ if [ $(id -u) -gt 0 ]; then
 fi
 
 clean_files
+
+if [ -z "$BRgenkernel" ]; then
+  BRgenkernel="y"
+fi
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Directory does not exist: $BRFOLDER"
@@ -359,13 +370,11 @@ if [ -z "$BRarchiver" ] && [ -n "$BRFOLDER" ]; then
 fi
 
 if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
-  if [ -z $(which genkernel 2> /dev/null) ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script"
-    BRSTOP="y"
-  fi
-  if [ -z $(which gcc 2> /dev/null) ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Package gcc is not installed. Install the package and re-run the script"
-    BRSTOP="y"
+  if [ "$BRgenkernel" = "y" ]; then
+    if [ -z $(which genkernel 2> /dev/null) ]; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
+      BRSTOP="y"
+    fi
   fi
 fi
 

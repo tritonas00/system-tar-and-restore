@@ -233,8 +233,7 @@ generate_syslinux_cfg() {
         echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$BRinitrd\n\tLINUX ../kernel-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
       done
     elif [ "$BRgenkernel" = "n" ]; then
-      for FILE in /mnt/target/boot/*; do 
-        RESP=$(file "$FILE" | grep -w kernel)
+      for FILE in /mnt/target/boot/*; do RESP=$(file "$FILE" | grep -w kernel)
         if [ -n "$RESP" ]; then
           echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(basename "$FILE")\n\tLINUX ../$(basename "$FILE")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet" >> /mnt/target/boot/syslinux/syslinux.cfg
         fi
@@ -242,7 +241,7 @@ generate_syslinux_cfg() {
     fi
   fi
 
-  for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed "s_/mnt/target/boot/vmlinuz-*__"` ; do
+  for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
     if [ "$BRdistro" = "Arch" ]; then
       echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
       echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg

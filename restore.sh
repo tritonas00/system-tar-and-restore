@@ -175,11 +175,6 @@ detect_syslinux_root() {
   else
     echo "root=UUID=$(blkid -s UUID -o value $BRroot)"
   fi
-  if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
-    echo "root=$BRroot"
-  elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then 
-    echo "root=UUID=$(blkid -s UUID -o value $BRroot)"
-  fi
 }
 
 detect_fstab_root() {
@@ -240,7 +235,7 @@ generate_syslinux_cfg() {
     else
       for FILE in /mnt/target/boot/*; do RESP=$(file "$FILE" | grep -w kernel)
         if [ -n "$RESP" ]; then
-          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(basename "$FILE")\n\tLINUX ../$(basename "$FILE")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet" >> /mnt/target/boot/syslinux/syslinux.cfg
+          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(basename "$FILE")\n\tLINUX ../$(basename "$FILE")\n\tAPPEND root=$BRroot $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet" >> /mnt/target/boot/syslinux/syslinux.cfg
         fi
       done
     fi

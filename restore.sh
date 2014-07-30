@@ -175,6 +175,11 @@ detect_syslinux_root() {
   else
     echo "root=UUID=$(blkid -s UUID -o value $BRroot)"
   fi
+  if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
+    echo "root=$BRroot"
+  elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then 
+    echo "root=UUID=$(blkid -s UUID -o value $BRroot)"
+  fi
 }
 
 detect_fstab_root() {
@@ -317,18 +322,18 @@ hide_used_parts() {
 }
 
 check_parts() {
-  for f in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do echo -e "$f"; done
+  for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo -e "$f"; done
   for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f"; done
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f"; done
 }
 
 check_disks() {
-  for f in /dev/[hs]d[a-z]; do echo "$f"; done
+  for f in /dev/[vhs]d[a-z]; do echo "$f"; done
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f"; done
 }
 
 disk_list_dialog() {
-  for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)|$BRempty"; done
+  for f in /dev/[vhs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)|$BRempty"; done
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)|$BRempty"; done
 }
 
@@ -346,7 +351,7 @@ no_parts() {
 }
 
 disk_report() {
-  for i in /dev/[hs]d[a-z]; do
+  for i in /dev/[vhs]d[a-z]; do
     echo -e "\n$i  ($(lsblk -d -n -o model $i)  $(lsblk -d -n -o size $i))"
     for f in $i[0-9]; do echo -e "\t\t$f  $(blkid -s TYPE -o value $f)  $(lsblk -d -n -o size $f)  $(lsblk -d -n -o mountpoint 2> /dev/null $f)"; done
   done
@@ -709,7 +714,7 @@ show_summary() {
       echo "$BRbootloader (i386-pc)"
     fi
     if [[ "$BRgrub" == *md* ]]; then
-      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[vhs]d[a-z]'))"
     else
       echo "Location: $BRgrub"
       if [ -d "$BR_EFI_DETECT_DIR" ] && [ "$(ls -A /mnt/target/boot/efi)" ]; then
@@ -719,7 +724,7 @@ show_summary() {
   elif [ -n "$BRsyslinux" ]; then
     echo "$BRbootloader ($BRpartitiontable)"
     if [[ "$BRsyslinux" == *md* ]]; then
-      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z]'))"
     else
       echo "Location: $BRsyslinux"
     fi
@@ -814,9 +819,9 @@ generate_fstab() {
 
   if [ -n "$BRswap" ]; then
     if [[ "$BRswap" == *dev/md* ]]; then
-      echo "$BRswap  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
+      echo "$BRswap  none  swap  defaults  0  0" >> /mnt/target/etc/fstab
     else
-      echo "UUID=$(blkid -s UUID -o value $BRswap)  swap  swap  defaults  0  0" >> /mnt/target/etc/fstab
+      echo "UUID=$(blkid -s UUID -o value $BRswap)  none  swap  defaults  0  0" >> /mnt/target/etc/fstab
     fi
   fi
   echo -e "\n${BR_SEP}GENERATED FSTAB" >> /tmp/restore.log
@@ -883,7 +888,7 @@ install_bootloader() {
   if [ -n "$BRgrub" ]; then
     echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [[ "$BRgrub" == *md* ]]; then
-      for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'` ; do
+      for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[vhs]d[a-z]'` ; do
         if [ "$BRdistro" = "Arch" ]; then
           chroot /mnt/target grub-install --target=i386-pc --recheck /dev/$f || touch /tmp/bl_error
         elif [ "$BRdistro" = "Debian" ]; then
@@ -942,7 +947,7 @@ install_bootloader() {
     else
       if [[ "$BRsyslinux" == *md* ]]; then
         chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
-        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z][0-9]'` ; do
+        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'` ; do
           BRdev=`echo /dev/$f | cut -c -8`
           BRpart=`echo /dev/$f | cut -c 9-`
           detect_partition_table_syslinux
@@ -982,7 +987,7 @@ set_bootloader() {
   if [ -n "$BRsyslinux" ]; then
     if [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Suse" ] || [ "$BRdistro" = "Gentoo" ]; then
       if [[ "$BRsyslinux" == *md* ]]; then
-        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z][0-9]'` ; do
+        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'` ; do
           BRdev=`echo /dev/$f | cut -c -8`
         done
       fi
@@ -995,17 +1000,9 @@ set_bootloader() {
     fi
   fi
 
-  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-    if ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
-      if [ -z "$BRnocolor" ]; then color_variables; fi
-      echo -e "[${BR_RED}ERROR${BR_NORM}] genkernel not found in the archived system. (you can disable this check with -D)"
-      BRabort="y"
-    fi
-  fi
-
   if [ -n "$BRsyslinux" ] && [ "$BRdistro" = "Arch" ]; then
     if [[ "$BRsyslinux" == *md* ]]; then
-      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z][0-9]'` ; do
+      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'` ; do
         BRdev=`echo /dev/$f | cut -c -8`
       done
     fi
@@ -1229,7 +1226,7 @@ report_vars_log() {
   echo "Subvolumes Array: ${BRsubvols[@]}"
   if [ -n "$BRgrub" ]; then
     if [[ "$BRgrub" == *md* ]]; then
-      echo "Bootloader: $BRbootloader $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+      echo "Bootloader: $BRbootloader $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[vhs]d[a-z]'))"
     else
       if [ ! -d "$BR_EFI_DETECT_DIR" ]; then
         BRgrubios="i386-pc"
@@ -1238,7 +1235,7 @@ report_vars_log() {
     fi
   elif [ -n "$BRsyslinux" ]; then
     if [[ "$BRsyslinux" == *md* ]]; then
-      echo "Bootloader: $BRbootloader $BRpartitiontable $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[hs]d[a-z]'))"
+      echo "Bootloader: $BRbootloader $BRpartitiontable $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z]'))"
     else
       echo "Bootloader: $BRbootloader $BRpartitiontable $BRsyslinux"
     fi
@@ -1604,12 +1601,12 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   partition_list=(
-   `for f in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | sort
+   `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | sort
     for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)"; done
     for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done`
   )
 
-  disk_list=(`for f in /dev/[hs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)"; done; for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done`)
+  disk_list=(`for f in /dev/[vhs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)"; done; for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done`)
 
   editorlist=(nano vi)
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
@@ -1982,6 +1979,27 @@ if [ "$BRinterface" = "cli" ]; then
 
   detect_distro
   set_bootloader
+
+  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
+    if ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
+      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Genkernel not found in the archived system. (you can disable this check with -D)"
+      while [ -z "$BRgenkernel" ]; do
+        echo -e "\n${BR_CYAN}Disable initramfs building?${BR_NORM}"
+        read -p "(Y/n, abort):" an
+
+        if [ -n "$an" ]; then def=$an; else def="y"; fi
+
+        if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
+          BRgenkernel="n"
+        elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
+          clean_unmount_in
+        else
+          echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+        fi
+      done
+    fi
+  fi
+
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
 
   echo -e "\n${BR_SEP}SUMMARY"
@@ -2084,7 +2102,7 @@ if [ "$BRinterface" = "cli" ]; then
 
 elif [ "$BRinterface" = "dialog" ]; then
   partition_list=(
-   `for f in $(find /dev -regex "/dev/[hs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done | sort
+   `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done | sort
     for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done
     for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done`
   )
@@ -2407,6 +2425,18 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   detect_distro
   set_bootloader
+
+  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
+    if ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
+      dialog --yes-label "Disable initramfs building" --no-label "Abort" --title Warning --yesno "Genkernel not found in the archived system. (you can disable this check with -D)" 5 85
+      if [ "$?" = "1" ]; then
+        clean_unmount_in
+      else
+        BRgenkernel="n"
+      fi
+    fi
+  fi
+
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
 
   if [ -z "$BRcontinue" ]; then

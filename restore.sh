@@ -231,7 +231,7 @@ generate_syslinux_cfg() {
     if [ -z "$BRgenkernel" ]; then
       for BRinitrd in `find /mnt/target/boot -name initramfs* | sed "s_/mnt/target/boot/initramfs-*__"` ; do
         echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$BRinitrd\n\tLINUX ../kernel-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
-      done | sort -Vr
+      done
     else
       for FILE in /mnt/target/boot/*; do RESP=$(file "$FILE" | grep -w kernel)
         if [ -n "$RESP" ]; then

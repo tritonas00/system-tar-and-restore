@@ -228,11 +228,11 @@ generate_syslinux_cfg() {
       BR_KERNEL_OPTS="${BR_KERNEL_OPTS} domdadm"
     fi
 
-    if [ "$BRgenkernel" = "y" ]; then
+    if [ -z "$BRgenkernel" ]; then
       for BRinitrd in `find /mnt/target/boot -name initramfs* | sed "s_/mnt/target/boot/initramfs-*__"` ; do
         echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$BRinitrd\n\tLINUX ../kernel-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
-      done
-    elif [ "$BRgenkernel" = "n" ]; then
+      done | sort -Vr
+    else
       for FILE in /mnt/target/boot/*; do RESP=$(file "$FILE" | grep -w kernel)
         if [ -n "$RESP" ]; then
           echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(basename "$FILE")\n\tLINUX ../$(basename "$FILE")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet" >> /mnt/target/boot/syslinux/syslinux.cfg
@@ -380,7 +380,7 @@ check_input() {
       BRSTOP="y"
     fi
     if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
-      if [ "$BRgenkernel" = "y" ]; then
+      if [ -z "$BRgenkernel" ]; then
         if [ -z $(which genkernel 2> /dev/null) ]; then
           echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
           BRSTOP="y"
@@ -762,7 +762,7 @@ show_summary() {
      echo -e "System:   $BRdistro based $(uname -m)${BR_NORM}"
   fi
   
-  if [ "$BRdistro" = "Gentoo" ] && [ "$BRgenkernel" = "n" ]; then
+  if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
     echo -e "${BR_YELLOW}Info:     Skip initramfs building${BR_NORM}"
   fi
 
@@ -854,7 +854,7 @@ build_initramfs() {
   done
 
   if [ "$BRdistro" = "Gentoo" ]; then
-    if [ "$BRgenkernel" = "n" ]; then
+    if [ -n "$BRgenkernel" ]; then
       echo  "Skipping..."
     else
       chroot /mnt/target genkernel --install initramfs
@@ -995,7 +995,7 @@ set_bootloader() {
     fi
   fi
 
-  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ "$BRgenkernel" = "y" ]; then
+  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
     if ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
       if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "[${BR_RED}ERROR${BR_NORM}] genkernel not found in the archived system. (you can disable this check with -D)"
@@ -1466,10 +1466,6 @@ if [[ "$BRuri" == /* ]]; then
   BRfile="$BRuri"
 else
   BRurl="$BRuri"
-fi
-
-if [ -z "$BRgenkernel" ]; then
-  BRgenkernel="y"
 fi
 
 if [ -z "$BRnocolor" ]; then

@@ -335,10 +335,6 @@ fi
 
 clean_files
 
-if [ -z "$BRgenkernel" ]; then
-  BRgenkernel="y"
-fi
-
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Directory does not exist: $BRFOLDER"
   BRSTOP="y"
@@ -370,7 +366,7 @@ if [ -z "$BRarchiver" ] && [ -n "$BRFOLDER" ]; then
 fi
 
 if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
-  if [ "$BRgenkernel" = "y" ]; then
+  if [ -z "$BRgenkernel" ]; then
     if [ -z $(which genkernel 2> /dev/null) ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
       BRSTOP="y"

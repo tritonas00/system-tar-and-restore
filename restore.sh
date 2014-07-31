@@ -792,11 +792,11 @@ prepare_chroot() {
 generate_fstab() {
   mv /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ] && [ ! "$BRdistro" = "Suse" ]; then
-    echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname,noatime  0  0" >> /mnt/target/etc/fstab
+    echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname  0  0" >> /mnt/target/etc/fstab
   elif [ "$BRfsystem" = "btrfs" ]; then
-    echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,noatime  0  0" >> /mnt/target/etc/fstab
+    echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS  0  0" >> /mnt/target/etc/fstab
   else
-    echo "$(detect_fstab_root)  /  $BRfsystem  $BR_MOUNT_OPTS,noatime  0  1" >> /mnt/target/etc/fstab
+    echo "$(detect_fstab_root)  /  $BRfsystem  $BR_MOUNT_OPTS  0  1" >> /mnt/target/etc/fstab
   fi
 
   if [ -n "$BRcustomparts" ]; then
@@ -1497,7 +1497,7 @@ if [ -n "$BRroot" ]; then
   fi
 
   if [ -z "$BR_MOUNT_OPTS" ]; then
-    BR_MOUNT_OPTS="defaults"
+    BR_MOUNT_OPTS="defaults,noatime"
   fi
 
   if [ -z "$BR_USER_OPTS" ]; then
@@ -1622,10 +1622,10 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   if [ -z "$BR_MOUNT_OPTS" ]; then
-    echo -e "\n${BR_CYAN}Enter additional mount options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter additional mount options\n${BR_MAGENTA}(Leave blank for defaults,noatime)${BR_NORM}"
     read -p "Options (comma-separated list): " BR_MOUNT_OPTS
     if [ -z "$BR_MOUNT_OPTS" ]; then
-      BR_MOUNT_OPTS="defaults"
+      BR_MOUNT_OPTS="defaults,noatime"
     fi
   fi
 
@@ -2213,9 +2213,9 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BR_MOUNT_OPTS" ]; then
-    BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Specify additional mount options for root partition.\nLeave empty for defaults.\n\n(comma-separated list)" 10 70 2>&1 1>&3)
+    BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Specify additional mount options for root partition.\nLeave empty for defaults,noatime.\n\n(comma-separated list)" 10 70 2>&1 1>&3)
     if [ -z "$BR_MOUNT_OPTS" ]; then
-      BR_MOUNT_OPTS="defaults"
+      BR_MOUNT_OPTS="defaults,noatime"
     fi
   fi
 

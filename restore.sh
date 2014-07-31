@@ -227,30 +227,26 @@ generate_syslinux_cfg() {
     elif [[ "$BRroot" == *dev/md* ]]; then
       BR_KERNEL_OPTS="${BR_KERNEL_OPTS} domdadm"
     fi
-
-    if [ -z "$BRgenkernel" ]; then
-      for BRinitrd in `find /mnt/target/boot -name initramfs* | sed "s_/mnt/target/boot/initramfs-*__"` ; do
-        echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$BRinitrd\n\tLINUX ../kernel-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
-      done
-    else
-      for FILE in /mnt/target/boot/*; do RESP=$(file "$FILE" | grep -w kernel)
-        if [ -n "$RESP" ]; then
-          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(basename "$FILE")\n\tLINUX ../$(basename "$FILE")\n\tAPPEND root=$BRroot $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet" >> /mnt/target/boot/syslinux/syslinux.cfg
-        fi
-      done
-    fi
   fi
 
-  for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
-    if [ "$BRdistro" = "Arch" ]; then
-      echo -e "LABEL arch\n\tMENU LABEL Arch $BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-      echo -e "LABEL archfallback\n\tMENU LABEL Arch $BRinitrd fallback\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$BRinitrd-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-    elif [ "$BRdistro" = "Debian" ]; then
-      echo -e "LABEL debian\n\tMENU LABEL Debian-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd.img-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
-    elif [ "$BRdistro" = "Fedora" ]; then
-      echo -e "LABEL fedora\n\tMENU LABEL Fedora-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$BRinitrd.img" >> /mnt/target/boot/syslinux/syslinux.cfg
-    elif [ "$BRdistro" = "Suse" ]; then
-      echo -e "LABEL suse\n\tMENU LABEL Suse-$BRinitrd\n\tLINUX ../vmlinuz-$BRinitrd\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd-$BRinitrd" >> /mnt/target/boot/syslinux/syslinux.cfg
+  for FILE in /mnt/target/boot/*; do RESP=$(file "$FILE" | grep -w "Linux kernel")
+    if [ -n "$RESP" ]; then
+      if [ "$BRdistro" = "Arch" ]; then
+        echo -e "LABEL arch\n\tMENU LABEL Arch $(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__").img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL archfallback\n\tMENU LABEL Arch $(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__") fallback\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      elif [ "$BRdistro" = "Debian" ]; then
+        echo -e "LABEL debian\n\tMENU LABEL Debian-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd.img-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")" >> /mnt/target/boot/syslinux/syslinux.cfg
+      elif [ "$BRdistro" = "Fedora" ]; then
+        echo -e "LABEL fedora\n\tMENU LABEL Fedora-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__").img" >> /mnt/target/boot/syslinux/syslinux.cfg
+      elif [ "$BRdistro" = "Suse" ]; then
+        echo -e "LABEL suse\n\tMENU LABEL Suse-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")" >> /mnt/target/boot/syslinux/syslinux.cfg
+      elif [ "$BRdistro" = "Gentoo" ]; then
+        if [ -z "$BRgenkernel" ]; then
+          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$(echo "$FILE" | sed "s_/mnt/target/boot/kernel-*__")" >> /mnt/target/boot/syslinux/syslinux.cfg
+        else
+          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND root=$BRroot $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet" >> /mnt/target/boot/syslinux/syslinux.cfg
+        fi
+      fi
     fi
   done
 }

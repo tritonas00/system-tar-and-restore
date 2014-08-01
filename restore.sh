@@ -854,7 +854,7 @@ build_initramfs() {
     if [ -n "$BRgenkernel" ]; then
       echo  "Skipping..."
     else
-      chroot /mnt/target genkernel --install initramfs
+      chroot /mnt/target genkernel --no-color --install initramfs
     fi
   fi
 }

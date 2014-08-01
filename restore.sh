@@ -961,7 +961,7 @@ install_bootloader() {
         echo "Installing $BRsyslinuxmbr in $BRsyslinux ($BRpartitiontable)"
         dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/bl_error
       fi
-      cp $BRsyslinuxpath/menu.c32 /mnt/target/boot/syslinux/
+      cp "$BRsyslinuxpath"/*.c32 /mnt/target/boot/syslinux/
     fi
     generate_syslinux_cfg
     echo -e "\n${BR_SEP}GENERATED SYSLINUX CONFIG" >> /tmp/restore.log

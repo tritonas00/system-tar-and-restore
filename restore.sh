@@ -243,7 +243,7 @@ generate_syslinux_cfg() {
         echo -e "LABEL suse\n\tMENU LABEL Suse-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")" >> /mnt/target/boot/syslinux/syslinux.cfg
       elif [ "$BRdistro" = "Gentoo" ]; then
         if [ -z "$BRgenkernel" ]; then
-          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$(echo "$FILE" | sed "s_/mnt/target/boot/kernel-*__")" >> /mnt/target/boot/syslinux/syslinux.cfg
+          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$(echo "$FILE" | sed -n 's/[^-]*-//p')" >> /mnt/target/boot/syslinux/syslinux.cfg
         else
           echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND root=$BRroot $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet" >> /mnt/target/boot/syslinux/syslinux.cfg
         fi

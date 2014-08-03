@@ -788,6 +788,7 @@ prepare_chroot() {
 
 generate_fstab() {
   mv /mnt/target/etc/fstab /mnt/target/etc/fstab-old
+  echo "# $BRroot" >> /mnt/target/etc/fstab
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ] && [ ! "$BRdistro" = "Suse" ]; then
     echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname  0  0" >> /mnt/target/etc/fstab
   elif [ "$BRfsystem" = "btrfs" ]; then
@@ -801,6 +802,7 @@ generate_fstab() {
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
+      echo -e "\n# $BRdevice" >> /mnt/target/etc/fstab
       if [[ "$BRdevice" == *dev/md* ]]; then
         echo "$BRdevice  $BRmpoint  $BRcustomfs  defaults  0  2" >> /mnt/target/etc/fstab
       else
@@ -810,6 +812,7 @@ generate_fstab() {
   fi
 
   if [ -n "$BRswap" ]; then
+    echo -e "\n# $BRswap" >> /mnt/target/etc/fstab 
     if [[ "$BRswap" == *dev/md* ]]; then
       echo "$BRswap  none  swap  defaults  0  0" >> /mnt/target/etc/fstab
     else
@@ -2466,7 +2469,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     cat /mnt/target/etc/fstab | dialog --title "GENERATING FSTAB" --progressbox 20 100
     sleep 2
   else
-    dialog --title "GENERATING FSTAB" --yesno "$(echo -e "Edit fstab? Generated fstab:\n\n`cat /mnt/target/etc/fstab`")" 13 100
+    dialog --title "GENERATING FSTAB" --yesno "$(echo -e "Edit fstab? Generated fstab:\n\n`cat /mnt/target/etc/fstab`")" 20 100
     if [ "$?" = "0" ]; then
       REPLY=$(dialog --no-cancel --menu "Select editor:" 10 25 10 1 nano 2 vi 2>&1 1>&3)
       if [ "$REPLY" = "1" ]; then

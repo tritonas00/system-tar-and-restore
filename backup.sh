@@ -266,7 +266,6 @@ while true; do
       shift 2
     ;;
     -q|--quiet)
-      BRcontinue="y"
       BRquiet="y"
       shift
     ;;
@@ -376,6 +375,10 @@ fi
 
 if [ -n "$BRSTOP" ]; then
   exit
+fi
+
+if [ -n "$BRquiet" ]; then
+  BRcontinue="y"
 fi
 
 if [ -z "$BRhidden" ]; then

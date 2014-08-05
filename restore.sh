@@ -758,7 +758,7 @@ show_summary() {
   elif [ "$BRmode" = "Transfer" ]; then
      echo -e "System:   $BRdistro based $(uname -m)${BR_NORM}"
   fi
-  
+
   if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
     echo -e "${BR_YELLOW}Info:     Skip initramfs building${BR_NORM}"
   fi
@@ -812,7 +812,7 @@ generate_fstab() {
   fi
 
   if [ -n "$BRswap" ]; then
-    echo -e "\n# $BRswap" >> /mnt/target/etc/fstab 
+    echo -e "\n# $BRswap" >> /mnt/target/etc/fstab
     if [[ "$BRswap" == *dev/md* ]]; then
       echo "$BRswap  none  swap  defaults  0  0" >> /mnt/target/etc/fstab
     else
@@ -921,7 +921,7 @@ install_bootloader() {
     if [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Suse" ]; then
       chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
     elif [ "$BRdistro" = "Gentoo" ]; then
-      chroot /mnt/target grub2-mkconfig -o /boot/grub/grub.cfg 
+      chroot /mnt/target grub2-mkconfig -o /boot/grub/grub.cfg
     else
       chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
     fi

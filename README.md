@@ -18,9 +18,9 @@ Supported distributions: Arch, Debian, Fedora, openSUSE, Gentoo
 The package is provided by the AUR. You can install it with an AUR helper of your choice: [`system-tar-and-restore`](https://aur.archlinux.org/packages/system-tar-and-restore/)
 or manually by invoking the following commands as a regular user. (to build packages from the AUR, the `base-devel` package group is assumed to be installed)
 
-<code>wget https://aur.archlinux.org/packages/sy/system-tar-and-restore/system-tar-and-restore.tar.gz
- tar xf system-tar-and-restore.tar.gz
- cd system-tar-and-restore
+<code>wget https://aur.archlinux.org/packages/sy/system-tar-and-restore/system-tar-and-restore.tar.gz  
+ tar xf system-tar-and-restore.tar.gz  
+ cd system-tar-and-restore  
  makepkg -si</code>  
 
 #### Gentoo

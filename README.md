@@ -23,7 +23,7 @@ or manually by invoking the following commands as a regular user. (to build pack
     cd system-tar-and-restore
     makepkg -si
 
-Also the package is provided by the `archlinuxgr` repo. Add the repo in `/etc/pacman.conf`:
+Also the package is provided by `archlinuxgr` repo. Add the repo in `/etc/pacman.conf`:
 
     [archlinuxgr-any]
     SigLevel = Never

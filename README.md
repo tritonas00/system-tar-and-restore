@@ -5,11 +5,30 @@ System tar & restore contains two bash scripts, **backup.sh** and **restore.sh**
 The purpose is to make the process of backing up and restoring a full GNU/Linux installation easier 
 using tar or transfer an existing installation using rsync.
 
-Supported distributions: Arch, Debian, Fedora       
+Supported distributions: Arch, Debian, Fedora, openSUSE, Gentoo        
 
 [![Demo Video](http://img.youtube.com/vi/dr5ZB3ajhTQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=dr5ZB3ajhTQ&hd=1)  
 
 [Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)  
+
+### Distribution packages
+
+#### Archlinux
+
+The package is provided by the AUR. You can install it with an AUR helper of your choice: [`system-tar-and-restore`](https://aur.archlinux.org/packages/system-tar-and-restore/)
+or manually by invoking the following commands as a regular user. (to build packages from the AUR, the `base-devel` package group is assumed to be installed)
+
+    wget https://aur.archlinux.org/packages/sy/system-tar-and-restore/system-tar-and-restore.tar.gz
+    tar xf system-tar-and-restore.tar.gz
+    cd system-tar-and-restore
+    makepkg -si
+
+#### Gentoo
+
+The package is provided by the `gentoo-el` overlay. You can install it with the following commands as root. (you need to have `layman` installed and configured)
+
+    layman -a gentoo-el
+    emerge app-backup/system-tar-and-restore
 
 ###REQUIREMENTS###
 
@@ -80,6 +99,9 @@ select archiver (tar bsdtar)
 
 **-u, --user-options**   
 additional tar options (see tar --help or man bsdtar)  
+
+**-D, --disable-genkernel**   
+disable genkernel check in gentoo  
 
 **--help**   
 show all arguments
@@ -220,12 +242,18 @@ subvolume name for root
 **-O, --other-subvolumes**   
  specify other subvolumes (subvolume path e.g /home /var /usr ...)
 
+**-D, --disable-genkernel**   
+disable genkernel check and initramfs building in gentoo  
+
 **--help**   
  show all arguments
 
 ###NOTES###
 
 - With GNU Tar 1.27, you can add *--xattrs --acls* (and *--selinux* if available) in backup and restore additional tar options.
+
+- In case of Gentoo, package genkernel is required to build initramfs. If you dont want to use initramfs image you can use -D in both scripts to disable
+genkernel check and initramfs building.
 
 - In case of Fedora *--xattrs --acls --selinux* are added automatically in backup. In order to successfully restore the target system (Fedora 19+)
 using GNU Tar, you need to add _--selinux --acls --xattrs-include='*'_ in restore additional tar options.

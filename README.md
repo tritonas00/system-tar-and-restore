@@ -11,7 +11,7 @@ Supported distributions: Arch, Debian, Fedora, openSUSE, Gentoo
 
 [Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)  
 
-### Distribution packages
+### DISTRIBUTION PACKAGES
 
 #### Archlinux
 

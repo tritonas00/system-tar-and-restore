@@ -23,6 +23,16 @@ or manually by invoking the following commands as a regular user. (to build pack
     cd system-tar-and-restore
     makepkg -si
 
+Also the package is provided by the `archlinuxgr` repo. Add the repo in `/etc/pacman.conf`:
+
+    [archlinuxgr-any]
+    SigLevel = Never
+    Server = http://archlinuxgr.tiven.org/archlinux/any
+
+and install system-tar-and-restore:
+
+    pacman -Sy system-tar-and-restore
+
 #### Gentoo
 
 The package is provided by the `gentoo-el` overlay. You can install it with the following commands as root. (you need to have `layman` installed and configured)

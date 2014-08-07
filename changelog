@@ -1,5 +1,21 @@
 Changelog:
 
+4.0
+    added openSUSE support
+    added Gentoo support (with and without genkernel/initramfs)*
+    added support for virtio devices
+    exclude /var/lock/* and /var/run/* from backup/transfer
+    changed grub detection in the archived system
+    updated PATH so we can restore from/to any distro
+    copy all syslinux COM32 files in /boot/syslinux
+    improved syslinux.cfg generator
+    added device comments in generated fstab
+    changed swap mount point to none
+    backup.conf now covers all backup options
+    updated info screen instructions
+
+* Thanks freestyl3r for testing
+
 3.9.7
     added support for uncompressed archive
     fixed destination with spaces in backup.conf generator

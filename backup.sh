@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.0"
+BR_VERSION="System Tar & Restore 4.1"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -214,7 +214,7 @@ out_pgrs_cli() {
   if [ -n "$BRverb" ]; then
     echo -e "\r${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
   else
-    echo -en "\rCompressing: $(($b*100/$total))%"
+    echo -ne "\rCompressing: [${pstr:0:$(( $b * 24 / $total ))}${dstr:0:24-$(( $b * 24 / $total ))}] $(( $b * 100 / $total ))%"
   fi
 }
 
@@ -423,6 +423,8 @@ if [ -z "$BRinterface" ]; then
 fi
 
 if [ "$BRinterface" = "cli" ]; then
+  pstr="########################"
+  dstr="------------------------"
   DEFAULTIFS=$IFS
   IFS=$'\n'
 

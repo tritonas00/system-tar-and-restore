@@ -1199,7 +1199,7 @@ tar_pgrs_cli() {
   if [ -n "$BRverb" ]; then
     echo -e "\r${BR_YELLOW}[$(($a*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
   else
-    echo -ne "\rDecompressing: [${pstr:0:$(( $a * 24 / $total ))}${dstr:0:24-$(( $a * 24 / $total ))}] $(( $a * 100 / $total ))%"
+    echo -ne "\rDecompressing: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $(($a*100/$total))%"
   fi
 }
 
@@ -1207,7 +1207,7 @@ rsync_pgrs_cli() {
   if [ -n "$BRverb" ]; then
     echo -e "\r${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
   else
-    echo -ne "\rSyncing: [${pstr:0:$(( $b * 24 / $total ))}${dstr:0:24-$(( $b * 24 / $total ))}] $(( $b * 100 / $total ))%"
+    echo -ne "\rSyncing: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $(($b*100/$total))%"
   fi
 }
 

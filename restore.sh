@@ -1921,9 +1921,11 @@ if [ "$BRinterface" = "cli" ]; then
 
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
+      echo -ne "${HIDE_CRS}"
       ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done
       IFS=$'\n'
+      echo -ne "${REST_CRS}"
       check_archive
     fi
 
@@ -1975,9 +1977,11 @@ if [ "$BRinterface" = "cli" ]; then
 
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
+        echo -ne "${HIDE_CRS}"
         ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done
         IFS=$'\n'
+        echo -ne "${REST_CRS}"
         check_archive
       fi
     done
@@ -2362,9 +2366,11 @@ elif [ "$BRinterface" = "dialog" ]; then
 
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
+      echo -ne "${HIDE_CRS}"
       ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done | dialog --progressbox 3 55
       IFS=$'\n'
+      echo -ne "${REST_CRS}"
       sleep 1
       check_archive
     fi
@@ -2422,9 +2428,11 @@ elif [ "$BRinterface" = "dialog" ]; then
       fi
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
+        echo -ne "${HIDE_CRS}"
         ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done | dialog --progressbox 3 55
         IFS=$'\n'
+        echo -ne "${REST_CRS}"
         sleep 1
         check_archive
       fi

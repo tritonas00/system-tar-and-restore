@@ -221,6 +221,13 @@ out_pgrs_cli() {
   fi
 }
 
+ctrl_c() {
+  echo -ne "${REST_CRS}"
+  exit
+}
+
+trap ctrl_c INT
+
 BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgD" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then

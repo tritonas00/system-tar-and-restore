@@ -1274,6 +1274,13 @@ options_info() {
   fi
 }
 
+ctrl_c() {
+  echo -ne "${REST_CRS}"
+  exit
+}
+
+trap ctrl_c INT
+
 BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:vdD" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];

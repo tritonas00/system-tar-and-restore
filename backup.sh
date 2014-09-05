@@ -222,7 +222,7 @@ out_pgrs_cli() {
 }
 
 ctrl_c() {
-  echo -ne "${REST_CRS}"
+  echo -e "${REST_CRS}"
   exit
 }
 

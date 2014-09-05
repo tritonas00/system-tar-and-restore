@@ -3,7 +3,7 @@
 BR_VERSION="System Tar & Restore 4.1"
 BR_SEP="::"
 HIDE_CRS='\033[?25l'
-REST_CRS='\033[?12l\033[?25h'
+REST_CRS='\033[?25h'
 
 if [ -f /etc/backup.conf ]; then
   source /etc/backup.conf

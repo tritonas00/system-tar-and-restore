@@ -5,7 +5,7 @@ BR_VERSION="System Tar & Restore 4.1"
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
 HIDE_CRS='\033[?25l'
-REST_CRS='\033[?12l\033[?25h'
+REST_CRS='\033[?25h'
 
 color_variables() {
   BR_NORM='\e[00m'

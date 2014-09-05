@@ -2,6 +2,8 @@
 
 BR_VERSION="System Tar & Restore 4.1"
 BR_SEP="::"
+HIDE_CRS='\033[?25l'
+REST_CRS='\033[?12l\033[?25h'
 
 if [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
@@ -179,6 +181,7 @@ prepare() {
   if [ "$BRinterface" = "cli" ]; then echo -e "\n${BR_SEP}CREATING ARCHIVE"; fi
   mkdir -p "$BRFOLDER"
   sleep 1
+  echo -ne "${HIDE_CRS}"
 }
 
 report_vars_log() {
@@ -746,5 +749,6 @@ if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
   if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'" >> "$BRFOLDER"/backup.conf; fi
 fi
 
+echo -ne "${REST_CRS}"
 clean_files
 

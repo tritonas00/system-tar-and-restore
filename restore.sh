@@ -4,6 +4,8 @@ BR_VERSION="System Tar & Restore 4.1"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
+HIDE_CRS='\033[?25l'
+REST_CRS='\033[?12l\033[?25h'
 
 color_variables() {
   BR_NORM='\e[00m'
@@ -2020,6 +2022,7 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   report_vars_log  >> /tmp/restore.log
+  echo -ne "${HIDE_CRS}"
   if [ "$BRmode" = "Restore" ]; then
     echo -e "\n${BR_SEP}EXTRACTING"
     total=$(cat /tmp/filelist | wc -l)
@@ -2045,7 +2048,8 @@ if [ "$BRinterface" = "cli" ]; then
     run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && rsync_pgrs_cli; done
     echo " "
   fi
-
+  echo -ne "${REST_CRS}"  
+  
   echo -e "\n${BR_SEP}GENERATING FSTAB"
   generate_fstab
   cat /mnt/target/etc/fstab
@@ -2444,6 +2448,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   report_vars_log >> /tmp/restore.log
+  echo -ne "${HIDE_CRS}"
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
@@ -2464,6 +2469,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     sleep 1
     run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Syncing..." 0 50
   fi
+  echo -ne "${REST_CRS}"
 
   generate_fstab
 

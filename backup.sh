@@ -2,8 +2,6 @@
 
 BR_VERSION="System Tar & Restore 4.1"
 BR_SEP="::"
-HIDE_CRS='\033[?25l'
-REST_CRS='\033[?25h'
 
 if [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
@@ -181,7 +179,6 @@ prepare() {
   if [ "$BRinterface" = "cli" ]; then echo -e "\n${BR_SEP}CREATING ARCHIVE"; fi
   mkdir -p "$BRFOLDER"
   sleep 1
-  echo -ne "${HIDE_CRS}"
 }
 
 report_vars_log() {
@@ -220,13 +217,6 @@ out_pgrs_cli() {
     echo -ne "\rCompressing: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $(($b*100/$total))%"
   fi
 }
-
-ctrl_c() {
-  echo -e "${REST_CRS}"
-  exit
-}
-
-trap ctrl_c INT
 
 BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgD" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,help" -n "$1" -- "$@"`
 
@@ -756,6 +746,4 @@ if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
   if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'" >> "$BRFOLDER"/backup.conf; fi
 fi
 
-echo -ne "${REST_CRS}"
 clean_files
-

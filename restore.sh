@@ -4,8 +4,6 @@ BR_VERSION="System Tar & Restore 4.1"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
-HIDE_CRS='\033[?25l'
-REST_CRS='\033[?25h'
 
 color_variables() {
   BR_NORM='\e[00m'
@@ -1274,13 +1272,6 @@ options_info() {
   fi
 }
 
-ctrl_c() {
-  echo -e "${REST_CRS}"
-  exit
-}
-
-trap ctrl_c INT
-
 BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:vdD" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
@@ -1921,11 +1912,9 @@ if [ "$BRinterface" = "cli" ]; then
 
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
-      echo -ne "${HIDE_CRS}"
       ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done
       IFS=$'\n'
-      echo -ne "${REST_CRS}"
       check_archive
     fi
 
@@ -1977,11 +1966,9 @@ if [ "$BRinterface" = "cli" ]; then
 
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
-        echo -ne "${HIDE_CRS}"
         ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done
         IFS=$'\n'
-        echo -ne "${REST_CRS}"
         check_archive
       fi
     done
@@ -2033,7 +2020,7 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   report_vars_log  >> /tmp/restore.log
-  echo -ne "${HIDE_CRS}"
+
   if [ "$BRmode" = "Restore" ]; then
     echo -e "\n${BR_SEP}EXTRACTING"
     total=$(cat /tmp/filelist | wc -l)
@@ -2059,8 +2046,7 @@ if [ "$BRinterface" = "cli" ]; then
     run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && rsync_pgrs_cli; done
     echo " "
   fi
-  echo -ne "${REST_CRS}"  
-  
+
   echo -e "\n${BR_SEP}GENERATING FSTAB"
   generate_fstab
   cat /mnt/target/etc/fstab
@@ -2366,11 +2352,9 @@ elif [ "$BRinterface" = "dialog" ]; then
 
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
-      echo -ne "${HIDE_CRS}"
       ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done | dialog --progressbox 3 55
       IFS=$'\n'
-      echo -ne "${REST_CRS}"
       sleep 1
       check_archive
     fi
@@ -2428,11 +2412,9 @@ elif [ "$BRinterface" = "dialog" ]; then
       fi
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
-        echo -ne "${HIDE_CRS}"
         ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done | dialog --progressbox 3 55
         IFS=$'\n'
-        echo -ne "${REST_CRS}"
         sleep 1
         check_archive
       fi
@@ -2463,7 +2445,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   report_vars_log >> /tmp/restore.log
-  echo -ne "${HIDE_CRS}"
+
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
@@ -2484,7 +2466,6 @@ elif [ "$BRinterface" = "dialog" ]; then
     sleep 1
     run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Syncing..." 0 50
   fi
-  echo -ne "${REST_CRS}"
 
   generate_fstab
 

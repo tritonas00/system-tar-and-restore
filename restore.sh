@@ -1396,7 +1396,7 @@ while true; do
       shift
     ;;
     --help)
-    echo -e "\n$BR_VERSION
+    echo -e "$BR_VERSION\nUsage: restore.sh [options]
 \nGeneral:
   -i,  --interface          interface to use (cli dialog)
   -N,  --no-color           disable colors
@@ -1430,7 +1430,7 @@ while true; do
   -O,  --other-subvolumes   specify other subvolumes (subvolume path e.g /home /var /usr ...)
 \nMisc Options:
   -D,  --disable-genkernel  disable genkernel check and initramfs building in gentoo
-\n--help  print this page\n"
+       --help               print this page"
       exit
       shift
     ;;

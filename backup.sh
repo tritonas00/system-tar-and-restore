@@ -282,7 +282,7 @@ while true; do
       shift
     ;;
     --help)
-      echo -e "\n$BR_VERSION
+      echo -e "$BR_VERSION\nUsage: backup.sh [options]
 \nGeneral:
   -i, --interface          interface to use (cli dialog)
   -N, --no-color           disable colors
@@ -301,7 +301,7 @@ while true; do
   -u, --user-options       additional tar options (see tar --help or man bsdtar)
 \nMisc Options:
   -D, --disable-genkernel  disable genkernel check in gentoo
-\n--help	print this page\n"
+      --help	           print this page"
       exit
       shift
     ;;

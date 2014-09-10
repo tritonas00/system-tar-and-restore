@@ -1396,30 +1396,23 @@ while true; do
       shift
     ;;
     --help)
-    BR_BOLD='\033[1m'
-    BR_NORM='\e[00m'
-    echo -e "
-${BR_BOLD}$BR_VERSION
-
-General:${BR_NORM}
+    echo -e "\n$BR_VERSION
+\nGeneral:
   -i,  --interface          interface to use (cli dialog)
   -N,  --no-color           disable colors
   -q,  --quiet              dont ask, just run
   -v,  --verbose            enable verbose tar/rsync output (cli only)
   -U,  --user-options       additional tar/rsync options (see tar --help, man bsdtar or rsync --help)
-
-${BR_BOLD}Restore Mode:${BR_NORM}
+\nRestore Mode:
   -f,  --file               backup file path or url
   -n,  --username           username
   -p,  --password           password
   -a,  --archiver           select archiver (tar bsdtar)
   -u,  --url                same as -f (for compatibility)
-
-${BR_BOLD}Transfer Mode:${BR_NORM}
+\nTransfer Mode:
   -t,  --transfer           activate transfer mode
   -o,  --only-hidden        transfer /home's hidden files and folders only
-
-${BR_BOLD}Partitions:${BR_NORM}
+\nPartitions:
   -r,  --root               target root partition
   -e,  --esp                target EFI system partition
   -h,  --home               target home partition
@@ -1428,22 +1421,16 @@ ${BR_BOLD}Partitions:${BR_NORM}
   -c,  --custom-partitions  specify custom partitions (mountpoint=device)
   -m,  --mount-options      comma-separated list of mount options (root partition)
   -d,  --dont-check-root    dont check if root partition is empty (dangerous)
-
-${BR_BOLD}Bootloader:${BR_NORM}
+\nBootloader:
   -g,  --grub               target disk for grub
   -S,  --syslinux           target disk for syslinux
   -k,  --kernel-options     additional kernel options (syslinux only)
-
-${BR_BOLD}Btrfs Subvolumes:${BR_NORM}
+\nBtrfs Subvolumes:
   -R,  --rootsubvolname     subvolume name for /
   -O,  --other-subvolumes   specify other subvolumes (subvolume path e.g /home /var /usr ...)
-
-${BR_BOLD}Misc Options:${BR_NORM}
+\nMisc Options:
   -D,  --disable-genkernel  disable genkernel check and initramfs building in gentoo
-
---help  print this page
-"
-      unset BR_BOLD BR_NORM
+\n--help  print this page\n"
       exit
       shift
     ;;

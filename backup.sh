@@ -282,37 +282,26 @@ while true; do
       shift
     ;;
     --help)
-      BR_BOLD='\033[1m'
-      BR_NORM='\e[00m'
-      echo -e "
-${BR_BOLD}$BR_VERSION
-
-General:${BR_NORM}
+      echo -e "\n$BR_VERSION
+\nGeneral:
   -i, --interface          interface to use (cli dialog)
   -N, --no-color           disable colors
   -q, --quiet              dont ask, just run
   -v, --verbose            enable verbose archiver output (cli only)
   -g, --generate           generate configuration file (in case of successful backup)
-
-${BR_BOLD}Destination:${BR_NORM}
+\nDestination:
   -d, --directory          backup destination path
   -f, --filename           backup file name (without extension)
-
-${BR_BOLD}Home Directory:${BR_NORM}
+\nHome Directory:
   -h, --exclude-home	   exclude /home directory (keep hidden files and folders)
   -n, --no-hidden          dont keep home's hidden files and folders (use with -h)
-
-${BR_BOLD}Archiver Options:${BR_NORM}
+\nArchiver Options:
   -a, --archiver           select archiver (tar bsdtar)
   -c, --compression        compression type (gzip bzip2 xz none)
   -u, --user-options       additional tar options (see tar --help or man bsdtar)
-
-${BR_BOLD}Misc Options:${BR_NORM}
+\nMisc Options:
   -D, --disable-genkernel  disable genkernel check in gentoo
-
---help	print this page
-"
-      unset BR_BOLD BR_NORM
+\n--help	print this page\n"
       exit
       shift
     ;;

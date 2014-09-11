@@ -91,17 +91,17 @@ show_path() {
 
 detect_root_fs_size() {
   BRfsystem=$(blkid -s TYPE -o value $BRroot)
-  BRfsize=$(lsblk -d -n -o size 2> /dev/null $BRroot)
+  BRfsize=$(lsblk -d -n -o size 2>/dev/null $BRroot)
 }
 
 detect_filetype() {
-  if file "$BRfile" | grep -w gzip > /dev/null; then
+  if file "$BRfile" | grep -w gzip >/dev/null; then
     BRfiletype="gz"
-  elif file "$BRfile" | grep -w bzip2 > /dev/null; then
+  elif file "$BRfile" | grep -w bzip2 >/dev/null; then
     BRfiletype="bz2"
-  elif file "$BRfile" | grep -w XZ > /dev/null; then
+  elif file "$BRfile" | grep -w XZ >/dev/null; then
     BRfiletype="xz"
-  elif file "$BRfile" | grep -w POSIX > /dev/null; then
+  elif file "$BRfile" | grep -w POSIX >/dev/null; then
     BRfiletype="uncompressed"
   else
     BRfiletype="wrong"
@@ -118,13 +118,13 @@ check_wget() {
       dialog --title "Error" --msgbox "Error downloading file. Wrong URL, network is down or package wget is not installed." 6 65
     fi
   else
-    if file "$BRsource" | grep -w gzip > /dev/null; then
+    if file "$BRsource" | grep -w gzip >/dev/null; then
       BRfiletype="gz"
-    elif file "$BRsource" | grep -w bzip2 > /dev/null; then
+    elif file "$BRsource" | grep -w bzip2 >/dev/null; then
       BRfiletype="bz2"
-    elif file "$BRsource" | grep -w XZ > /dev/null; then
+    elif file "$BRsource" | grep -w XZ >/dev/null; then
       BRfiletype="xz"
-    elif file "$BRsource" | grep -w POSIX > /dev/null; then
+    elif file "$BRsource" | grep -w POSIX >/dev/null; then
       BRfiletype="uncompressed"
     else
       unset BRsource
@@ -192,7 +192,7 @@ detect_partition_table_syslinux() {
   else
     BRsyslinuxdisk="$BRsyslinux"
   fi
-  if dd if="$BRsyslinuxdisk" skip=64 bs=8 count=1 2>/dev/null | grep -w "EFI PART" > /dev/null; then
+  if dd if="$BRsyslinuxdisk" skip=64 bs=8 count=1 2>/dev/null | grep -w "EFI PART" >/dev/null; then
     BRpartitiontable="gpt"
   else
     BRpartitiontable="mbr"
@@ -281,7 +281,7 @@ set_rsync_opts() {
 
 run_calc() {
   IFS=$DEFAULTIFS
-  rsync -av / /mnt/target ${BR_RSYNCOPTS[@]} --dry-run 2> /dev/null | tee /tmp/filelist
+  rsync -av / /mnt/target ${BR_RSYNCOPTS[@]} --dry-run 2>/dev/null | tee /tmp/filelist
 }
 
 run_rsync() {
@@ -291,7 +291,7 @@ run_rsync() {
 
 count_gauge() {
   while read ln; do
-    b=$(( b + 1 ))
+    b=$((b + 1))
     per=$(($b*100/$total))
     if [[ $per -gt $lastper ]]; then
       lastper=$per
@@ -345,7 +345,7 @@ no_parts() {
 disk_report() {
   for i in /dev/[vhs]d[a-z]; do
     echo -e "\n$i  ($(lsblk -d -n -o model $i)  $(lsblk -d -n -o size $i))"
-    for f in $i[0-9]; do echo -e "\t\t$f  $(blkid -s TYPE -o value $f)  $(lsblk -d -n -o size $f)  $(lsblk -d -n -o mountpoint 2> /dev/null $f)"; done
+    for f in $i[0-9]; do echo -e "\t\t$f  $(blkid -s TYPE -o value $f)  $(lsblk -d -n -o size $f)  $(lsblk -d -n -o mountpoint 2>/dev/null $f)"; done
   done
 }
 
@@ -372,13 +372,13 @@ check_input() {
   fi
 
   if [ "$BRmode" = "Transfer" ]; then
-    if [ -z $(which rsync 2> /dev/null) ];then
+    if [ -z $(which rsync 2>/dev/null) ];then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package rsync is not installed. Install the package and re-run the script"
       BRSTOP="y"
     fi
     if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
       if [ -z "$BRgenkernel" ]; then
-        if [ -z $(which genkernel 2> /dev/null) ]; then
+        if [ -z $(which genkernel 2>/dev/null) ]; then
           echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
           BRSTOP="y"
         fi
@@ -388,22 +388,22 @@ check_input() {
       echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found"
       BRSTOP="y"
     elif [ -n "$BRsyslinux" ]; then
-      if [ -z $(which extlinux 2> /dev/null) ]; then
+      if [ -z $(which extlinux 2>/dev/null) ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Extlinux not found"
         BRSTOP="y"
       fi
-      if [ -z $(which syslinux 2> /dev/null) ]; then
+      if [ -z $(which syslinux 2>/dev/null) ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found"
         BRSTOP="y"
       fi
     fi
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
       if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ]; then
-        if [ -z $(which mkfs.vfat 2> /dev/null) ]; then
+        if [ -z $(which mkfs.vfat 2>/dev/null) ]; then
           echo -e "[${BR_RED}ERROR${BR_NORM}] Package dosfstools is not installed. Install the package and re-run the script"
           BRSTOP="y"
         fi
-        if [ -z $(which efibootmgr 2> /dev/null) ]; then
+        if [ -z $(which efibootmgr 2>/dev/null) ]; then
           echo -e "[${BR_RED}ERROR${BR_NORM}] Package efibootmgr is not installed. Install the package and re-run the script"
           BRSTOP="y"
         fi
@@ -421,11 +421,11 @@ check_input() {
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong root partition: $BRroot"
       BRSTOP="y"
-    elif pvdisplay 2>&1 | grep -w $BRroot > /dev/null; then
+    elif pvdisplay 2>&1 | grep -w $BRroot >/dev/null; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRroot contains lvm physical volume, refusing to use it. Use a logical volume instead"
       BRSTOP="y"
-    elif [[ ! -z `lsblk -d -n -o mountpoint 2> /dev/null $BRroot` ]]; then
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2> /dev/null $BRroot), refusing to use it"
+    elif [[ ! -z `lsblk -d -n -o mountpoint 2>/dev/null $BRroot` ]]; then
+      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null $BRroot), refusing to use it"
       BRSTOP="y"
     fi
   fi
@@ -435,7 +435,7 @@ check_input() {
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong swap partition: $BRswap"
       BRSTOP="y"
-    elif pvdisplay 2>&1 | grep -w $BRswap > /dev/null; then
+    elif pvdisplay 2>&1 | grep -w $BRswap >/dev/null; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRswap contains lvm physical volume, refusing to use it. Use a logical volume instead"
       BRSTOP="y"
     fi
@@ -469,11 +469,11 @@ check_input() {
       if [ ! "$BRcustomcheck" = "true" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong $BRmpoint partition: $BRdevice"
         BRSTOP="y"
-      elif pvdisplay 2>&1 | grep -w $BRdevice > /dev/null; then
+      elif pvdisplay 2>&1 | grep -w $BRdevice >/dev/null; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice contains lvm physical volume, refusing to use it. Use a logical volume instead"
         BRSTOP="y"
-      elif [[ ! -z `lsblk -d -n -o mountpoint 2> /dev/null $BRdevice` ]]; then
-        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice is already mounted as $(lsblk -d -n -o mountpoint 2> /dev/null $BRdevice), refusing to use it"
+      elif [[ ! -z `lsblk -d -n -o mountpoint 2>/dev/null $BRdevice` ]]; then
+        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null $BRdevice), refusing to use it"
         BRSTOP="y"
       fi
       if [ "$BRdevice" == "$BRroot" ] || [ "$BRdevice" == "$BRswap" ]; then
@@ -497,7 +497,7 @@ check_input() {
         BRSTOP="y"
       fi
       unset BRcustomcheck
-    done < <( for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); BRdevice=$(echo $a | cut -f2 -d"="); echo "$BRmpoint=$BRdevice"; done )
+    done < <(for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); BRdevice=$(echo $a | cut -f2 -d"="); echo "$BRmpoint=$BRdevice"; done)
   fi
 
   if [ -n "$BRsubvols" ] && [ -z "$BRrootsubvolname" ]; then
@@ -523,7 +523,7 @@ check_input() {
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Use -R to assign root subvolume"
         BRSTOP="y"
       fi
-    done < <( for a in ${BRsubvols[@]}; do echo $a; done )
+    done < <(for a in ${BRsubvols[@]}; do echo $a; done)
   fi
 
   if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "/boot/efi" ]; then
@@ -571,7 +571,7 @@ check_input() {
     BRSTOP="y"
   fi
 
-  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
+  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2>/dev/null) ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
     BRSTOP="y"
   fi
@@ -598,7 +598,7 @@ mount_all() {
 
   echo -ne "${BR_WRK}Mounting $BRroot"
   OUTPUT=$(mount -o $BR_MOUNT_OPTS $BRroot /mnt/target 2>&1) && ok_status || error_status
-  BRsizes+=(`lsblk -n -b -o size "$BRroot" 2> /dev/null`=/mnt/target)
+  BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
   if [ -n "$BRSTOP" ]; then
     echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
     clean_files
@@ -621,12 +621,12 @@ mount_all() {
 
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
     echo -ne "${BR_WRK}Creating $BRrootsubvolname"
-    OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
+    OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
 
     if [ -n "$BRsubvols" ]; then
       while read ln; do
         echo -ne "${BR_WRK}Creating $BRrootsubvolname$ln"
-        OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname$ln 2>&1 1> /dev/null) && ok_status || error_status
+        OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname$ln 2>&1 1>/dev/null) && ok_status || error_status
       done< <(for a in "${BRsubvols[@]}"; do echo "$a"; done | sort)
     fi
 
@@ -651,7 +651,7 @@ mount_all() {
       echo -ne "${BR_WRK}Mounting $BRdevice"
       mkdir -p /mnt/target$BRmpoint
       OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
-      BRsizes+=(`lsblk -n -b -o size "$BRdevice" 2> /dev/null`=/mnt/target$BRmpoint)
+      BRsizes+=(`lsblk -n -b -o size "$BRdevice" 2>/dev/null`=/mnt/target$BRmpoint)
       if [ -n "$custom_ok" ]; then
         unset custom_ok
         BRumountparts+=($BRmpoint=$BRdevice)
@@ -678,7 +678,7 @@ show_summary() {
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
-      BRcustomsize=$(lsblk -d -n -o size 2> /dev/null $BRdevice)
+      BRcustomsize=$(lsblk -d -n -o size 2>/dev/null $BRdevice)
       echo "${BRmpoint#*/} partition: $BRdevice $BRcustomfs $BRcustomsize"
     done
   fi
@@ -930,8 +930,8 @@ install_bootloader() {
     echo -e "\n${BR_SEP}INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
     if [ -d /mnt/target/boot/syslinux ]; then
       mv /mnt/target/boot/syslinux/syslinux.cfg /mnt/target/boot/syslinux.cfg-old
-      chattr -i /mnt/target/boot/syslinux/* 2> /dev/null
-      rm -r /mnt/target/boot/syslinux/* 2> /dev/null
+      chattr -i /mnt/target/boot/syslinux/* 2>/dev/null
+      rm -r /mnt/target/boot/syslinux/* 2>/dev/null
     else
       mkdir -p /mnt/target/boot/syslinux
     fi
@@ -987,7 +987,7 @@ set_bootloader() {
         done
       fi
       detect_partition_table_syslinux
-      if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2> /dev/null) ]; then
+      if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
         if [ -z "$BRnocolor" ]; then color_variables; fi
         echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
         BRabort="y"
@@ -1003,7 +1003,7 @@ set_bootloader() {
     fi
     detect_partition_table_syslinux
     if [ "$BRmode" = "Transfer" ]; then
-      if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2> /dev/null) ]; then
+      if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
         if [ -z "$BRnocolor" ]; then color_variables; fi
         echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
         BRabort="y"
@@ -1080,7 +1080,7 @@ check_archive() {
     if [ "$BRinterface" = "cli" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
     elif [ "$BRinterface" = "dialog" ]; then
-      dialog --title "Error" --msgbox "Error reading archive.\n\n$(cat /tmp/filelist | grep -i ": " )" 0 0
+      dialog --title "Error" --msgbox "Error reading archive.\n\n$(cat /tmp/filelist | grep -i ": ")" 0 0
     fi
   else
     target_arch=$(grep -F 'target_architecture.' /tmp/filelist)
@@ -1116,13 +1116,13 @@ clean_unmount_in() {
   if [ -z "$BRnocolor" ]; then color_variables; fi
   echo "${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
-  rm "$BRmaxsize/downloaded_backup" 2> /dev/null
+  rm "$BRmaxsize/downloaded_backup" 2>/dev/null
   if [ -n "$BRcustomparts" ]; then
     while read ln; do
       sleep 1
       echo -ne "${BR_WRK}Unmounting $ln"
       OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-    done < <( for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
+    done < <(for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac)
   fi
 
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
@@ -1136,12 +1136,12 @@ clean_unmount_in() {
       while read ln; do
         sleep 1
         echo -ne "${BR_WRK}Deleting $BRrootsubvolname$ln"
-        OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname$ln 2>&1 1> /dev/null) && ok_status || error_status
-      done < <( for i in ${BRsubvols[@]}; do echo $i; done | sort -r )
+        OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname$ln 2>&1 1>/dev/null) && ok_status || error_status
+      done < <(for i in ${BRsubvols[@]}; do echo $i; done | sort -r)
     fi
 
     echo -ne "${BR_WRK}Deleting $BRrootsubvolname"
-    OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1> /dev/null) && ok_status || error_status
+    OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
   fi
 
   if [ -z "$BRSTOP" ]; then
@@ -1161,7 +1161,7 @@ clean_unmount_out() {
   if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
-  rm "$BRmaxsize/downloaded_backup" 2> /dev/null
+  rm "$BRmaxsize/downloaded_backup" 2>/dev/null
   umount /mnt/target/dev/pts
   umount /mnt/target/proc
   umount /mnt/target/dev
@@ -1173,7 +1173,7 @@ clean_unmount_out() {
       sleep 1
       echo -ne "${BR_WRK}Unmounting $ln"
       OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-    done < <( for i in ${BRsorted[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac )
+    done < <(for i in ${BRsorted[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac)
   fi
 
   clean_files
@@ -1900,7 +1900,7 @@ if [ "$BRinterface" = "cli" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
-      while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done
+      while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
       IFS=$'\n'
       check_archive
     fi
@@ -1954,7 +1954,7 @@ if [ "$BRinterface" = "cli" ]; then
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
         ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
-        while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done
+        while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
         IFS=$'\n'
         check_archive
       fi
@@ -2017,7 +2017,7 @@ if [ "$BRinterface" = "cli" ]; then
       run_tar 2>>/tmp/restore.log
     elif [ "$BRarchiver" = "bsdtar" ]; then
       run_tar | tee /tmp/bsdtar_out
-    fi | while read ln; do a=$(( a + 1 )) && tar_pgrs_cli; done
+    fi | while read ln; do a=$((a + 1)) && tar_pgrs_cli; done
 
     if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
       cat /tmp/bsdtar_out | grep -i ": " >> /tmp/restore.log
@@ -2026,11 +2026,11 @@ if [ "$BRinterface" = "cli" ]; then
     echo " "
   elif [ "$BRmode" = "Transfer" ]; then
     echo -e "\n${BR_SEP}TRANSFERING"
-    run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
+    run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     echo " "
-    run_rsync 2>>/tmp/restore.log | while read ln; do b=$(( b + 1 )) && rsync_pgrs_cli; done
+    run_rsync 2>>/tmp/restore.log | while read ln; do b=$((b + 1)) && rsync_pgrs_cli; done
     echo " "
   fi
 
@@ -2094,7 +2094,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   IFS=$DEFAULTIFS
 
-  if [ -z $(which dialog 2> /dev/null) ];then
+  if [ -z $(which dialog 2>/dev/null) ];then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package dialog is not installed. Install the package and re-run the script"
     exit
   fi
@@ -2340,7 +2340,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
-      while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done | dialog --progressbox 3 55
+      while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done | dialog --progressbox 3 55
       IFS=$'\n'
       sleep 1
       check_archive
@@ -2400,7 +2400,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
         ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
-        while read ln; do a=$(( a + 1 )) && echo -en "\rChecking and reading archive ($a Files) "; done | dialog --progressbox 3 55
+        while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done | dialog --progressbox 3 55
         IFS=$'\n'
         sleep 1
         check_archive
@@ -2448,7 +2448,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
 
   elif [ "$BRmode" = "Transfer" ]; then
-    run_calc | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done | dialog --progressbox 3 40
+    run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done | dialog --progressbox 3 40
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Syncing..." 0 50

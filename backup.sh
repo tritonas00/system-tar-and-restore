@@ -96,7 +96,7 @@ show_summary() {
 dir_list() {
   DEFAULTIFS=$IFS
   IFS=$'\n'
-  for D in "$BRpath"*; do [ -d "${D}" ] && echo "$( basename ${D// /\\} ) dir"; done
+  for D in "$BRpath"*; do [ -d "${D}" ] && echo "$(basename ${D// /\\}) dir"; done
   IFS=$DEFAULTIFS
 }
 
@@ -146,9 +146,9 @@ set_tar_options() {
 
 run_calc() {
   if [ "$BRarchiver" = "tar" ]; then
-    $BRarchiver cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2> /dev/null | tee /tmp/b_filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
+    $BRarchiver cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>/dev/null | tee /tmp/b_filelist | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
   elif [ "$BRarchiver" = "bsdtar" ]; then
-    $BRarchiver cvf /dev/null ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 | tee /tmp/b_filelist | while read ln; do a=$(( a + 1 )) && echo -en "\rCalculating: $a Files"; done
+    $BRarchiver cvf /dev/null ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 | tee /tmp/b_filelist | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
   fi
 }
 
@@ -355,7 +355,7 @@ fi
 
 if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
   if [ -z "$BRgenkernel" ]; then
-    if [ -z $(which genkernel 2> /dev/null) ]; then
+    if [ -z $(which genkernel 2>/dev/null) ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
       BRSTOP="y"
     fi
@@ -478,7 +478,7 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
+  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2>/dev/null) ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
     exit
   fi
@@ -568,7 +568,7 @@ if [ "$BRinterface" = "cli" ]; then
     run_tar | tee /tmp/b_bsdtar_out
   elif [ "$BRarchiver" = "tar" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
-  fi | while read ln; do b=$(( b + 1 )) && out_pgrs_cli; done
+  fi | while read ln; do b=$((b + 1)) && out_pgrs_cli; done
 
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 
@@ -583,7 +583,7 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
 elif [ "$BRinterface" = "dialog" ]; then
-  if [ -z $(which dialog 2> /dev/null) ];then
+  if [ -z $(which dialog 2>/dev/null) ];then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package dialog is not installed. Install the package and re-run the script"
     exit
   fi
@@ -649,7 +649,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$?" = "1" ]; then exit; fi
   fi
 
-  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2> /dev/null) ]; then
+  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2>/dev/null) ]; then
     if [ -z "$BRnocolor" ]; then color_variables; fi
     echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
     exit
@@ -700,7 +700,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi |
 
   while read ln; do
-    b=$(( b + 1 ))
+    b=$((b + 1))
     per=$(($b*100/$total))
     if [[ $per -gt $lastper ]]; then
       lastper=$per

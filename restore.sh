@@ -665,7 +665,7 @@ mount_all() {
       clean_unmount_in
     fi
   fi
-  BRmaxsize=$(for i in ${BRsizes[@]}; do echo $i; done | sort  -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")
+  BRmaxsize=$(for i in ${BRsizes[@]}; do echo $i; done | sort -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")
 }
 
 show_summary() {
@@ -854,7 +854,7 @@ build_initramfs() {
 
   if [ "$BRdistro" = "Gentoo" ]; then
     if [ -n "$BRgenkernel" ]; then
-      echo  "Skipping..."
+      echo "Skipping..."
     else
       chroot /mnt/target genkernel --no-color --install initramfs
     fi
@@ -887,7 +887,7 @@ install_bootloader() {
           chroot /mnt/target grub-install --target=i386-pc --recheck /dev/$f || touch /tmp/bl_error
         elif [ "$BRdistro" = "Debian" ]; then
           chroot /mnt/target grub-install --recheck /dev/$f || touch /tmp/bl_error
-        elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Suse" ]  || [ "$BRdistro" = "Gentoo" ]; then
+        elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Suse" ] || [ "$BRdistro" = "Gentoo" ]; then
           chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/bl_error
         fi
       done
@@ -1969,7 +1969,7 @@ if [ "$BRinterface" = "cli" ]; then
         ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
         IFS=$'\n'
-        if [ -n "$BRhide" ]; then echo -en "\033[?25h"; fi 
+        if [ -n "$BRhide" ]; then echo -en "\033[?25h"; fi
         check_archive
       fi
     done

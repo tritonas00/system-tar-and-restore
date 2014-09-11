@@ -721,7 +721,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   done | dialog --gauge "Compressing..." 0 50
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
- 
+
   log_bsdtar
   if [ -f /tmp/b_error ]; then diag_tl="Error"; else diag_tl="Info"; fi
 

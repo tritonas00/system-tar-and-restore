@@ -28,7 +28,6 @@ clean_files() {
   if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
   if [ -f /tmp/r_error ]; then rm /tmp/r_error; fi
-  if [ -f /tmp/bsdtar_out ]; then rm /tmp/bsdtar_out; fi
   if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
  }
 
@@ -2016,11 +2015,11 @@ if [ "$BRinterface" = "cli" ]; then
     if [ "$BRarchiver" = "tar" ]; then
       run_tar 2>>/tmp/restore.log
     elif [ "$BRarchiver" = "bsdtar" ]; then
-      run_tar | tee /tmp/bsdtar_out
+      run_tar | tee /tmp/filelist
     fi | while read ln; do a=$((a + 1)) && tar_pgrs_cli; done
 
     if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
-      cat /tmp/bsdtar_out | grep -i ": " >> /tmp/restore.log
+      cat /tmp/filelist | grep -i ": " >> /tmp/restore.log
     fi
 
     echo " "
@@ -2440,11 +2439,11 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$BRarchiver" = "tar" ]; then
       run_tar 2>>/tmp/restore.log
     elif [ "$BRarchiver" = "bsdtar" ]; then
-      run_tar | tee /tmp/bsdtar_out
+      run_tar | tee /tmp/filelist
     fi | count_gauge | dialog --gauge "Decompressing..." 0 50
 
     if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
-      cat /tmp/bsdtar_out | grep -i ": " >> /tmp/restore.log
+      cat /tmp/filelist | grep -i ": " >> /tmp/restore.log
     fi
 
   elif [ "$BRmode" = "Transfer" ]; then

@@ -39,7 +39,6 @@ clean_files() {
   if [ -f /tmp/excludelist ]; then rm /tmp/excludelist; fi
   if [ -f /tmp/b_error ]; then rm /tmp/b_error; fi
   if [ -f /tmp/b_filelist ]; then rm /tmp/b_filelist; fi
-  if [ -f /tmp/b_bsdtar_out ]; then rm /tmp/b_bsdtar_out; fi
   if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi
 }
 
@@ -565,7 +564,7 @@ if [ "$BRinterface" = "cli" ]; then
   sleep 1
   echo " "
   if [ "$BRarchiver" = "bsdtar" ]; then
-    run_tar | tee /tmp/b_bsdtar_out
+    run_tar | tee /tmp/b_filelist
   elif [ "$BRarchiver" = "tar" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
   fi | while read ln; do b=$((b + 1)) && out_pgrs_cli; done
@@ -573,7 +572,7 @@ if [ "$BRinterface" = "cli" ]; then
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
-    cat /tmp/b_bsdtar_out | grep -i ": " >> "$BRFOLDER"/backup.log
+    cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
   fi
 
   if [ -z "$BRquiet" ]; then
@@ -694,7 +693,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   sleep 1
 
   if [ "$BRarchiver" = "bsdtar" ]; then
-    run_tar | tee /tmp/b_bsdtar_out
+    run_tar | tee /tmp/b_filelist
   elif [ "$BRarchiver" = "tar" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
   fi |
@@ -711,7 +710,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 
   if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
-    cat /tmp/b_bsdtar_out | grep -i ": " >> "$BRFOLDER"/backup.log
+    cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
   fi
 
   if [ -f /tmp/b_error ]; then diag_tl="Error"; else diag_tl="Info"; fi

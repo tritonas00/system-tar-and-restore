@@ -15,23 +15,7 @@ Supported distributions: Arch, Debian, Fedora, openSUSE, Gentoo
 
 #### Archlinux
 
-The package is provided by the AUR. You can install it with an AUR helper of your choice: [`system-tar-and-restore`](https://aur.archlinux.org/packages/system-tar-and-restore/)
-or manually by invoking the following commands as a regular user. (to build packages from the AUR, the `base-devel` package group is assumed to be installed)
-
-    wget https://aur.archlinux.org/packages/sy/system-tar-and-restore/system-tar-and-restore.tar.gz
-    tar xf system-tar-and-restore.tar.gz
-    cd system-tar-and-restore
-    makepkg -si
-
-Also the package is provided by `archlinuxgr` repo. Add the repo in `/etc/pacman.conf`:
-
-    [archlinuxgr-any]
-    SigLevel = Never
-    Server = http://archlinuxgr.tiven.org/archlinux/any
-
-and install system-tar-and-restore:
-
-    pacman -Sy system-tar-and-restore
+See the [wiki](https://wiki.archlinux.org/index.php/System-tar-and-restore).
 
 #### Gentoo
 

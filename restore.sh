@@ -1277,7 +1277,7 @@ log_bsdtar() {
     fi
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:vdD" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:vdDH" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1400,6 +1400,10 @@ while true; do
       BRgenkernel="n"
       shift
     ;;
+    -H|--hide-cursor)
+      BRhide="y"
+      shift
+    ;;
     --help)
     echo -e "$BR_VERSION\nUsage: restore.sh [options]
 \nGeneral:
@@ -1408,6 +1412,7 @@ while true; do
   -q,  --quiet              dont ask, just run
   -v,  --verbose            enable verbose tar/rsync output (cli only)
   -U,  --user-options       additional tar/rsync options (see tar --help, man bsdtar or rsync --help)
+  -H,  --hide-cursor        hide cursor when running tar/rsync (cli only - useful for some terminal emulators)
 \nRestore Mode:
   -f,  --file               backup file path or url
   -n,  --username           username
@@ -1904,9 +1909,11 @@ if [ "$BRinterface" = "cli" ]; then
 
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
+      if [ -n "$BRhide" ]; then echo -en "\033[?25l"; fi
       ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
       IFS=$'\n'
+      if [ -n "$BRhide" ]; then echo -en "\033[?25h"; fi
       check_archive
     fi
 
@@ -1958,9 +1965,11 @@ if [ "$BRinterface" = "cli" ]; then
 
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
+        if [ -n "$BRhide" ]; then echo -en "\033[?25l"; fi
         ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
         IFS=$'\n'
+        if [ -n "$BRhide" ]; then echo -en "\033[?25h"; fi 
         check_archive
       fi
     done
@@ -2011,7 +2020,8 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   done
 
-  report_vars_log  >> /tmp/restore.log
+  report_vars_log >> /tmp/restore.log
+  if [ -n "$BRhide" ]; then echo -en "\033[?25l"; fi
 
   if [ "$BRmode" = "Restore" ]; then
     echo -e "\n${BR_SEP}EXTRACTING"
@@ -2036,6 +2046,8 @@ if [ "$BRinterface" = "cli" ]; then
     run_rsync 2>>/tmp/restore.log | while read ln; do b=$((b + 1)) && rsync_pgrs_cli; done
     echo " "
   fi
+
+  if [ -n "$BRhide" ]; then echo -en "\033[?25h"; fi
 
   echo -e "\n${BR_SEP}GENERATING FSTAB"
   generate_fstab

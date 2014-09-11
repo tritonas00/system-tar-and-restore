@@ -223,7 +223,7 @@ log_bsdtar() {
   fi
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgD" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDH" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -286,6 +286,10 @@ while true; do
       BRgenkernel="n"
       shift
     ;;
+    -H|--hide-cursor)
+      BRhide="y"
+      shift
+    ;;
     --help)
       echo -e "$BR_VERSION\nUsage: backup.sh [options]
 \nGeneral:
@@ -294,6 +298,7 @@ while true; do
   -q, --quiet              dont ask, just run
   -v, --verbose            enable verbose archiver output (cli only)
   -g, --generate           generate configuration file (in case of successful backup)
+  -H, --hide-cursor        hide cursor when running archiver (cli only - useful for some terminal emulators)
 \nDestination:
   -d, --directory          backup destination path
   -f, --filename           backup file name (without extension)
@@ -565,15 +570,19 @@ if [ "$BRinterface" = "cli" ]; then
 
   prepare
   report_vars_log >> "$BRFOLDER"/backup.log
+  if [ -n "$BRhide" ]; then echo -en "\033[?25l"; fi
   run_calc
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
   echo " "
+
   if [ "$BRarchiver" = "bsdtar" ]; then
     run_tar | tee /tmp/b_filelist
   elif [ "$BRarchiver" = "tar" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
   fi | while read ln; do b=$((b + 1)) && out_pgrs_cli; done
+
+  if [ -n "$BRhide" ]; then echo -en "\033[?25h"; fi
 
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 

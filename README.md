@@ -15,7 +15,7 @@ Supported distributions: Arch, Debian, Fedora, openSUSE, Gentoo
 
 #### Archlinux
 
-See the [wiki](https://wiki.archlinux.org/index.php/System-tar-and-restore).
+See the [wiki page](https://wiki.archlinux.org/index.php/System-tar-and-restore).
 
 #### Gentoo
 

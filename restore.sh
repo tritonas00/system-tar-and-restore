@@ -1271,6 +1271,12 @@ options_info() {
   fi
 }
 
+log_bsdtar() {
+    if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
+      cat /tmp/filelist | grep -i ": " >> /tmp/restore.log
+    fi
+}
+
 BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:vdD" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
@@ -2018,11 +2024,9 @@ if [ "$BRinterface" = "cli" ]; then
       run_tar | tee /tmp/filelist
     fi | while read ln; do a=$((a + 1)) && tar_pgrs_cli; done
 
-    if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
-      cat /tmp/filelist | grep -i ": " >> /tmp/restore.log
-    fi
-
+    log_bsdtar
     echo " "
+
   elif [ "$BRmode" = "Transfer" ]; then
     echo -e "\n${BR_SEP}TRANSFERING"
     run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
@@ -2442,9 +2446,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       run_tar | tee /tmp/filelist
     fi | count_gauge | dialog --gauge "Decompressing..." 0 50
 
-    if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
-      cat /tmp/filelist | grep -i ": " >> /tmp/restore.log
-    fi
+    log_bsdtar
 
   elif [ "$BRmode" = "Transfer" ]; then
     run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done | dialog --progressbox 3 40

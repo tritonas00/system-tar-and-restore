@@ -217,6 +217,12 @@ out_pgrs_cli() {
   fi
 }
 
+log_bsdtar() {
+  if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
+    cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
+  fi
+}
+
 BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgD" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
@@ -571,9 +577,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 
-  if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
-    cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
-  fi
+  log_bsdtar
 
   if [ -z "$BRquiet" ]; then
     exit_screen; read -s a
@@ -708,11 +712,8 @@ elif [ "$BRinterface" = "dialog" ]; then
   done | dialog --gauge "Compressing..." 0 50
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
-
-  if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
-    cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
-  fi
-
+ 
+  log_bsdtar
   if [ -f /tmp/b_error ]; then diag_tl="Error"; else diag_tl="Info"; fi
 
   if [ -z "$BRquiet" ]; then

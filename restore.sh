@@ -1137,7 +1137,7 @@ clean_unmount_in() {
         sleep 1
         echo -ne "${BR_WRK}Deleting $BRrootsubvolname$ln"
         OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname$ln 2>&1 1> /dev/null) && ok_status || error_status
-      done < <( for i in ${BRsubvols[@]}; do echo $i; done | sort | tac )
+      done < <( for i in ${BRsubvols[@]}; do echo $i; done | sort -r )
     fi
 
     echo -ne "${BR_WRK}Deleting $BRrootsubvolname"

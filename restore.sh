@@ -1277,7 +1277,7 @@ log_bsdtar() {
     fi
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:u:n:p:R:qtoU:Nm:k:c:a:O:vdDH" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,url:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:a:O:vdDH" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1327,11 +1327,6 @@ while true; do
       BRuri=$2
       shift 2
     ;;
-    -u|--url)
-      BRmode="Restore"
-      BRuri=$2
-      shift 2
-    ;;
     -n|--username)
       BRusername=$2
       shift 2
@@ -1359,7 +1354,7 @@ while true; do
       BRhidden="y"
       shift
     ;;
-    -U|--user-options)
+    -u|--user-options)
       BR_USER_OPTS=$2
       shift 2
     ;;
@@ -1411,14 +1406,13 @@ while true; do
   -N,  --no-color           disable colors
   -q,  --quiet              dont ask, just run
   -v,  --verbose            enable verbose tar/rsync output (cli only)
-  -U,  --user-options       additional tar/rsync options (see tar --help, man bsdtar or rsync --help)
+  -u,  --user-options       additional tar/rsync options (see tar --help, man bsdtar or rsync --help)
   -H,  --hide-cursor        hide cursor when running tar/rsync (cli only - useful for some terminal emulators)
 \nRestore Mode:
   -f,  --file               backup file path or url
   -n,  --username           username
   -p,  --password           password
   -a,  --archiver           select archiver (tar bsdtar)
-  -u,  --url                same as -f (for compatibility)
 \nTransfer Mode:
   -t,  --transfer           activate transfer mode
   -o,  --only-hidden        transfer /home's hidden files and folders only

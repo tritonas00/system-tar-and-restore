@@ -16,6 +16,8 @@ color_variables() {
   BR_MAGENTA='\e[00;35m'
   BR_CYAN='\e[00;36m'
   BR_BOLD='\033[1m'
+  BR_HIDE='\033[?25l'
+  BR_SHOW='\033[?25h'
 }
 
 info_screen() {
@@ -145,9 +147,9 @@ set_tar_options() {
 
 run_calc() {
   if [ "$BRarchiver" = "tar" ]; then
-    $BRarchiver cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>/dev/null | tee /tmp/b_filelist | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
+    $BRarchiver cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>/dev/null | tee /tmp/b_filelist
   elif [ "$BRarchiver" = "bsdtar" ]; then
-    $BRarchiver cvf /dev/null ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 | tee /tmp/b_filelist | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
+    $BRarchiver cvf /dev/null ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 | tee /tmp/b_filelist
   fi
 }
 
@@ -178,6 +180,7 @@ prepare() {
   if [ "$BRinterface" = "cli" ]; then echo -e "\n${BR_SEP}CREATING ARCHIVE"; fi
   mkdir -p "$BRFOLDER"
   sleep 1
+  if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
 }
 
 report_vars_log() {
@@ -298,7 +301,7 @@ while true; do
   -q, --quiet              dont ask, just run
   -v, --verbose            enable verbose archiver output (cli only)
   -g, --generate           generate configuration file (in case of successful backup)
-  -H, --hide-cursor        hide cursor when running archiver (cli only - useful for some terminal emulators)
+  -H, --hide-cursor        hide cursor when running archiver (useful for some terminal emulators)
 \nDestination:
   -d, --directory          backup destination path
   -f, --filename           backup file name (without extension)
@@ -570,8 +573,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   prepare
   report_vars_log >> "$BRFOLDER"/backup.log
-  if [ -n "$BRhide" ]; then echo -en "\033[?25l"; fi
-  run_calc
+  run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
   echo " "
@@ -581,8 +583,6 @@ if [ "$BRinterface" = "cli" ]; then
   elif [ "$BRarchiver" = "tar" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
   fi | while read ln; do b=$((b + 1)) && out_pgrs_cli; done
-
-  if [ -n "$BRhide" ]; then echo -en "\033[?25h"; fi
 
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 
@@ -701,7 +701,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   prepare
   report_vars_log >> "$BRFOLDER"/backup.log
-  run_calc | dialog --progressbox 3 40
+  run_calc | while read ln; do a=$((a + 1)) && echo "Calculating: $a Files"; done | dialog --progressbox 3 40
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
 
@@ -744,4 +744,6 @@ if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
   if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'" >> "$BRFOLDER"/backup.conf; fi
 fi
 
+if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi
 clean_files
+

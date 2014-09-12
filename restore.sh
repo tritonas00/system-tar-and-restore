@@ -14,6 +14,8 @@ color_variables() {
   BR_MAGENTA='\e[00;35m'
   BR_CYAN='\e[00;36m'
   BR_BOLD='\033[1m'
+  BR_HIDE='\033[?25l'
+  BR_SHOW='\033[?25h'
 }
 
 info_screen() {
@@ -1072,6 +1074,7 @@ set_bootloader() {
 }
 
 check_archive() {
+  if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi
   if [ "$BRinterface" = "cli" ]; then echo " "; fi
   if [ -f /tmp/tar_error ]; then
     rm /tmp/tar_error
@@ -1407,7 +1410,7 @@ while true; do
   -q,  --quiet              dont ask, just run
   -v,  --verbose            enable verbose tar/rsync output (cli only)
   -u,  --user-options       additional tar/rsync options (see tar --help, man bsdtar or rsync --help)
-  -H,  --hide-cursor        hide cursor when running tar/rsync (cli only - useful for some terminal emulators)
+  -H,  --hide-cursor        hide cursor when running tar/rsync (useful for some terminal emulators)
 \nRestore Mode:
   -f,  --file               backup file path or url
   -n,  --username           username
@@ -1903,11 +1906,10 @@ if [ "$BRinterface" = "cli" ]; then
 
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
-      if [ -n "$BRhide" ]; then echo -en "\033[?25l"; fi
+      if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
       ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
       IFS=$'\n'
-      if [ -n "$BRhide" ]; then echo -en "\033[?25h"; fi
       check_archive
     fi
 
@@ -1959,11 +1961,10 @@ if [ "$BRinterface" = "cli" ]; then
 
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
-        if [ -n "$BRhide" ]; then echo -en "\033[?25l"; fi
+        if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
         ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
         IFS=$'\n'
-        if [ -n "$BRhide" ]; then echo -en "\033[?25h"; fi
         check_archive
       fi
     done
@@ -2015,7 +2016,7 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   report_vars_log >> /tmp/restore.log
-  if [ -n "$BRhide" ]; then echo -en "\033[?25l"; fi
+  if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
 
   if [ "$BRmode" = "Restore" ]; then
     echo -e "\n${BR_SEP}EXTRACTING"
@@ -2041,7 +2042,7 @@ if [ "$BRinterface" = "cli" ]; then
     echo " "
   fi
 
-  if [ -n "$BRhide" ]; then echo -en "\033[?25h"; fi
+  if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi
 
   echo -e "\n${BR_SEP}GENERATING FSTAB"
   generate_fstab
@@ -2348,8 +2349,9 @@ elif [ "$BRinterface" = "dialog" ]; then
 
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
+      if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
       ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
-      while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done | dialog --progressbox 3 55
+      while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done | dialog --progressbox 3 55
       IFS=$'\n'
       sleep 1
       check_archive
@@ -2408,8 +2410,9 @@ elif [ "$BRinterface" = "dialog" ]; then
       fi
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
+        if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi 
         ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
-        while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done | dialog --progressbox 3 55
+        while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done | dialog --progressbox 3 55
         IFS=$'\n'
         sleep 1
         check_archive
@@ -2455,9 +2458,11 @@ elif [ "$BRinterface" = "dialog" ]; then
     log_bsdtar
 
   elif [ "$BRmode" = "Transfer" ]; then
-    run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done | dialog --progressbox 3 40
+    if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
+    run_calc | while read ln; do a=$((a + 1)) && echo "Calculating: $a Files"; done | dialog --progressbox 3 40
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
+    if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi
     run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Syncing..." 0 50
   fi
 

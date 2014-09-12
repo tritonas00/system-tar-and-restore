@@ -14,9 +14,10 @@ color_variables() {
   BR_MAGENTA='\e[00;35m'
   BR_CYAN='\e[00;36m'
   BR_BOLD='\033[1m'
-  BR_HIDE='\033[?25l'
-  BR_SHOW='\033[?25h'
 }
+
+BR_HIDE='\033[?25l'
+BR_SHOW='\033[?25h'
 
 info_screen() {
   echo -e "\n${BR_YELLOW}This script will restore a backup image of your system or transfer this\nsystem in user defined partitions."

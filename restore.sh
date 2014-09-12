@@ -1434,7 +1434,7 @@ while true; do
   -k,  --kernel-options     additional kernel options (syslinux only)
 \nBtrfs Subvolumes:
   -R,  --rootsubvolname     subvolume name for /
-  -O,  --other-subvolumes   specify other subvolumes (subvolume path e.g /home /var /usr)
+  -O,  --other-subvolumes   specify other subvolumes (subvolume path e.g /home /var /usr ...)
 \nMisc Options:
   -D,  --disable-genkernel  disable genkernel check and initramfs building in gentoo
        --help               print this page"

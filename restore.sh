@@ -2411,7 +2411,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       fi
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
-        if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi 
+        if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
         ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done | dialog --progressbox 3 55
         IFS=$'\n'

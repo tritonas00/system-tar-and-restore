@@ -1069,7 +1069,6 @@ set_bootloader() {
   fi
 
   if [ -n "$BRabort" ]; then
-    if [ -z "$BRnocolor" ]; then color_variables; fi
     clean_unmount_in
   fi
 }
@@ -2321,10 +2320,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   IFS=$'\n'
-  if [ -z "$BRnocolor" ]; then
-    color_variables
-  fi
-
+  if [ -z "$BRnocolor" ]; then color_variables; fi
   unset_vars
   check_input
   mount_all

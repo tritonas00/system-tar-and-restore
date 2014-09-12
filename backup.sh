@@ -297,7 +297,7 @@ while true; do
     --help)
       echo -e "$BR_VERSION\nUsage: backup.sh [options]
 \nGeneral:
-  -i, --interface          interface to use (cli dialog)
+  -i, --interface          interface to use: cli dialog
   -N, --no-color           disable colors
   -q, --quiet              dont ask, just run
   -v, --verbose            enable verbose archiver output (cli only)
@@ -310,8 +310,8 @@ while true; do
   -h, --exclude-home	   exclude /home directory (keep hidden files and folders)
   -n, --no-hidden          dont keep home's hidden files and folders (use with -h)
 \nArchiver Options:
-  -a, --archiver           select archiver (tar bsdtar)
-  -c, --compression        compression type (gzip bzip2 xz none)
+  -a, --archiver           select archiver: tar bsdtar
+  -c, --compression        compression type: gzip bzip2 xz none
   -u, --user-options       additional tar options (see tar --help or man bsdtar)
 \nMisc Options:
   -D, --disable-genkernel  disable genkernel check in gentoo

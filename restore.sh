@@ -1405,7 +1405,7 @@ while true; do
     --help)
     echo -e "$BR_VERSION\nUsage: restore.sh [options]
 \nGeneral:
-  -i,  --interface          interface to use (cli dialog)
+  -i,  --interface          interface to use: cli dialog
   -N,  --no-color           disable colors
   -q,  --quiet              dont ask, just run
   -v,  --verbose            enable verbose tar/rsync output (cli only)
@@ -1415,7 +1415,7 @@ while true; do
   -f,  --file               backup file path or url
   -n,  --username           username
   -p,  --password           password
-  -a,  --archiver           select archiver (tar bsdtar)
+  -a,  --archiver           select archiver: tar bsdtar
 \nTransfer Mode:
   -t,  --transfer           activate transfer mode
   -o,  --only-hidden        transfer /home's hidden files and folders only
@@ -1425,8 +1425,8 @@ while true; do
   -h,  --home               target home partition
   -b,  --boot               target boot partition
   -s,  --swap               swap partition
-  -c,  --custom-partitions  specify custom partitions (mountpoint=device)
-  -m,  --mount-options      comma-separated list of mount options (root partition)
+  -c,  --custom-partitions  specify custom partitions (mountpoint=device e.g /var=/dev/sda3)
+  -m,  --mount-options      comma-separated list of mount options (root partition only)
   -d,  --dont-check-root    dont check if root partition is empty (dangerous)
 \nBootloader:
   -g,  --grub               target disk for grub
@@ -1434,7 +1434,7 @@ while true; do
   -k,  --kernel-options     additional kernel options (syslinux only)
 \nBtrfs Subvolumes:
   -R,  --rootsubvolname     subvolume name for /
-  -O,  --other-subvolumes   specify other subvolumes (subvolume path e.g /home /var /usr ...)
+  -O,  --other-subvolumes   specify other subvolumes (subvolume path e.g /home /var /usr)
 \nMisc Options:
   -D,  --disable-genkernel  disable genkernel check and initramfs building in gentoo
        --help               print this page"

@@ -233,7 +233,7 @@ generate_syslinux_cfg() {
   fi
 
   for FILE in /mnt/target/boot/*; do RESP=$(file -k "$FILE" | grep -w "Linux.*ernel")
-    if [ -n "$RESP" ]; then
+    if [ -n "$RESP" ] && [ ! "${FILE##*.}" == "bin" ]; then
       if [ "$BRdistro" = "Arch" ]; then
         echo -e "LABEL arch\n\tMENU LABEL Arch $(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__").img" >> /mnt/target/boot/syslinux/syslinux.cfg
         echo -e "LABEL archfallback\n\tMENU LABEL Arch $(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__") fallback\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
@@ -756,7 +756,7 @@ show_summary() {
   if [ "$BRdistro" = "Unsupported" ]; then
     echo -e "System:   $BRdistro (WARNING)${BR_NORM}"
   elif [ "$BRmode" = "Restore" ]; then
-    echo -e "System:   $BRdistro based ${target_arch#*.}${BR_NORM}"
+    echo -e "System:   $BRdistro based ${target_arch##*.}${BR_NORM}"
   elif [ "$BRmode" = "Transfer" ]; then
      echo -e "System:   $BRdistro based $(uname -m)${BR_NORM}"
   fi
@@ -1049,9 +1049,9 @@ set_bootloader() {
           echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
           BRabort="y"
         fi
-        if [ "$(echo ${target_arch#*.})" == "x86_64" ]; then
+        if [ "${target_arch##*.}" == "x86_64" ]; then
           BRgrubefiarch="x86_64-efi"
-        elif [ "$(echo ${target_arch#*.})" == "i686" ]; then
+        elif [ "${target_arch##*.}" == "i686" ]; then
           BRgrubefiarch="i386-efi"
         fi
       fi
@@ -1089,14 +1089,14 @@ check_archive() {
     if [ -z "$target_arch" ]; then
       target_arch="unknown"
     fi
-    if [ ! "$(uname -m)" == "$(echo ${target_arch#*.})" ]; then
+    if [ ! "$(uname -m)" == "${target_arch##*.}" ]; then
       unset BRsource
       if [ "$BRinterface" = "cli" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive"
-        echo -e "[${BR_CYAN}INFO${BR_NORM}] Target  system: ${target_arch#*.}"
+        echo -e "[${BR_CYAN}INFO${BR_NORM}] Target  system: ${target_arch##*.}"
         echo -e "[${BR_CYAN}INFO${BR_NORM}] Running system: $(uname -m)"
       elif [ "$BRinterface" = "dialog" ]; then
-        dialog --title "Error" --msgbox "Running and target system architecture mismatch or invalid archive.\n\nTarget  system: ${target_arch#*.}\nRunning system: $(uname -m)" 8 71
+        dialog --title "Error" --msgbox "Running and target system architecture mismatch or invalid archive.\n\nTarget  system: ${target_arch##*.}\nRunning system: $(uname -m)" 8 71
       fi
     fi
   fi
@@ -1248,7 +1248,7 @@ report_vars_log() {
   fi
   echo "Distro: $BRdistro"
   if [ "$BRmode" = "Restore" ]; then
-    echo "Architecture: ${target_arch#*.}"
+    echo "Architecture: ${target_arch##*.}"
   elif [ "$BRmode" = "Transfer" ]; then
     echo "Architecture: $(uname -m)"
   fi

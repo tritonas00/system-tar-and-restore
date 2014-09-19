@@ -232,7 +232,7 @@ generate_syslinux_cfg() {
     fi
   fi
 
-  for FILE in /mnt/target/boot/*; do RESP=$(file "$FILE" | grep -w "Linux kernel")
+  for FILE in /mnt/target/boot/*; do RESP=$(file -k "$FILE" | grep -w "Linux.*ernel")
     if [ -n "$RESP" ]; then
       if [ "$BRdistro" = "Arch" ]; then
         echo -e "LABEL arch\n\tMENU LABEL Arch $(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__").img" >> /mnt/target/boot/syslinux/syslinux.cfg

@@ -756,7 +756,7 @@ show_summary() {
   if [ "$BRdistro" = "Unsupported" ]; then
     echo -e "System:   $BRdistro (WARNING)${BR_NORM}"
   elif [ "$BRmode" = "Restore" ]; then
-    echo -e "System:   $BRdistro based ${target_arch##*.}${BR_NORM}"
+    echo -e "System:   $BRdistro based $target_arch${BR_NORM}"
   elif [ "$BRmode" = "Transfer" ]; then
      echo -e "System:   $BRdistro based $(uname -m)${BR_NORM}"
   fi
@@ -1049,9 +1049,9 @@ set_bootloader() {
           echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
           BRabort="y"
         fi
-        if [ "${target_arch##*.}" == "x86_64" ]; then
+        if [ "$target_arch" == "x86_64" ]; then
           BRgrubefiarch="x86_64-efi"
-        elif [ "${target_arch##*.}" == "i686" ]; then
+        elif [ "$target_arch" == "i686" ]; then
           BRgrubefiarch="i386-efi"
         fi
       fi
@@ -1085,18 +1085,18 @@ check_archive() {
       dialog --title "Error" --msgbox "Error reading archive.\n\n$(cat /tmp/filelist | grep -i ": ")" 0 0
     fi
   else
-    target_arch=$(grep -F 'target_architecture.' /tmp/filelist)
+    target_arch=$(grep -F 'target_architecture.' /tmp/filelist | cut -f2 -d".")
     if [ -z "$target_arch" ]; then
       target_arch="unknown"
     fi
-    if [ ! "$(uname -m)" == "${target_arch##*.}" ]; then
+    if [ ! "$(uname -m)" == "$target_arch" ]; then
       unset BRsource
       if [ "$BRinterface" = "cli" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive"
-        echo -e "[${BR_CYAN}INFO${BR_NORM}] Target  system: ${target_arch##*.}"
+        echo -e "[${BR_CYAN}INFO${BR_NORM}] Target  system: $target_arch"
         echo -e "[${BR_CYAN}INFO${BR_NORM}] Running system: $(uname -m)"
       elif [ "$BRinterface" = "dialog" ]; then
-        dialog --title "Error" --msgbox "Running and target system architecture mismatch or invalid archive.\n\nTarget  system: ${target_arch##*.}\nRunning system: $(uname -m)" 8 71
+        dialog --title "Error" --msgbox "Running and target system architecture mismatch or invalid archive.\n\nTarget  system: $target_arch\nRunning system: $(uname -m)" 8 71
       fi
     fi
   fi
@@ -1248,7 +1248,7 @@ report_vars_log() {
   fi
   echo "Distro: $BRdistro"
   if [ "$BRmode" = "Restore" ]; then
-    echo "Architecture: ${target_arch##*.}"
+    echo "Architecture: $target_arch"
   elif [ "$BRmode" = "Transfer" ]; then
     echo "Architecture: $(uname -m)"
   fi

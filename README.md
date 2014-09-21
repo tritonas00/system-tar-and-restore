@@ -73,7 +73,7 @@ enable verbose archiver output (cli only)
 **-g, --generate**                     
 generate configuration file (in case of successful backup)  
 
-**-H, --hide-cursor**
+**-H, --hide-cursor**  
 hide cursor when running archiver (useful for some terminal emulators)  
 
 **-d, --directory**  
@@ -185,7 +185,7 @@ transfer /home's hidden files and folders only
 **-u,  --user-options**  
 additional tar/rsync options (see tar --help, man bsdtar or rsync --help)  
 
-**-H, --hide-cursor**
+**-H, --hide-cursor**  
 hide cursor when running tar/rsync (useful for some terminal emulators)  
 
 **-r, --root**    

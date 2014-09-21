@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 4.0
+.\"    Source: system-tar-and-restore 4.1
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "7 July 2014" "4.0" "General Manual"
+.TH "system-tar-and-restore" "1" "21 Sept 2014" "4.1" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -73,6 +73,11 @@ enable verbose archiver output (cli only)
 generate configuration file (in case of successful backup)
 .RE
 .PP
+\fB\-H, \-\-hide-cursor\fR
+.RS 4
+hide cursor when running archiver (useful for some terminal emulators)
+.RE
+.PP
 \fB\-d, \-\-directory\fR
 .RS 4
 backup destination path\&. Default path is \fI/\fR
@@ -129,8 +134,7 @@ Restore script contains two modes: \fBRestore\fR and \fBTransfer\fR\&. In
 in user defined partitions\&. In \fBTransfer Mode\fR\&, the script uses 
 \fBRSYNC\fR to transfer the root filesystem \fI/\fR in user defined partitions\&.
 Then generates fstab\&, rebuilds initramfs image for every available kernel\&, 
-re-generates locales, installs and auto-configures Grub or Syslinux and finally 
-unmounts and cleans everything\&.
+re-generates locales and finally installs and configures Grub or Syslinux\&.
 .sp
 Log file is saved as /tmp/restore.log
 .SH RESTORE OPERATIONS
@@ -165,9 +169,14 @@ activate tranfer mode
 transfer /home's hidden files and folders only 
 .RE
 .PP
-\fB\-U, \-\-user-options\fR
+\fB\-u, \-\-user-options\fR
 .RS 4
 additional tar/rsync options (see tar --help, man bsdtar or rsync --help)
+.RE
+.PP
+\fB\-H, \-\-hide-cursor\fR
+.RS 4
+hide cursor when running tar/rsync (useful for some terminal emulators)
 .RE
 .PP
 \fB\-r, \-\-root\fR
@@ -243,11 +252,6 @@ password
 \fB\-a, \-\-archiver\fR
 .RS 4
 select the archiver you used to create the backup archive (tar bsdtar)
-.RE
-.PP
-\fB\-u, \-\-url\fR
-.RS 4
-same as -f (for compatibility)
 .RE
 .PP
 \fB\-R, \-\-rootsubvolname\fR
@@ -329,7 +333,7 @@ Restore system in \fI/dev/sdb1\fR partition, use \fBgrub\fR as bootloader,
 use \fI/home/john/Downloads/backup.tar.gz\fR as local backup file and enable 
 \fB--acls --xattrs\fR tar options:
 .RS 4
-\fB./restore.sh \-r /dev/sdb1 \-g /dev/sdb \-f /home/john/Downloads/backup.tar.gz -a tar -U "--acls --xattrs"\fR
+\fB./restore.sh \-r /dev/sdb1 \-g /dev/sdb \-f /home/john/Downloads/backup.tar.gz -a tar -u "--acls --xattrs"\fR
 .RE
 .sp
 Transfer running system using \fBrsync\fR\& in \fBssd\fR\&. The \fI/\fR partition will be

@@ -1,5 +1,14 @@
 Changelog:
 
+4.1
+    added progress bar in cli interface
+    added argument to hide cursor when running tar/rsync
+    use /tmp/filelist to capture bsdtar errors
+    restore.sh: replaced -U with old compatibility argument -u
+    improved kernel detection for target syslinux.cfg
+    updated help pages
+    code cleaning
+
 4.0
     added openSUSE support
     added Gentoo support (with and without genkernel/initramfs)*

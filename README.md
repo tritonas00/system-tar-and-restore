@@ -73,6 +73,9 @@ enable verbose archiver output (cli only)
 **-g, --generate**                     
 generate configuration file (in case of successful backup)  
 
+**-H, --hide-cursor**
+hide cursor when running archiver (useful for some terminal emulators)  
+
 **-d, --directory**  
 backup destination path
 
@@ -179,8 +182,11 @@ activate tranfer mode
 **-o,  --only-hidden**  
 transfer /home's hidden files and folders only  
 
-**-U,  --user-options**  
+**-u,  --user-options**  
 additional tar/rsync options (see tar --help, man bsdtar or rsync --help)  
+
+**-H, --hide-cursor**
+hide cursor when running tar/rsync (useful for some terminal emulators)  
 
 **-r, --root**    
 target root partition
@@ -226,9 +232,6 @@ password
 
 **-a, --archiver**  
 select archiver (tar bsdtar)    
-
-**-u, --url**     
-same as -f (for compatibility)    
 
 **-R, --rootsubvolname**   
 subvolume name for root
@@ -299,7 +302,7 @@ Recommended subvolume name is: *__active*
 - local file
 - tar options: --acls --xattrs 
 
-<code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -a tar -U "--acls --xattrs"</code>  
+<code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -a tar -u "--acls --xattrs"</code>  
 
 - root partition: /dev/sda1 (ssd)
 - syslinux  

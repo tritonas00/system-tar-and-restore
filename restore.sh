@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.1"
+BR_VERSION="System Tar & Restore 4.2"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -1198,19 +1198,35 @@ unset_vars() {
 }
 
 tar_pgrs_cli() {
+  if [ -z "$BRverb" ]; then echo -ne "Decompressing: [$dstr] 0%"; fi
+  while read ln; do
+  a=$((a + 1))
   if [ -n "$BRverb" ]; then
     echo -e "\r${BR_YELLOW}[$(($a*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
   else
-    echo -ne "\rDecompressing: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $(($a*100/$total))%"
+    per=$(($a*100/$total))
+    if [[ $per -gt $lastper ]]; then
+      lastper=$per
+      echo -ne "\rDecompressing: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
+    fi
   fi
+  done
 }
 
 rsync_pgrs_cli() {
-  if [ -n "$BRverb" ]; then
-    echo -e "\r${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
-  else
-    echo -ne "\rSyncing: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $(($b*100/$total))%"
-  fi
+  if [ -z "$BRverb" ]; then echo -ne "Syncing: [$dstr] 0%"; fi
+  while read ln; do
+    b=$((b + 1))
+    if [ -n "$BRverb" ]; then
+      echo -e "\r${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
+    else
+      per=$(($b*100/$total))
+      if [[ $per -gt $lastper ]]; then
+        lastper=$per
+        echo -ne "\rSyncing: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
+      fi
+    fi
+  done
 }
 
 report_vars_log() {
@@ -2027,7 +2043,7 @@ if [ "$BRinterface" = "cli" ]; then
       run_tar 2>>/tmp/restore.log
     elif [ "$BRarchiver" = "bsdtar" ]; then
       run_tar | tee /tmp/filelist
-    fi | while read ln; do a=$((a + 1)) && tar_pgrs_cli; done
+    fi | tar_pgrs_cli
 
     log_bsdtar
     echo " "
@@ -2038,7 +2054,7 @@ if [ "$BRinterface" = "cli" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     echo " "
-    run_rsync 2>>/tmp/restore.log | while read ln; do b=$((b + 1)) && rsync_pgrs_cli; done
+    run_rsync 2>>/tmp/restore.log | rsync_pgrs_cli
     echo " "
   fi
 

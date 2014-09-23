@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.1"
+BR_VERSION="System Tar & Restore 4.2"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -214,11 +214,19 @@ options_info() {
 }
 
 out_pgrs_cli() {
-  if [ -n "$BRverb" ]; then
-    echo -e "\r${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
-  else
-    echo -ne "\rCompressing: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $(($b*100/$total))%"
-  fi
+  if [ -z "$BRverb" ]; then echo -ne "Compressing: [$dstr] 0%"; fi
+  while read ln; do
+    b=$((b + 1))
+    if [ -n "$BRverb" ]; then
+      echo -e "\r${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
+    else
+      per=$(($b*100/$total))
+      if [[ $per -gt $lastper ]]; then
+        lastper=$per
+        echo -ne "\rCompressing: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
+      fi
+    fi
+  done
 }
 
 log_bsdtar() {
@@ -583,7 +591,7 @@ if [ "$BRinterface" = "cli" ]; then
     run_tar | tee /tmp/b_filelist
   elif [ "$BRarchiver" = "tar" ]; then
     run_tar 2>>"$BRFOLDER"/backup.log
-  fi | while read ln; do b=$((b + 1)) && out_pgrs_cli; done
+  fi | out_pgrs_cli
 
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 

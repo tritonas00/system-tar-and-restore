@@ -1,5 +1,8 @@
 Changelog:
 
+4.2
+    fixed cli interface progress bar speed
+
 4.1
     added progress bar in cli interface
     added argument to hide cursor when running tar/rsync

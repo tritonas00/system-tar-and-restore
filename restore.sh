@@ -1200,16 +1200,16 @@ unset_vars() {
 tar_pgrs_cli() {
   if [ -z "$BRverb" ]; then echo -ne "Decompressing: [$dstr] 0%"; fi
   while read ln; do
-  a=$((a + 1))
-  if [ -n "$BRverb" ]; then
-    echo -e "\r${BR_YELLOW}[$(($a*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
-  else
-    per=$(($a*100/$total))
-    if [[ $per -gt $lastper ]]; then
-      lastper=$per
-      echo -ne "\rDecompressing: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
+    a=$((a + 1))
+    if [ -n "$BRverb" ]; then
+      echo -e "\r${BR_YELLOW}[$(($a*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
+    else
+      per=$(($a*100/$total))
+      if [[ $per -gt $lastper ]]; then
+        lastper=$per
+        echo -ne "\rDecompressing: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
+      fi
     fi
-  fi
   done
 }
 

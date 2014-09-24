@@ -1198,7 +1198,7 @@ unset_vars() {
 }
 
 tar_pgrs_cli() {
-  if [ -z "$BRverb" ]; then echo -ne "Decompressing: [$dstr] 0%"; fi
+  lastper=-1
   while read ln; do
     a=$((a + 1))
     if [ -n "$BRverb" ]; then
@@ -1214,7 +1214,7 @@ tar_pgrs_cli() {
 }
 
 rsync_pgrs_cli() {
-  if [ -z "$BRverb" ]; then echo -ne "Syncing: [$dstr] 0%"; fi
+  lastper=-1
   while read ln; do
     b=$((b + 1))
     if [ -n "$BRverb" ]; then

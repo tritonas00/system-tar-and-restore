@@ -214,7 +214,8 @@ options_info() {
 }
 
 out_pgrs_cli() {
-  if [ -z "$BRverb" ]; then echo -ne "Compressing: [$dstr] 0%"; fi
+  #if [ -z "$BRverb" ]; then echo -ne "Compressing: [$dstr] 0%"; fi
+  lastper=-1
   while read ln; do
     b=$((b + 1))
     if [ -n "$BRverb" ]; then

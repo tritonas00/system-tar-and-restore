@@ -59,7 +59,7 @@ The script will ask for:
 The script also supports all input as arguments:
 
 **-i, --interface**   
-interface to use (cli dialog)
+interface to use: cli dialog
 
 **-N, --no-color**   
 disable colors
@@ -68,7 +68,7 @@ disable colors
 dont ask, just run  
 
 **-v, --verbose**           
-enable verbose archiver output (cli only)
+enable verbose archiver output (cli interface only)  
 
 **-g, --generate**                     
 generate configuration file (in case of successful backup)  
@@ -89,7 +89,7 @@ exclude /home directory (keep hidden files and folders)
 dont keep home's hidden files and folders (use with -h)  
 
 **-c, --compression**  
-compression type (gzip bzip2 xz none)  
+compression type: gzip bzip2 xz none  
 
 **-a, --archiver**  
 select archiver (tar bsdtar)    
@@ -165,7 +165,7 @@ Log file is saved as */tmp/restore.log*
 The script also supports all input as arguments:
 
 **-i, --interface**   
-interface to use (cli dialog)  
+interface to use: cli dialog     
 
 **-N, --no-color**   
 disable colors
@@ -174,19 +174,31 @@ disable colors
 dont ask, just run  
 
 **-v,  --verbose**            
-enable verbose tar/rsync output (cli only)
-
-**-t, --transfer**   
-activate tranfer mode  
-
-**-o,  --only-hidden**  
-transfer /home's hidden files and folders only  
+enable verbose tar/rsync output (cli interface only)
 
 **-u,  --user-options**  
 additional tar/rsync options (see tar --help, man bsdtar or rsync --help)  
 
 **-H, --hide-cursor**  
 hide cursor when running tar/rsync (useful for some terminal emulators)  
+
+**-f, --file**      
+backup file path or url
+
+**-n, --username**     
+username
+
+**-p, --password**     
+password
+
+**-a, --archiver**  
+select archiver (tar bsdtar)    
+
+**-t, --transfer**   
+activate tranfer mode  
+
+**-o,  --only-hidden**  
+transfer /home's hidden files and folders only  
 
 **-r, --root**    
 target root partition
@@ -204,10 +216,10 @@ target home partition
 swap partition
 
 **-c,  --custom-partitions**  
-specify custom partitions (mountpoint=device)
+specify custom partitions (mountpoint=device e.g /var=/dev/sda3)   
 
 **-m, --mount-options**     
-comma-separated list of mount options (root partition)
+comma-separated list of mount options (root partition only)
 
 **-d,  --dont-check-root**  
 dont check if root partition is empty (dangerous)
@@ -219,19 +231,7 @@ target disk for grub
 target disk for syslinux
 
 **-k, --kernel-options**      
-additional kernel options (syslinux)
-
-**-f, --file**      
-backup file path or url
-
-**-n, --username**     
-username
-
-**-p, --password**     
-password
-
-**-a, --archiver**  
-select archiver (tar bsdtar)    
+additional kernel options (syslinux only)  
 
 **-R, --rootsubvolname**   
 subvolume name for root

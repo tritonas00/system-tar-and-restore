@@ -156,9 +156,9 @@ run_calc() {
 
 run_tar() {
   if [ "$BRarchiver" = "tar" ]; then
-    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
+    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System archived successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
   elif [ "$BRarchiver" = "bsdtar" ]; then
-    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System compressed successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
+    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System archived successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
   fi
 }
 

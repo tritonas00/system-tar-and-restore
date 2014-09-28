@@ -271,9 +271,9 @@ run_tar() {
   IFS=$DEFAULTIFS
 
   if [ "$BRarchiver" = "tar" ]; then
-    $BRarchiver ${BR_MAINOPTS} "$BRsource" ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System decompressed successfully" >> /tmp/restore.log)
+    $BRarchiver ${BR_MAINOPTS} "$BRsource" ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   elif [ "$BRarchiver" = "bsdtar" ]; then
-    $BRarchiver ${BR_MAINOPTS} "$BRsource" ${BR_USER_OPTS[@]} -C /mnt/target 2>&1 && (echo "System decompressed successfully" >> /tmp/restore.log) || touch /tmp/r_error
+    $BRarchiver ${BR_MAINOPTS} "$BRsource" ${BR_USER_OPTS[@]} -C /mnt/target 2>&1 && (echo "System extracted successfully" >> /tmp/restore.log) || touch /tmp/r_error
   fi
 }
 

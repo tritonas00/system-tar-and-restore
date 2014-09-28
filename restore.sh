@@ -1423,7 +1423,7 @@ while true; do
   -i,  --interface          interface to use: cli dialog
   -N,  --no-color           disable colors
   -q,  --quiet              dont ask, just run
-  -v,  --verbose            enable verbose tar/rsync output (cli only)
+  -v,  --verbose            enable verbose tar/rsync output (cli interface only)
   -u,  --user-options       additional tar/rsync options (see tar --help, man bsdtar or rsync --help)
   -H,  --hide-cursor        hide cursor when running tar/rsync (useful for some terminal emulators)
 \nRestore Mode:

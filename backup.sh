@@ -304,7 +304,7 @@ while true; do
   -i, --interface          interface to use: cli dialog
   -N, --no-color           disable colors
   -q, --quiet              dont ask, just run
-  -v, --verbose            enable verbose archiver output (cli only)
+  -v, --verbose            enable verbose archiver output (cli interface only)
   -g, --generate           generate configuration file (in case of successful backup)
   -H, --hide-cursor        hide cursor when running archiver (useful for some terminal emulators)
 \nDestination:

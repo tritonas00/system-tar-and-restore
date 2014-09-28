@@ -2094,8 +2094,6 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-
-
   (prepare_chroot
    build_initramfs
    generate_locales

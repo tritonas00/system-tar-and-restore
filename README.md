@@ -206,11 +206,11 @@ target root partition
 **-e, --esp**    
 target EFI system partition
 
+**-h, --home**     
+target home partition  
+
 **-b, --boot**     
 target boot partition
-
-**-h, --home**     
-target home partition
 
 **-s, --swap**     
 swap partition

@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 4.2
+.\"    Source: system-tar-and-restore 4.3
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "23 Sept 2014" "4.2" "General Manual"
+.TH "system-tar-and-restore" "1" "28 Sept 2014" "4.3" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -50,7 +50,7 @@ in that location which contains the \fBarchive\fR and the \fBlog\fR file "backup
 .PP
 \fB\-i, \-\-interface\fR
 .RS 4
-interface to use (cli dialog)
+interface to use: cli dialog
 .RE
 .PP
 \fB\-N, \-\-no-color\fR
@@ -65,7 +65,7 @@ dont ask, just run
 .PP
 \fB\-v, \-\-verbose\fR
 .RS 4
-enable verbose archiver output (cli only)
+enable verbose archiver output (cli interface only)
 .RE
 .PP
 \fB\-g, \-\-generate\fR
@@ -141,7 +141,7 @@ Log file is saved as /tmp/restore.log
 .PP
 \fB\-i, \-\-interface\fR
 .RS 4
-interface to use (cli dialog)
+interface to use: cli dialog
 .RE
 .PP
 \fB\-N, \-\-no\-color\fR
@@ -156,17 +156,7 @@ dont ask, just run
 .PP
 \fB\-v, \-\-verbose\fR
 .RS 4
-enable verbose tar/rsync output (cli only)
-.RE
-.PP
-\fB\-t, \-\-transfer\fR
-.RS 4
-activate tranfer mode 
-.RE
-.PP
-\fB\-o, \-\-only-hidden\fR
-.RS 4
-transfer /home's hidden files and folders only 
+enable verbose tar/rsync output (cli interface only)
 .RE
 .PP
 \fB\-u, \-\-user-options\fR
@@ -177,6 +167,36 @@ additional tar/rsync options (see tar --help, man bsdtar or rsync --help)
 \fB\-H, \-\-hide-cursor\fR
 .RS 4
 hide cursor when running tar/rsync (useful for some terminal emulators)
+.RE
+.PP
+\fB\-f, \-\-file\fR
+.RS 4
+backup file path or url
+.RE
+.PP
+\fB\-n, \-\-username\fR
+.RS 4
+username
+.RE
+.PP
+\fB\-p, \-\-password\fR
+.RS 4
+password
+.RE
+.PP
+\fB\-a, \-\-archiver\fR
+.RS 4
+select the archiver you used to create the backup archive: tar bsdtar
+.RE
+.PP
+\fB\-t, \-\-transfer\fR
+.RS 4
+activate tranfer mode 
+.RE
+.PP
+\fB\-o, \-\-only-hidden\fR
+.RS 4
+transfer /home's hidden files and folders only 
 .RE
 .PP
 \fB\-r, \-\-root\fR
@@ -199,19 +219,19 @@ target home partition
 target boot partition
 .RE
 .PP
-\fB\-c, \-\-custom-partitions\fR
-.RS 4
-specify custom partitions (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)
-.RE
-.PP
 \fB\-s, \-\-swap\fR
 .RS 4
 swap partition
 .RE
 .PP
+\fB\-c, \-\-custom-partitions\fR
+.RS 4
+specify custom partitions (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)
+.RE
+.PP
 \fB\-m, \-\-mount-options\fR
 .RS 4
-comma-separated list of mount options (root partition)
+comma-separated list of mount options (root partition only)
 .RE
 .PP
 \fB\-d, \-\-dont-check-root\fR
@@ -231,27 +251,7 @@ target disk for syslinux
 .PP
 \fB\-k, \-\-kernel-options\fR
 .RS 4
-additional kernel options (syslinux)
-.RE
-.PP
-\fB\-f, \-\-file\fR
-.RS 4
-backup file path or url
-.RE
-.PP
-\fB\-n, \-\-username\fR
-.RS 4
-username
-.RE
-.PP
-\fB\-p, \-\-password\fR
-.RS 4
-password
-.RE
-.PP
-\fB\-a, \-\-archiver\fR
-.RS 4
-select the archiver you used to create the backup archive (tar bsdtar)
+additional kernel options (syslinux only)
 .RE
 .PP
 \fB\-R, \-\-rootsubvolname\fR

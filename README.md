@@ -92,7 +92,7 @@ dont keep home's hidden files and folders (use with -h)
 compression type: gzip bzip2 xz none  
 
 **-a, --archiver**  
-select archiver (tar bsdtar)    
+select archiver: tar bsdtar      
 
 **-u, --user-options**   
 additional tar options (see tar --help or man bsdtar)  

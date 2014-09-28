@@ -192,7 +192,7 @@ username
 password
 
 **-a, --archiver**  
-select archiver (tar bsdtar)    
+select archiver: tar bsdtar    
 
 **-t, --transfer**   
 activate tranfer mode  

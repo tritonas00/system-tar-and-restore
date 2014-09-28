@@ -247,7 +247,7 @@ disable genkernel check and initramfs building in gentoo
 
 ###NOTES###
 
-- With GNU Tar 1.27, you can add *--xattrs --acls* (and *--selinux* if available) in backup and restore additional tar options.
+- With GNU Tar 1.27+ you can add *--xattrs --acls* (and *--selinux* if available) in backup and restore additional tar options.
 
 - In case of Gentoo package genkernel is required to build initramfs. If you dont want to use initramfs image you can use -D in both scripts to disable
 genkernel check and initramfs building.

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.2"
+BR_VERSION="System Tar & Restore 4.3"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -178,7 +178,7 @@ set_names() {
 
 prepare() {
   touch /target_architecture.$(uname -m)
-  if [ "$BRinterface" = "cli" ]; then echo -e "\n${BR_SEP}CREATING ARCHIVE"; fi
+  if [ "$BRinterface" = "cli" ]; then echo -e "\n${BR_SEP}PROCESSING"; fi
   mkdir -p "$BRFOLDER"
   sleep 1
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
@@ -223,7 +223,7 @@ out_pgrs_cli() {
       per=$(($b*100/$total))
       if [[ $per -gt $lastper ]]; then
         lastper=$per
-        echo -ne "\rCompressing: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
+        echo -ne "\rArchiving: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
       fi
     fi
   done
@@ -727,7 +727,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       lastper=$per
       echo $lastper
     fi
-  done | dialog --gauge "Compressing..." 0 50
+  done | dialog --gauge "Archiving..." 0 50
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 

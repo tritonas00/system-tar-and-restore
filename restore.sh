@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.2"
+BR_VERSION="System Tar & Restore 4.3"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -219,7 +219,7 @@ set_syslinux_flags_and_paths() {
 }
 
 generate_syslinux_cfg() {
-  echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50" > /mnt/target/boot/syslinux/syslinux.cfg
+  echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50"
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
     syslinuxrootsubvol="rootflags=subvol=$BRrootsubvolname"
   fi
@@ -234,20 +234,23 @@ generate_syslinux_cfg() {
 
   for FILE in /mnt/target/boot/*; do RESP=$(file -k "$FILE" | grep -w "bzImage")
     if [ -n "$RESP" ]; then
+      cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
+      kn=$(basename "$FILE")
+
       if [ "$BRdistro" = "Arch" ]; then
-        echo -e "LABEL arch\n\tMENU LABEL Arch $(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__").img" >> /mnt/target/boot/syslinux/syslinux.cfg
-        echo -e "LABEL archfallback\n\tMENU LABEL Arch $(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__") fallback\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")-fallback.img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL arch\n\tMENU LABEL Arch $cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$cn.img"
+        echo -e "LABEL archfallback\n\tMENU LABEL Arch $cn fallback\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$cn-fallback.img"
       elif [ "$BRdistro" = "Debian" ]; then
-        echo -e "LABEL debian\n\tMENU LABEL Debian-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd.img-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL debian\n\tMENU LABEL Debian-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd.img-$cn"
       elif [ "$BRdistro" = "Fedora" ]; then
-        echo -e "LABEL fedora\n\tMENU LABEL Fedora-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__").img" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL fedora\n\tMENU LABEL Fedora-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$cn.img"
       elif [ "$BRdistro" = "Suse" ]; then
-        echo -e "LABEL suse\n\tMENU LABEL Suse-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd-$(echo "$FILE" | sed "s_/mnt/target/boot/vmlinuz-*__")" >> /mnt/target/boot/syslinux/syslinux.cfg
+        echo -e "LABEL suse\n\tMENU LABEL Suse-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd-$cn"
       elif [ "$BRdistro" = "Gentoo" ]; then
         if [ -z "$BRgenkernel" ]; then
-          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$(echo "$FILE" | sed -n 's/[^-]*-//p')" >> /mnt/target/boot/syslinux/syslinux.cfg
+          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$kn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$cn"
         else
-          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tLINUX ../$(echo "$FILE" | sed "s_/mnt/target/boot/*__")\n\tAPPEND root=$BRroot $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet" >> /mnt/target/boot/syslinux/syslinux.cfg
+          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$kn\n\tLINUX ../$kn\n\tAPPEND root=$BRroot $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet"
         fi
       fi
     fi
@@ -789,14 +792,12 @@ prepare_chroot() {
 }
 
 generate_fstab() {
-  mv /mnt/target/etc/fstab /mnt/target/etc/fstab-old
-  echo "# $BRroot" >> /mnt/target/etc/fstab
   if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ] && [ ! "$BRdistro" = "Suse" ]; then
-    echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname  0  0" >> /mnt/target/etc/fstab
+    echo -e "# $BRroot\n$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname  0  0"
   elif [ "$BRfsystem" = "btrfs" ]; then
-    echo "$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS  0  0" >> /mnt/target/etc/fstab
+    echo -e "# $BRroot\n$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS  0  0"
   else
-    echo "$(detect_fstab_root)  /  $BRfsystem  $BR_MOUNT_OPTS  0  1" >> /mnt/target/etc/fstab
+    echo -e "# $BRroot\n$(detect_fstab_root)  /  $BRfsystem  $BR_MOUNT_OPTS  0  1"
   fi
 
   if [ -n "$BRcustomparts" ]; then
@@ -804,21 +805,19 @@ generate_fstab() {
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
-      echo -e "\n# $BRdevice" >> /mnt/target/etc/fstab
       if [[ "$BRdevice" == *dev/md* ]]; then
-        echo "$BRdevice  $BRmpoint  $BRcustomfs  defaults  0  2" >> /mnt/target/etc/fstab
+        echo -e "\n# $BRdevice\n$BRdevice  $BRmpoint  $BRcustomfs  defaults  0  2"
       else
-        echo "UUID=$(blkid -s UUID -o value $BRdevice)  $BRmpoint  $BRcustomfs  defaults  0  2" >> /mnt/target/etc/fstab
+        echo -e "\n# $BRdevice\nUUID=$(blkid -s UUID -o value $BRdevice)  $BRmpoint  $BRcustomfs  defaults  0  2"
       fi
     done
   fi
 
   if [ -n "$BRswap" ]; then
-    echo -e "\n# $BRswap" >> /mnt/target/etc/fstab
     if [[ "$BRswap" == *dev/md* ]]; then
-      echo "$BRswap  none  swap  defaults  0  0" >> /mnt/target/etc/fstab
+      echo -e "\n# $BRswap\n$BRswap  none  swap  defaults  0  0"
     else
-      echo "UUID=$(blkid -s UUID -o value $BRswap)  none  swap  defaults  0  0" >> /mnt/target/etc/fstab
+      echo -e "\n# $BRswap\nUUID=$(blkid -s UUID -o value $BRswap)  none  swap  defaults  0  0"
     fi
   fi
   echo -e "\n${BR_SEP}GENERATED FSTAB" >> /tmp/restore.log
@@ -968,7 +967,7 @@ install_bootloader() {
       fi
       cp "$BRsyslinuxpath"/*.c32 /mnt/target/boot/syslinux/
     fi
-    generate_syslinux_cfg
+    generate_syslinux_cfg >> /mnt/target/boot/syslinux/syslinux.cfg
     echo -e "\n${BR_SEP}GENERATED SYSLINUX CONFIG" >> /tmp/restore.log
     cat /mnt/target/boot/syslinux/syslinux.cfg >> /tmp/restore.log
   fi
@@ -1207,7 +1206,7 @@ tar_pgrs_cli() {
       per=$(($a*100/$total))
       if [[ $per -gt $lastper ]]; then
         lastper=$per
-        echo -ne "\rDecompressing: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
+        echo -ne "\rExtracting: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
       fi
     fi
   done
@@ -1223,7 +1222,7 @@ rsync_pgrs_cli() {
       per=$(($b*100/$total))
       if [[ $per -gt $lastper ]]; then
         lastper=$per
-        echo -ne "\rSyncing: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
+        echo -ne "\rTransferring: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
       fi
     fi
   done
@@ -2033,9 +2032,9 @@ if [ "$BRinterface" = "cli" ]; then
 
   report_vars_log >> /tmp/restore.log
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
+  echo -e "\n${BR_SEP}PROCESSING"
 
   if [ "$BRmode" = "Restore" ]; then
-    echo -e "\n${BR_SEP}EXTRACTING"
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
 
@@ -2049,7 +2048,6 @@ if [ "$BRinterface" = "cli" ]; then
     echo " "
 
   elif [ "$BRmode" = "Transfer" ]; then
-    echo -e "\n${BR_SEP}TRANSFERING"
     run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
@@ -2061,7 +2059,8 @@ if [ "$BRinterface" = "cli" ]; then
   if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi
 
   echo -e "\n${BR_SEP}GENERATING FSTAB"
-  generate_fstab
+  cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
+  generate_fstab > /mnt/target/etc/fstab
   cat /mnt/target/etc/fstab
 
   while [ -z "$BRedit" ] ; do
@@ -2466,7 +2465,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       run_tar 2>>/tmp/restore.log
     elif [ "$BRarchiver" = "bsdtar" ]; then
       run_tar | tee /tmp/filelist
-    fi | count_gauge | dialog --gauge "Decompressing..." 0 50
+    fi | count_gauge | dialog --gauge "Extracting..." 0 50
 
     log_bsdtar
 
@@ -2476,10 +2475,11 @@ elif [ "$BRinterface" = "dialog" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi
-    run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Syncing..." 0 50
+    run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Transferring..." 0 50
   fi
 
-  generate_fstab
+  cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
+  generate_fstab > /mnt/target/etc/fstab
 
   if [ -n "$BRedit" ]; then
     cat /mnt/target/etc/fstab | dialog --title "GENERATING FSTAB" --progressbox 20 100

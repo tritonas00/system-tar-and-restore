@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.3"
+BR_VERSION="System Tar & Restore 5.0"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -30,9 +30,10 @@ info_screen() {
   echo "->Arch/Gentoo: grub    efibootmgr* dosfstools*"
   echo "->Debian:      grub-pc grub-efi*   dosfstools*"
   echo "->Fedora/Suse: grub2   efibootmgr* dosfstools*"
+  echo "->Mandriva:    grub2   grub2-efi*  dosfstools*"
   echo -e "\nSYSLINUX PACKAGES:"
   echo "->Arch/Suse/Gentoo: syslinux"
-  echo "->Debian:           syslinux extlinux"
+  echo "->Debian/Mandriva:  syslinux extlinux"
   echo "->Fedora:           syslinux syslinux-extlinux"
   echo -e "\n*Required for UEFI systems"
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
@@ -83,11 +84,17 @@ show_summary() {
   fi
 
   echo -e "\nFOUND BOOTLOADERS:"
-  if [ -d /usr/lib/grub ]; then echo "Grub"; fi
+  if which grub-mkconfig &>/dev/null || which grub2-mkconfig &>/dev/null; then
+    echo "Grub"
+  else
+    BRgrub=n
+  fi
   if which extlinux &>/dev/null && which syslinux &>/dev/null; then
     echo "Syslinux"
+  else
+   BRsyslinux=n
   fi
-  if ! which extlinux &>/dev/null || ! which syslinux &>/dev/null && [ ! -d /usr/lib/grub ]; then
+  if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
     echo "None or not supported"
   fi
   echo -e "${BR_NORM}"
@@ -191,12 +198,18 @@ report_vars_log() {
   echo "Archiver Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"
   echo "Home: $BRhome"
   echo "Hidden: $BRhidden"
-  if [ -d /usr/lib/grub ]; then echo "Bootloader: Grub"; fi
+  if which grub-mkconfig &>/dev/null || which grub2-mkconfig &>/dev/null; then
+    echo "Bootloader: Grub"
+  else
+    BRgrub=n
+  fi
   if which extlinux &>/dev/null && which syslinux &>/dev/null; then
     echo "Bootloader: Syslinux"
+  else
+   BRsyslinux=n
   fi
-  if ! which extlinux &>/dev/null || ! which syslinux &>/dev/null && [ ! -d /usr/lib/grub ]; then
-    echo "Bootloader: None or not supported"
+  if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
+    echo "None or not supported"
   fi
   echo -e "\n${BR_SEP}ARCHIVER STATUS"
 }

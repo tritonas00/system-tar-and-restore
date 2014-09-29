@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.3"
+BR_VERSION="System Tar & Restore 5.0"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -149,6 +149,8 @@ detect_distro() {
       BRdistro="Debian"
     elif grep -Fxq "etc/zypp/zypp.conf" /tmp/filelist 2>/dev/null; then
       BRdistro="Suse"
+    elif grep -Fxq "etc/urpmi/urpmi.cfg" /tmp/filelist 2>/dev/null; then
+      BRdistro="Mandriva"
     elif grep -Fxq "etc/portage/make.conf" /tmp/filelist 2>/dev/null || grep -Fxq "etc/make.conf" /tmp/filelist 2>/dev/null; then
       BRdistro="Gentoo"
     else
@@ -164,6 +166,8 @@ detect_distro() {
       BRdistro="Debian"
     elif [ -f /etc/zypp/zypp.conf ]; then
       BRdistro="Suse"
+    elif [ -f /etc/urpmi/urpmi.cfg ]; then
+      BRdistro="Mandriva"
     elif [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
       BRdistro="Gentoo"
     else
@@ -211,9 +215,9 @@ set_syslinux_flags_and_paths() {
     sfdisk $BRdev -A $BRpart &>> /tmp/restore.log || touch /tmp/bl_error
     BRsyslinuxmbr="mbr.bin"
   fi
-  if [ "$BRdistro" = "Debian" ]; then
+  if [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Mandriva" ]; then
     BRsyslinuxpath="/mnt/target/usr/lib/syslinux"
-  elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Suse" ] || [ "$BRdistro" = "Gentoo" ]; then
+  else
     BRsyslinuxpath="/mnt/target/usr/share/syslinux"
   fi
 }
@@ -238,17 +242,19 @@ generate_syslinux_cfg() {
       kn=$(basename "$FILE")
 
       if [ "$BRdistro" = "Arch" ]; then
-        echo -e "LABEL arch\n\tMENU LABEL Arch $cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$cn.img"
-        echo -e "LABEL archfallback\n\tMENU LABEL Arch $cn fallback\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../initramfs-$cn-fallback.img"
+        echo -e "LABEL arch\n\tMENU LABEL Arch $cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../$ipn-$cn.img"
+        echo -e "LABEL archfallback\n\tMENU LABEL Arch $cn fallback\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../$ipn-$cn-fallback.img"
       elif [ "$BRdistro" = "Debian" ]; then
-        echo -e "LABEL debian\n\tMENU LABEL Debian-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd.img-$cn"
+        echo -e "LABEL debian\n\tMENU LABEL Debian-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn.img-$cn"
       elif [ "$BRdistro" = "Fedora" ]; then
-        echo -e "LABEL fedora\n\tMENU LABEL Fedora-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$cn.img"
+        echo -e "LABEL fedora\n\tMENU LABEL Fedora-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn-$cn.img"
       elif [ "$BRdistro" = "Suse" ]; then
-        echo -e "LABEL suse\n\tMENU LABEL Suse-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initrd-$cn"
+        echo -e "LABEL suse\n\tMENU LABEL Suse-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn-$cn"
+      elif [ "$BRdistro" = "Mandriva" ]; then      
+        echo -e "LABEL suse\n\tMENU LABEL Mandriva-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn-$cn.img"
       elif [ "$BRdistro" = "Gentoo" ]; then
         if [ -z "$BRgenkernel" ]; then
-          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$kn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../initramfs-$cn"
+          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$kn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn-$cn"
         else
           echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$kn\n\tLINUX ../$kn\n\tAPPEND root=$BRroot $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet"
         fi
@@ -389,9 +395,11 @@ check_input() {
         fi
       fi
     fi
-    if [ -n "$BRgrub" ] && [ ! -d /usr/lib/grub ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found"
-      BRSTOP="y"
+    if [ -n "$BRgrub" ]; then
+      if [ -z $(which grub-mkconfig 2>/dev/null) ] && [ -z $(which grub2-mkconfig 2>/dev/null) ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found"
+        BRSTOP="y"
+      fi
     elif [ -n "$BRsyslinux" ]; then
       if [ -z $(which extlinux 2>/dev/null) ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Extlinux not found"
@@ -841,16 +849,20 @@ build_initramfs() {
     echo " "
   fi
 
-  for BRinitrd in `find /mnt/target/boot -name vmlinuz* | sed 's_/mnt/target/boot/vmlinuz-*__'` ; do
-    if [ "$BRdistro" = "Arch" ]; then
-      chroot /mnt/target mkinitcpio -p $BRinitrd
-    elif [ "$BRdistro" = "Debian" ]; then
-      chroot /mnt/target update-initramfs -u -k $BRinitrd
-    elif [ "$BRdistro" = "Fedora" ]; then
-      echo "Building image for $BRinitrd..."
-      chroot /mnt/target dracut --force /boot/initramfs-$BRinitrd.img $BRinitrd
-    elif [ "$BRdistro" = "Suse" ]; then
-       chroot /mnt/target mkinitrd -k vmlinuz-$BRinitrd -i initrd-$BRinitrd
+  for FILE in /mnt/target/boot/*; do RESP=$(file -k "$FILE" | grep -w "bzImage")
+    if [ -n "$RESP" ]; then
+      cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
+
+      if [ "$BRdistro" = "Arch" ]; then
+        chroot /mnt/target mkinitcpio -p $cn
+      elif [ "$BRdistro" = "Debian" ]; then
+        chroot /mnt/target update-initramfs -u -k $cn
+      elif [ "$BRdistro" = "Suse" ]; then
+        chroot /mnt/target mkinitrd -k vmlinuz-$cn -i $ipn-$cn
+      elif [ "$BRdistro" = "Mandriva" ] || [ "$BRdistro" = "Fedora" ]; then
+        echo "Building image for $cn..."
+        chroot /mnt/target dracut --force /boot/$ipn-$cn.img $cn
+      fi
     fi
   done
 
@@ -860,6 +872,14 @@ build_initramfs() {
     else
       chroot /mnt/target genkernel --no-color --install initramfs
     fi
+  fi
+}
+
+detect_initramfs_prefix() {
+  if ls /mnt/target/boot/ | grep "initramfs-" >/dev/null; then
+    ipn=initramfs
+  else
+    ipn=initrd
   fi
 }
 
@@ -889,7 +909,7 @@ install_bootloader() {
           chroot /mnt/target grub-install --target=i386-pc --recheck /dev/$f || touch /tmp/bl_error
         elif [ "$BRdistro" = "Debian" ]; then
           chroot /mnt/target grub-install --recheck /dev/$f || touch /tmp/bl_error
-        elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Suse" ] || [ "$BRdistro" = "Gentoo" ]; then
+        else
           chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/bl_error
         fi
       done
@@ -901,11 +921,11 @@ install_bootloader() {
       fi
     elif [ "$BRdistro" = "Debian" ]; then
       chroot /mnt/target grub-install --recheck $BRgrub || touch /tmp/bl_error
-    elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Suse" ] || [ "$BRdistro" = "Gentoo" ]; then
+    else
       chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
     fi
 
-    if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Suse" ] || [ "$BRdistro" = "Gentoo" ]; then
+    if [ ! "$BRdistro" = "Fedora" ]; then
       if [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then cp_grub_efi; fi
     fi
 
@@ -919,12 +939,12 @@ install_bootloader() {
       echo " " >> /tmp/restore.log
     fi
 
-    if [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Suse" ]; then
-      chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
-    elif [ "$BRdistro" = "Gentoo" ]; then
+    if [ "$BRdistro" = "Gentoo" ]; then
       chroot /mnt/target grub2-mkconfig -o /boot/grub/grub.cfg
-    else
+    elif [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ]; then
       chroot /mnt/target grub-mkconfig -o /boot/grub/grub.cfg
+    else
+      chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
     fi
 
   elif [ -n "$BRsyslinux" ]; then
@@ -980,19 +1000,17 @@ set_bootloader() {
     BRbootloader="Syslinux"
   fi
 
-  if [ -n "$BRsyslinux" ]; then
-    if [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Suse" ] || [ "$BRdistro" = "Gentoo" ]; then
-      if [[ "$BRsyslinux" == *md* ]]; then
-        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'` ; do
-          BRdev=`echo /dev/$f | cut -c -8`
-        done
-      fi
-      detect_partition_table_syslinux
-      if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
-        if [ -z "$BRnocolor" ]; then color_variables; fi
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
-        BRabort="y"
-      fi
+  if [ -n "$BRsyslinux" ] && [ ! "$BRdistro" = "Arch" ]; then
+    if [[ "$BRsyslinux" == *md* ]]; then
+      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'` ; do
+        BRdev=`echo /dev/$f | cut -c -8`
+      done
+    fi
+    detect_partition_table_syslinux
+    if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
+      if [ -z "$BRnocolor" ]; then color_variables; fi
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
+      BRabort="y"
     fi
   fi
 
@@ -1019,10 +1037,12 @@ set_bootloader() {
   fi
 
   if [ "$BRmode" = "Restore" ]; then
-    if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub" /tmp/filelist 2>/dev/null; then
-      if [ -z "$BRnocolor" ]; then color_variables; fi
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
-      BRabort="y"
+    if [ -n "$BRgrub" ]; then
+      if ! grep -Fq "bin/grub-mkconfig" /tmp/filelist 2>/dev/null && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist 2>/dev/null; then
+        if [ -z "$BRnocolor" ]; then color_variables; fi
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
+        BRabort="y"
+      fi
     elif [ -n "$BRsyslinux" ]; then
       if ! grep -Fq "bin/extlinux" /tmp/filelist 2>/dev/null; then
         if [ -z "$BRnocolor" ]; then color_variables; fi
@@ -2062,6 +2082,7 @@ if [ "$BRinterface" = "cli" ]; then
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   generate_fstab > /mnt/target/etc/fstab
   cat /mnt/target/etc/fstab
+  detect_initramfs_prefix
 
   while [ -z "$BRedit" ] ; do
     echo -e "\n${BR_CYAN}Edit fstab?${BR_NORM}"
@@ -2478,6 +2499,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   generate_fstab > /mnt/target/etc/fstab
+  detect_initramfs_prefix
 
   if [ -n "$BRedit" ]; then
     cat /mnt/target/etc/fstab | dialog --title "GENERATING FSTAB" --progressbox 20 100

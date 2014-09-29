@@ -622,7 +622,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --no-collapse --title "$BR_VERSION" --msgbox "$(info_screen)" 27 70
+    dialog --no-collapse --title "$BR_VERSION" --msgbox "$(info_screen)" 28 70
   fi
 
   if [ -z "$BRFOLDER" ]; then

@@ -209,7 +209,7 @@ report_vars_log() {
    BRsyslinux=n
   fi
   if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
-    echo "None or not supported"
+    echo "Bootloader: None or not supported"
   fi
   echo -e "\n${BR_SEP}ARCHIVER STATUS"
 }

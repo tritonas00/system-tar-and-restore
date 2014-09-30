@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 5.0"
+BR_VERSION="System Tar & Restore 4.3"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then

@@ -63,7 +63,7 @@ exit_screen_quiet() {
 }
 
 show_summary() {
-  echo -e "${BR_YELLOW}ARCHIVE:"
+  echo -e "ARCHIVE:"
   echo "$BRFile.$BR_EXT"
 
   echo -e "\nARCHIVER INFO:"
@@ -97,7 +97,6 @@ show_summary() {
   if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
     echo "None or not supported"
   fi
-  echo -e "${BR_NORM}"
 }
 
 dir_list() {
@@ -187,31 +186,8 @@ prepare() {
   mkdir -p "$BRFOLDER"
   sleep 1
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-}
-
-report_vars_log() {
-  echo -e "--------------$BR_VERSION {$(date +%d-%m-%Y-%T)}--------------\n"
-  echo "${BR_SEP}VERBOSE SUMMARY"
-  echo "Archive: $(basename "$BRFile".${BR_EXT})"
-  echo "Archiver: $BRarchiver"
-  echo "Compression: $BRcompression"
-  echo "Archiver Options: ${BR_TAROPTS[@]} --exclude=$BRFOLDER"
-  echo "Home: $BRhome"
-  echo "Hidden: $BRhidden"
-  if which grub-mkconfig &>/dev/null || which grub2-mkconfig &>/dev/null; then
-    echo "Bootloader: Grub"
-  else
-    BRgrub=n
-  fi
-  if which extlinux &>/dev/null && which syslinux &>/dev/null; then
-    echo "Bootloader: Syslinux"
-  else
-   BRsyslinux=n
-  fi
-  if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
-    echo "Bootloader: None or not supported"
-  fi
-  echo -e "\n${BR_SEP}ARCHIVER STATUS"
+  echo -e "--------------$BR_VERSION {$(date +%d-%m-%Y-%T)}--------------\n" >> "$BRFOLDER"/backup.log
+  echo "${BR_SEP}SUMMARY" >> "$BRFOLDER"/backup.log
 }
 
 options_info() {
@@ -569,8 +545,9 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  echo -e "\n${BR_SEP}SUMMARY"
+  echo -e "\n${BR_SEP}SUMMARY${BR_YELLOW}"
   show_summary
+  echo -e "${BR_NORM}"
 
   while [ -z "$BRcontinue" ]; do
     echo -e "${BR_CYAN}Continue?${BR_NORM}"
@@ -590,7 +567,8 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   prepare
-  report_vars_log >> "$BRFOLDER"/backup.log
+  show_summary >> "$BRFOLDER"/backup.log
+  echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
   run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
@@ -718,7 +696,8 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   prepare
-  report_vars_log >> "$BRFOLDER"/backup.log
+  show_summary >> "$BRFOLDER"/backup.log
+  echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
   run_calc | while read ln; do a=$((a + 1)) && echo "Calculating: $a Files"; done | dialog --progressbox 3 40
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1

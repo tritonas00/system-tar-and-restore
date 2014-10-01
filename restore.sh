@@ -683,7 +683,7 @@ mount_all() {
 }
 
 show_summary() {
-  echo -e "${BR_YELLOW}PARTITIONS:"
+  echo -e "PARTITIONS:"
   echo "root partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
 
   if [ -n "$BRcustomparts" ]; then
@@ -765,23 +765,23 @@ show_summary() {
   fi
 
   if [ "$BRdistro" = "Unsupported" ]; then
-    echo -e "System:   $BRdistro (WARNING)${BR_NORM}"
+    echo -e "System:   $BRdistro (WARNING)"
   elif [ "$BRmode" = "Restore" ]; then
-    echo -e "System:   $BRdistro based $target_arch${BR_NORM}"
+    echo -e "System:   $BRdistro based $target_arch"
   elif [ "$BRmode" = "Transfer" ]; then
-     echo -e "System:   $BRdistro based $(uname -m)${BR_NORM}"
+     echo -e "System:   $BRdistro based $(uname -m)"
   fi
 
   if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
-    echo -e "${BR_YELLOW}Info:     Skip initramfs building${BR_NORM}"
+    echo -e "Info:     Skip initramfs building"
   fi
 
   if [ "$BRmode" = "Transfer" ]; then
-    echo -e "\n${BR_YELLOW}RSYNC OPTIONS:"
-    echo -e "${BR_RSYNCOPTS[@]}${BR_NORM}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
+    echo -e "\nRSYNC OPTIONS:"
+    echo -e "${BR_RSYNCOPTS[@]}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
   elif [ "$BRmode" = "Restore" ] && [ -n "$BR_USER_OPTS" ]; then
-     echo -e "\n${BR_YELLOW}ARCHIVER OPTIONS:"
-     echo -e "${BR_USER_OPTS[@]}${BR_NORM}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
+     echo -e "\nARCHIVER OPTIONS:"
+     echo -e "${BR_USER_OPTS[@]}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
   fi
 }
 
@@ -1248,54 +1248,6 @@ rsync_pgrs_cli() {
   done
 }
 
-report_vars_log() {
-  echo -e "--------------$BR_VERSION {$(date +%d-%m-%Y-%T)}--------------\n"
-  echo "${BR_SEP}VERBOSE SUMMARY"
-  echo "Root Partition: $BRroot $BRfsystem $BR_MOUNT_OPTS"
-  echo "Swap Partition: $BRswap"
-  echo "Other Partitions Array: ${BRsorted[@]}"
-  echo "Root Subvolume: $BRrootsubvolname"
-  echo "Subvolumes Array: ${BRsubvols[@]}"
-  if [ -n "$BRgrub" ]; then
-    if [[ "$BRgrub" == *md* ]]; then
-      echo "Bootloader: $BRbootloader $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[vhs]d[a-z]'))"
-    else
-      if [ ! -d "$BR_EFI_DETECT_DIR" ]; then
-        BRgrubios="i386-pc"
-      fi
-      echo "Bootloader: $BRbootloader $BRgrubefiarch $BRgrubios $BRgrub"
-    fi
-  elif [ -n "$BRsyslinux" ]; then
-    if [[ "$BRsyslinux" == *md* ]]; then
-      echo "Bootloader: $BRbootloader $BRpartitiontable $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z]'))"
-    else
-      echo "Bootloader: $BRbootloader $BRpartitiontable $BRsyslinux"
-    fi
-  else
-    echo "Bootloader: None"
-  fi
-  echo "Kernel Options: $BR_KERNEL_OPTS"
-  echo "Mode: $BRmode"
-  if [ "$BRmode" = "Restore" ]; then
-    echo "Archiver Options: ${BR_USER_OPTS[@]}"
-  elif [ "$BRmode" = "Transfer" ]; then
-    echo "Rsync Options: ${BR_RSYNCOPTS[@]}"
-  fi
-  echo "Distro: $BRdistro"
-  if [ "$BRmode" = "Restore" ]; then
-    echo "Architecture: $target_arch"
-  elif [ "$BRmode" = "Transfer" ]; then
-    echo "Architecture: $(uname -m)"
-  fi
-  if [ -n "$BRfile" ]; then
-    echo "Source: local $BRfiletype archive"
-  elif [ -n "$BRurl" ]; then
-    echo "Source: remote $BRfiletype archive"
-  fi
-  echo "Archiver: $BRarchiver"
-  echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
-}
-
 options_info() {
   if [ "$BRarchiver" = "tar" ]; then
     BRoptinfo="see tar --help"
@@ -1313,6 +1265,13 @@ log_bsdtar() {
     if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
       cat /tmp/filelist | grep -i ": " >> /tmp/restore.log
     fi
+}
+
+start_log() {
+  echo -e "--------------$BR_VERSION {$(date +%d-%m-%Y-%T)}--------------\n"
+  echo "${BR_SEP}SUMMARY"
+  show_summary
+  echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 
 BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:a:O:vdDH" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor" -n "$1" -- "$@"`
@@ -2030,8 +1989,9 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
 
-  echo -e "\n${BR_SEP}SUMMARY"
+  echo -e "\n${BR_SEP}SUMMARY${BR_YELLOW}"
   show_summary
+  echo -e "${BR_NORM}"
 
   while [ -z "$BRcontinue" ]; do
     echo -e "\n${BR_CYAN}Continue?${BR_NORM}"
@@ -2050,7 +2010,7 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   done
 
-  report_vars_log >> /tmp/restore.log
+  start_log >> /tmp/restore.log
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
   echo -e "\n${BR_SEP}PROCESSING"
 
@@ -2474,7 +2434,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  report_vars_log >> /tmp/restore.log
+  start_log >> /tmp/restore.log
 
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)

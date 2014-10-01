@@ -250,7 +250,7 @@ generate_syslinux_cfg() {
         echo -e "LABEL fedora\n\tMENU LABEL Fedora-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn-$cn.img"
       elif [ "$BRdistro" = "Suse" ]; then
         echo -e "LABEL suse\n\tMENU LABEL Suse-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn-$cn"
-      elif [ "$BRdistro" = "Mandriva" ]; then      
+      elif [ "$BRdistro" = "Mandriva" ]; then
         echo -e "LABEL suse\n\tMENU LABEL Mandriva-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn-$cn.img"
       elif [ "$BRdistro" = "Gentoo" ]; then
         if [ -z "$BRgenkernel" ]; then

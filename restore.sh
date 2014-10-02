@@ -215,11 +215,22 @@ set_syslinux_flags_and_paths() {
     sfdisk $BRdev -A $BRpart &>> /tmp/restore.log || touch /tmp/bl_error
     BRsyslinuxmbr="mbr.bin"
   fi
-  if [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Mandriva" ]; then
-    BRsyslinuxpath="/mnt/target/usr/lib/syslinux"
-  else
-    BRsyslinuxpath="/mnt/target/usr/share/syslinux"
-  fi
+
+  for BIN in /mnt/target/usr/lib/syslinux/$BRsyslinuxmbr \
+    /mnt/target/usr/lib/syslinux/mbr/$BRsyslinuxmbr \
+    /mnt/target/usr/share/syslinux/$BRsyslinuxmbr; do
+    if [ -f "$BIN" ]; then
+      BRsyslinuxmbrpath=$(dirname "$BIN")
+    fi
+  done
+
+  for COM32 in /mnt/target/usr/lib/syslinux/menu.c32 \
+    /mnt/target/usr/lib/syslinux/modules/bios/menu.c32 \
+    /mnt/target/usr/share/syslinux/menu.c32; do
+    if [ -f "$COM32" ]; then
+      BRsyslinuxcompath=$(dirname "$COM32")
+    fi
+  done
 }
 
 generate_syslinux_cfg() {
@@ -969,7 +980,7 @@ install_bootloader() {
           detect_partition_table_syslinux
           set_syslinux_flags_and_paths
           echo "Installing $BRsyslinuxmbr in $BRdev ($BRpartitiontable)"
-          dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/bl_error
+          dd bs=440 count=1 conv=notrunc if=$BRsyslinuxmbrpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/bl_error
         done
       else
         chroot /mnt/target extlinux -i /boot/syslinux || touch /tmp/bl_error
@@ -983,9 +994,9 @@ install_bootloader() {
         detect_partition_table_syslinux
         set_syslinux_flags_and_paths
         echo "Installing $BRsyslinuxmbr in $BRsyslinux ($BRpartitiontable)"
-        dd bs=440 count=1 conv=notrunc if=$BRsyslinuxpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/bl_error
+        dd bs=440 count=1 conv=notrunc if=$BRsyslinuxmbrpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/bl_error
       fi
-      cp "$BRsyslinuxpath"/*.c32 /mnt/target/boot/syslinux/
+      cp "$BRsyslinuxcompath"/*.c32 /mnt/target/boot/syslinux/
     fi
     generate_syslinux_cfg >> /mnt/target/boot/syslinux/syslinux.cfg
     echo -e "\n${BR_SEP}GENERATED SYSLINUX CONFIG" >> /tmp/restore.log

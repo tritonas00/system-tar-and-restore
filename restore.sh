@@ -877,9 +877,9 @@ build_initramfs() {
 
 detect_initramfs_prefix() {
   if ls /mnt/target/boot/ | grep "initramfs-" >/dev/null; then
-    ipn=initramfs
+    ipn="initramfs"
   else
-    ipn=initrd
+    ipn="initrd"
   fi
 }
 

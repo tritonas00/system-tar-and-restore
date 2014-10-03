@@ -996,6 +996,7 @@ install_bootloader() {
         echo "Installing $BRsyslinuxmbr in $BRsyslinux ($BRpartitiontable)"
         dd bs=440 count=1 conv=notrunc if=$BRsyslinuxmbrpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/bl_error
       fi
+      echo "Copying com32 modules"
       cp "$BRsyslinuxcompath"/*.c32 /mnt/target/boot/syslinux/
     fi
     generate_syslinux_cfg >> /mnt/target/boot/syslinux/syslinux.cfg

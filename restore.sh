@@ -2411,6 +2411,7 @@ elif [ "$BRinterface" = "dialog" ]; then
         fi
         check_wget
       fi
+
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
         if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi

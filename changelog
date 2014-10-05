@@ -1,5 +1,14 @@
 Changelog:
 
+4.3
+    added Mandriva support (Mageia OpenMandriva etc...)
+    updated initramfs name detection and building
+    updated grub2 detection
+    changed some echos for better process description
+    show actual summary in logs
+    updated syslinux mbr and *.com32 paths detection to support the latest debian changes
+    code cleaning
+
 4.2
     fixed cli interface progress bar speed
 

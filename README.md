@@ -5,7 +5,7 @@ System tar & restore contains two bash scripts, **backup.sh** and **restore.sh**
 The purpose is to make the process of backing up and restoring a full GNU/Linux installation easier 
 using tar or transfer an existing installation using rsync.
 
-Supported distributions: Arch, Debian, Fedora, openSUSE, Gentoo        
+Supported distributions: Arch, Debian/Ubuntu, Fedora, openSUSE, Gentoo, Mandriva          
 
 [![Demo Video](http://img.youtube.com/vi/dr5ZB3ajhTQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=dr5ZB3ajhTQ&hd=1)  
 

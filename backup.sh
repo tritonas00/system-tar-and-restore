@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.3"
+BR_VERSION="System Tar & Restore 4.4"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -128,41 +128,40 @@ set_tar_options() {
     BR_EXT="tar"
   fi
 
+  if [ -n "$BRencpass" ]; then
+    BR_EXT="${BR_EXT}.aes"
+  fi
+
   if [ "$BRarchiver" = "tar" ]; then
-    BR_TAROPTS="--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=/var/run/* --exclude=/var/lock/* --exclude=lost+found --sparse $BR_USER_OPTS"
+    BR_TAROPTS=(--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=/var/run/* --exclude=/var/lock/* --exclude=lost+found --sparse "$BR_USER_OPTS")
     if [ -f /etc/yum.conf ]; then
-      BR_TAROPTS="${BR_TAROPTS} --acls --xattrs --selinux"
+      BR_TAROPTS+=(--acls --xattrs --selinux)
     fi
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
-      BR_TAROPTS="${BR_TAROPTS} --exclude=/home/*"
-    elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
-      find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
-      BR_TAROPTS="${BR_TAROPTS} --exclude-from=/tmp/excludelist"
+      BR_TAROPTS+=(--exclude=/home/*)
     fi
   elif [ "$BRarchiver" = "bsdtar" ]; then
     BR_TAROPTS=(--exclude=/run/*?* --exclude=/proc/*?* --exclude=/dev/*?* --exclude=/media/*?* --exclude=/sys/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=/var/run/*?* --exclude=/var/lock/*?* --exclude=lost+found "$BR_USER_OPTS")
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
       BR_TAROPTS+=(--exclude=/home/*?*)
-    elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
-      find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
-      BR_TAROPTS+=(--exclude-from=/tmp/excludelist)
     fi
+  fi
+
+  if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
+    find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
+    BR_TAROPTS+=(--exclude-from=/tmp/excludelist)
   fi
 }
 
 run_calc() {
-  if [ "$BRarchiver" = "tar" ]; then
-    $BRarchiver cvf /dev/null ${BR_TAROPTS} --exclude="$BRFOLDER" / 2>/dev/null | tee /tmp/b_filelist
-  elif [ "$BRarchiver" = "bsdtar" ]; then
-    $BRarchiver cvf /dev/null ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 | tee /tmp/b_filelist
-  fi
+   $BRarchiver cvf /dev/null ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 | tee /tmp/b_filelist
 }
 
 run_tar() {
-  if [ "$BRarchiver" = "tar" ]; then
-    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS} --exclude="$BRFOLDER" / && (echo "System archived successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
-  elif [ "$BRarchiver" = "bsdtar" ]; then
-    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 && (echo "System archived successfully" >> "$BRFOLDER"/backup.log) || touch /tmp/b_error
+  if [ -n "$BRencpass" ]; then
+    (($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFile".${BR_EXT}) 2>&1
+  else
+    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 || touch /tmp/b_error
   fi
 }
 
@@ -214,13 +213,7 @@ out_pgrs_cli() {
   done
 }
 
-log_bsdtar() {
-  if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/b_error ]; then
-    cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
-  fi
-}
-
-BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDH" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDHP:" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -287,6 +280,11 @@ while true; do
       BRhide="y"
       shift
     ;;
+    -P|--passphrase)
+      BRencrypt="y"
+      BRencpass=$2
+      shift 2
+    ;;
     --help)
       echo -e "$BR_VERSION\nUsage: backup.sh [options]
 \nGeneral:
@@ -296,6 +294,7 @@ while true; do
   -v, --verbose            enable verbose archiver output (cli interface only)
   -g, --generate           generate configuration file (in case of successful backup)
   -H, --hide-cursor        hide cursor when running archiver (useful for some terminal emulators)
+  -P, --passphrase         password for aes-256-cbc encryption
 \nDestination:
   -d, --directory          backup destination path
   -f, --filename           backup file name (without extension)
@@ -393,6 +392,9 @@ if [ -n "$BRFOLDER" ]; then
   fi
   if [ -z "$BRcompression" ]; then
     BRcompression="none"
+  fi
+  if [ -z "$BRencpass" ]; then
+    BRencrypt="n"
   fi
 fi
 
@@ -521,6 +523,14 @@ if [ "$BRinterface" = "cli" ]; then
     read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
 
+  if which openssl &>/dev/null; then
+    while  [ -z "$BRencrypt" ]; do
+      echo -e "\n${BR_CYAN}Enter password to encrypt archive\n${BR_MAGENTA}(Leave blank for no encryption)${BR_NORM}"
+      read -p "Password: " BRencpass
+      break
+    done
+  fi
+
   IFS=$DEFAULTIFS
   set_tar_options
   set_paths
@@ -574,15 +584,12 @@ if [ "$BRinterface" = "cli" ]; then
   sleep 1
   echo " "
 
-  if [ "$BRarchiver" = "bsdtar" ]; then
-    run_tar | tee /tmp/b_filelist
-  elif [ "$BRarchiver" = "tar" ]; then
-    run_tar 2>>"$BRFOLDER"/backup.log
-  fi | out_pgrs_cli
+  run_tar | tee /tmp/b_filelist | out_pgrs_cli
 
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 
-  log_bsdtar
+  cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
+  if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
 
   if [ -z "$BRquiet" ]; then
     exit_screen; read -s a
@@ -674,6 +681,10 @@ elif [ "$BRinterface" = "dialog" ]; then
     BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRarchiver options. Leave empty for defaults.\n($BRoptinfo)" 8 70 2>&1 1>&3)
   fi
 
+  if which openssl &>/dev/null && [ -z "$BRencrypt" ]; then
+    BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter password to encrypt archive. Leave empty for no encryption." 8 70 2>&1 1>&3)
+  fi
+
   set_tar_options
   set_paths
   set_names
@@ -702,11 +713,8 @@ elif [ "$BRinterface" = "dialog" ]; then
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
 
-  if [ "$BRarchiver" = "bsdtar" ]; then
-    run_tar | tee /tmp/b_filelist
-  elif [ "$BRarchiver" = "tar" ]; then
-    run_tar 2>>"$BRFOLDER"/backup.log
-  fi |
+
+  run_tar | tee /tmp/b_filelist | 
 
   while read ln; do
     b=$((b + 1))
@@ -719,8 +727,8 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
 
-  log_bsdtar
-  if [ -f /tmp/b_error ]; then diag_tl="Error"; else diag_tl="Info"; fi
+  cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
+  if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
 
   if [ -z "$BRquiet" ]; then
     dialog --yes-label "OK" --no-label "View Log" --title "$diag_tl" --yesno "$(exit_screen)" 0 0
@@ -734,11 +742,13 @@ if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
   echo -e "#Auto-generated configuration file for backup.sh.\n#Place it in /etc/backup.conf.\n\nBRinterface=$BRinterface\nBRFOLDER='$(dirname "$BRFOLDER")'\nBRarchiver=$BRarchiver\nBRcompression=$BRcompression" > "$BRFOLDER"/backup.conf
   if [ -n "$BRnocolor" ]; then echo "BRnocolor=Yes" >> "$BRFOLDER"/backup.conf; fi
   if [ -n "$BRverb" ]; then echo "BRverb=Yes" >> "$BRFOLDER"/backup.conf; fi
+  if [ -n "$BRquiet" ]; then echo "BRquiet=Yes" >> "$BRFOLDER"/backup.conf; fi
   if [ ! "$BRFile" = "$BRfiledefault" ]; then echo "BRNAME='$BRNAME'" >> "$BRFOLDER"/backup.conf; fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then echo "BRhome=No" >> "$BRFOLDER"/backup.conf; fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then echo -e "BRhome=No\nBRhidden=No" >> "$BRFOLDER"/backup.conf; fi
   if [ "$BR_USER_OPTS" = " " ]; then unset BR_USER_OPTS; fi
   if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'" >> "$BRFOLDER"/backup.conf; fi
+  if [ -n "$BRencpass" ]; then echo -e "BRencrypt=Yes\nBRencpass='$BRencpass'" >> "$BRFOLDER"/backup.conf; fi
 fi
 
 if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi

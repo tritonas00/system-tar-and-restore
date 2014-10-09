@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.3"
+BR_VERSION="System Tar & Restore 4.4"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -30,7 +30,6 @@ info_screen() {
 clean_files() {
   if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
-  if [ -f /tmp/r_error ]; then rm /tmp/r_error; fi
   if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
  }
 
@@ -97,17 +96,35 @@ detect_root_fs_size() {
 }
 
 detect_filetype() {
-  if file "$BRfile" | grep -w gzip >/dev/null; then
+if [ -n "$BRencpass" ]; then
+ if openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w gzip >/dev/null; then
     BRfiletype="gz"
-  elif file "$BRfile" | grep -w bzip2 >/dev/null; then
+    BRreadopts="tfz"
+  elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w bzip2 >/dev/null; then
     BRfiletype="bz2"
-  elif file "$BRfile" | grep -w XZ >/dev/null; then
+    BRreadopts="tfj"
+  elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w XZ >/dev/null; then
     BRfiletype="xz"
-  elif file "$BRfile" | grep -w POSIX >/dev/null; then
+    BRreadopts="tfJ"
+  elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w POSIX >/dev/null; then
+    BRfiletype="uncompressed"
+    BRreadopts="tf"
+  else
+    BRfiletype="wrong"
+  fi
+else
+  if file "$BRsource" | grep -w gzip >/dev/null; then
+    BRfiletype="gz"
+  elif file "$BRsource" | grep -w bzip2 >/dev/null; then
+    BRfiletype="bz2"
+  elif file "$BRsource" | grep -w XZ >/dev/null; then
+    BRfiletype="xz"
+  elif file "$BRsource" | grep -w POSIX >/dev/null; then
     BRfiletype="uncompressed"
   else
     BRfiletype="wrong"
   fi
+fi
 }
 
 check_wget() {
@@ -120,15 +137,14 @@ check_wget() {
       dialog --title "Error" --msgbox "Error downloading file. Wrong URL, network is down or package wget is not installed." 6 65
     fi
   else
-    if file "$BRsource" | grep -w gzip >/dev/null; then
-      BRfiletype="gz"
-    elif file "$BRsource" | grep -w bzip2 >/dev/null; then
-      BRfiletype="bz2"
-    elif file "$BRsource" | grep -w XZ >/dev/null; then
-      BRfiletype="xz"
-    elif file "$BRsource" | grep -w POSIX >/dev/null; then
-      BRfiletype="uncompressed"
-    else
+    if [ "$BRinterface" = "cli" ]; then
+      echo -e "\n${BR_CYAN}Enter password to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
+      read -p "Password: " BRencpass
+    elif [ "$BRinterface" = "dialog" ]; then
+      BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter password to decrypt archive. Leave empty if archive is not encrypted." 8 70 2>&1 1>&3)
+     fi
+    detect_filetype
+    if [ "$BRfiletype" = "wrong" ]; then
       unset BRsource
       if [ "$BRinterface" = "cli" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
@@ -287,10 +303,10 @@ run_tar() {
 
   IFS=$DEFAULTIFS
 
-  if [ "$BRarchiver" = "tar" ]; then
+  if [ -n "$BRencpass" ]; then
+    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" | $BRarchiver ${BR_MAINOPTS} - ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+  else
     $BRarchiver ${BR_MAINOPTS} "$BRsource" ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
-  elif [ "$BRarchiver" = "bsdtar" ]; then
-    $BRarchiver ${BR_MAINOPTS} "$BRsource" ${BR_USER_OPTS[@]} -C /mnt/target 2>&1 && (echo "System extracted successfully" >> /tmp/restore.log) || touch /tmp/r_error
   fi
 }
 
@@ -372,13 +388,14 @@ disk_report() {
 }
 
 check_input() {
-  if [ -n "$BRfile" ] && [ ! -f "$BRfile" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] File not found: $BRfile"
+  if [ -n "$BRsource" ] && [ ! -f "$BRsource" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] File not found: $BRsource"
     BRSTOP="y"
-  elif [ -n "$BRfile" ]; then
+  elif [ -n "$BRsource" ]; then
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type. File must be a gzip, bzip2, xz compressed or uncompressed archive"
+      echo -e "[${BR_CYAN}INFO${BR_NORM}]  If the archive is encrypted specify your password using -P"
       BRSTOP="y"
     fi
   fi
@@ -752,22 +769,15 @@ show_summary() {
   fi
 
   echo -e "\nPROCESS:"
-
-  if [ "$BRmode" = "Restore" ]; then
-    if [ -n "$BRfile" ]; then
-      BR_source="from local file"
-    elif [ -n "$BRurl" ]; then
-      BR_source="from remote file"
-    fi
-  fi
-  echo "Mode:     $BRmode $BR_source"
+  echo "Mode:     $BRmode"
+  if [ -n "$BRencpass" ]; then enc_info="encrypted"; fi
 
   if [ "$BRmode" = "Restore" ]; then
     echo "Archiver: $BRarchiver"
     if [ "$BRfiletype" = "uncompressed" ]; then
-      echo "Archive:  $BRfiletype"
+      echo "Archive:  $BRfiletype $enc_info"
     else
-      echo "Archive:  $BRfiletype compressed"
+      echo "Archive:  $BRfiletype compressed $enc_info"
     fi
   elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "n" ]; then
      echo "Home:     Include"
@@ -1274,9 +1284,18 @@ options_info() {
 }
 
 log_bsdtar() {
-    if [ "$BRarchiver" = "bsdtar" ] && [ -f /tmp/r_error ]; then
-      cat /tmp/filelist | grep -i ": " >> /tmp/restore.log
-    fi
+  if [ "$BRarchiver" = "bsdtar" ]; then
+    cat /tmp/filelist | grep -i ": " >> /tmp/restore.log
+  fi
+}
+
+
+read_archive() {
+  if [ -n "$BRencpass" ]; then
+    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" | tar "$BRreadopts" - ${BR_USER_OPTS[@]}
+  else
+    $BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]}
+  fi
 }
 
 start_log() {
@@ -1286,7 +1305,7 @@ start_log() {
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:a:O:vdDH" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:a:O:vdDHP:" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1408,6 +1427,10 @@ while true; do
       BRhide="y"
       shift
     ;;
+    -P|--passphrase)
+      BRencpass=$2
+      shift 2
+    ;;
     --help)
     echo -e "$BR_VERSION\nUsage: restore.sh [options]
 \nGeneral:
@@ -1422,6 +1445,7 @@ while true; do
   -n,  --username           username
   -p,  --password           password
   -a,  --archiver           select archiver: tar bsdtar
+  -P,  --passphrase         password for aes-256-cbc encryption
 \nTransfer Mode:
   -t,  --transfer           activate transfer mode
   -o,  --only-hidden        transfer /home's hidden files and folders only
@@ -1455,7 +1479,7 @@ while true; do
 done
 
 if [[ "$BRuri" == /* ]]; then
-  BRfile="$BRuri"
+  BRsource="$BRuri"
 else
   BRurl="$BRuri"
 fi
@@ -1896,9 +1920,6 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ "$BRmode" = "Restore" ]; then
     echo -e "\n${BR_SEP}GETTING TAR IMAGE"
-    if [ -n "$BRfile" ]; then
-      BRsource="$BRfile"
-    fi
 
     if [ -n "$BRurl" ]; then
       BRsource="$BRmaxsize/downloaded_backup"
@@ -1913,7 +1934,7 @@ if [ "$BRinterface" = "cli" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-      ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
+      (read_archive || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
       IFS=$'\n'
       check_archive
@@ -1929,22 +1950,23 @@ if [ "$BRinterface" = "cli" ]; then
           unset BRurl
           echo -e "\n${BR_CYAN}Enter the path of the backup file${BR_NORM}"
           IFS=$DEFAULTIFS
-          read -e -p "Path: " BRfile
+          read -e -p "Path: " BRsource
           IFS=$'\n'
-          if [ ! -f "$BRfile" ] || [ -z "$BRfile" ]; then
+          if [ ! -f "$BRsource" ]; then
             echo -e "[${BR_RED}ERROR${BR_NORM}] File not found"
+            unset BRsource
           else
+            echo -e "\n${BR_CYAN}Enter password to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
+            read -p "Password: " BRencpass
             detect_filetype
-            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ] || [ "$BRfiletype" = "bz2" ] || [ "$BRfiletype" = "uncompressed" ]; then
-              BRsource="$BRfile"
-            else
+            if [ "$BRfiletype" = "wrong" ]; then
+              unset BRsource
               echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type"
             fi
 	  fi
           break
 
         elif [ "$REPLY" = "2" ] || [ "$REPLY" = "3" ]; then
-          unset BRfile
           echo -e "\n${BR_CYAN}Enter the URL for the backup file${BR_NORM}"
           read -p "URL: " BRurl
           BRsource="$BRmaxsize/downloaded_backup"
@@ -1968,7 +1990,7 @@ if [ "$BRinterface" = "cli" ]; then
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
         if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-        ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error) | tee /tmp/filelist |
+        (read_archive || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
         IFS=$'\n'
         check_archive
@@ -2033,7 +2055,7 @@ if [ "$BRinterface" = "cli" ]; then
     if [ "$BRarchiver" = "tar" ]; then
       run_tar 2>>/tmp/restore.log
     elif [ "$BRarchiver" = "bsdtar" ]; then
-      run_tar | tee /tmp/filelist
+      run_tar 2>&1 | tee /tmp/filelist
     fi | tar_pgrs_cli
 
     log_bsdtar
@@ -2333,9 +2355,6 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ "$BRmode" = "Restore" ]; then
-    if [ -n "$BRfile" ]; then
-      BRsource="$BRfile"
-    fi
 
     if [ -n "$BRurl" ]; then
       BRurlold="$BRurl"
@@ -2353,7 +2372,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-      ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
+      (read_archive 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
       while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done | dialog --progressbox 3 55
       IFS=$'\n'
       sleep 1
@@ -2366,10 +2385,10 @@ elif [ "$BRinterface" = "dialog" ]; then
         clean_unmount_in
 
       elif [ "$REPLY" = "File" ]; then
-        unset BRurl BRfile BRselect
+        unset BRurl BRselect
         BRpath=/
         IFS=$DEFAULTIFS
-        while [ -z "$BRfile" ]; do
+        while [ -z "$BRsource" ]; do
           show_path
           BRselect=$(dialog --title "$BRcurrentpath" --menu "Select backup archive:" 30 90 30 "<--UP" .. $(file_list) 2>&1 1>&3)
           if [ "$?" = "1" ]; then
@@ -2377,14 +2396,13 @@ elif [ "$BRinterface" = "dialog" ]; then
           fi
           BRselect="/$BRselect"
           if [ -f "$BRpath${BRselect//\\/ }" ]; then
-            BRfile="$BRpath${BRselect//\\/ }"
-            BRfile="${BRfile#*/}"
+            BRsource="$BRpath${BRselect//\\/ }"
+            BRsource="${BRsource#*/}"
+            BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter password to decrypt archive. Leave empty if archive is not encrypted." 8 70 2>&1 1>&3)
             detect_filetype
-            if [ "$BRfiletype" = "gz" ] || [ "$BRfiletype" = "xz" ] || [ "$BRfiletype" = "bz2" ] || [ "$BRfiletype" = "uncompressed" ]; then
-              BRsource="$BRfile"
-            else
+            if [ "$BRfiletype" = "wrong" ]; then
               dialog --title "Error" --msgbox "Invalid file type." 5 22
-              unset BRfile BRselect
+              unset BRsource BRselect
             fi
           fi
           if [ "$BRselect" = "/<--UP" ]; then
@@ -2396,7 +2414,6 @@ elif [ "$BRinterface" = "dialog" ]; then
         done
 
       elif [ "$REPLY" = "URL" ] || [ "$REPLY" = "Protected URL" ]; then
-        unset BRfile
         BRurl=$(dialog --no-cancel --inputbox "Enter the URL for the backup file:" 8 50 "$BRurlold" 2>&1 1>&3)
         BRurlold="$BRurl"
         BRsource="$BRmaxsize/downloaded_backup"
@@ -2415,7 +2432,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
         if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-        ($BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
+        (read_archive 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
         while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done | dialog --progressbox 3 55
         IFS=$'\n'
         sleep 1
@@ -2456,7 +2473,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$BRarchiver" = "tar" ]; then
       run_tar 2>>/tmp/restore.log
     elif [ "$BRarchiver" = "bsdtar" ]; then
-      run_tar | tee /tmp/filelist
+      run_tar 2>&1 | tee /tmp/filelist
     fi | count_gauge | dialog --gauge "Extracting..." 0 50
 
     log_bsdtar

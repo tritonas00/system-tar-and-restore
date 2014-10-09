@@ -1292,7 +1292,7 @@ log_bsdtar() {
 
 read_archive() {
   if [ -n "$BRencpass" ]; then
-    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" | tar "$BRreadopts" - ${BR_USER_OPTS[@]}
+    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]}
   else
     $BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]}
   fi

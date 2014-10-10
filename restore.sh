@@ -109,10 +109,10 @@ ask_passphrase() {
   detect_encryption
   if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ]; then
     if [ "$BRinterface" = "cli" ]; then
-      echo -e "\n${BR_CYAN}Enter passphrase to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
+      echo -e "\n${BR_CYAN}Enter passphrase to decrypt archive${BR_NORM}"
       read -p "Passphrase: " BRencpass
     elif [ "$BRinterface" = "dialog" ]; then
-      BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to decrypt archive. Leave empty if archive is not encrypted." 8 70 2>&1 1>&3)
+      BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to decrypt archive." 8 50 2>&1 1>&3)
     fi
   fi
 }

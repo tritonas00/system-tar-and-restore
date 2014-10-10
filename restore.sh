@@ -95,6 +95,41 @@ detect_root_fs_size() {
   BRfsize=$(lsblk -d -n -o size 2>/dev/null $BRroot)
 }
 
+prepare_filteype_detection() {
+  if [ -z "$BRenc" ]; then
+    if [ "$BRinterface" = "cli" ]; then
+      echo -e "\n${BR_CYAN}Enter passphrase to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
+      read -p "Passphrase: " BRencpass
+      if [ -n "$BRencpass" ]; then
+        PS3="Enter number: "
+        echo -e "\n${BR_CYAN}Select decryption method:${BR_NORM}"
+        select c in openssl gpg; do
+          if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+            BRencmethod="openssl"
+            break
+          elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+            BRencmethod="gpg"
+            break
+          else
+            echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
+          fi
+        done
+        PS3="Enter number or Q to quit: "
+      fi
+    elif [ "$BRinterface" = "dialog" ]; then
+      BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to decrypt archive. Leave empty if archive is not encrypted." 8 70 2>&1 1>&3)
+      if [ -n "$BRencpass" ]; then
+        REPLY=$(dialog --menu "Select decryption method:" 12 35 12 1 openssl 2 gpg 2>&1 1>&3)
+        if [ "$REPLY" = "1" ]; then
+          BRencmethod="openssl"
+        elif [ "$REPLY" = "2" ]; then
+          BRencmethod="gpg"
+        fi
+      fi
+    fi
+  fi
+}
+
 detect_filetype() {
 if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
  if openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w gzip >/dev/null; then
@@ -153,40 +188,7 @@ check_wget() {
       dialog --title "Error" --msgbox "Error downloading file. Wrong URL, network is down or package wget is not installed." 6 65
     fi
   else
-    if [ "$BRinterface" = "cli" ]; then
-      if [ -z "$BRenc" ]; then
-        echo -e "\n${BR_CYAN}Enter passphrase to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
-        read -p "Passphrase: " BRencpass
-        if [ -n "$BRencpass" ]; then
-          PS3="Enter number: "
-          echo -e "\n${BR_CYAN}Select decryption method:${BR_NORM}"
-          select c in openssl gpg; do
-            if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-              BRencmethod="openssl"
-              break
-            elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
-              BRencmethod="gpg"
-              break
-            else
-              echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
-            fi
-          done
-          PS3="Enter number or Q to quit: "
-        fi
-      fi
-    elif [ "$BRinterface" = "dialog" ]; then
-      if [ -z "$BRenc" ]; then
-        BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to decrypt archive. Leave empty if archive is not encrypted." 8 70 2>&1 1>&3)
-        if [ -n  "$BRencpass" ]; then
-          REPLY=$(dialog --menu "Select decryption method:" 12 35 12 1 openssl 2 gpg 2>&1 1>&3)
-          if [ "$REPLY" = "1" ]; then
-            BRencmethod="openssl"
-          elif [ "$REPLY" = "2" ]; then
-            BRencmethod="gpg"
-          fi
-        fi
-      fi
-    fi
+    prepare_filteype_detection
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
       unset BRsource
@@ -2028,26 +2030,7 @@ if [ "$BRinterface" = "cli" ]; then
             echo -e "[${BR_RED}ERROR${BR_NORM}] File not found"
             unset BRsource
           else
-            if [ -z "$BRenc" ]; then
-              echo -e "\n${BR_CYAN}Enter passphrase to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
-              read -p "Passphrase: " BRencpass
-              if [ -n "$BRencpass" ]; then
-                PS3="Enter number: "
-                echo -e "\n${BR_CYAN}Select decryption method:${BR_NORM}"
-                select c in openssl gpg; do
-                  if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-                    BRencmethod="openssl"
-                    break
-                  elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
-                    BRencmethod="gpg"
-                  break
-                  else
-                    echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
-                  fi
-                done
-                PS3="Enter number or Q to quit: "
-              fi
-            fi
+            prepare_filteype_detection
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
               unset BRsource
@@ -2488,17 +2471,7 @@ elif [ "$BRinterface" = "dialog" ]; then
           if [ -f "$BRpath${BRselect//\\/ }" ]; then
             BRsource="$BRpath${BRselect//\\/ }"
             BRsource="${BRsource#*/}"
-            if [ -z "$BRenc" ]; then
-              BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to decrypt archive. Leave empty if archive is not encrypted." 8 70 2>&1 1>&3)
-              if [ -n  "$BRencpass" ]; then
-                REPLY=$(dialog --menu "Select decryption method:" 12 35 12 1 openssl 2 gpg 2>&1 1>&3)
-                if [ "$REPLY" = "1" ]; then
-                  BRencmethod="openssl"
-                elif [ "$REPLY" = "2" ]; then
-                  BRencmethod="gpg"
-                fi
-              fi
-            fi
+            prepare_filteype_detection
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
               dialog --title "Error" --msgbox "Invalid file type or wrong decryption method/passphrase." 5 60

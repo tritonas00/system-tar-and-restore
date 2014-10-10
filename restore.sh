@@ -95,7 +95,7 @@ detect_root_fs_size() {
   BRfsize=$(lsblk -d -n -o size 2>/dev/null $BRroot)
 }
 
-prepare_filteype_detection() {
+prepare_filetype_detection() {
   if [ -z "$BRenc" ]; then
     if [ "$BRinterface" = "cli" ]; then
       echo -e "\n${BR_CYAN}Enter passphrase to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
@@ -188,7 +188,7 @@ check_wget() {
       dialog --title "Error" --msgbox "Error downloading file. Wrong URL, network is down or package wget is not installed." 6 65
     fi
   else
-    prepare_filteype_detection
+    prepare_filetype_detection
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
       unset BRsource
@@ -2030,7 +2030,7 @@ if [ "$BRinterface" = "cli" ]; then
             echo -e "[${BR_RED}ERROR${BR_NORM}] File not found"
             unset BRsource
           else
-            prepare_filteype_detection
+            prepare_filetype_detection
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
               unset BRsource
@@ -2471,7 +2471,7 @@ elif [ "$BRinterface" = "dialog" ]; then
           if [ -f "$BRpath${BRselect//\\/ }" ]; then
             BRsource="$BRpath${BRselect//\\/ }"
             BRsource="${BRsource#*/}"
-            prepare_filteype_detection
+            prepare_filetype_detection
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
               dialog --title "Error" --msgbox "Invalid file type or wrong decryption method/passphrase." 5 60

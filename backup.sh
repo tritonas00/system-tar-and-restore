@@ -128,9 +128,11 @@ set_tar_options() {
     BR_EXT="tar"
   fi
 
-  if [ -n "$BRencpass" ]; then
+  if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
     BR_EXT="${BR_EXT}.aes"
-  fi
+  elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
+    BR_EXT="${BR_EXT}.gpg"
+  fi 
 
   if [ "$BRarchiver" = "tar" ]; then
     BR_TAROPTS=(--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=/var/run/* --exclude=/var/lock/* --exclude=lost+found --sparse "$BR_USER_OPTS")
@@ -158,8 +160,10 @@ run_calc() {
 }
 
 run_tar() {
-  if [ -n "$BRencpass" ]; then
+  if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
     (($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFile".${BR_EXT}) 2>&1
+  elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
+    (($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | gpg -c --batch --passphrase "$BRencpass" -o "$BRFile".${BR_EXT}) 2>&1
   else
     $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 || touch /tmp/b_error
   fi
@@ -213,7 +217,7 @@ out_pgrs_cli() {
   done
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDHP:" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDHP:E:" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -281,8 +285,11 @@ while true; do
       shift
     ;;
     -P|--passphrase)
-      BRencrypt="y"
       BRencpass=$2
+      shift 2
+    ;;
+    -E|--encryption-method)
+      BRencmethod=$2
       shift 2
     ;;
     --help)
@@ -294,7 +301,8 @@ while true; do
   -v, --verbose            enable verbose archiver output (cli interface only)
   -g, --generate           generate configuration file (in case of successful backup)
   -H, --hide-cursor        hide cursor when running archiver (useful for some terminal emulators)
-  -P, --passphrase         password for aes-256-cbc encryption
+  -E, --encryption-method  encryption method: openssl gpg
+  -P, --passphrase         passphrase for encryption
 \nDestination:
   -d, --directory          backup destination path
   -f, --filename           backup file name (without extension)
@@ -368,6 +376,21 @@ if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
   fi
 fi
 
+if [ -n "$BRencpass" ] && [ -z "$BRencmethod" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify an encryption method"
+  BRSTOP="y"
+fi
+
+if [ -z "$BRencpass" ] && [ -n "$BRencmethod" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a passphrase"
+  BRSTOP="y"
+fi
+
+if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong encryption method: $BRencmethod. Available options: openssl gpg"
+  BRSTOP="y"
+fi
+
 if [ -n "$BRSTOP" ]; then
   exit
 fi
@@ -393,8 +416,8 @@ if [ -n "$BRFOLDER" ]; then
   if [ -z "$BRcompression" ]; then
     BRcompression="none"
   fi
-  if [ -z "$BRencpass" ]; then
-    BRencrypt="n"
+  if [ -z "$BRencmethod" ]; then
+    BRencmethod="n"
   fi
 fi
 
@@ -523,10 +546,27 @@ if [ "$BRinterface" = "cli" ]; then
     read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
 
-  if which openssl &>/dev/null; then
-    while  [ -z "$BRencrypt" ]; do
-      echo -e "\n${BR_CYAN}Enter password to encrypt archive\n${BR_MAGENTA}(Leave blank for no encryption)${BR_NORM}"
-      read -p "Password: " BRencpass
+  if which openssl &>/dev/null || which gpg &>/dev/null; then
+    while  [ -z "$BRencmethod" ]; do
+      echo -e "\n${BR_CYAN}Enter passphrase to encrypt archive\n${BR_MAGENTA}(Leave blank for no encryption)${BR_NORM}"
+      read -p "Passphrase: " BRencpass
+      if [ -n "$BRencpass" ]; then
+        echo -e "\n${BR_CYAN}Select encryption method:${BR_NORM}"
+        select c in openssl gpg; do
+          if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+            echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+            exit
+          elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+            BRencmethod="openssl"
+            break
+          elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+            BRencmethod="gpg"
+            break
+          else
+            echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
+          fi
+        done
+      fi
       break
     done
   fi
@@ -681,8 +721,19 @@ elif [ "$BRinterface" = "dialog" ]; then
     BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRarchiver options. Leave empty for defaults.\n($BRoptinfo)" 8 70 2>&1 1>&3)
   fi
 
-  if which openssl &>/dev/null && [ -z "$BRencrypt" ]; then
-    BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter password to encrypt archive. Leave empty for no encryption." 8 70 2>&1 1>&3)
+  if which openssl &>/dev/null || which gpg &>/dev/null; then
+    if [ -z "$BRencmethod" ]; then
+      BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to encrypt archive. Leave empty for no encryption." 8 70 2>&1 1>&3)
+      if [ -n  "$BRencpass" ]; then
+        REPLY=$(dialog --cancel-label Quit --menu "Select encryption method:" 12 35 12 1 openssl 2 gpg 2>&1 1>&3)
+        if [ "$?" = "1" ]; then exit; fi
+        if [ "$REPLY" = "1" ]; then
+          BRencmethod="openssl"
+        elif [ "$REPLY" = "2" ]; then
+          BRencmethod="gpg"
+        fi
+      fi
+    fi
   fi
 
   set_tar_options
@@ -748,7 +799,7 @@ if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then echo -e "BRhome=No\nBRhidden=No" >> "$BRFOLDER"/backup.conf; fi
   if [ "$BR_USER_OPTS" = " " ]; then unset BR_USER_OPTS; fi
   if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'" >> "$BRFOLDER"/backup.conf; fi
-  if [ -n "$BRencpass" ]; then echo -e "BRencrypt=Yes\nBRencpass='$BRencpass'" >> "$BRFOLDER"/backup.conf; fi
+  if [ -n "$BRencpass" ]; then echo -e "BRencmethod=$BRencmethod\nBRencpass='$BRencpass'" >> "$BRFOLDER"/backup.conf; fi
 fi
 
 if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi

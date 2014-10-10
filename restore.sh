@@ -96,7 +96,7 @@ detect_root_fs_size() {
 }
 
 detect_filetype() {
-if [ -n "$BRencpass" ]; then
+if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then 
  if openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w gzip >/dev/null; then
     BRfiletype="gz"
     BRreadopts="tfz"
@@ -107,6 +107,22 @@ if [ -n "$BRencpass" ]; then
     BRfiletype="xz"
     BRreadopts="tfJ"
   elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w POSIX >/dev/null; then
+    BRfiletype="uncompressed"
+    BRreadopts="tf"
+  else
+    BRfiletype="wrong"
+  fi
+elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
+ if gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w gzip >/dev/null; then
+    BRfiletype="gz"
+    BRreadopts="tfz"
+  elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null| file - | grep -w bzip2 >/dev/null; then
+    BRfiletype="bz2"
+    BRreadopts="tfj"
+  elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w XZ >/dev/null; then
+    BRfiletype="xz"
+    BRreadopts="tfJ"
+  elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w POSIX >/dev/null; then
     BRfiletype="uncompressed"
     BRreadopts="tf"
   else
@@ -138,11 +154,35 @@ check_wget() {
     fi
   else
     if [ "$BRinterface" = "cli" ]; then
-      echo -e "\n${BR_CYAN}Enter password to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
-      read -p "Password: " BRencpass
+      echo -e "\n${BR_CYAN}Enter passphrase to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
+      read -p "Passphrase: " BRencpass
+      if [ -n "$BRencpass" ]; then
+        PS3="Enter number: "
+        echo -e "\n${BR_CYAN}Select decryption method:${BR_NORM}"
+        select c in openssl gpg; do
+          if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+            BRencmethod="openssl"
+            break
+          elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+            BRencmethod="gpg"
+            break
+          else
+            echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
+          fi
+        done
+        PS3="Enter number or Q to quit: "
+      fi
     elif [ "$BRinterface" = "dialog" ]; then
-      BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter password to decrypt archive. Leave empty if archive is not encrypted." 8 70 2>&1 1>&3)
-     fi
+      BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to decrypt archive. Leave empty if archive is not encrypted." 8 70 2>&1 1>&3)
+      if [ -n  "$BRencpass" ]; then
+        REPLY=$(dialog --menu "Select decryption method:" 12 35 12 1 openssl 2 gpg 2>&1 1>&3)
+        if [ "$REPLY" = "1" ]; then
+          BRencmethod="openssl"
+        elif [ "$REPLY" = "2" ]; then
+          BRencmethod="gpg"
+        fi
+      fi
+    fi
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
       unset BRsource
@@ -303,8 +343,10 @@ run_tar() {
 
   IFS=$DEFAULTIFS
 
-  if [ -n "$BRencpass" ]; then
+  if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
     openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" | $BRarchiver ${BR_MAINOPTS} - ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+  elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
+    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | $BRarchiver ${BR_MAINOPTS} - ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   else
     $BRarchiver ${BR_MAINOPTS} "$BRsource" ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   fi
@@ -395,7 +437,7 @@ check_input() {
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type. File must be a gzip, bzip2, xz compressed or uncompressed archive"
-      echo -e "[${BR_CYAN}INFO${BR_NORM}]  If the archive is encrypted specify your password using -P"
+      echo -e "[${BR_CYAN}INFO${BR_NORM}]  If the archive is encrypted specify passphrase using -P"
       BRSTOP="y"
     fi
   fi
@@ -627,6 +669,21 @@ check_input() {
     BRSTOP="y"
   fi
 
+  if [ -n "$BRencpass" ] && [ -z "$BRencmethod" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify an decryption method"
+    BRSTOP="y"
+  fi
+
+  if [ -z "$BRencpass" ] && [ -n "$BRencmethod" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a passphrase"
+    BRSTOP="y"
+  fi
+
+  if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong decryption method: $BRencmethod. Available options: openssl gpg"
+    BRSTOP="y"
+  fi
+
   if [ -n "$BRSTOP" ]; then
     exit
   fi
@@ -770,7 +827,7 @@ show_summary() {
 
   echo -e "\nPROCESS:"
   echo "Mode:     $BRmode"
-  if [ -n "$BRencpass" ]; then enc_info="encrypted"; fi
+  if [ -n "$BRencpass" ]; then enc_info="$BRencmethod encrypted"; fi
 
   if [ "$BRmode" = "Restore" ]; then
     echo "Archiver: $BRarchiver"
@@ -1291,8 +1348,10 @@ log_bsdtar() {
 
 
 read_archive() {
-  if [ -n "$BRencpass" ]; then
+  if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
     openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]}
+  elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
+    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]}
   else
     $BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]}
   fi
@@ -1305,7 +1364,7 @@ start_log() {
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:a:O:vdDHP:" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:a:O:vdDHP:E:" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,decryption-method:" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1431,6 +1490,10 @@ while true; do
       BRencpass=$2
       shift 2
     ;;
+    -E|--decryption-method)
+      BRencmethod=$2
+      shift 2
+    ;;
     --help)
     echo -e "$BR_VERSION\nUsage: restore.sh [options]
 \nGeneral:
@@ -1445,7 +1508,8 @@ while true; do
   -n,  --username           username
   -p,  --password           password
   -a,  --archiver           select archiver: tar bsdtar
-  -P,  --passphrase         password for aes-256-cbc encryption
+  -E,  --decryption-method  decryption method: openssl gpg
+  -P,  --passphrase         passphrase for decryption
 \nTransfer Mode:
   -t,  --transfer           activate transfer mode
   -o,  --only-hidden        transfer /home's hidden files and folders only
@@ -1956,8 +2020,24 @@ if [ "$BRinterface" = "cli" ]; then
             echo -e "[${BR_RED}ERROR${BR_NORM}] File not found"
             unset BRsource
           else
-            echo -e "\n${BR_CYAN}Enter password to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
-            read -p "Password: " BRencpass
+            echo -e "\n${BR_CYAN}Enter passphrase to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
+            read -p "Passphrase: " BRencpass
+            if [ -n "$BRencpass" ]; then
+              PS3="Enter number: "
+              echo -e "\n${BR_CYAN}Select decryption method:${BR_NORM}"
+              select c in openssl gpg; do
+                if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+                  BRencmethod="openssl"
+                  break
+                elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+                  BRencmethod="gpg"
+                break
+                else
+                  echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
+                fi
+              done
+              PS3="Enter number or Q to quit: "
+            fi
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
               unset BRsource
@@ -2398,7 +2478,15 @@ elif [ "$BRinterface" = "dialog" ]; then
           if [ -f "$BRpath${BRselect//\\/ }" ]; then
             BRsource="$BRpath${BRselect//\\/ }"
             BRsource="${BRsource#*/}"
-            BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter password to decrypt archive. Leave empty if archive is not encrypted." 8 70 2>&1 1>&3)
+            BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to decrypt archive. Leave empty if archive is not encrypted." 8 70 2>&1 1>&3)
+            if [ -n  "$BRencpass" ]; then
+              REPLY=$(dialog --menu "Select decryption method:" 12 35 12 1 openssl 2 gpg 2>&1 1>&3)
+              if [ "$REPLY" = "1" ]; then
+                BRencmethod="openssl"
+              elif [ "$REPLY" = "2" ]; then
+                BRencmethod="gpg"
+              fi
+            fi
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
               dialog --title "Error" --msgbox "Invalid file type." 5 22

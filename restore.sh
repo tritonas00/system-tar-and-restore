@@ -191,9 +191,9 @@ check_wget() {
     if [ "$BRfiletype" = "wrong" ]; then
       unset BRsource
       if [ "$BRinterface" = "cli" ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong decryption method/passphrase"
       elif [ "$BRinterface" = "dialog" ]; then
-        dialog --title "Error" --msgbox "Invalid file type or wrong passphrase." 5 42
+        dialog --title "Error" --msgbox "Invalid file type or wrong decryption method/passphrase." 5 60
       fi
     fi
   fi
@@ -440,7 +440,7 @@ check_input() {
   elif [ -n "$BRsource" ]; then
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase. File must be a gzip, bzip2, xz compressed or uncompressed archive"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong decryption method/passphrase. File must be a gzip, bzip2, xz compressed or uncompressed archive"
       BRSTOP="y"
     fi
   fi
@@ -2051,7 +2051,7 @@ if [ "$BRinterface" = "cli" ]; then
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
               unset BRsource
-              echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase"
+              echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong decryption method/passphrase"
             fi
 	  fi
           break
@@ -2501,7 +2501,7 @@ elif [ "$BRinterface" = "dialog" ]; then
             fi
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
-              dialog --title "Error" --msgbox "Invalid file type or wrong passphrase." 5 42
+              dialog --title "Error" --msgbox "Invalid file type or wrong decryption method/passphrase." 5 60
               unset BRsource BRselect
             fi
           fi

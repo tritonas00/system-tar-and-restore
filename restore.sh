@@ -95,87 +95,76 @@ detect_root_fs_size() {
   BRfsize=$(lsblk -d -n -o size 2>/dev/null $BRroot)
 }
 
-prepare_filetype_detection() {
-  if [ -z "$BRenc" ]; then
+detect_encryption() {
+  if [ "$(file "$BRsource")" == "$BRsource: data" ]; then
+    BRencmethod="openssl"
+  elif file "$BRsource" | grep -w GPG >/dev/null; then
+    BRencmethod="gpg"
+  else
+    unset BRencmethod
+  fi
+}
+
+ask_passphrase() {
+  detect_encryption
+  if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ]; then
     if [ "$BRinterface" = "cli" ]; then
       echo -e "\n${BR_CYAN}Enter passphrase to decrypt archive\n${BR_MAGENTA}(Leave blank if archive is not encrypted)${BR_NORM}"
       read -p "Passphrase: " BRencpass
-      if [ -n "$BRencpass" ]; then
-        PS3="Enter number: "
-        echo -e "\n${BR_CYAN}Select decryption method:${BR_NORM}"
-        select c in openssl gpg; do
-          if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-            BRencmethod="openssl"
-            break
-          elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
-            BRencmethod="gpg"
-            break
-          else
-            echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
-          fi
-        done
-        PS3="Enter number or Q to quit: "
-      fi
     elif [ "$BRinterface" = "dialog" ]; then
       BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to decrypt archive. Leave empty if archive is not encrypted." 8 70 2>&1 1>&3)
-      if [ -n "$BRencpass" ]; then
-        REPLY=$(dialog --menu "Select decryption method:" 12 35 12 1 openssl 2 gpg 2>&1 1>&3)
-        if [ "$REPLY" = "1" ]; then
-          BRencmethod="openssl"
-        elif [ "$REPLY" = "2" ]; then
-          BRencmethod="gpg"
-        fi
-      fi
     fi
   fi
 }
 
 detect_filetype() {
-if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
- if openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w gzip >/dev/null; then
-    BRfiletype="gz"
-    BRreadopts="tfz"
-  elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w bzip2 >/dev/null; then
-    BRfiletype="bz2"
-    BRreadopts="tfj"
-  elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w XZ >/dev/null; then
-    BRfiletype="xz"
-    BRreadopts="tfJ"
-  elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w POSIX >/dev/null; then
-    BRfiletype="uncompressed"
-    BRreadopts="tf"
+  if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
+    if openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w gzip >/dev/null; then
+      BRfiletype="gz"
+      BRreadopts="tfz"
+    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w bzip2 >/dev/null; then
+      BRfiletype="bz2"
+      BRreadopts="tfj"
+    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w XZ >/dev/null; then
+      BRfiletype="xz"
+      BRreadopts="tfJ"
+    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w GNU >/dev/null; then
+      BRfiletype="uncompressed"
+      BRreadopts="tf"
+    else
+      BRfiletype="wrong"
+      unset BRencpass
+    fi
+  elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
+    if gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w gzip >/dev/null; then
+      BRfiletype="gz"
+      BRreadopts="tfz"
+    elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null| file - | grep -w bzip2 >/dev/null; then
+      BRfiletype="bz2"
+      BRreadopts="tfj"
+    elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w XZ >/dev/null; then
+      BRfiletype="xz"
+      BRreadopts="tfJ"
+    elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w GNU >/dev/null; then
+      BRfiletype="uncompressed"
+      BRreadopts="tf"
+    else
+      BRfiletype="wrong"
+      unset BRencpass
+    fi
   else
-    BRfiletype="wrong"
+    if file "$BRsource" | grep -w gzip >/dev/null; then
+      BRfiletype="gz"
+    elif file "$BRsource" | grep -w bzip2 >/dev/null; then
+      BRfiletype="bz2"
+    elif file "$BRsource" | grep -w XZ >/dev/null; then
+      BRfiletype="xz"
+    elif file "$BRsource" | grep -w GNU >/dev/null; then
+      BRfiletype="uncompressed"
+    else
+      BRfiletype="wrong"
+    fi
   fi
-elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
- if gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w gzip >/dev/null; then
-    BRfiletype="gz"
-    BRreadopts="tfz"
-  elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null| file - | grep -w bzip2 >/dev/null; then
-    BRfiletype="bz2"
-    BRreadopts="tfj"
-  elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w XZ >/dev/null; then
-    BRfiletype="xz"
-    BRreadopts="tfJ"
-  elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w POSIX >/dev/null; then
-    BRfiletype="uncompressed"
-    BRreadopts="tf"
-  else
-    BRfiletype="wrong"
-  fi
-else
-  if file "$BRsource" | grep -w gzip >/dev/null; then
-    BRfiletype="gz"
-  elif file "$BRsource" | grep -w bzip2 >/dev/null; then
-    BRfiletype="bz2"
-  elif file "$BRsource" | grep -w XZ >/dev/null; then
-    BRfiletype="xz"
-  elif file "$BRsource" | grep -w POSIX >/dev/null; then
-    BRfiletype="uncompressed"
-  else
-    BRfiletype="wrong"
-  fi
-fi
 }
 
 check_wget() {
@@ -188,14 +177,14 @@ check_wget() {
       dialog --title "Error" --msgbox "Error downloading file. Wrong URL, network is down or package wget is not installed." 6 65
     fi
   else
-    prepare_filetype_detection
+    ask_passphrase
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
       unset BRsource
       if [ "$BRinterface" = "cli" ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong decryption method/passphrase"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase"
       elif [ "$BRinterface" = "dialog" ]; then
-        dialog --title "Error" --msgbox "Invalid file type or wrong decryption method/passphrase." 5 60
+        dialog --title "Error" --msgbox "Invalid file type or wrong passphrase." 5 42
       fi
     fi
   fi
@@ -439,10 +428,15 @@ check_input() {
   if [ -n "$BRsource" ] && [ ! -f "$BRsource" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] File not found: $BRsource"
     BRSTOP="y"
-  elif [ -n "$BRsource" ]; then
+  elif [ -n "$BRsource" ] && [ -f "$BRsource" ]; then
+    detect_encryption
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong decryption method/passphrase. File must be a gzip, bzip2, xz compressed or uncompressed archive"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase"
+      BRSTOP="y"
+    fi
+    if [ -n "$BRencpass" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ]; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] File is not encrypted"
       BRSTOP="y"
     fi
   fi
@@ -674,18 +668,8 @@ check_input() {
     BRSTOP="y"
   fi
 
-  if [ -n "$BRencpass" ] && [ -z "$BRencmethod" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify an decryption method"
-    BRSTOP="y"
-  fi
-
   if [ -z "$BRencpass" ] && [ -n "$BRencmethod" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a passphrase"
-    BRSTOP="y"
-  fi
-
-  if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong decryption method: $BRencmethod. Available options: openssl gpg"
     BRSTOP="y"
   fi
 
@@ -832,7 +816,9 @@ show_summary() {
 
   echo -e "\nPROCESS:"
   echo "Mode:     $BRmode"
-  if [ -n "$BRencpass" ]; then enc_info="$BRencmethod encrypted"; fi
+  if [ -n "$BRencpass" ] && [ -n "$BRencmethod" ]; then 
+    enc_info="$BRencmethod encrypted"
+  fi
 
   if [ "$BRmode" = "Restore" ]; then
     echo "Archiver: $BRarchiver"
@@ -1369,7 +1355,7 @@ start_log() {
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:a:O:vdDHP:E:" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,decryption-method:" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:a:O:vdDHP:" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1493,11 +1479,6 @@ while true; do
     ;;
     -P|--passphrase)
       BRencpass=$2
-      BRenc="y"
-      shift 2
-    ;;
-    -E|--decryption-method)
-      BRencmethod=$2
       shift 2
     ;;
     --help)
@@ -1514,7 +1495,6 @@ while true; do
   -n,  --username           username
   -p,  --password           password
   -a,  --archiver           select archiver: tar bsdtar
-  -E,  --decryption-method  decryption method: openssl gpg
   -P,  --passphrase         passphrase for decryption
 \nTransfer Mode:
   -t,  --transfer           activate transfer mode
@@ -1613,10 +1593,6 @@ if [ -n "$BRroot" ]; then
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
     BRgrub="-1"
     BRsyslinux="-1"
-  fi
-
-  if [ -z "$BRenc" ]; then
-    BRenc="n"
   fi
 
   if [ -z "$BRuri" ] && [ ! "$BRmode" = "Transfer" ]; then
@@ -2030,11 +2006,11 @@ if [ "$BRinterface" = "cli" ]; then
             echo -e "[${BR_RED}ERROR${BR_NORM}] File not found"
             unset BRsource
           else
-            prepare_filetype_detection
+            ask_passphrase
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
               unset BRsource
-              echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong decryption method/passphrase"
+              echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase"
             fi
 	  fi
           break
@@ -2471,10 +2447,10 @@ elif [ "$BRinterface" = "dialog" ]; then
           if [ -f "$BRpath${BRselect//\\/ }" ]; then
             BRsource="$BRpath${BRselect//\\/ }"
             BRsource="${BRsource#*/}"
-            prepare_filetype_detection
+            ask_passphrase
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
-              dialog --title "Error" --msgbox "Invalid file type or wrong decryption method/passphrase." 5 60
+              dialog --title "Error" --msgbox "Invalid file type or wrong passphrase." 5 42
               unset BRsource BRselect
             fi
           fi

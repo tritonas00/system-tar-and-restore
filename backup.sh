@@ -161,9 +161,9 @@ run_calc() {
 
 run_tar() {
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    (($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFile".${BR_EXT}) 2>&1
+    (($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log) 2>&1
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    (($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFile".${BR_EXT}) 2>&1
+    (($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log) 2>&1
   else
     $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 || touch /tmp/b_error
   fi

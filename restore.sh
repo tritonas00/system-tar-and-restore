@@ -339,9 +339,9 @@ run_tar() {
   IFS=$DEFAULTIFS
 
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" | $BRarchiver ${BR_MAINOPTS} - ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | $BRarchiver ${BR_MAINOPTS} - ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | $BRarchiver ${BR_MAINOPTS} - ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | $BRarchiver ${BR_MAINOPTS} - ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   else
     $BRarchiver ${BR_MAINOPTS} "$BRsource" ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   fi

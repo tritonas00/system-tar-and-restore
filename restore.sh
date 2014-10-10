@@ -816,7 +816,7 @@ show_summary() {
 
   echo -e "\nPROCESS:"
   echo "Mode:     $BRmode"
-  if [ -n "$BRencpass" ] && [ -n "$BRencmethod" ]; then 
+  if [ -n "$BRencpass" ] && [ -n "$BRencmethod" ]; then
     enc_info="$BRencmethod encrypted"
   fi
 

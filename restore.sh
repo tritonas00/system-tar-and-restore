@@ -96,7 +96,7 @@ detect_root_fs_size() {
 }
 
 detect_filetype() {
-if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then 
+if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
  if openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w gzip >/dev/null; then
     BRfiletype="gz"
     BRreadopts="tfz"
@@ -2498,7 +2498,7 @@ elif [ "$BRinterface" = "dialog" ]; then
                   BRencmethod="gpg"
                 fi
               fi
-            fi 
+            fi
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
               dialog --title "Error" --msgbox "Invalid file type or wrong passphrase." 5 42

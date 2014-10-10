@@ -132,7 +132,7 @@ set_tar_options() {
     BR_EXT="${BR_EXT}.aes"
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
     BR_EXT="${BR_EXT}.gpg"
-  fi 
+  fi
 
   if [ "$BRarchiver" = "tar" ]; then
     BR_TAROPTS=(--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=/var/run/* --exclude=/var/lock/* --exclude=lost+found --sparse "$BR_USER_OPTS")
@@ -765,7 +765,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   sleep 1
 
 
-  run_tar | tee /tmp/b_filelist | 
+  run_tar | tee /tmp/b_filelist |
 
   while read ln; do
     b=$((b + 1))

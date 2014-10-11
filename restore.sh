@@ -1335,7 +1335,7 @@ log_bsdtar() {
 
 read_archive() {
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]}
+    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]}
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
     gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]}
   else

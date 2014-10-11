@@ -69,6 +69,7 @@ show_summary() {
   echo -e "\nARCHIVER INFO:"
   echo "Archiver:    $BRarchiver"
   echo "Compression: $BRcompression"
+  echo "Encryption:  $BRencmethod"
 
   echo -e "\nARCHIVER OPTIONS:"
   echo "--exclude=$BRFOLDER"
@@ -417,7 +418,7 @@ if [ -n "$BRFOLDER" ]; then
     BRcompression="none"
   fi
   if [ -z "$BRencmethod" ]; then
-    BRencmethod="n"
+    BRencmethod="none"
   fi
 fi
 
@@ -566,6 +567,8 @@ if [ "$BRinterface" = "cli" ]; then
             echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
           fi
         done
+      else
+        BRencmethod="none"
       fi
       break
     done
@@ -732,6 +735,8 @@ elif [ "$BRinterface" = "dialog" ]; then
         elif [ "$REPLY" = "2" ]; then
           BRencmethod="gpg"
         fi
+      else
+        BRencmethod="none"
       fi
     fi
   fi

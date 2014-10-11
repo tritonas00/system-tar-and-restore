@@ -668,11 +668,6 @@ check_input() {
     BRSTOP="y"
   fi
 
-  if [ -z "$BRencpass" ] && [ -n "$BRencmethod" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a passphrase"
-    BRSTOP="y"
-  fi
-
   if [ -n "$BRSTOP" ]; then
     exit
   fi

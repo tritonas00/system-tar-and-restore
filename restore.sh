@@ -435,10 +435,6 @@ check_input() {
       echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase"
       BRSTOP="y"
     fi
-    if [ -n "$BRencpass" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] File is not encrypted"
-      BRSTOP="y"
-    fi
   fi
 
   if [ -n "$BRuri" ] && [ -z "$BRarchiver" ]; then

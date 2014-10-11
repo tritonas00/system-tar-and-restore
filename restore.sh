@@ -128,7 +128,7 @@ detect_filetype() {
     elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w XZ >/dev/null; then
       BRfiletype="xz"
       BRreadopts="tfJ"
-    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w GNU >/dev/null; then
+    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w POSIX >/dev/null; then
       BRfiletype="uncompressed"
       BRreadopts="tf"
     else
@@ -145,7 +145,7 @@ detect_filetype() {
     elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w XZ >/dev/null; then
       BRfiletype="xz"
       BRreadopts="tfJ"
-    elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w GNU >/dev/null; then
+    elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w POSIX >/dev/null; then
       BRfiletype="uncompressed"
       BRreadopts="tf"
     else
@@ -159,7 +159,7 @@ detect_filetype() {
       BRfiletype="bz2"
     elif file "$BRsource" | grep -w XZ >/dev/null; then
       BRfiletype="xz"
-    elif file "$BRsource" | grep -w GNU >/dev/null; then
+    elif file "$BRsource" | grep -w POSIX >/dev/null; then
       BRfiletype="uncompressed"
     else
       BRfiletype="wrong"

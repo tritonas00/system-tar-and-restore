@@ -162,11 +162,11 @@ run_calc() {
 
 run_tar() {
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    (($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log) 2>&1
+    ($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log 
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    (($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log) 2>&1
+    ($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log
   else
-    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 || touch /tmp/b_error
+    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error
   fi
 }
 
@@ -627,7 +627,7 @@ if [ "$BRinterface" = "cli" ]; then
   sleep 1
   echo " "
 
-  run_tar | tee /tmp/b_filelist | out_pgrs_cli
+  run_tar 2>&1 | tee /tmp/b_filelist | out_pgrs_cli
 
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 
@@ -770,7 +770,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   sleep 1
 
 
-  run_tar | tee /tmp/b_filelist |
+  run_tar 2>&1 | tee /tmp/b_filelist |
 
   while read ln; do
     b=$((b + 1))

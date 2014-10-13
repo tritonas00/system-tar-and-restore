@@ -1331,11 +1331,11 @@ log_bsdtar() {
 
 read_archive() {
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]}
+    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]} || touch /tmp/tar_error
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]}
+    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]} || touch /tmp/tar_error
   else
-    $BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]}
+    $BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error
   fi
 }
 
@@ -1975,8 +1975,7 @@ if [ "$BRinterface" = "cli" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-      (read_archive || touch /tmp/tar_error) | tee /tmp/filelist |
-      while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
+      read_archive | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
       IFS=$'\n'
       check_archive
     fi
@@ -2030,8 +2029,7 @@ if [ "$BRinterface" = "cli" ]; then
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
         if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-        (read_archive || touch /tmp/tar_error) | tee /tmp/filelist |
-        while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
+        read_archive | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
         IFS=$'\n'
         check_archive
       fi
@@ -2412,8 +2410,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-      (read_archive 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
-      while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done | dialog --progressbox 3 55
+      read_archive 2>&1 | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done | dialog --progressbox 3 55
       IFS=$'\n'
       sleep 1
       check_archive
@@ -2472,8 +2469,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
         if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-        (read_archive 2>&1 || touch /tmp/tar_error) | tee /tmp/filelist |
-        while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done | dialog --progressbox 3 55
+        read_archive 2>&1 | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done | dialog --progressbox 3 55
         IFS=$'\n'
         sleep 1
         check_archive

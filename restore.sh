@@ -2410,7 +2410,8 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-      read_archive 2>&1 | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done | dialog --progressbox 3 55
+      (echo "Checking and reading archive (Wait...)"
+       read_archive 2>&1 | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done) | dialog --progressbox 3 55
       IFS=$'\n'
       sleep 1
       check_archive
@@ -2469,7 +2470,8 @@ elif [ "$BRinterface" = "dialog" ]; then
       if [ -n "$BRsource" ]; then
         IFS=$DEFAULTIFS
         if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-        read_archive 2>&1 | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done | dialog --progressbox 3 55
+        (echo "Checking and reading archive (Wait...)"
+         read_archive 2>&1 | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done) | dialog --progressbox 3 55
         IFS=$'\n'
         sleep 1
         check_archive

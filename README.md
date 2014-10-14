@@ -41,19 +41,21 @@ contains the archive and the log file *backup.log* (usefull for tracking tar err
 
 The script will ask for:
 
-- Interface to use 
+- Interface to use. 
 
-- If you want to save the backup in the default directory (/), or enter your desired path
+- If you want to save the backup in the default directory (/), or enter your desired path.
 
-- If you want to specify a backup filename (without extension) or use the default name  
+- If you want to specify a backup filename (without extension) or use the default name.  
 
-- What to do with /home directory
+- What to do with /home directory.
 
 - Archiver: tar and bsdtar are supported.  
 
 - Compression type: gzip bzip2 xz and none are supported.
 
-- If you want to specify any additional archiver options (see tar --help or man bsdtar)  
+- If you want to specify any additional archiver options (see tar --help or man bsdtar).  
+
+- Passphrase for encryption and encryption method. Leave empty for no encryption.  
 
 
 The script also supports all input as arguments:
@@ -125,17 +127,17 @@ and finally installs and configures Grub or Syslinux.
 
 The script will ask for:
 
-- Interface to use (cli dialog)  
+- Interface to use. 
 
-- Target root partition
+- Target root partition.
 
-- Target EFI system partition (if UEFI environment detected)  
+- Target EFI system partition (if UEFI environment detected).  
 
-- (Optional) Target home partition   
+- (Optional) Target home partition.   
 
-- (Optional) Target boot partition    
+- (Optional) Target boot partition.    
 
-- (Optional) Swap partition   
+- (Optional) Swap partition.   
 
 - (Optional) Set custom partitions. Syntax is mountpoint=device (e.g /usr=/dev/sda3 /var/cache=/dev/sda4).  
 
@@ -150,9 +152,12 @@ The script will ask for:
    If a raid array is selected, the script will install the bootloader in all disks that the array contains.
    In case of UEFI, only Grub2 is supported by the script and */boot/efi* will be used automatically.
 
-- Select Mode. If **Restore Mode** is selected it will ask the archiver you used to create the backup archive
-    and the backup archive itself.  This can be obtained locally (by entering the full path of the file), or remotelly
+- Select Mode. 
+   If **Restore Mode** is selected it will ask the archiver you used to create the backup archive and the 
+   backup archive itself. This can be obtained locally (by entering the full path of the file), or remotelly
    (by entering the url of the file). Also protected url is supported, which will ask for server's username and password.
+   If the archive is encrypted you will be prompted for the passphrase.
+    
    If **Transfer Mode** is selected, it will ask if you want to transfer entire /home directory or only it's hidden files and folders. 
    In both modes, it will ask if you want to specify any additional tar/rsync options (see tar --help, man bsdtar or rsync --help).  
 
@@ -193,6 +198,9 @@ password
 
 **-a, --archiver**  
 select archiver: tar bsdtar    
+
+**-P, --passphrase**  
+passphrase for decryption    
 
 **-t, --transfer**   
 activate tranfer mode  

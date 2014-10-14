@@ -78,6 +78,12 @@ generate configuration file (in case of successful backup)
 **-H, --hide-cursor**  
 hide cursor when running archiver (useful for some terminal emulators)  
 
+**-E, --encryption-method**  
+encryption method: openssl gpg
+
+**-P, --passphrase**  
+passphrase for decryption   
+
 **-d, --directory**  
 backup destination path
 

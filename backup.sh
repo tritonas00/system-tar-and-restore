@@ -769,9 +769,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
 
-
   run_tar 2>&1 | tee /tmp/b_filelist |
-
   while read ln; do
     b=$((b + 1))
     per=$(($b*100/$total))

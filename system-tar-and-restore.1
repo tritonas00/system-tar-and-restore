@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 4.3
+.\"    Source: system-tar-and-restore 4.4
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "05 Oct 2014" "4.3" "General Manual"
+.TH "system-tar-and-restore" "1" "14 Oct 2014" "4.4" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -77,6 +77,16 @@ generate configuration file (in case of successful backup)
 \fB\-H, \-\-hide-cursor\fR
 .RS 4
 hide cursor when running archiver (useful for some terminal emulators)
+.RE
+.PP
+\fB\-E, \-\-encryption-method\fR
+.RS 4
+encryption method: openssl gpg
+.RE
+.PP
+\fB\-P, \-\-passphrase\fR
+.RS 4
+passphrase for encryption
 .RE
 .PP
 \fB\-d, \-\-directory\fR
@@ -188,6 +198,11 @@ password
 \fB\-a, \-\-archiver\fR
 .RS 4
 select the archiver you used to create the backup archive: tar bsdtar
+.RE
+.PP
+\fB\-P, \-\-passphrase\fR
+.RS 4
+passphrase for decryption
 .RE
 .PP
 \fB\-t, \-\-transfer\fR

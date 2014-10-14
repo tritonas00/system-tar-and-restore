@@ -33,6 +33,7 @@ The package is provided by the `gentoo-el` overlay. You can install it with the 
 - gptfdisk/gdisk (for GPT and Syslinux)  
 - efibootmgr (for UEFI)  
 - dosfstools (for UEFI)  
+- openssl/gpg (for encryption)
 
 ###BACKUP###
 

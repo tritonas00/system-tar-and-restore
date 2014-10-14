@@ -52,11 +52,11 @@ The script will ask for:
 
 - Archiver: tar and bsdtar are supported.  
 
-- Compression type: gzip bzip2 xz and none are supported.
+- Compression type: *gzip bzip2 xz* and *none* are supported.
 
 - If you want to specify any additional archiver options (see tar --help or man bsdtar).  
 
-- Passphrase for encryption and encryption method: openssl and gpg are supported.       
+- Passphrase for encryption and encryption method: *openssl* and *gpg* are supported.       
   Leave empty for no encryption.  
 
 The script also supports all input as arguments:

@@ -765,7 +765,8 @@ elif [ "$BRinterface" = "dialog" ]; then
   prepare
   show_summary >> "$BRFOLDER"/backup.log
   echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
-  run_calc | while read ln; do a=$((a + 1)) && echo "Calculating: $a Files"; done | dialog --progressbox 3 40
+  (echo "Calculating: Wait..."
+   run_calc | while read ln; do a=$((a + 1)) && echo "Calculating: $a Files"; done) | dialog --progressbox 3 40
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
 

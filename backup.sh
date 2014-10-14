@@ -302,8 +302,6 @@ while true; do
   -v, --verbose            enable verbose archiver output (cli interface only)
   -g, --generate           generate configuration file (in case of successful backup)
   -H, --hide-cursor        hide cursor when running archiver (useful for some terminal emulators)
-  -E, --encryption-method  encryption method: openssl gpg
-  -P, --passphrase         passphrase for encryption
 \nDestination:
   -d, --directory          backup destination path
   -f, --filename           backup file name (without extension)
@@ -314,6 +312,8 @@ while true; do
   -a, --archiver           select archiver: tar bsdtar
   -c, --compression        compression type: gzip bzip2 xz none
   -u, --user-options       additional tar options (see tar --help or man bsdtar)
+  -E, --encryption-method  encryption method: openssl gpg
+  -P, --passphrase         passphrase for encryption
 \nMisc Options:
   -D, --disable-genkernel  disable genkernel check in gentoo
       --help	           print this page"

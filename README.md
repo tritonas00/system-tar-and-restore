@@ -158,7 +158,7 @@ The script will ask for:
    If a raid array is selected, the script will install the bootloader in all disks that the array contains.
    In case of UEFI, only Grub2 is supported by the script and */boot/efi* will be used automatically.
 
-- Select Mode. 
+- Select Mode.      
    If **Restore Mode** is selected it will ask the archiver you used to create the backup archive and the 
    backup archive itself. This can be obtained locally (by entering the full path of the file), or remotelly
    (by entering the url of the file). Also protected url is supported, which will ask for server's username and password.

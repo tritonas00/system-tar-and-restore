@@ -165,7 +165,8 @@ The script will ask for:
    (by entering the url of the file). Also protected url is supported, which will ask for server's username and password.
    If the archive is encrypted you will be prompted for the passphrase.
     
-   If **Transfer Mode** is selected, it will ask if you want to transfer entire /home directory or only it's hidden files and folders. 
+   If **Transfer Mode** is selected, it will ask if you want to transfer entire /home directory or only it's hidden files and folders.       
+
    In both modes, it will ask if you want to specify any additional tar/rsync options (see tar --help, man bsdtar or rsync --help).  
 
 - Later it will ask you if you want to edit the generated fstab file further. Old fstab file is saved as */mnt/target/etc/fstab-old*.  

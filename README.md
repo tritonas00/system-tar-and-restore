@@ -82,7 +82,7 @@ hide cursor when running archiver (useful for some terminal emulators)
 encryption method: openssl gpg
 
 **-P, --passphrase**  
-passphrase for decryption   
+passphrase for encryption   
 
 **-d, --directory**  
 backup destination path

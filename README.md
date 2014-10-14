@@ -50,7 +50,7 @@ The script will ask for:
 
 - What to do with /home directory.
 
-- Archiver: tar and bsdtar are supported.  
+- Archiver: *tar* and *bsdtar* are supported.  
 
 - Compression type: *gzip bzip2 xz* and *none* are supported.
 

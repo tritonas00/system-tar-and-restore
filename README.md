@@ -155,7 +155,7 @@ The script will ask for:
     subvolume paths (e.g /home /var /usr ...) seperated by space.
    
 - (Optional) Bootloader and target disk. Grub2 and Syslinux are both supported.
-   If Syslinux is selected, it will ask for additional kernel options which will be written in syslinux.cfg.
+   If Syslinux is selected, it will ask for additional kernel options which will be written in *syslinux.cfg*.
    If a raid array is selected, the script will install the bootloader in all disks that the array contains.
    In case of UEFI, only Grub2 is supported by the script and */boot/efi* will be used automatically.
 

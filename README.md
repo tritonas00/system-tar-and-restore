@@ -56,7 +56,7 @@ The script will ask for:
 
 - If you want to specify any additional archiver options (see tar --help or man bsdtar).  
 
-- Passphrase for encryption and encryption method: openssl and gpg are supported.
+- Passphrase for encryption and encryption method: openssl and gpg are supported.       
   Leave empty for no encryption.  
 
 The script also supports all input as arguments:

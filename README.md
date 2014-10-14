@@ -78,12 +78,6 @@ generate configuration file (in case of successful backup)
 **-H, --hide-cursor**  
 hide cursor when running archiver (useful for some terminal emulators)  
 
-**-E, --encryption-method**  
-encryption method: openssl gpg
-
-**-P, --passphrase**  
-passphrase for encryption   
-
 **-d, --directory**  
 backup destination path
 
@@ -104,6 +98,12 @@ select archiver: tar bsdtar
 
 **-u, --user-options**   
 additional tar options (see tar --help or man bsdtar)  
+
+**-E, --encryption-method**  
+encryption method: openssl gpg
+
+**-P, --passphrase**  
+passphrase for encryption   
 
 **-D, --disable-genkernel**   
 disable genkernel check in gentoo  

@@ -20,7 +20,7 @@ BR_HIDE='\033[?25l'
 BR_SHOW='\033[?25h'
 
 info_screen() {
-  echo -e "\n${BR_YELLOW}This script will restore a backup image of your system or transfer this\nsystem in user defined partitions. In the first case, you should run it\nfrom a LiveCD of the target (backed up) distro."
+  echo -e "\n${BR_YELLOW}This script will restore a backup image or transfer this system in user\ndefined partitions. In the first case, you should run it from a LiveCD\nof the target (backed up) distro."
   echo -e "\n==>Make sure you have created one target root (/) partition. Optionally\n   you can create or use any other partition (/boot /home /var etc)."
   echo -e "\n==>Make sure that target LVM volume groups are activated and target\n   RAID arrays are properly assembled."
   echo -e "\n==>If you plan to transfer in btrfs/lvm/mdadm, make sure that\n   this system is capable to boot from btrfs/lvm/mdadm."

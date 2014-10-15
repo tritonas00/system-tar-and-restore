@@ -20,7 +20,7 @@ BR_HIDE='\033[?25l'
 BR_SHOW='\033[?25h'
 
 info_screen() {
-  echo -e "\n${BR_YELLOW}This script will restore a backup image of your system or transfer this\nsystem in user defined partitions."
+  echo -e "\n${BR_YELLOW}This script will restore a backup image of your system or transfer this\nsystem in user defined partitions. In the first case, you should run it\nfrom a LiveCD of the target (backed up) distro."
   echo -e "\n==>Make sure you have created one target root (/) partition. Optionally\n   you can create or use any other partition (/boot /home /var etc)."
   echo -e "\n==>Make sure that target LVM volume groups are activated and target\n   RAID arrays are properly assembled."
   echo -e "\n==>If you plan to transfer in btrfs/lvm/mdadm, make sure that\n   this system is capable to boot from btrfs/lvm/mdadm."
@@ -2178,7 +2178,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ ! "$BRmode" = "Transfer" ] && [ -z "$BRuri" ]; then
-    dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 18 80
+    dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 19 80
     if [ "$?" = "1" ]; then
       dialog --title "Partition Table" --msgbox "$(disk_report)" 0 0
     fi

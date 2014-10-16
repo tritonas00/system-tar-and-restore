@@ -133,7 +133,6 @@ detect_filetype() {
       BRreadopts="tf"
     else
       BRfiletype="wrong"
-      unset BRencpass
     fi
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
     if gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b - | grep -w gzip >/dev/null; then
@@ -150,7 +149,6 @@ detect_filetype() {
       BRreadopts="tf"
     else
       BRfiletype="wrong"
-      unset BRencpass
     fi
   else
     if file -b "$BRsource" | grep -w gzip >/dev/null; then
@@ -180,7 +178,7 @@ check_wget() {
     ask_passphrase
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then
-      unset BRsource
+      unset BRsource BRencpass
       if [ "$BRinterface" = "cli" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase"
       elif [ "$BRinterface" = "dialog" ]; then
@@ -1999,7 +1997,7 @@ if [ "$BRinterface" = "cli" ]; then
             ask_passphrase
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
-              unset BRsource
+              unset BRsource BRencpass
               echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase"
             fi
 	  fi
@@ -2440,7 +2438,7 @@ elif [ "$BRinterface" = "dialog" ]; then
             detect_filetype
             if [ "$BRfiletype" = "wrong" ]; then
               dialog --title "Error" --msgbox "Invalid file type or wrong passphrase." 5 42
-              unset BRsource BRselect
+              unset BRsource BRselect BRencpass
             fi
           fi
           if [ "$BRselect" = "/<--UP" ]; then
@@ -2458,10 +2456,10 @@ elif [ "$BRinterface" = "dialog" ]; then
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-         (wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
+          (wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
           sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
         elif [ "$REPLY" = "URL" ]; then
-         (wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
+          (wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
           sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
         fi
         check_wget

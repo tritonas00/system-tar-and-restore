@@ -1170,7 +1170,7 @@ check_archive() {
       target_arch="unknown"
     fi
     if [ ! "$(uname -m)" == "$target_arch" ]; then
-      unset BRsource
+      unset BRsource BRencpass
       if [ "$BRinterface" = "cli" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive"
         echo -e "[${BR_CYAN}INFO${BR_NORM}] Target  system: $target_arch"

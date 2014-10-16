@@ -96,9 +96,9 @@ detect_root_fs_size() {
 }
 
 detect_encryption() {
-  if [ "$(file "$BRsource")" == "$BRsource: data" ]; then
+  if [ "$(file -b "$BRsource")" == "data" ]; then
     BRencmethod="openssl"
-  elif file "$BRsource" | grep -w GPG >/dev/null; then
+  elif file -b "$BRsource" | grep -w GPG >/dev/null; then
     BRencmethod="gpg"
   else
     unset BRencmethod
@@ -119,16 +119,16 @@ ask_passphrase() {
 
 detect_filetype() {
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    if openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w gzip >/dev/null; then
+    if openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b - | grep -w gzip >/dev/null; then
       BRfiletype="gz"
       BRreadopts="tfz"
-    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w bzip2 >/dev/null; then
+    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b - | grep -w bzip2 >/dev/null; then
       BRfiletype="bz2"
       BRreadopts="tfj"
-    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w XZ >/dev/null; then
+    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b - | grep -w XZ >/dev/null; then
       BRfiletype="xz"
       BRreadopts="tfJ"
-    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file - | grep -w POSIX >/dev/null; then
+    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b - | grep -w POSIX >/dev/null; then
       BRfiletype="uncompressed"
       BRreadopts="tf"
     else
@@ -136,16 +136,16 @@ detect_filetype() {
       unset BRencpass
     fi
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    if gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w gzip >/dev/null; then
+    if gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b - | grep -w gzip >/dev/null; then
       BRfiletype="gz"
       BRreadopts="tfz"
-    elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null| file - | grep -w bzip2 >/dev/null; then
+    elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null| file -b - | grep -w bzip2 >/dev/null; then
       BRfiletype="bz2"
       BRreadopts="tfj"
-    elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w XZ >/dev/null; then
+    elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b - | grep -w XZ >/dev/null; then
       BRfiletype="xz"
       BRreadopts="tfJ"
-    elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file - | grep -w POSIX >/dev/null; then
+    elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b - | grep -w POSIX >/dev/null; then
       BRfiletype="uncompressed"
       BRreadopts="tf"
     else
@@ -153,13 +153,13 @@ detect_filetype() {
       unset BRencpass
     fi
   else
-    if file "$BRsource" | grep -w gzip >/dev/null; then
+    if file -b "$BRsource" | grep -w gzip >/dev/null; then
       BRfiletype="gz"
-    elif file "$BRsource" | grep -w bzip2 >/dev/null; then
+    elif file -b "$BRsource" | grep -w bzip2 >/dev/null; then
       BRfiletype="bz2"
-    elif file "$BRsource" | grep -w XZ >/dev/null; then
+    elif file -b "$BRsource" | grep -w XZ >/dev/null; then
       BRfiletype="xz"
-    elif file "$BRsource" | grep -w POSIX >/dev/null; then
+    elif file -b "$BRsource" | grep -w POSIX >/dev/null; then
       BRfiletype="uncompressed"
     else
       BRfiletype="wrong"
@@ -298,7 +298,7 @@ generate_syslinux_cfg() {
     fi
   fi
 
-  for FILE in /mnt/target/boot/*; do RESP=$(file -k "$FILE" | grep -w "bzImage")
+  for FILE in /mnt/target/boot/*; do RESP=$(file -b -k "$FILE" | grep -w "bzImage")
     if [ -n "$RESP" ]; then
       cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
       kn=$(basename "$FILE")
@@ -909,7 +909,7 @@ build_initramfs() {
     echo " "
   fi
 
-  for FILE in /mnt/target/boot/*; do RESP=$(file -k "$FILE" | grep -w "bzImage")
+  for FILE in /mnt/target/boot/*; do RESP=$(file -b -k "$FILE" | grep -w "bzImage")
     if [ -n "$RESP" ]; then
       cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
 

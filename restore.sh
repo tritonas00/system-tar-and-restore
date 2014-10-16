@@ -168,7 +168,7 @@ detect_filetype() {
 check_wget() {
   if [ -f /tmp/wget_error ]; then
     rm /tmp/wget_error
-    unset BRsource
+    unset BRsource BRencpass
     if [ "$BRinterface" = "cli" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL, network is down or package wget is not installed."
     elif [ "$BRinterface" = "dialog" ]; then

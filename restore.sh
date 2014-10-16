@@ -1158,7 +1158,7 @@ check_archive() {
   if [ "$BRinterface" = "cli" ]; then echo " "; fi
   if [ -f /tmp/tar_error ]; then
     rm /tmp/tar_error
-    unset BRsource
+    unset BRsource BRencpass
     if [ "$BRinterface" = "cli" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
     elif [ "$BRinterface" = "dialog" ]; then

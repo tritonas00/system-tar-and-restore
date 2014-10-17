@@ -1338,7 +1338,7 @@ read_archive() {
 }
 
 start_log() {
-  echo -e "--------------$BR_VERSION {$(date +%d-%m-%Y-%T)}--------------\n"
+  echo -e "====================$BR_VERSION {$(date +%d-%m-%Y-%T)}====================\n"
   echo "${BR_SEP}SUMMARY"
   show_summary
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"

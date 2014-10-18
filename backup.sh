@@ -600,10 +600,10 @@ if [ "$BRinterface" = "cli" ]; then
 
   echo -e "\n${BR_SEP}SUMMARY${BR_YELLOW}"
   show_summary
-  echo -e "${BR_NORM}"
+  echo -ne "${BR_NORM}"
 
   while [ -z "$BRcontinue" ]; do
-    echo -e "${BR_CYAN}Continue?${BR_NORM}"
+    echo -e "\n${BR_CYAN}Continue?${BR_NORM}"
     read -p "(Y/n):" an
 
     if [ -n "$an" ]; then def=$an; else def="y"; fi

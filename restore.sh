@@ -1194,7 +1194,7 @@ rm_work_dir() {
 
 clean_unmount_in() {
   if [ -z "$BRnocolor" ]; then color_variables; fi
-  echo "${BR_SEP}CLEANING AND UNMOUNTING"
+  echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   rm "$BRmaxsize/downloaded_backup" 2>/dev/null
   if [ -n "$BRcustomparts" ]; then
@@ -2061,7 +2061,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   echo -e "\n${BR_SEP}SUMMARY${BR_YELLOW}"
   show_summary
-  echo -e "${BR_NORM}"
+  echo -ne "${BR_NORM}"
 
   while [ -z "$BRcontinue" ]; do
     echo -e "\n${BR_CYAN}Continue?${BR_NORM}"

@@ -1,5 +1,13 @@
 Changelog:
 
+4.4
+    added support for openssl/gpg encryption*
+    fixed reading/calculating dialog starting empty sometimes
+    minor interface refinements
+    code cleaning
+
+* Thanks poihths for testing
+
 4.3
     added Mandriva support (Mageia OpenMandriva etc...)
     updated initramfs name detection and building

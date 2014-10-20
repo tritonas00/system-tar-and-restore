@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.4"
+BR_VERSION="System Tar & Restore 4.4.1"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -170,9 +170,8 @@ run_tar() {
   fi
 }
 
-set_paths() {
-  BRFOLDER_IN=(`echo ${BRFOLDER}/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g'`)
-  BRFOLDER="${BRFOLDER_IN[@]}"
+set_path() {
+  BRFOLDER=$(echo "$BRFOLDER"/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g')
 }
 
 set_names() {
@@ -576,7 +575,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   IFS=$DEFAULTIFS
   set_tar_options
-  set_paths
+  set_path
   set_names
 
   if [ -z "$BRquiet" ]; then
@@ -742,7 +741,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   set_tar_options
-  set_paths
+  set_path
   set_names
 
   if [ -z "$BRquiet" ]; then
@@ -786,10 +785,10 @@ elif [ "$BRinterface" = "dialog" ]; then
   if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
 
   if [ -z "$BRquiet" ]; then
-    dialog --yes-label "OK" --no-label "View Log" --title "$diag_tl" --yesno "$(exit_screen)" 0 0
-    if [ "$?" = "1" ]; then dialog --textbox "$BRFOLDER"/backup.log 0 0; fi
+    dialog --no-collapse --yes-label "OK" --no-label "View Log" --title "$diag_tl" --yesno "$(exit_screen)" 0 0
+    if [ "$?" = "1" ]; then dialog --no-collapse --textbox "$BRFOLDER"/backup.log 0 0; fi
   else
-    dialog --title "$diag_tl" --infobox "$(exit_screen_quiet)" 0 0
+    dialog --no-collapse --title "$diag_tl" --infobox "$(exit_screen_quiet)" 0 0
   fi
 fi
 

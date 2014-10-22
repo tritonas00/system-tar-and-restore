@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.4"
+BR_VERSION="System Tar & Restore 4.5"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -323,6 +323,12 @@ generate_syslinux_cfg() {
   done
 }
 
+set_user_options() {
+  IFS=$DEFAULTIFS
+  for i in ${BR_USER_OPTS[@]}; do USER_OPTS+=("${i///\//\ }"); done
+  IFS=$'\n'
+}
+
 run_tar() {
   if [ "$BRfiletype" = "gz" ]; then
     BR_MAINOPTS="xvpfz"
@@ -337,29 +343,30 @@ run_tar() {
   IFS=$DEFAULTIFS
 
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | $BRarchiver ${BR_MAINOPTS} - ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | $BRarchiver ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | $BRarchiver ${BR_MAINOPTS} - ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | $BRarchiver ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   else
-    $BRarchiver ${BR_MAINOPTS} "$BRsource" ${BR_USER_OPTS[@]} -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+    $BRarchiver ${BR_MAINOPTS} "$BRsource" "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   fi
 }
 
 set_rsync_opts() {
-  BR_RSYNCOPTS=(--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=/home/*/.gvfs --exclude=/var/run/* --exclude=/var/lock/* --exclude=lost+found "$BR_USER_OPTS")
+  BR_RSYNCOPTS=(--exclude=/run/* --exclude=/dev/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=/proc/* --exclude=/media/* --exclude=/var/run/* --exclude=/var/lock/* --exclude=/home/*/.gvfs --exclude=lost+found)
   if [ "$BRhidden" = "y" ]; then
     BR_RSYNCOPTS+=(--exclude=/home/*/[^.]*)
   fi
+  BR_RSYNCOPTS+=("${USER_OPTS[@]}")
 }
 
 run_calc() {
   IFS=$DEFAULTIFS
-  rsync -av / /mnt/target ${BR_RSYNCOPTS[@]} --dry-run 2>/dev/null | tee /tmp/filelist
+  rsync -av / /mnt/target "${BR_RSYNCOPTS[@]}" --dry-run 2>/dev/null | tee /tmp/filelist
 }
 
 run_rsync() {
   IFS=$DEFAULTIFS
-  rsync -aAXv / /mnt/target ${BR_RSYNCOPTS[@]} && (echo "System transferred successfully" >> /tmp/restore.log)
+  rsync -aAXv / /mnt/target "${BR_RSYNCOPTS[@]}" && (echo "System transferred successfully" >> /tmp/restore.log)
 }
 
 count_gauge() {
@@ -724,6 +731,7 @@ mount_all() {
     for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
+      BRmpoint="${BRmpoint///\//\ }"
       echo -ne "${BR_WRK}Mounting $BRdevice"
       mkdir -p /mnt/target$BRmpoint
       OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
@@ -753,6 +761,7 @@ show_summary() {
     for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
+      BRmpoint="${BRmpoint///\//\ }"
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
       BRcustomsize=$(lsblk -d -n -o size 2>/dev/null $BRdevice)
       echo "${BRmpoint#*/} partition: $BRdevice $BRcustomfs $BRcustomsize"
@@ -836,10 +845,10 @@ show_summary() {
 
   if [ "$BRmode" = "Transfer" ]; then
     echo -e "\nRSYNC OPTIONS:"
-    echo -e "${BR_RSYNCOPTS[@]}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
+    for i in "${BR_RSYNCOPTS[@]}"; do echo "$i"; done
   elif [ "$BRmode" = "Restore" ] && [ -n "$BR_USER_OPTS" ]; then
-     echo -e "\nARCHIVER OPTIONS:"
-     echo -e "${BR_USER_OPTS[@]}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
+    echo -e "\nARCHIVER OPTIONS:"
+    for i in "${USER_OPTS[@]}"; do echo "$i"; done
   fi
 }
 
@@ -870,11 +879,13 @@ generate_fstab() {
     for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
+      BRmpoint="${BRmpoint///\//\\040}"
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
+      echo -e "\n# $BRdevice"
       if [[ "$BRdevice" == *dev/md* ]]; then
-        echo -e "\n# $BRdevice\n$BRdevice  $BRmpoint  $BRcustomfs  defaults  0  2"
+        echo "$BRdevice  $BRmpoint  $BRcustomfs  defaults  0  2"
       else
-        echo -e "\n# $BRdevice\nUUID=$(blkid -s UUID -o value $BRdevice)  $BRmpoint  $BRcustomfs  defaults  0  2"
+        echo "UUID=$(blkid -s UUID -o value $BRdevice)  $BRmpoint  $BRcustomfs  defaults  0  2"
       fi
     done
   fi
@@ -1329,11 +1340,11 @@ log_bsdtar() {
 
 read_archive() {
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]} || touch /tmp/tar_error
+    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | $BRarchiver "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/tar_error
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | $BRarchiver "$BRreadopts" - ${BR_USER_OPTS[@]} || touch /tmp/tar_error
+    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | $BRarchiver "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/tar_error
   else
-    $BRarchiver tf "$BRsource" ${BR_USER_OPTS[@]} || touch /tmp/tar_error
+    $BRarchiver tf "$BRsource" "${USER_OPTS[@]}" || touch /tmp/tar_error
   fi
 }
 
@@ -1438,7 +1449,7 @@ while true; do
       shift 2
     ;;
     -c|--custom-partitions)
-      BRcustompartslist="$2"
+      BRcustompartslist=$2
       BRcustomparts=($2)
       shift 2
     ;;
@@ -1956,6 +1967,7 @@ if [ "$BRinterface" = "cli" ]; then
   unset_vars
   check_input
   mount_all
+  set_user_options
 
   if [ "$BRmode" = "Restore" ]; then
     echo -e "\n${BR_SEP}GETTING TAR IMAGE"
@@ -2388,6 +2400,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset_vars
   check_input
   mount_all
+  set_user_options
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ "$BRmode" = "Restore" ]; then
@@ -2494,7 +2507,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
 
   if [ -z "$BRcontinue" ]; then
-    dialog --no-collapse --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0
+    dialog --no-collapse --title "Summary (PgUp/PgDn:Scroll)" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0
     if [ "$?" = "1" ]; then
       clean_unmount_in
     fi
@@ -2531,7 +2544,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     cat /mnt/target/etc/fstab | dialog --title "GENERATING FSTAB" --progressbox 20 100
     sleep 2
   else
-    dialog --title "GENERATING FSTAB" --yesno "$(echo -e "Edit fstab? Generated fstab:\n\n`cat /mnt/target/etc/fstab`")" 20 100
+    dialog --cr-wrap --title "GENERATING FSTAB" --yesno "Edit fstab? Generated fstab:\n\n$(cat /mnt/target/etc/fstab)" 20 100
     if [ "$?" = "0" ]; then
       REPLY=$(dialog --no-cancel --menu "Select editor:" 10 25 10 1 nano 2 vi 2>&1 1>&3)
       if [ "$REPLY" = "1" ]; then
@@ -2555,7 +2568,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ -z "$BRquiet" ]; then
     dialog --yes-label "OK" --no-label "View Log" --title "$diag_tl" --yesno "$(exit_screen)" 0 0
-    if [ "$?" = "1" ]; then dialog --textbox /tmp/restore.log 0 0; fi
+    if [ "$?" = "1" ]; then dialog --title "Log (Up/Dn:Scroll)" --textbox /tmp/restore.log 0 0; fi
   else
     dialog --title "$diag_tl" --infobox "$(exit_screen_quiet)" 0 0
   fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.4.1"
+BR_VERSION="System Tar & Restore 4.5"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -72,8 +72,7 @@ show_summary() {
   echo "Encryption:  $BRencmethod"
 
   echo -e "\nARCHIVER OPTIONS:"
-  echo "--exclude=$BRFOLDER"
-  echo "${BR_TAROPTS[@]}" | sed -r -e 's/\s+/\n/g' | sed 'N;s/\n/ /'
+  for i in "${BR_TAROPTS[@]}"; do echo "$i"; done
 
   echo -e "\nHOME DIRECTORY:"
   if [ "$BRhome" = "Yes" ]; then
@@ -135,38 +134,32 @@ set_tar_options() {
     BR_EXT="${BR_EXT}.gpg"
   fi
 
-  if [ "$BRarchiver" = "tar" ]; then
-    BR_TAROPTS=(--exclude=/run/* --exclude=/proc/* --exclude=/dev/* --exclude=/media/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=.gvfs --exclude=/var/run/* --exclude=/var/lock/* --exclude=lost+found --sparse "$BR_USER_OPTS")
-    if [ -f /etc/yum.conf ]; then
-      BR_TAROPTS+=(--acls --xattrs --selinux)
-    fi
-    if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
-      BR_TAROPTS+=(--exclude=/home/*)
-    fi
-  elif [ "$BRarchiver" = "bsdtar" ]; then
-    BR_TAROPTS=(--exclude=/run/*?* --exclude=/proc/*?* --exclude=/dev/*?* --exclude=/media/*?* --exclude=/sys/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=.gvfs --exclude=/var/run/*?* --exclude=/var/lock/*?* --exclude=lost+found "$BR_USER_OPTS")
-    if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
-      BR_TAROPTS+=(--exclude=/home/*?*)
-    fi
+  BR_TAROPTS=(--exclude=/run/*?* --exclude=/dev/*?* --exclude=/sys/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=/proc/*?* --exclude=/media/*?* --exclude=/var/run/*?* --exclude=/var/lock/*?* --exclude=.gvfs --exclude=lost+found --exclude="$BRFOLDER")
+  if [ "$BRarchiver" = "tar" ] && [ -f /etc/yum.conf ]; then
+    BR_TAROPTS+=(--acls --xattrs --selinux)
   fi
-
+  if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ] ; then
+    BR_TAROPTS+=(--exclude=/home/*?*)
+  fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
     find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
     BR_TAROPTS+=(--exclude-from=/tmp/excludelist)
   fi
+
+  for i in ${BR_USER_OPTS[@]}; do BR_TAROPTS+=("${i///\//\ }"); done
 }
 
 run_calc() {
-   $BRarchiver cvf /dev/null ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / 2>&1 | tee /tmp/b_filelist
+   $BRarchiver cvf /dev/null "${BR_TAROPTS[@]}" / 2>&1 | tee /tmp/b_filelist
 }
 
 run_tar() {
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    ($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log
+    ($BRarchiver ${BR_MAINOPTS} - "${BR_TAROPTS[@]}" / || touch /tmp/b_error) | openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    ($BRarchiver ${BR_MAINOPTS} - ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error) | gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log
+    ($BRarchiver ${BR_MAINOPTS} - "${BR_TAROPTS[@]}" / || touch /tmp/b_error) | gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log
   else
-    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} ${BR_TAROPTS[@]} --exclude="$BRFOLDER" / || touch /tmp/b_error
+    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} "${BR_TAROPTS[@]}" / || touch /tmp/b_error
   fi
 }
 
@@ -574,8 +567,8 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   IFS=$DEFAULTIFS
-  set_tar_options
   set_path
+  set_tar_options
   set_names
 
   if [ -z "$BRquiet" ]; then
@@ -740,8 +733,8 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  set_tar_options
   set_path
+  set_tar_options
   set_names
 
   if [ -z "$BRquiet" ]; then
@@ -757,7 +750,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRcontinue" ]; then
-    dialog --no-collapse --title "Summary" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0
+    dialog --no-collapse --title "Summary (PgUp/PgDn:Scroll)" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0
     if [ "$?" = "1" ]; then exit; fi
   fi
 
@@ -786,7 +779,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ -z "$BRquiet" ]; then
     dialog --no-collapse --yes-label "OK" --no-label "View Log" --title "$diag_tl" --yesno "$(exit_screen)" 0 0
-    if [ "$?" = "1" ]; then dialog --no-collapse --textbox "$BRFOLDER"/backup.log 0 0; fi
+    if [ "$?" = "1" ]; then dialog --title "Log (Up/Dn:Scroll)" --no-collapse --textbox "$BRFOLDER"/backup.log 0 0; fi
   else
     dialog --no-collapse --title "$diag_tl" --infobox "$(exit_screen_quiet)" 0 0
   fi

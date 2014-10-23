@@ -1,27 +1,33 @@
+System Tar & Restore
+=================
+
+  * [About](#about)
+  * [Distribution Packages](#distribution-packages)
+  * [Requirements](#requirements)
+  * [Things you can do](#things-you-can-do)
+  * [Backup](#backup)
+  * [Restore/Transfer](#restoretransfer)
+  * [Notes](#notes)
+  * [Examples using arguments](#examples-using-arguments)
+
 ###ABOUT###
 
-System tar & restore contains two bash scripts, **backup.sh** and **restore.sh**.
-
-The purpose is to make the process of backing up and restoring a full GNU/Linux installation easier 
-using tar or transfer an existing installation using rsync.
+System tar & restore contains two bash scripts, **backup.sh** and **restore.sh**. The former makes a tar backup of your system. The latter restores the backup or transfers your system using rsync in desired partition(s). The scripts include two interfaces, cli and dialog (ncurses).
 
 Supported distributions: Arch, Debian/Ubuntu, Fedora, openSUSE, Gentoo, Mandriva          
 
-[![Demo Video](http://img.youtube.com/vi/dr5ZB3ajhTQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=dr5ZB3ajhTQ&hd=1)  
-
+[Demo Video](https://www.youtube.com/watch?v=dr5ZB3ajhTQ&hd=1)  
 [Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)  
 
 ### DISTRIBUTION PACKAGES
 
-#### Archlinux
-
+**Archlinux**  
 See the [wiki page](https://wiki.archlinux.org/index.php/System-tar-and-restore).
 
-#### Gentoo
+**Gentoo**  
+The package is provided by the <code>gentoo-el</code> overlay. You can install it with the following commands as root. (you need to have `layman` installed and configured)
 
-The package is provided by the `gentoo-el` overlay. You can install it with the following commands as root. (you need to have `layman` installed and configured)
-
-    layman -a gentoo-el
+    layman -a gentoo-el  
     emerge app-backup/system-tar-and-restore
 
 ###REQUIREMENTS###
@@ -30,236 +36,189 @@ The package is provided by the `gentoo-el` overlay. You can install it with the 
 - rsync (for Transfer Mode)
 - dialog (for ncurses interface)
 - wget   (for downloading backup archives)
-- gptfdisk/gdisk (for GPT and Syslinux)  
-- efibootmgr (for UEFI)  
-- dosfstools (for UEFI)  
+- gptfdisk/gdisk (for GPT and Syslinux)
 - openssl/gpg (for encryption)
+
+###THINGS YOU CAN DO###
+
+- Full or partial backup
+- Restore or transfer to the same or different disk/partition layout.
+- Restore or transfer to an external device such as usb flash drive, sd card etc.
+- Restore a BIOS-based system to UEFI and vice versa.
+- Prepare a system in a virtual machine (such as virtualbox), back it up and restore it in a normal machine.
 
 ###BACKUP###
 
-Backup script makes a tar backup of / in a given location. It will make a folder in that location which 
-contains the archive and the log file *backup.log* (usefull for tracking tar errors/warnings).
+The backup.sh script makes a tar backup of your system. You will be asked for:
 
-The script will ask for:
-
-- Interface to use. 
-
-- If you want to save the backup in the default directory (/), or enter your desired path.
-
-- If you want to specify a backup filename (without extension) or use the default name.  
-
-- What to do with /home directory.
-
-- Archiver: tar and bsdtar are supported.  
-
-- Compression type: gzip bzip2 xz and none are supported.
-
-- If you want to specify any additional archiver options (see tar --help or man bsdtar).  
-
-- Passphrase for encryption and encryption method: openssl and gpg are supported.       
-  Leave empty for no encryption.  
+- **Destination directory:** Where you want to save the backup. Default is /.
+- **Archive name:** A desired name for the backup. Default is *Backup-$(hostname)-$(date +%d-%m-%Y-%T)*.
+- **/home directory options:** You have three options: fully include it, keep only it's hidden files and folders (which are necessary to login and keep basic settings) or completely exclude it (in case it's located in separate partition and you want to use that in restore).
+- **Archiver:** You can choose between GNU Tar and bsdtar (Libarchive).
+- **Compression:** You can choose between gzip, bzip2, xz and none (for no compression). Gzip should be fine.
+- **Archiver options:** You can pass your own extra options in the archiver. See <code>tar --help</code> or <code>man bsdtar</code> for more info.
+- **Passphrase and encryption method:** Enter a passphrase if you want to encrypt the archive and select encryption method (openssl or gpg). Leave empty for no encryption.
 
 The script also supports all input as arguments:
 
-**-i, --interface**   
-interface to use: cli dialog
+    -i, --interface
+     interface to use: cli dialog
 
-**-N, --no-color**   
-disable colors
+    -N, --no-color
+     disable colors
 
-**-q,  --quiet**  
-dont ask, just run  
+    -q,  --quiet
+     dont ask, just run  
 
-**-v, --verbose**           
-enable verbose archiver output (cli interface only)  
+    -v, --verbose
+     enable verbose archiver output (cli interface only)  
 
-**-g, --generate**                     
-generate configuration file (in case of successful backup)  
+    -g, --generate     
+     generate configuration file (in case of successful backup)  
 
-**-H, --hide-cursor**  
-hide cursor when running archiver (useful for some terminal emulators)  
+    -H, --hide-cursor
+     hide cursor when running archiver (useful for some terminal emulators)  
 
-**-d, --directory**  
-backup destination path
+    -d, --directory
+     backup destination path
 
-**-f, --filename**  
-backup file name (without extension)  
+    -f, --filename
+     backup file name (without extension)  
 
-**-h, --exclude-home**  
-exclude /home directory (keep hidden files and folders)  
+    -h, --exclude-home
+     exclude /home directory (keep hidden files and folders)  
 
-**-n, --no-hidden**       
-dont keep home's hidden files and folders (use with -h)  
+    -n, --no-hidden
+     dont keep home's hidden files and folders (use with -h)  
 
-**-c, --compression**  
-compression type: gzip bzip2 xz none  
+    -c, --compression
+     compression type: gzip bzip2 xz none  
 
-**-a, --archiver**  
-select archiver: tar bsdtar      
+    -a, --archiver
+     select archiver: tar bsdtar      
 
-**-u, --user-options**   
-additional tar options (see tar --help or man bsdtar)  
+    -u, --user-options
+     additional tar options (see tar --help or man bsdtar)  
 
-**-E, --encryption-method**  
-encryption method: openssl gpg
+    -E, --encryption-method
+     encryption method: openssl gpg
 
-**-P, --passphrase**  
-passphrase for encryption   
+    -P, --passphrase
+     passphrase for encryption   
 
-**-D, --disable-genkernel**   
-disable genkernel check in gentoo  
+    -D, --disable-genkernel
+     disable genkernel check in gentoo  
 
-**--help**   
-show all arguments
+    --help
+     show all arguments
 
 The script can also read input from */etc/backup.conf*.
-See the provided [sample](https://github.com/tritonas00/system-tar-and-restore/blob/master/backup.conf) or use -g to generate a configuration file. 
+See the provided [sample](https://github.com/tritonas00/system-tar-and-restore/blob/master/backup.conf) or use -g to generate a configuration file.
+
+When the process completes, you may want to check *backup.log* file in the same directory with the backup archive.
 
 
-###RESTORE###
+###RESTORE/TRANSFER###
 
-User must create and format partitions using his favorite partition manager before running the script.
-At least one / (root) partition is required and optionally seperate partitions for any other desired 
-mountpoint (/home /boot /var etc...).
+The restore.sh script has two modes: **Restore** and **Transfer**. The first uses the above created archive to extract it in desired partition(s). The second transfers your system in desired partition(s) using rsync. Then, in both cases, generates the target system's fstab, rebuilds initramfs for every available kernel, generates locales and finally installs and configures the selected bootloader.
 
-Restore script contains two modes: **Restore** and **Transfer**.
+Boot from a livecd - preferably one of the target (backed up) distro - or another existing system, prepare your target partition(s) and start the script. You will be asked for:
 
-In **Restore Mode**, the script uses the above created archive to extract it in user defined partitions.
-
-In **Transfer Mode**, the script uses rsync to transfer the root filesystem (/) in user defined partitions.
-
-Then generates fstab, rebuilds initramfs image for every available kernel, re-generates locales 
-and finally installs and configures Grub or Syslinux.
-
-
-The script will ask for:
-
-- Interface to use. 
-
-- Target root partition.
-
-- Target EFI system partition (if UEFI environment detected).  
-
-- (Optional) Target home partition.   
-
-- (Optional) Target boot partition.    
-
-- (Optional) Swap partition.   
-
-- (Optional) Set custom partitions. Syntax is mountpoint=device (e.g /usr=/dev/sda3 /var/cache=/dev/sda4).  
-
-- (Optional) Additional mount options for the root partition. 
-
-- (Optional) If the root filesystem is btrfs, the script will ask if you want to create a subvolume for it. If yes, 
-    it will ask for the subvolume's name and also if you want to create other subvolumes. Just enter the 
-    subvolume paths (e.g /home /var /usr ...) seperated by space.
-   
-- (Optional) Bootloader and target disk. Grub2 and Syslinux are both supported.
-   If Syslinux is selected, it will ask for additional kernel options which will be written in *syslinux.cfg*.
-   If a raid array is selected, the script will install the bootloader in all disks that the array contains.
-   In case of UEFI, only Grub2 is supported by the script and */boot/efi* will be used automatically.
-
-- Select Mode:       
-   If **Restore Mode** is selected it will ask the archiver you used to create the backup archive and the 
-   backup archive itself. This can be obtained locally (by entering the full path of the file), or remotelly
-   (by entering the url of the file). Also protected url is supported, which will ask for server's username and password.
-   If the archive is encrypted you will be prompted for the passphrase.
-    
-   If **Transfer Mode** is selected, it will ask if you want to transfer entire /home directory or only it's hidden files and folders.       
-
-   In both modes, it will ask if you want to specify any additional tar/rsync options (see tar --help, man bsdtar or rsync --help).  
-
-- Later it will ask you if you want to edit the generated fstab file further. Old fstab file is saved as */mnt/target/etc/fstab-old*.  
-
-- At the end, if you didn't choose a bootloader, the script will help you to chroot and install a bootloader manually.
-
-Log file is saved as */tmp/restore.log*
+- **Target partitions:** You must specify at least one target root partition and in case of UEFI a target ESP partition. Optionally you can choose any other partition for your /home, /boot, swap or custom mount points (/var /opt etc.)
+- **Mount options:** You can specify alternative comma-seperated mount options for the target root partition. Defaults are: *defaults,noatime*.
+- **Btrfs subvolumes:** If the target root filesystem is Btrfs, the script will ask if you want to create a subvolume for it. If yes, it will ask for the subvolume's name and also if you want to create other subvolumes. Just enter the subvolume paths (/home /var /usr etc.) seperated by space. Recommended root subvolume name is: *__active*.
+- **Bootloader:** You can choose grub (version 2) or syslinux, the target disk and in case of syslinux any additional kernel options that will be written in the target *syslinux.cfg*. If you select a raid array as bootloader disk, the script will install the bootloader in all disks that the array contains.
+- **Select mode:** In *Restore mode* you have to specify the archiver you used to create the backup archive and the backup archive location, local or remote. If the archive is encrypted you will be prompted for the passphrase. In *Transfer mode* you will have to specify if you want to transfer your entire /home directory or only it's hidden files and folders (which are necessary to login and keep basic settings).
+- **Tar/Rsync options:** You may want to specify any additional options.  
+See <code>tar --help</code>, <code>man bsdtar</code> or <code>rsync --help</code> for more info.
 
 The script also supports all input as arguments:
 
-**-i, --interface**   
-interface to use: cli dialog     
+    -i, --interface
+     interface to use: cli dialog     
 
-**-N, --no-color**   
-disable colors
+    -N, --no-color
+     disable colors
 
-**-q,  --quiet**  
-dont ask, just run  
+    -q,  --quiet
+     dont ask, just run  
 
-**-v,  --verbose**            
-enable verbose tar/rsync output (cli interface only)
+    -v,  --verbose
+     enable verbose tar/rsync output (cli interface only)
 
-**-u,  --user-options**  
-additional tar/rsync options (see tar --help, man bsdtar or rsync --help)  
+    -u,  --user-options
+     additional tar/rsync options (see tar --help, man bsdtar or rsync --help)  
 
-**-H, --hide-cursor**  
-hide cursor when running tar/rsync (useful for some terminal emulators)  
+    -H, --hide-cursor
+     hide cursor when running tar/rsync (useful for some terminal emulators)  
 
-**-f, --file**      
-backup file path or url
+    -f, --file
+     backup file path or url
 
-**-n, --username**     
-username
+    -n, --username
+     username
 
-**-p, --password**     
-password
+    -p, --password
+     password
 
-**-a, --archiver**  
-select archiver: tar bsdtar    
+    -a, --archiver
+     select archiver: tar bsdtar    
 
-**-P, --passphrase**  
-passphrase for decryption    
+    -P, --passphrase
+     passphrase for decryption    
 
-**-t, --transfer**   
-activate tranfer mode  
+    -t, --transfer
+     activate tranfer mode  
 
-**-o,  --only-hidden**  
-transfer /home's hidden files and folders only  
+    -o,  --only-hidden
+     transfer /home's hidden files and folders only  
 
-**-r, --root**    
-target root partition
+    -r, --root
+     target root partition
 
-**-e, --esp**    
-target EFI system partition
+    -e, --esp
+     target EFI system partition
 
-**-h, --home**     
-target home partition  
+    -h, --home
+     target home partition  
 
-**-b, --boot**     
-target boot partition
+    -b, --boot
+     target boot partition
 
-**-s, --swap**     
-swap partition
+    -s, --swap
+     swap partition
 
-**-c,  --custom-partitions**  
-specify custom partitions (mountpoint=device e.g /var=/dev/sda3)   
+    -c,  --custom-partitions
+     specify custom partitions (mountpoint=device e.g /var=/dev/sda3)   
 
-**-m, --mount-options**     
-comma-separated list of mount options (root partition only)
+    -m, --mount-options
+     comma-separated list of mount options (root partition only)
 
-**-d,  --dont-check-root**  
-dont check if root partition is empty (dangerous)
+    -d,  --dont-check-root
+     dont check if root partition is empty (dangerous)
 
-**-g, --grub**    
-target disk for grub
+    -g, --grub
+     target disk for grub
 
-**-S, --syslinux**      
-target disk for syslinux
+    -S, --syslinux
+     target disk for syslinux
 
-**-k, --kernel-options**      
-additional kernel options (syslinux only)  
+    -k, --kernel-options
+     additional kernel options (syslinux only)  
 
-**-R, --rootsubvolname**   
-subvolume name for root
+    -R, --rootsubvolname
+     subvolume name for root
 
-**-O, --other-subvolumes**   
- specify other subvolumes (subvolume path e.g /home /var /usr ...)
+    -O, --other-subvolumes
+     specify other subvolumes (subvolume path e.g /home /var /usr ...)
 
-**-D, --disable-genkernel**   
-disable genkernel check and initramfs building in gentoo  
+    -D, --disable-genkernel
+     disable genkernel check and initramfs building in gentoo  
 
-**--help**   
- show all arguments
+    --help
+     show all arguments
+ 
+When the process completes, you may want to check */tmp/restore.log*.
 
 ###NOTES###
 

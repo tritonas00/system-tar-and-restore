@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 4.4
+.\"    Source: system-tar-and-restore 4.5
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "14 Oct 2014" "4.4" "General Manual"
+.TH "system-tar-and-restore" "1" "23 Oct 2014" "4.5" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -30,10 +30,7 @@ System tar & restore \- Backup and Restore your system using tar or Transfer it 
 \fIrestore.sh\fR [options]
 .SH DESCRIPTION
 .sp
-System tar & restore contains two bash scripts, \fIbackup.sh\fR and \fIrestore.sh\fR\&.
-.sp
-The purpose is to make the process of backing up and restoring a full GNU/Linux installation 
-easier, using tar or transfer an existing installation using rsync.
+System tar & restore contains two bash scripts, \fIbackup.sh\fR and \fIrestore.sh\fR\&. The former makes a tar backup of your system. The latter restores the backup or transfers your system using rsync in desired partition(s). The scripts include two interfaces, cli and dialog (ncurses).
 .sp
 Supported distributions: 
 .B Arch, 
@@ -44,7 +41,7 @@ Supported distributions:
 .B Mandriva
 .SH BACKUP DESCRIPTION
 .sp
-Backup script makes a tar backup of \fI/\fR in a given location\&. It will make a folder 
+The backup.sh script makes a tar backup of your system in a given location\&. It will make a folder 
 in that location which contains the \fBarchive\fR and the \fBlog\fR file "backup.log" 
 (usefull for tracking tar errors/warnings). The script can also read input from \fI/etc/backup.conf\fR. See the provided sample or use -g to generate a configuration file.\&
 .SH BACKUP OPERATIONS
@@ -135,17 +132,9 @@ show all arguments
 .RE
 .SH RESTORE DESCRIPTION
 .sp
-User must create and format partitions using his favorite partition manager 
-before running the script. At least one \fI/\fR \fB(root)\fR partition is 
-required and optionally seperate partitions for any other desired 
-mountpoint (/home /boot /var etc...).
+The restore.sh script has two modes: \fBRestore\fR and \fBTransfer\fR\&. The first uses the above created archive to extract it in desired partition(s). The second transfers your system in desired partition(s) using \fBRSYNC\fR. Then, in both cases, generates the target system's fstab, rebuilds initramfs for every available kernel, generates locales and finally installs and configures the selected bootloader.
 .sp
-Restore script contains two modes: \fBRestore\fR and \fBTransfer\fR\&. In 
-\fBRestore Mode\fR\&, the script uses the above created archive to extract it 
-in user defined partitions\&. In \fBTransfer Mode\fR\&, the script uses 
-\fBRSYNC\fR to transfer the root filesystem \fI/\fR in user defined partitions\&.
-Then generates fstab\&, rebuilds initramfs image for every available kernel\&, 
-re-generates locales and finally installs and configures Grub or Syslinux\&.
+Boot from a livecd - preferably one of the target (backed up) distro - or another existing system, prepare your target partition(s) and start the script.
 .sp
 Log file is saved as /tmp/restore.log
 .SH RESTORE OPERATIONS

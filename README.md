@@ -62,55 +62,55 @@ The backup.sh script makes a tar backup of your system. You will be asked for:
 The script also supports all input as arguments:
 
     -i, --interface
-     interface to use: cli dialog
+        interface to use: cli dialog
 
     -N, --no-color
-     disable colors
+        disable colors
 
-    -q,  --quiet
-     dont ask, just run  
+    -q, --quiet
+        dont ask, just run  
 
     -v, --verbose
-     enable verbose archiver output (cli interface only)  
+        enable verbose archiver output (cli interface only)  
 
     -g, --generate     
-     generate configuration file (in case of successful backup)  
+        generate configuration file (in case of successful backup)  
 
     -H, --hide-cursor
-     hide cursor when running archiver (useful for some terminal emulators)  
+        hide cursor when running archiver (useful for some terminal emulators)  
 
     -d, --directory
-     backup destination path
+        backup destination path
 
     -f, --filename
-     backup file name (without extension)  
+        backup file name (without extension)  
 
     -h, --exclude-home
-     exclude /home directory (keep hidden files and folders)  
+        exclude /home directory (keep hidden files and folders)  
 
     -n, --no-hidden
-     dont keep home's hidden files and folders (use with -h)  
+        dont keep home's hidden files and folders (use with -h)  
 
     -c, --compression
-     compression type: gzip bzip2 xz none  
+        compression type: gzip bzip2 xz none  
 
     -a, --archiver
-     select archiver: tar bsdtar      
+        select archiver: tar bsdtar      
 
     -u, --user-options
-     additional tar options (see tar --help or man bsdtar)  
+        additional tar options (see tar --help or man bsdtar)  
 
     -E, --encryption-method
-     encryption method: openssl gpg
+        encryption method: openssl gpg
 
     -P, --passphrase
-     passphrase for encryption   
+        passphrase for encryption   
 
     -D, --disable-genkernel
-     disable genkernel check in gentoo  
+        disable genkernel check in gentoo  
 
     --help
-     show all arguments
+        show all arguments
 
 The script can also read input from */etc/backup.conf*.
 See the provided [sample](https://github.com/tritonas00/system-tar-and-restore/blob/master/backup.conf) or use -g to generate a configuration file.
@@ -135,88 +135,88 @@ See <code>tar --help</code>, <code>man bsdtar</code> or <code>rsync --help</code
 The script also supports all input as arguments:
 
     -i, --interface
-     interface to use: cli dialog     
+        interface to use: cli dialog     
 
     -N, --no-color
-     disable colors
+        disable colors
 
-    -q,  --quiet
-     dont ask, just run  
+    -q, --quiet
+        dont ask, just run  
 
-    -v,  --verbose
-     enable verbose tar/rsync output (cli interface only)
+    -v, --verbose
+        enable verbose tar/rsync output (cli interface only)
 
-    -u,  --user-options
-     additional tar/rsync options (see tar --help, man bsdtar or rsync --help)  
+    -u, --user-options
+        additional tar/rsync options (see tar --help, man bsdtar or rsync --help)  
 
     -H, --hide-cursor
-     hide cursor when running tar/rsync (useful for some terminal emulators)  
+        hide cursor when running tar/rsync (useful for some terminal emulators)  
 
     -f, --file
-     backup file path or url
+        backup file path or url
 
     -n, --username
-     username
+        username
 
     -p, --password
-     password
+        password
 
     -a, --archiver
-     select archiver: tar bsdtar    
+        select archiver: tar bsdtar    
 
     -P, --passphrase
-     passphrase for decryption    
+        passphrase for decryption    
 
     -t, --transfer
-     activate tranfer mode  
+        activate tranfer mode  
 
-    -o,  --only-hidden
-     transfer /home's hidden files and folders only  
+    -o, --only-hidden
+        transfer /home's hidden files and folders only  
 
     -r, --root
-     target root partition
+        target root partition
 
     -e, --esp
-     target EFI system partition
+        target EFI system partition
 
     -h, --home
-     target home partition  
+        target home partition  
 
     -b, --boot
-     target boot partition
+        target boot partition
 
     -s, --swap
-     swap partition
+        swap partition
 
-    -c,  --custom-partitions
-     specify custom partitions (mountpoint=device e.g /var=/dev/sda3)   
+    -c, --custom-partitions
+        specify custom partitions (mountpoint=device e.g /var=/dev/sda3)   
 
     -m, --mount-options
-     comma-separated list of mount options (root partition only)
+        comma-separated list of mount options (root partition only)
 
-    -d,  --dont-check-root
-     dont check if root partition is empty (dangerous)
+    -d, --dont-check-root
+        dont check if root partition is empty (dangerous)
 
     -g, --grub
-     target disk for grub
+        target disk for grub
 
     -S, --syslinux
-     target disk for syslinux
+        target disk for syslinux
 
     -k, --kernel-options
-     additional kernel options (syslinux only)  
+        additional kernel options (syslinux only)  
 
     -R, --rootsubvolname
-     subvolume name for root
+        subvolume name for root
 
     -O, --other-subvolumes
-     specify other subvolumes (subvolume path e.g /home /var /usr ...)
+        specify other subvolumes (subvolume path e.g /home /var /usr ...)
 
     -D, --disable-genkernel
-     disable genkernel check and initramfs building in gentoo  
+        disable genkernel check and initramfs building in gentoo  
 
     --help
-     show all arguments
+        show all arguments
  
 When the process completes, you may want to check */tmp/restore.log*.
 

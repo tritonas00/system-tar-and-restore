@@ -1698,7 +1698,7 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   if [ -z "$BR_MOUNT_OPTS" ]; then
-    echo -e "\n${BR_CYAN}Enter additional mount options\n${BR_MAGENTA}(Leave blank for defaults,noatime)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter additional mount options\n${BR_MAGENTA}(Leave blank for: <defaults,noatime>)${BR_NORM}"
     read -p "Options (comma-separated list): " BR_MOUNT_OPTS
     if [ -z "$BR_MOUNT_OPTS" ]; then
       BR_MOUNT_OPTS="defaults,noatime"
@@ -2289,7 +2289,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BR_MOUNT_OPTS" ]; then
-    BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Specify additional mount options for root partition.\nLeave empty for defaults,noatime.\n\n(comma-separated list)" 10 70 2>&1 1>&3)
+    BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Specify additional mount options for root partition.\nLeave empty for: <defaults,noatime>.\n\n(comma-separated list)" 10 70 2>&1 1>&3)
     if [ -z "$BR_MOUNT_OPTS" ]; then
       BR_MOUNT_OPTS="defaults,noatime"
     fi

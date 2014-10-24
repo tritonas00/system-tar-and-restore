@@ -535,7 +535,7 @@ if [ "$BRinterface" = "cli" ]; then
   options_info
 
   if [ -z "$BR_USER_OPTS" ]; then
-    echo -e "\n${BR_CYAN}Enter additional $BRarchiver options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter additional $BRarchiver options\n${BR_MAGENTA}(If you want spaces in names replace them with ${BR_YELLOW}//${BR_MAGENTA})\n(Leave blank for defaults)${BR_NORM}"
     read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
 
@@ -676,7 +676,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRNAME" ]; then
-    BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)'." 8 70 2>&1 1>&3)
+    BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)'." 9 70 2>&1 1>&3)
   fi
 
   if [ -z "$BRhome" ]; then
@@ -713,12 +713,12 @@ elif [ "$BRinterface" = "dialog" ]; then
   options_info
 
   if [ -z "$BR_USER_OPTS" ]; then
-    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRarchiver options. Leave empty for defaults.\n($BRoptinfo)" 8 70 2>&1 1>&3)
+    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRarchiver options. Leave empty for defaults.\n\n(If you want spaces in names replace them with //)\n($BRoptinfo)" 11 70 2>&1 1>&3)
   fi
 
   if which openssl &>/dev/null || which gpg &>/dev/null; then
     if [ -z "$BRencmethod" ]; then
-      BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to encrypt archive. Leave empty for no encryption." 8 70 2>&1 1>&3)
+      BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to encrypt archive. Leave empty for no encryption." 9 70 2>&1 1>&3)
       if [ -n  "$BRencpass" ]; then
         REPLY=$(dialog --cancel-label Quit --menu "Select encryption method:" 12 35 12 1 openssl 2 gpg 2>&1 1>&3)
         if [ "$?" = "1" ]; then exit; fi

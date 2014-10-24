@@ -192,6 +192,9 @@ detect_distro() {
   if [ "$BRmode" = "Restore" ]; then
     if grep -Fxq "etc/yum.conf" /tmp/filelist 2>/dev/null; then
       BRdistro="Fedora"
+      if [ "$BRarchiver" = "tar" ]; then
+        USER_OPTS+=(--selinux --acls "--xattrs-include='*'")
+      fi
     elif grep -Fxq "etc/pacman.conf" /tmp/filelist 2>/dev/null; then
       BRdistro="Arch"
     elif grep -Fxq "etc/apt/sources.list" /tmp/filelist 2>/dev/null; then
@@ -284,7 +287,7 @@ set_syslinux_flags_and_paths() {
 
 generate_syslinux_cfg() {
   echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50"
-  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
+  if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
     syslinuxrootsubvol="rootflags=subvol=$BRrootsubvolname"
   fi
 
@@ -414,7 +417,7 @@ part_sel_dialog() {
 }
 
 set_custom() {
-  BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: (mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4)" 8 80 "$BRcustomold" 2>&1 1>&3)
+  BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4\n\n(If you want spaces in the mountpoint replace them with //)" 10 80 "$BRcustomold" 2>&1 1>&3)
   BRcustomold="$BRcustompartslist"
 }
 
@@ -494,7 +497,7 @@ check_input() {
     fi
   fi
 
-  if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ] || [ -n "$BRswap" ] || [ -n "$BRhome" ] || [ -n "$BRboot" ] || [ -n "$BRcustompartslist" ] || [ -n "$BRrootsubvol" ] || [ -n "$BRsubvols" ] && [ -z "$BRroot" ]; then
+  if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ] || [ -n "$BRswap" ] || [ -n "$BRhome" ] || [ -n "$BRboot" ] || [ -n "$BRcustompartslist" ] || [ -n "$BRrootsubvolname" ] || [ -n "$BRsubvols" ] && [ -z "$BRroot" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a target root partition."
     BRSTOP="y"
   fi
@@ -702,7 +705,7 @@ mount_all() {
     fi
   fi
 
-  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
+  if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
     echo -ne "${BR_WRK}Creating $BRrootsubvolname"
     OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
 
@@ -772,7 +775,7 @@ show_summary() {
     echo "swap partition: $BRswap"
   fi
 
-  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
+  if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
     echo -e "\nSUBVOLUMES:"
     echo "$BRrootsubvolname"
     if [ -n "$BRsubvols" ]; then
@@ -846,7 +849,7 @@ show_summary() {
   if [ "$BRmode" = "Transfer" ]; then
     echo -e "\nRSYNC OPTIONS:"
     for i in "${BR_RSYNCOPTS[@]}"; do echo "$i"; done
-  elif [ "$BRmode" = "Restore" ] && [ -n "$BR_USER_OPTS" ]; then
+  elif [ "$BRmode" = "Restore" ] && [ -n "$USER_OPTS" ]; then
     echo -e "\nARCHIVER OPTIONS:"
     for i in "${USER_OPTS[@]}"; do echo "$i"; done
   fi
@@ -867,7 +870,7 @@ prepare_chroot() {
 }
 
 generate_fstab() {
-  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ] && [ ! "$BRdistro" = "Suse" ]; then
+  if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ] && [ ! "$BRdistro" = "Suse" ]; then
     echo -e "# $BRroot\n$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname  0  0"
   elif [ "$BRfsystem" = "btrfs" ]; then
     echo -e "# $BRroot\n$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS  0  0"
@@ -1216,7 +1219,7 @@ clean_unmount_in() {
     done < <(for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac)
   fi
 
-  if [ "$BRfsystem" = "btrfs" ] && [ "$BRrootsubvol" = "y" ]; then
+  if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
     echo -ne "${BR_WRK}Unmounting $BRrootsubvolname"
     OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
     sleep 1
@@ -1283,6 +1286,7 @@ unset_vars() {
   if [ "$BRgrub" = "-1" ]; then unset BRgrub; fi
   if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
   if [ "$BRsubvols" = "-1" ]; then unset BRsubvols; fi
+  if [ "$BRrootsubvolname" = "-1" ]; then unset BRrootsubvolname; fi
   if [ "$BR_USER_OPTS" = "-1" ]; then unset BR_USER_OPTS; fi
 }
 
@@ -1420,7 +1424,6 @@ while true; do
       shift
     ;;
     -R|--rootsubvolname)
-      BRrootsubvol="y"
       BRrootsubvolname=$2
       shift 2
     ;;
@@ -1558,7 +1561,7 @@ check_input
 
 if [ -n "$BRroot" ]; then
   if [ -z "$BRrootsubvolname" ]; then
-    BRrootsubvol="n"
+    BRrootsubvolname="-1"
   fi
 
   if [ -z "$BRefisp" ]; then
@@ -1605,10 +1608,8 @@ if [ "$BRmode" = "Transfer" ] && [ -z "$BRhidden" ]; then
   BRhidden="n"
 fi
 
-if [ -n "$BRrootsubvol" ]; then
-  if [ -z "$BRsubvols" ]; then
-    BRsubvols="-1"
-  fi
+if [ -n "$BRrootsubvolname" ] && [ -z "$BRsubvols" ]; then
+  BRsubvols="-1"
 fi
 
 if [ "$BRgrub" = "-1" ] && [ "$BRsyslinux" = "-1" ] && [ -n "$BR_KERNEL_OPTS" ]; then
@@ -1713,45 +1714,24 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   if [ "$BRfsystem" = "btrfs" ]; then
-    while [ -z "$BRrootsubvol" ]; do
-      echo -e "\n${BR_CYAN}BTRFS root file system detected. Create subvolume for root?${BR_NORM}"
-      read -p "(Y/n):" an
+    if [ -z "$BRrootsubvolname" ]; then
+      echo -e "\n${BR_CYAN}Set btrfs root subvolume name\n${BR_MAGENTA}(Leave blank for no subvolumes)${BR_NORM}"
+      read -p "Name: " BRrootsubvolname
+    fi
 
-      if [ -n "$an" ]; then btrfsdef=$an; else btrfsdef="y"; fi
-
-      if [ "$btrfsdef" = "y" ] || [ "$btrfsdef" = "Y" ]; then
-        BRrootsubvol="y"
-      elif [ "$btrfsdef" = "n" ] || [ "$btrfsdef" = "N" ]; then
-        BRrootsubvol="n"
-      else
-        echo -e "${BR_RED}Please select a valid option${BR_NORM}"
-      fi
-    done
-
-    if [ "$BRrootsubvol" = "y" ]; then
-      while [ -z "$BRrootsubvolname" ]; do
-        read -p "Enter subvolume name: " BRrootsubvolname
-        if [ -z "$BRrootsubvolname" ]; then
-          echo -e "\n${BR_CYAN}Please enter a name for the subvolume.${BR_NORM}"
-        fi
-      done
-
-      if [ -z "$BRsubvols" ]; then
-        echo -e "\n${BR_CYAN}Set other subvolumes\n${BR_MAGENTA}(Leave blank for none)${BR_NORM}"
-        read -p "Paths (e.g /home /var /usr ...): " BRsubvolslist
-        if [ -n "$BRsubvolslist" ]; then
-          IFS=$DEFAULTIFS
-          BRsubvols+=($BRsubvolslist)
-          IFS=$'\n'
-          for item in "${BRsubvols[@]}"; do
-            if [[ "$item" == *"/home"* ]]; then BRhome="-1"; fi
-            if [[ "$item" == *"/boot"* ]]; then BRboot="-1"; fi
-          done
-        fi
+    if [ -n "$BRrootsubvolname" ] && [ -z "$BRsubvols" ]; then
+      echo -e "\n${BR_CYAN}Set other subvolumes\n${BR_MAGENTA}(Leave blank for none)${BR_NORM}"
+      read -p "Paths (e.g /home /var /usr ...): " BRsubvolslist
+      if [ -n "$BRsubvolslist" ]; then
+        IFS=$DEFAULTIFS
+        BRsubvols+=($BRsubvolslist)
+        IFS=$'\n'
+        for item in "${BRsubvols[@]}"; do
+          if [[ "$item" == *"/home"* ]]; then BRhome="-1"; fi
+          if [[ "$item" == *"/boot"* ]]; then BRboot="-1"; fi
+        done
       fi
     fi
-  elif [ "$BRrootsubvol" = "y" ]; then
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Not a btrfs root filesystem, proceeding without subvolumes..."
   fi
 
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
@@ -1837,7 +1817,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ -n "${list[*]}" ]; then
     if [ -z "$BRcustompartslist" ]; then
-      echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3\n${BR_MAGENTA}(Leave blank for none)${BR_NORM}"
+      echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3\n${BR_MAGENTA}(If you want spaces in the mountpoint replace them with ${BR_YELLOW}//${BR_MAGENTA})\n(Leave blank for none)${BR_NORM}"
       read -p "Partitions: " BRcustompartslist
       if [ -n "$BRcustompartslist" ]; then
         IFS=$DEFAULTIFS
@@ -1957,10 +1937,7 @@ if [ "$BRinterface" = "cli" ]; then
   options_info
 
   if [ -z "$BR_USER_OPTS" ]; then
-    echo -e "\n${BR_CYAN}Enter additional $BRtbr options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
-    if [ "$BRarchiver" = "tar" ]; then
-      echo -e "[${BR_CYAN}INFO${BR_NORM}] If the target system is Fedora 19+, you should add ${BR_YELLOW}--selinux --acls --xattrs-include='*'${BR_NORM}"
-    fi
+    echo -e "\n${BR_CYAN}Enter additional $BRtbr options\n${BR_MAGENTA}(If you want spaces in names replace them with ${BR_YELLOW}//${BR_MAGENTA})\n(Leave blank for defaults)${BR_NORM}"
     read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
 
@@ -2289,7 +2266,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BR_MOUNT_OPTS" ]; then
-    BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Specify additional mount options for root partition.\nLeave empty for: <defaults,noatime>.\n\n(comma-separated list)" 10 70 2>&1 1>&3)
+    BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Specify additional mount options for root partition.\nLeave empty for: <defaults,noatime>.\n\n(comma-separated list)" 11 70 2>&1 1>&3)
     if [ -z "$BR_MOUNT_OPTS" ]; then
       BR_MOUNT_OPTS="defaults,noatime"
     fi
@@ -2304,36 +2281,20 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ "$BRfsystem" = "btrfs" ]; then
-    if [ -z "$BRrootsubvol" ]; then
-      dialog --yesno "BTRFS root file system detected. Create subvolume for root?" 5 68
-      if [ "$?" = "0" ]; then
-        BRrootsubvol="y"
-      else
-        BRrootsubvol="n"
-      fi
+    if [ -z "$BRrootsubvolname" ]; then
+      BRrootsubvolname=$(dialog --no-cancel --inputbox "Set btrfs root subvolume name. Leave empty for no subvolumes." 8 65 2>&1 1>&3)
     fi
 
-    if [ "$BRrootsubvol" = "y" ]; then
-      while [ -z "$BRrootsubvolname" ]; do
-        BRrootsubvolname=$(dialog --no-cancel --inputbox "Enter subvolume name:" 8 50 2>&1 1>&3)
-        if [ -z "$BRrootsubvolname" ]; then
-          dialog --title "Warning" --msgbox "Please enter a name for the subvolume." 5 42
-        fi
-      done
-
-      if [ -z "$BRsubvols" ]; then
-        BRsubvolslist=$(dialog --no-cancel --inputbox "Specify other subvolumes. Leave empty for none.\n\n(subvolume path e.g /home /var /usr ...)" 9 70 2>&1 1>&3)
-        if [ -n "$BRsubvolslist" ]; then
-          BRsubvols+=($BRsubvolslist)
-          for item in "${BRsubvols[@]}"; do
-            if [[ "$item" == *"/home"* ]]; then BRhome="-1"; fi
-            if [[ "$item" == *"/boot"* ]]; then BRboot="-1"; fi
-          done
-        fi
+    if [ -n "$BRrootsubvolname" ] && [ -z "$BRsubvols" ]; then
+      BRsubvolslist=$(dialog --no-cancel --inputbox "Specify other subvolumes. Leave empty for none.\n\n(subvolume path e.g /home /var /usr ...)" 9 70 2>&1 1>&3)
+      if [ -n "$BRsubvolslist" ]; then
+        BRsubvols+=($BRsubvolslist)
+        for item in "${BRsubvols[@]}"; do
+          if [[ "$item" == *"/home"* ]]; then BRhome="-1"; fi
+          if [[ "$item" == *"/boot"* ]]; then BRboot="-1"; fi
+        done
       fi
     fi
-  elif [ "$BRrootsubvol" = "y" ]; then
-    dialog --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
   fi
 
   if [ -d "$BR_EFI_DETECT_DIR" ]; then
@@ -2392,7 +2353,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   options_info
 
   if [ -z "$BR_USER_OPTS" ]; then
-    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRtbr options. Leave empty for defaults.\n$(if [ "$BRarchiver" = "tar" ]; then echo "If the target system is Fedora 19+, you should add --selinux --acls --xattrs-include='*' "; fi)($BRoptinfo)" 11 74 2>&1 1>&3)
+    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRtbr options. Leave empty for defaults.\n\n(If you want spaces in names replace them with //)\n($BRoptinfo)" 11 74 2>&1 1>&3)
   fi
 
   IFS=$'\n'

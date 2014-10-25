@@ -417,7 +417,7 @@ part_sel_dialog() {
 }
 
 set_custom() {
-  BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4\n\n(If you want spaces in the mountpoint replace them with //)" 10 80 "$BRcustomold" 2>&1 1>&3)
+  BRcustompartslist=$(dialog --no-cancel --inputbox "Set partitions: mountpoint=device e.g /usr=/dev/sda3 /var/cache=/dev/sda4\n\n(If you want spaces in mountpoints replace them with //)" 10 80 "$BRcustomold" 2>&1 1>&3)
   BRcustomold="$BRcustompartslist"
 }
 
@@ -1817,7 +1817,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ -n "${list[*]}" ]; then
     if [ -z "$BRcustompartslist" ]; then
-      echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3\n${BR_MAGENTA}(If you want spaces in the mountpoint replace them with //)\n(Leave blank for none)${BR_NORM}"
+      echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3\n${BR_MAGENTA}(If you want spaces in mountpoints replace them with //)\n(Leave blank for none)${BR_NORM}"
       read -p "Partitions: " BRcustompartslist
       if [ -n "$BRcustompartslist" ]; then
         IFS=$DEFAULTIFS

@@ -450,7 +450,7 @@ check_input() {
     BRSTOP="y"
   fi
 
-  if [ -n "$BRuri" ] && [ "$BRmode" = "Transfer" ]; then
+  if [ -n "$BRuri" ] && [ -n "$BRtfr" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use local file / url and transfer mode at the same time"
     BRSTOP="y"
   fi
@@ -1429,6 +1429,7 @@ while true; do
     ;;
     -t|--transfer)
       BRmode="Transfer"
+      BRtfr="y"
       shift
     ;;
     -o|--only-hidden)

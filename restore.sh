@@ -1817,7 +1817,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ -n "${list[*]}" ]; then
     if [ -z "$BRcustompartslist" ]; then
-      echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3\n${BR_MAGENTA}(If you want spaces in the mountpoint replace them with ${BR_YELLOW}//${BR_MAGENTA})\n(Leave blank for none)${BR_NORM}"
+      echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3\n${BR_MAGENTA}(If you want spaces in the mountpoint replace them with //)\n(Leave blank for none)${BR_NORM}"
       read -p "Partitions: " BRcustompartslist
       if [ -n "$BRcustompartslist" ]; then
         IFS=$DEFAULTIFS
@@ -1937,7 +1937,7 @@ if [ "$BRinterface" = "cli" ]; then
   options_info
 
   if [ -z "$BR_USER_OPTS" ]; then
-    echo -e "\n${BR_CYAN}Enter additional $BRtbr options\n${BR_MAGENTA}(If you want spaces in names replace them with ${BR_YELLOW}//${BR_MAGENTA})\n(Leave blank for defaults)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter additional $BRtbr options\n${BR_MAGENTA}(If you want spaces in names replace them with //)\n(Leave blank for defaults)${BR_NORM}"
     read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
 

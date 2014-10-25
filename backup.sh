@@ -448,7 +448,7 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   while [ -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
-    echo -e "\n${BR_CYAN}Enter path to save the backup archive\n${BR_MAGENTA}(Leave blank for default '/')${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter path to save the backup archive\n${BR_MAGENTA}(Leave blank for default: </>)${BR_NORM}"
     read -e -p "Path: " BRFOLDER
     if [ -z "$BRFOLDER" ]; then
       BRFOLDER="/"
@@ -458,7 +458,7 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   if [ -z "$BRNAME" ]; then
-    echo -e "\n${BR_CYAN}Enter archive name\n${BR_MAGENTA}(Leave blank for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)')${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter archive name\n${BR_MAGENTA}(Leave blank for default: <Backup-$(hostname)-$(date +%d-%m-%Y-%T)>)${BR_NORM}"
     read -e -p "Name (without extension): " BRNAME
   fi
 
@@ -535,7 +535,7 @@ if [ "$BRinterface" = "cli" ]; then
   options_info
 
   if [ -z "$BR_USER_OPTS" ]; then
-    echo -e "\n${BR_CYAN}Enter additional $BRarchiver options\n${BR_MAGENTA}(If you want spaces in names replace them with ${BR_YELLOW}//${BR_MAGENTA})\n(Leave blank for defaults)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter additional $BRarchiver options\n${BR_MAGENTA}(If you want spaces in names replace them with //)\n(Leave blank for defaults)${BR_NORM}"
     read -p "Options ($BRoptinfo): " BR_USER_OPTS
   fi
 
@@ -646,7 +646,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --yesno "The default directory for creating the backup archive is / (root).\n\nSave in the default directory?" 8 65
+    dialog --yesno "The default directory for creating the backup archive is </>.\n\nSave in the default directory?" 8 65
     if [ "$?" = "0" ]; then
       BRFOLDER="/"
     else
@@ -676,7 +676,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRNAME" ]; then
-    BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)'." 9 70 2>&1 1>&3)
+    BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default: <Backup-$(hostname)-$(date +%d-%m-%Y-%T)>." 9 70 2>&1 1>&3)
   fi
 
   if [ -z "$BRhome" ]; then

@@ -1685,6 +1685,10 @@ if [ "$BRinterface" = "cli" ]; then
     exit
   fi
 
+  if [ -n "$BRrootsubvolname" ] && [ ! "$BRrootsubvolname" = "-1" ] && [ ! "$BRfsystem" = "btrfs" ]; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Not a btrfs root filesystem, proceeding without subvolumes..."
+  fi
+
   if [ "$BRfsystem" = "btrfs" ]; then
     if [ -z "$BRrootsubvolname" ]; then
       echo -e "\n${BR_CYAN}Set btrfs root subvolume name\n${BR_MAGENTA}(Leave blank for no subvolumes)${BR_NORM}"
@@ -2244,6 +2248,10 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -z "$BRnocolor" ]; then color_variables; fi
     echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system"
     exit
+  fi
+
+  if [ -n "$BRrootsubvolname" ] && [ ! "$BRrootsubvolname" = "-1" ] && [ ! "$BRfsystem" = "btrfs" ]; then
+    dialog --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72
   fi
 
   if [ "$BRfsystem" = "btrfs" ]; then

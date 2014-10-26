@@ -849,15 +849,15 @@ show_summary() {
 
 prepare_chroot() {
   echo -e "\n${BR_SEP}PREPARING CHROOT ENVIROMENT"
-  echo -e "Binding /run"
+  echo "Binding /run"
   mount --bind /run /mnt/target/run
-  echo -e "Binding /dev"
+  echo "Binding /dev"
   mount --bind /dev /mnt/target/dev
-  echo -e "Binding /dev/pts"
+  echo "Binding /dev/pts"
   mount --bind /dev/pts /mnt/target/dev/pts
-  echo -e "Mounting /proc"
+  echo "Mounting /proc"
   mount -t proc /proc /mnt/target/proc
-  echo -e "Mounting /sys"
+  echo "Mounting /sys"
   mount -t sysfs /sys /mnt/target/sys
 }
 

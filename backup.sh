@@ -360,13 +360,9 @@ if [ -z "$BRarchiver" ] && [ -n "$BRFOLDER" ]; then
   BRSTOP="y"
 fi
 
-if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
-  if [ -z "$BRgenkernel" ]; then
-    if [ -z $(which genkernel 2>/dev/null) ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
-      BRSTOP="y"
-    fi
-  fi
+if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z $(which genkernel 2>/dev/null) ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
+  BRSTOP="y"
 fi
 
 if [ -n "$BRencpass" ] && [ -z "$BRencmethod" ]; then

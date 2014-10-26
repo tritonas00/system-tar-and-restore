@@ -138,10 +138,10 @@ detect_filetype() {
     if gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b - | grep -w gzip >/dev/null; then
       BRfiletype="gz"
       BRreadopts="tfz"
-    elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null| file -b - | grep -w bzip2 >/dev/null; then
+    elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null| file -b - | grep -w bzip2 >/dev/null; then
       BRfiletype="bz2"
       BRreadopts="tfj"
-    elif  gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b - | grep -w XZ >/dev/null; then
+    elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b - | grep -w XZ >/dev/null; then
       BRfiletype="xz"
       BRreadopts="tfJ"
     elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b - | grep -w POSIX >/dev/null; then
@@ -470,29 +470,27 @@ check_input() {
     fi
     if [ -n "$BRgrub" ]; then
       if [ -z $(which grub-mkconfig 2>/dev/null) ] && [ -z $(which grub2-mkconfig 2>/dev/null) ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found. Install it and re-run the script."
         BRSTOP="y"
       fi
     elif [ -n "$BRsyslinux" ]; then
       if [ -z $(which extlinux 2>/dev/null) ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Extlinux not found"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Extlinux not found. Install it and re-run the script"
         BRSTOP="y"
       fi
       if [ -z $(which syslinux 2>/dev/null) ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found. Install it and re-run the script"
         BRSTOP="y"
       fi
     fi
-    if [ -d "$BR_EFI_DETECT_DIR" ]; then
-      if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ]; then
-        if [ -z $(which mkfs.vfat 2>/dev/null) ]; then
-          echo -e "[${BR_RED}ERROR${BR_NORM}] Package dosfstools is not installed. Install the package and re-run the script"
-          BRSTOP="y"
-        fi
-        if [ -z $(which efibootmgr 2>/dev/null) ]; then
-          echo -e "[${BR_RED}ERROR${BR_NORM}] Package efibootmgr is not installed. Install the package and re-run the script"
-          BRSTOP="y"
-        fi
+    if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+      if [ -z $(which mkfs.vfat 2>/dev/null) ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Package dosfstools is not installed. Install the package and re-run the script"
+        BRSTOP="y"
+      fi
+      if [ -z $(which efibootmgr 2>/dev/null) ]; then
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Package efibootmgr is not installed. Install the package and re-run the script"
+        BRSTOP="y"
       fi
     fi
   fi
@@ -997,8 +995,8 @@ install_bootloader() {
       chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
     fi
 
-    if [ ! "$BRdistro" = "Fedora" ]; then
-      if [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then cp_grub_efi; fi
+    if [ ! "$BRdistro" = "Fedora" ] && [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then
+      cp_grub_efi
     fi
 
     if [ "$BRdistro" = "Fedora" ]; then
@@ -1073,49 +1071,33 @@ set_bootloader() {
     BRbootloader="Syslinux"
   fi
 
-  if [ -n "$BRsyslinux" ] && [ ! "$BRdistro" = "Arch" ]; then
+  if [ -n "$BRsyslinux" ]; then
     if [[ "$BRsyslinux" == *md* ]]; then
       for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'` ; do
         BRdev=`echo /dev/$f | cut -c -8`
       done
     fi
     detect_partition_table_syslinux
-    if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
+    if [ ! "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
       if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
+      BRabort="y"
+    elif [ "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ "$BRmode" = "Transfer" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
+      if [ -z "$BRnocolor" ]; then color_variables; fi
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
+      BRabort="y"
+    elif [ "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ "$BRmode" = "Restore" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist 2>/dev/null; then
+      if [ -z "$BRnocolor" ]; then color_variables; fi
+      echo -e "[${BR_RED}ERROR${BR_NORM}] sgdisk not found in the archived system"
       BRabort="y"
     fi
   fi
 
-  if [ -n "$BRsyslinux" ] && [ "$BRdistro" = "Arch" ]; then
-    if [[ "$BRsyslinux" == *md* ]]; then
-      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'` ; do
-        BRdev=`echo /dev/$f | cut -c -8`
-      done
-    fi
-    detect_partition_table_syslinux
-    if [ "$BRmode" = "Transfer" ]; then
-      if [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
-        if [ -z "$BRnocolor" ]; then color_variables; fi
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
-        BRabort="y"
-      fi
-    elif [ "$BRmode" = "Restore" ]; then
-      if [ "$BRpartitiontable" = "gpt" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist 2>/dev/null; then
-        if [ -z "$BRnocolor" ]; then color_variables; fi
-        echo -e "[${BR_RED}ERROR${BR_NORM}] sgdisk not found in the archived system"
-        BRabort="y"
-      fi
-    fi
-  fi
-
   if [ "$BRmode" = "Restore" ]; then
-    if [ -n "$BRgrub" ]; then
-      if ! grep -Fq "bin/grub-mkconfig" /tmp/filelist 2>/dev/null && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist 2>/dev/null; then
-        if [ -z "$BRnocolor" ]; then color_variables; fi
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
-        BRabort="y"
-      fi
+    if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist 2>/dev/null && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist 2>/dev/null; then
+      if [ -z "$BRnocolor" ]; then color_variables; fi
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
+      BRabort="y"
     elif [ -n "$BRsyslinux" ]; then
       if ! grep -Fq "bin/extlinux" /tmp/filelist 2>/dev/null; then
         if [ -z "$BRnocolor" ]; then color_variables; fi
@@ -1129,34 +1111,30 @@ set_bootloader() {
       fi
     fi
 
-    if [ -d "$BR_EFI_DETECT_DIR" ]; then
-      if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-        if  ! grep -Fq "bin/efibootmgr" /tmp/filelist 2>/dev/null; then
-          if [ -z "$BRnocolor" ]; then color_variables; fi
-          echo -e "[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system"
-          BRabort="y"
-        fi
-        if  ! grep -Fq "bin/mkfs.vfat" /tmp/filelist 2>/dev/null; then
-          if [ -z "$BRnocolor" ]; then color_variables; fi
-          echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
-          BRabort="y"
-        fi
-        if [ "$target_arch" == "x86_64" ]; then
-          BRgrubefiarch="x86_64-efi"
-        elif [ "$target_arch" == "i686" ]; then
-          BRgrubefiarch="i386-efi"
-        fi
+    if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+      if ! grep -Fq "bin/efibootmgr" /tmp/filelist 2>/dev/null; then
+        if [ -z "$BRnocolor" ]; then color_variables; fi
+        echo -e "[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system"
+        BRabort="y"
+      fi
+      if ! grep -Fq "bin/mkfs.vfat" /tmp/filelist 2>/dev/null; then
+        if [ -z "$BRnocolor" ]; then color_variables; fi
+        echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
+        BRabort="y"
+      fi
+      if [ "$target_arch" == "x86_64" ]; then
+        BRgrubefiarch="x86_64-efi"
+      elif [ "$target_arch" == "i686" ]; then
+        BRgrubefiarch="i386-efi"
       fi
     fi
   fi
 
-  if [ "$BRmode" = "Transfer" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
-    if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
-      if [ "$(uname -m)" == "x86_64" ]; then
-        BRgrubefiarch="x86_64-efi"
-      elif [ "$(uname -m)" == "i686" ]; then
-        BRgrubefiarch="i386-efi"
-      fi
+  if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ] && [ "$BRmode" = "Transfer" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+    if [ "$(uname -m)" == "x86_64" ]; then
+      BRgrubefiarch="x86_64-efi"
+    elif [ "$(uname -m)" == "i686" ]; then
+      BRgrubefiarch="i386-efi"
     fi
   fi
 
@@ -1340,7 +1318,6 @@ log_bsdtar() {
     cat /tmp/filelist | grep -i ": " >> /tmp/restore.log
   fi
 }
-
 
 read_archive() {
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
@@ -1816,15 +1793,13 @@ if [ "$BRinterface" = "cli" ]; then
 
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
-  if [ -n "${list[*]}" ]; then
-    if [ -z "$BRcustompartslist" ]; then
-      echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3\n${BR_MAGENTA}(If you want spaces in mountpoints replace them with //)\n(Leave blank for none)${BR_NORM}"
-      read -p "Partitions: " BRcustompartslist
-      if [ -n "$BRcustompartslist" ]; then
-        IFS=$DEFAULTIFS
-        BRcustomparts+=($BRcustompartslist)
-        IFS=$'\n'
-      fi
+  if [ -z "$BRcustompartslist" ] && [ -n "${list[*]}" ]; then
+    echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3\n${BR_MAGENTA}(If you want spaces in mountpoints replace them with //)\n(Leave blank for none)${BR_NORM}"
+    read -p "Partitions: " BRcustompartslist
+    if [ -n "$BRcustompartslist" ]; then
+      IFS=$DEFAULTIFS
+      BRcustomparts+=($BRcustompartslist)
+      IFS=$'\n'
     fi
   fi
 
@@ -1898,24 +1873,22 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  if [ "$BRmode" = "Restore" ]; then
-    if [ -z "$BRarchiver" ]; then
-      echo -e "\n${BR_CYAN}Select the archiver you used to create the backup archive:${BR_NORM}"
-      select c in "tar    (GNU Tar)" "bsdtar (Libarchive Tar)"; do
-        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-          exit
-        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-          BRarchiver="tar"
-          break
-        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
-          BRarchiver="bsdtar"
-          break
-        else
-          echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
-        fi
-      done
-    fi
+  if [ "$BRmode" = "Restore" ] && [ -z "$BRarchiver" ]; then
+    echo -e "\n${BR_CYAN}Select the archiver you used to create the backup archive:${BR_NORM}"
+    select c in "tar    (GNU Tar)" "bsdtar (Libarchive Tar)"; do
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+        exit
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+        BRarchiver="tar"
+        break
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+        BRarchiver="bsdtar"
+        break
+      else
+        echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
+      fi
+    done
   fi
 
   if [ "$BRmode" = "Transfer" ]; then
@@ -2027,24 +2000,22 @@ if [ "$BRinterface" = "cli" ]; then
   detect_distro
   set_bootloader
 
-  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-    if ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Genkernel not found in the archived system. (you can disable this check with -D)"
-      while [ -z "$BRgenkernel" ]; do
-        echo -e "\n${BR_CYAN}Disable initramfs building?${BR_NORM}"
-        read -p "(Y/n, abort):" an
+  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Genkernel not found in the archived system. (you can disable this check with -D)"
+    while [ -z "$BRgenkernel" ]; do
+      echo -e "\n${BR_CYAN}Disable initramfs building?${BR_NORM}"
+      read -p "(Y/n, abort):" an
 
-        if [ -n "$an" ]; then def=$an; else def="y"; fi
+      if [ -n "$an" ]; then def=$an; else def="y"; fi
 
-        if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
-          BRgenkernel="n"
-        elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-          clean_unmount_in
-        else
-          echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
-        fi
-      done
-    fi
+      if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
+        BRgenkernel="n"
+      elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
+        clean_unmount_in
+      else
+        echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
+      fi
+    done
   fi
 
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
@@ -2340,14 +2311,12 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  if [ "$BRmode" = "Transfer" ]; then
-    if [ -z "$BRhidden" ]; then
-      dialog --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 8 50
-      if [ "$?" = "0" ]; then
-        BRhidden="n"
-      else
-        BRhidden="y"
-      fi
+  if [ "$BRmode" = "Transfer" ] && [ -z "$BRhidden" ]; then
+    dialog --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 8 50
+    if [ "$?" = "0" ]; then
+      BRhidden="n"
+    else
+      BRhidden="y"
     fi
   fi
 
@@ -2455,14 +2424,12 @@ elif [ "$BRinterface" = "dialog" ]; then
   detect_distro
   set_bootloader
 
-  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-    if ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
-      dialog --yes-label "Disable initramfs building" --no-label "Abort" --title Warning --yesno "Genkernel not found in the archived system. (you can disable this check with -D)" 5 85
-      if [ "$?" = "1" ]; then
-        clean_unmount_in
-      else
-        BRgenkernel="n"
-      fi
+  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
+    dialog --yes-label "Disable initramfs building" --no-label "Abort" --title Warning --yesno "Genkernel not found in the archived system. (you can disable this check with -D)" 5 85
+    if [ "$?" = "1" ]; then
+      clean_unmount_in
+    else
+      BRgenkernel="n"
     fi
   fi
 

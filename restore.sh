@@ -1654,6 +1654,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   editorlist=(nano vi)
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
+  COLUMNS=1
 
   if [ -z "$BRroot" ]; then
     echo -e "\n${BR_CYAN}Select target root partition:${BR_NORM}"

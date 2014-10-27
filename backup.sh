@@ -457,6 +457,7 @@ if [ "$BRinterface" = "cli" ]; then
     echo -e "\n${BR_CYAN}Enter archive name\n${BR_MAGENTA}(Leave blank for default: <Backup-$(hostname)-$(date +%d-%m-%Y-%T)>)${BR_NORM}"
     read -e -p "Name (without extension): " BRNAME
   fi
+  COLUMNS=1
 
   if [ -z "$BRhome" ]; then
     echo -e "\n${BR_CYAN}Home (/home) directory options:${BR_NORM}"

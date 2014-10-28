@@ -311,7 +311,7 @@ while true; do
   -a, --archiver           select archiver: tar bsdtar
   -c, --compression        compression type: gzip bzip2 xz none
   -u, --user-options       additional tar options (see tar --help or man bsdtar)
-  -o, --override           override the default tar options with user options
+  -o, --override           override the default tar options with user options (use with -u)
   -E, --encryption-method  encryption method: openssl gpg
   -P, --passphrase         passphrase for encryption
 \nMisc Options:

@@ -1146,7 +1146,7 @@ check_archive() {
     if [ "$BRinterface" = "cli" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
     elif [ "$BRinterface" = "dialog" ]; then
-      dialog --title "Error" --msgbox "Error reading archive.\n\n$(cat /tmp/filelist | grep -i ": ")" 0 0
+      dialog --cr-wrap --title "Error" --msgbox "Error reading archive.\n\n$(cat /tmp/filelist | grep -i ": ")" 0 0
     fi
   else
     target_arch=$(grep -F 'target_architecture.' /tmp/filelist | cut -f2 -d".")

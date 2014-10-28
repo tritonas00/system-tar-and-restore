@@ -138,7 +138,7 @@ set_tar_options() {
   if [ -n "$BRoverride" ]; then
     BR_TAROPTS=(--exclude="$BRFOLDER")
   fi
-  if [ "$BRarchiver" = "tar" ];then
+  if [ "$BRarchiver" = "tar" ]; then
     BR_TAROPTS+=(--sparse)
   fi
   if [ "$BRarchiver" = "tar" ] && [ -f /etc/yum.conf ]; then

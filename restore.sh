@@ -750,7 +750,7 @@ mount_all() {
 
 show_summary() {
   echo -e "PARTITIONS:"
-  echo "root partition: $BRroot $BRfsize $BRfsystem $BR_MOUNT_OPTS"
+  echo "root partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
 
   if [ -n "$BRcustomparts" ]; then
     for i in ${BRsorted[@]}; do
@@ -759,7 +759,7 @@ show_summary() {
       BRmpoint="${BRmpoint///\//\ }"
       BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
       BRcustomsize=$(lsblk -d -n -o size 2>/dev/null $BRdevice)
-      echo "${BRmpoint#*/} partition: $BRdevice $BRcustomsize $BRcustomfs"
+      echo "${BRmpoint#*/} partition: $BRdevice $BRcustomfs $BRcustomsize"
     done
   fi
 

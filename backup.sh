@@ -135,6 +135,9 @@ set_tar_options() {
   fi
 
   BR_TAROPTS=(--exclude=/run/*?* --exclude=/dev/*?* --exclude=/sys/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=/proc/*?* --exclude=/media/*?* --exclude=/var/run/*?* --exclude=/var/lock/*?* --exclude=.gvfs --exclude=lost+found --exclude="$BRFOLDER")
+  if [ -n "$BRoverride" ]; then
+    BR_TAROPTS=(--exclude="$BRFOLDER")
+  fi
   if [ "$BRarchiver" = "tar" ] && [ -f /etc/yum.conf ]; then
     BR_TAROPTS+=(--acls --xattrs --selinux)
   fi
@@ -144,9 +147,6 @@ set_tar_options() {
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ] ; then
     find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
     BR_TAROPTS+=(--exclude-from=/tmp/excludelist)
-  fi
-  if [ -n "$BRoverride" ]; then
-    BR_TAROPTS=(--exclude="$BRFOLDER")
   fi
 
   for i in ${BR_USER_OPTS[@]}; do BR_TAROPTS+=("${i///\//\ }"); done

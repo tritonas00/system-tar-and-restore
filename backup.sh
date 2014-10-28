@@ -145,6 +145,9 @@ set_tar_options() {
     find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
     BR_TAROPTS+=(--exclude-from=/tmp/excludelist)
   fi
+  if [ -n "$BRoverride" ]; then
+    BR_TAROPTS=(--exclude="$BRFOLDER")
+  fi
 
   for i in ${BR_USER_OPTS[@]}; do BR_TAROPTS+=("${i///\//\ }"); done
 }
@@ -210,7 +213,7 @@ out_pgrs_cli() {
   done
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDHP:E:" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDHP:E:o" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -285,6 +288,10 @@ while true; do
       BRencmethod=$2
       shift 2
     ;;
+    -o|--override)
+      BRoverride="y"
+      shift
+    ;;
     --help)
       echo -e "$BR_VERSION\nUsage: backup.sh [options]
 \nGeneral:
@@ -304,6 +311,7 @@ while true; do
   -a, --archiver           select archiver: tar bsdtar
   -c, --compression        compression type: gzip bzip2 xz none
   -u, --user-options       additional tar options (see tar --help or man bsdtar)
+  -o, --override           override the default tar options with user options
   -E, --encryption-method  encryption method: openssl gpg
   -P, --passphrase         passphrase for encryption
 \nMisc Options:

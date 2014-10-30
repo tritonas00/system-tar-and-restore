@@ -639,10 +639,11 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   done
 
-  prepare
   if [ -n "$BRoldbackups" ] && [ -n "$BRclean" ]; then
     for item in "${BRoldbackups[@]}"; do echo "$item"; done
   fi
+
+  prepare
   show_summary >> "$BRFOLDER"/backup.log
   echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
   run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
@@ -786,10 +787,11 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$?" = "1" ]; then exit; fi
   fi
 
-  prepare
   if [ -n "$BRoldbackups" ] && [ -n "$BRclean" ]; then
     for item in "${BRoldbackups[@]}"; do echo "$item"; done
   fi
+
+  prepare
   show_summary >> "$BRFOLDER"/backup.log
   echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
   (echo "Calculating: Wait..."

@@ -175,7 +175,7 @@ run_tar() {
 
 find_old_backups() {
   IFS=$'\n'
-  for i in $(find $(dirname "$BRFOLDER") -maxdepth 1 -type d -iname "Backup-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"); do
+  for i in $(find $(dirname "$BRFOLDER") -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"); do
     if [ ! "$i" == "$BRFOLDER" ]; then
       BRoldbackups+=("$i")
     fi

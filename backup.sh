@@ -97,10 +97,14 @@ show_summary() {
   if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
     echo "None or not supported"
   fi
+
+  if [ -n "$BRoldbackups" ] && [ -n "$BRclean" ]; then
+    echo -e "\nREMOVE BACKUPS:"
+    for item in "${BRoldbackups[@]}"; do echo "$item"; done
+  fi
 }
 
 dir_list() {
-  DEFAULTIFS=$IFS
   IFS=$'\n'
   for D in "$BRpath"*; do [ -d "${D}" ] && echo "$(basename ${D// /\\}) dir"; done
   IFS=$DEFAULTIFS
@@ -169,6 +173,16 @@ run_tar() {
   fi
 }
 
+find_old_backups() {
+  IFS=$'\n'
+  for i in $(find $(dirname "$BRFOLDER") -maxdepth 1 -type d -iname "Backup-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"); do
+    if [ ! "$i" == "$BRFOLDER" ]; then
+      BRoldbackups+=("$i")
+    fi
+  done
+  IFS=$DEFAULTIFS
+}
+
 set_path() {
   BRFOLDER=$(echo "$BRFOLDER"/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g')
 }
@@ -216,7 +230,7 @@ out_pgrs_cli() {
   done
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDHP:E:o" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDHP:E:or" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -295,6 +309,10 @@ while true; do
       BRoverride="y"
       shift
     ;;
+    -r|--remove)
+      BRclean="y"
+      shift
+    ;;
     --help)
       echo -e "$BR_VERSION\nUsage: backup.sh [options]
 \nGeneral:
@@ -304,6 +322,7 @@ while true; do
   -v, --verbose            enable verbose archiver output (cli interface only)
   -g, --generate           generate configuration file (in case of successful backup)
   -H, --hide-cursor        hide cursor when running archiver (useful for some terminal emulators)
+  -r, --remove             remove older backups in the destination directory
 \nDestination:
   -d, --directory          backup destination path
   -f, --filename           backup file name (without extension)
@@ -422,6 +441,7 @@ if [ -n "$BRFOLDER" ]; then
 fi
 
 PS3="Enter number or Q to quit: "
+DEFAULTIFS=$IFS
 
 echo -e "\n${BR_BOLD}$BR_VERSION${BR_NORM}"
 
@@ -444,10 +464,9 @@ if [ -z "$BRinterface" ]; then
 fi
 
 if [ "$BRinterface" = "cli" ]; then
+  IFS=$'\n'
   pstr="########################"
   dstr="------------------------"
-  DEFAULTIFS=$IFS
-  IFS=$'\n'
 
   if [ -z "$BRFOLDER" ]; then
     info_screen
@@ -578,6 +597,7 @@ if [ "$BRinterface" = "cli" ]; then
   set_path
   set_tar_options
   set_names
+  find_old_backups
 
   if [ -z "$BRquiet" ]; then
     while [ -f "$BRFile.$BR_EXT" ]; do
@@ -620,6 +640,9 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   prepare
+  if [ -n "$BRoldbackups" ] && [ -n "$BRclean" ]; then
+    for item in "${BRoldbackups[@]}"; do echo "$item"; done
+  fi
   show_summary >> "$BRFOLDER"/backup.log
   echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
   run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
@@ -744,6 +767,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   set_path
   set_tar_options
   set_names
+  find_old_backups
 
   if [ -z "$BRquiet" ]; then
     while [ -f "$BRFile.$BR_EXT" ]; do
@@ -763,6 +787,9 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   prepare
+  if [ -n "$BRoldbackups" ] && [ -n "$BRclean" ]; then
+    for item in "${BRoldbackups[@]}"; do echo "$item"; done
+  fi
   show_summary >> "$BRFOLDER"/backup.log
   echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
   (echo "Calculating: Wait..."
@@ -804,6 +831,7 @@ if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
   if [ "$BR_USER_OPTS" = " " ]; then unset BR_USER_OPTS; fi
   if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'" >> "$BRFOLDER"/backup.conf; fi
   if [ -n "$BRencpass" ]; then echo -e "BRencmethod=$BRencmethod\nBRencpass='$BRencpass'" >> "$BRFOLDER"/backup.conf; fi
+  if [ -n "$BRclean" ]; then echo "BRclean=Yes" >> "$BRFOLDER"/backup.conf; fi
 fi
 
 if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi

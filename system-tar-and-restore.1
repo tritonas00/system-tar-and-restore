@@ -4,7 +4,7 @@
 .\"    Manual: system-tar-and-restore Manual
 .\"    Source: system-tar-and-restore 4.5
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "23 Oct 2014" "4.5" "General Manual"
+.TH "system-tar-and-restore" "1" "01 Nov 2014" "4.5" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -74,6 +74,11 @@ generate configuration file (in case of successful backup)
 \fB\-H, \-\-hide-cursor\fR
 .RS 4
 hide cursor when running archiver (useful for some terminal emulators)
+.RE
+.PP
+\fB\-r, \-\-remove\fR
+.RS 4
+remove older backups in the destination directory
 .RE
 .PP
 \fB\-d, \-\-directory\fR
@@ -285,12 +290,8 @@ With \fBGNU Tar 1.27+\fR\& you can add \fB--xattrs --acls\fR (and \fB--selinux\f
 In case of Gentoo package \fBgenkernel\fR\& is required to build initramfs. If you dont want to use initramfs image you can use \fB-D\fR\& in 
 both scripts to disable genkernel check and initramfs building.
 .sp
-In case of Fedora \fB--xattrs --acls --selinux\fR\& are added automatically in backup. In 
-order to successfully restore the target system (\fBFedora 19+\fR\&) using GNU Tar, 
-you need to add \fB--selinux --acls --xattrs-include='*'\fR\& in restore additional tar options\&.
-.sp
-The system that runs the restore script and the target system (the one you 
-want to restore)\&, must have the same architecture (for \fIchroot\fR to work)\&.
+In \fBRestore Mode\fR\& the system that runs the restore script and the target system (the one you 
+want to restore)\&, must have the same architecture (for \fIchroot\fR to work)\&. Also it's advisable to run the restore.sh script from a LiveCD of the target distro.\&
 .sp
 For booting a \fBBTRFS\fR subvolumed root successfully with \fBSyslinux\fR\&,
 it is recommended to have a seperate \fI/boot\fR partition\&. Recommended 

@@ -102,6 +102,9 @@ The script also supports all input as arguments:
 
     -u, --user-options
         additional tar options (see tar --help or man bsdtar)  
+        
+    -o, --override
+        override the default tar options with user options (use with -u)
 
     -E, --encryption-method
         encryption method: openssl gpg

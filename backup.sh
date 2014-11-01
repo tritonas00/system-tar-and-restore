@@ -640,7 +640,7 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   if [ -n "$BRoldbackups" ] && [ -n "$BRclean" ]; then
-    for item in "${BRoldbackups[@]}"; do echo "$item"; done
+    for item in "${BRoldbackups[@]}"; do rm -r "$item"; done
   fi
 
   prepare
@@ -788,7 +788,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -n "$BRoldbackups" ] && [ -n "$BRclean" ]; then
-    for item in "${BRoldbackups[@]}"; do echo "$item"; done
+    for item in "${BRoldbackups[@]}"; do rm -r "$item"; done
   fi
 
   prepare

@@ -227,10 +227,7 @@ When the process completes, you may want to check */tmp/restore.log*.
 - In case of Gentoo package genkernel is required to build initramfs. If you dont want to use initramfs image you can use -D in both scripts to disable
 genkernel check and initramfs building.
 
-- In case of Fedora *--xattrs --acls --selinux* are added automatically in backup. In order to successfully restore the target system (Fedora 19+)
-using GNU Tar, you need to add _--selinux --acls --xattrs-include='*'_ in restore additional tar options.
-
-- The system that runs the restore script and the target system (the one you want to restore), must have the same architecture (for chroot to work).
+- The system that runs the restore script and the target system (the one you want to restore), must have the same architecture (for chroot to work). Also it's advisable to run the restore.sh script from a LiveCD of the target distro. 
 
 - For booting a btrfs subvolumed root successfully with Syslinux, it is recommended to have a seperate /boot partition.
 Recommended subvolume name is: *__active*  

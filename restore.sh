@@ -2237,7 +2237,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BR_MOUNT_OPTS" ]; then
-    BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Specify alternative mount options for root partition.\nLeave empty for: <defaults,noatime>.\n\n(comma-separated list)" 11 70 2>&1 1>&3)
+    BR_MOUNT_OPTS=$(dialog --no-cancel --inputbox "Specify alternative mount options for the root partition.\nLeave empty for: <defaults,noatime>.\n\n(comma-separated list)" 11 70 2>&1 1>&3)
     if [ -z "$BR_MOUNT_OPTS" ]; then
       BR_MOUNT_OPTS="defaults,noatime"
     fi

@@ -495,7 +495,7 @@ check_input() {
   fi
 
   if [ -n "$BRroot" ]; then
-    for i in $(check_parts); do if [[ $i == ${BRroot} ]] ; then BRrootcheck="true" ; fi; done
+    for i in $(check_parts); do if [[ $i == ${BRroot} ]]; then BRrootcheck="true"; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong root partition: $BRroot"
       BRSTOP="y"
@@ -509,7 +509,7 @@ check_input() {
   fi
 
   if [ -n "$BRswap" ]; then
-    for i in $(check_parts); do if [[ $i == ${BRswap} ]] ; then BRswapcheck="true" ; fi; done
+    for i in $(check_parts); do if [[ $i == ${BRswap} ]]; then BRswapcheck="true"; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong swap partition: $BRswap"
       BRSTOP="y"
@@ -543,7 +543,7 @@ check_input() {
       BRmpoint=$(echo $ln | cut -f1 -d"=")
       BRdevice=$(echo $ln | cut -f2 -d"=")
 
-      for i in $(check_parts); do if [[ $i == ${BRdevice} ]] ; then BRcustomcheck="true" ; fi; done
+      for i in $(check_parts); do if [[ $i == ${BRdevice} ]]; then BRcustomcheck="true"; fi; done
       if [ ! "$BRcustomcheck" = "true" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong $BRmpoint partition: $BRdevice"
         BRSTOP="y"
@@ -605,7 +605,7 @@ check_input() {
   fi
 
   if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "/boot/efi" ]; then
-    for i in $(check_disks); do if [[ $i == ${BRgrub} ]] ; then BRgrubcheck="true" ; fi; done
+    for i in $(check_disks); do if [[ $i == ${BRgrub} ]]; then BRgrubcheck="true"; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
       BRSTOP="y"
@@ -623,7 +623,7 @@ check_input() {
   fi
 
   if [ -n "$BRsyslinux" ]; then
-    for i in $(check_disks); do if [[ $i == ${BRsyslinux} ]] ; then BRsyslinuxcheck="true" ; fi; done
+    for i in $(check_disks); do if [[ $i == ${BRsyslinux} ]]; then BRsyslinuxcheck="true"; fi; done
     if [ ! "$BRsyslinuxcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for syslinux: $BRsyslinux"
       BRSTOP="y"
@@ -968,7 +968,7 @@ install_bootloader() {
   if [ -n "$BRgrub" ]; then
     echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [[ "$BRgrub" == *md* ]]; then
-      for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[vhs]d[a-z]'` ; do
+      for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[vhs]d[a-z]'`; do
         if [ "$BRdistro" = "Arch" ]; then
           chroot /mnt/target grub-install --target=i386-pc --recheck /dev/$f || touch /tmp/bl_error
         elif [ "$BRdistro" = "Debian" ]; then
@@ -1027,7 +1027,7 @@ install_bootloader() {
     else
       if [[ "$BRsyslinux" == *md* ]]; then
         chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
-        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'` ; do
+        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'`; do
           BRdev=`echo /dev/$f | cut -c -8`
           BRpart=`echo /dev/$f | cut -c 9-`
           detect_partition_table_syslinux
@@ -1067,7 +1067,7 @@ set_bootloader() {
 
   if [ -n "$BRsyslinux" ]; then
     if [[ "$BRsyslinux" == *md* ]]; then
-      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'` ; do
+      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'`; do
         BRdev=`echo /dev/$f | cut -c -8`
       done
     fi
@@ -2074,7 +2074,7 @@ if [ "$BRinterface" = "cli" ]; then
   cat /mnt/target/etc/fstab
   detect_initramfs_prefix
 
-  while [ -z "$BRedit" ] ; do
+  while [ -z "$BRedit" ]; do
     echo -e "\n${BR_CYAN}Edit fstab?${BR_NORM}"
     read -p "(y/N):" an
 

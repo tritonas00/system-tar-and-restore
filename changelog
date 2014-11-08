@@ -1,5 +1,18 @@
 Changelog:
 
+4.5
+    backup.sh: common tar/bsdtar options syntax
+    backup.sh: added argument to override archiver options with user options
+    backup.sh: added argument to remove older backups in the destination directory
+    scripts now read // as space in archiver/rsync options and custom mountpoints
+    handle partitions with spaces in mountpoint in fstab
+    show archiver/rsync options vertically
+    add automatically fedora tar extra options (--selinux --acls --xattrs-include='*') in restore
+    force vertical lists in cli interface
+    better output on archive read errors in dialog interface
+    updated backup.conf
+    code cleaning
+
 4.4
     added support for openssl/gpg encryption*
     fixed reading/calculating dialog starting empty sometimes

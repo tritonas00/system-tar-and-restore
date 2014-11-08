@@ -10,6 +10,7 @@ Changelog:
     add automatically fedora tar extra options (--selinux --acls --xattrs-include='*') in restore
     force vertical lists in cli interface
     better output on archive read errors in dialog interface
+    some echo changes
     updated backup.conf
     code cleaning
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.5"
+BR_VERSION="System Tar & Restore 4.5.1"
 BR_SEP="::"
 
 if [ -f /etc/backup.conf ]; then
@@ -219,7 +219,7 @@ out_pgrs_cli() {
   while read ln; do
     b=$((b + 1))
     if [ -n "$BRverb" ]; then
-      echo -e "\r${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
+      echo -e "${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
     else
       per=$(($b*100/$total))
       if [[ $per -gt $lastper ]]; then

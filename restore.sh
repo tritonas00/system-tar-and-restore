@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.5"
+BR_VERSION="System Tar & Restore 4.5.1"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -1267,7 +1267,7 @@ tar_pgrs_cli() {
   while read ln; do
     a=$((a + 1))
     if [ -n "$BRverb" ]; then
-      echo -e "\r${BR_YELLOW}[$(($a*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
+      echo -e "${BR_YELLOW}[$(($a*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
     else
       per=$(($a*100/$total))
       if [[ $per -gt $lastper ]]; then
@@ -1283,7 +1283,7 @@ rsync_pgrs_cli() {
   while read ln; do
     b=$((b + 1))
     if [ -n "$BRverb" ]; then
-      echo -e "\r${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
+      echo -e "${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
     else
       per=$(($b*100/$total))
       if [[ $per -gt $lastper ]]; then

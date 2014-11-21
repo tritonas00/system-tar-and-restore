@@ -48,17 +48,17 @@ clean_files() {
 
 exit_screen() {
   if [ -f /tmp/b_error ]; then
-    echo -e "${BR_RED}\nAn error occurred. Check $BRFOLDER/backup.log for details.\n\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
+    echo -e "${BR_RED}\nAn error occurred. Check $BRFOLDER/backup.log for details.\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec\n\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
   else
-    echo -e "${BR_CYAN}\nCompleted. Backup archive and log saved in $BRFOLDER\n\nPress ENTER to exit.${BR_NORM}"
+    echo -e "${BR_CYAN}\nBackup archive and log saved in $BRFOLDER\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec\n\nPress ENTER to exit.${BR_NORM}"
   fi
 }
 
 exit_screen_quiet() {
   if [ -f /tmp/b_error ]; then
-    echo -e "${BR_RED}\nAn error occurred.\n\nCheck $BRFOLDER/backup.log for details${BR_NORM}"
+    echo -e "${BR_RED}\nAn error occurred.\n\nCheck $BRFOLDER/backup.log for details\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec${BR_NORM}"
   else
-    echo -e "${BR_CYAN}\nCompleted.\n\nBackup archive and log saved in $BRFOLDER${BR_NORM}"
+    echo -e "${BR_CYAN}\nCompleted.\n\nBackup archive and log saved in $BRFOLDER\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec${BR_NORM}"
   fi
 }
 
@@ -204,6 +204,7 @@ prepare() {
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
   echo -e "====================$BR_VERSION {$(date +%d-%m-%Y-%T)}====================\n" >> "$BRFOLDER"/backup.log
   echo "${BR_SEP}SUMMARY" >> "$BRFOLDER"/backup.log
+  start=$(date +%s)
 }
 
 options_info() {
@@ -658,6 +659,9 @@ if [ "$BRinterface" = "cli" ]; then
   cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
   if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
 
+  elapsed=$(($(date +%s)-$start))
+  echo "Elapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec" >> "$BRFOLDER"/backup.log
+
   if [ -z "$BRquiet" ]; then
     exit_screen; read -s a
   else
@@ -813,6 +817,9 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
   if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
+
+  elapsed=$(($(date +%s)-$start))
+  echo "Elapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec" >> "$BRFOLDER"/backup.log
 
   if [ -z "$BRquiet" ]; then
     dialog --no-collapse --yes-label "OK" --no-label "View Log" --title "$diag_tl" --yesno "$(exit_screen)" 0 0

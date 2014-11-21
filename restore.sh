@@ -613,7 +613,7 @@ check_input() {
   fi
 
   if [ -n "$BRgrub" ] && [ "$BRgrub" = "/boot/efi" ] && [ ! -d "$BR_EFI_DETECT_DIR" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Non-UEFI environment detected ("$BR_EFI_DETECT_DIR" is missing)"
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
     BRSTOP="y"
   fi
 
@@ -655,7 +655,7 @@ check_input() {
   fi
 
   if [ ! -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRefisp" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Non-UEFI environment detected ("$BR_EFI_DETECT_DIR" is missing)"
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Dont use EFI system partition in bios mode"
     BRSTOP="y"
   fi
 
@@ -1330,7 +1330,7 @@ start_log() {
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:a:O:vdDHP:" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:a:O:vdDHP:B" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,bios" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1456,6 +1456,10 @@ while true; do
       BRencpass=$2
       shift 2
     ;;
+    -B|--bios)
+      unset BR_EFI_DETECT_DIR
+      shift
+    ;;
     --help)
     echo -e "$BR_VERSION\nUsage: restore.sh [options]
 \nGeneral:
@@ -1492,6 +1496,7 @@ while true; do
   -O,  --other-subvolumes   specify other subvolumes (subvolume path e.g /home /var /usr ...)
 \nMisc Options:
   -D,  --disable-genkernel  disable genkernel check and initramfs building in gentoo
+  -B,  --bios               ignore UEFI environment
        --help               print this page"
       exit
       shift

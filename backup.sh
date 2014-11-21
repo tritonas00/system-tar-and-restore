@@ -3,10 +3,6 @@
 BR_VERSION="System Tar & Restore 4.5.1"
 BR_SEP="::"
 
-if [ -f /etc/backup.conf ]; then
-  source /etc/backup.conf
-fi
-
 color_variables() {
   BR_NORM='\e[00m'
   BR_RED='\e[00;31m'
@@ -231,7 +227,7 @@ out_pgrs_cli() {
   done
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDHP:E:or" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDHP:E:orC:" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -314,6 +310,10 @@ while true; do
       BRclean="y"
       shift
     ;;
+    -C|--conf)
+      BRconf=$2
+      shift 2
+    ;;
     --help)
       echo -e "$BR_VERSION\nUsage: backup.sh [options]
 \nGeneral:
@@ -339,6 +339,7 @@ while true; do
   -P, --passphrase         passphrase for encryption
 \nMisc Options:
   -D, --disable-genkernel  disable genkernel check in gentoo
+  -C, --conf               alternative configuration file path
       --help	           print this page"
       exit
       shift
@@ -360,6 +361,19 @@ if [ $(id -u) -gt 0 ]; then
 fi
 
 clean_files
+
+if [ -z "$BRconf" ]; then
+  BRconf="/etc/backup.conf"
+fi
+
+if [ -f "$BRconf" ]; then
+  source "$BRconf"
+fi
+
+if [ ! -f "$BRconf" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] File does not exist: $BRconf"
+  BRSTOP="y"
+fi
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Directory does not exist: $BRFOLDER"

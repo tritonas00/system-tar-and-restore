@@ -353,6 +353,8 @@ done
 
 if [ -z "$BRconf" ]; then
   BRconf="/etc/backup.conf"
+elif [ -n "$BRconf" ] && [ ! -f "$BRconf" ]; then
+  BRconferror="y"
 fi
 
 if [ -f "$BRconf" ]; then
@@ -369,6 +371,11 @@ if [ $(id -u) -gt 0 ]; then
 fi
 
 clean_files
+
+if [ -n "$BRconferror" ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] File does not exist: $BRconf"
+  BRSTOP="y"
+fi
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Directory does not exist: $BRFOLDER"

@@ -351,6 +351,14 @@ while true; do
   esac
 done
 
+if [ -z "$BRconf" ]; then
+  BRconf="/etc/backup.conf"
+fi
+
+if [ -f "$BRconf" ]; then
+  source "$BRconf"
+fi
+
 if [ -z "$BRnocolor" ]; then
   color_variables
 fi
@@ -361,14 +369,6 @@ if [ $(id -u) -gt 0 ]; then
 fi
 
 clean_files
-
-if [ -z "$BRconf" ]; then
-  BRconf="/etc/backup.conf"
-fi
-
-if [ -f "$BRconf" ]; then
-  source "$BRconf"
-fi
 
 if [ ! -f "$BRconf" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] File does not exist: $BRconf"

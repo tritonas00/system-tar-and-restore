@@ -1622,6 +1622,10 @@ PS3="Enter number or Q to quit: "
 
 echo -e "\n${BR_BOLD}$BR_VERSION${BR_NORM}"
 
+if [ -d "$BR_EFI_DETECT_DIR" ]; then
+  echo -e "[${BR_CYAN}INFO${BR_NORM}] UEFI environment detected. (use -B to ignore)"
+fi
+
 if [ -z "$BRinterface" ]; then
   echo -e "\n${BR_CYAN}Select interface:${BR_NORM}"
   select c in "CLI" "Dialog"; do

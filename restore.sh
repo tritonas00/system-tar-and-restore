@@ -831,7 +831,7 @@ show_summary() {
   elif [ "$BRmode" = "Restore" ]; then
     echo "System:   $BRdistro based $target_arch"
   elif [ "$BRmode" = "Transfer" ]; then
-     echo "System:   $BRdistro based $(uname -m)"
+    echo "System:   $BRdistro based $(uname -m)"
   fi
 
   if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then

@@ -397,9 +397,9 @@ hide_used_parts() {
 }
 
 check_parts() {
-  for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo -e "$f"; done
-  for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f"; done
-  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f"; done
+  for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f"; done
+  for f in $(find /dev/mapper/ | grep '-'); do echo "$f"; done
+  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f"; done
 }
 
 check_disks() {
@@ -408,8 +408,8 @@ check_disks() {
 }
 
 disk_list_dialog() {
-  for f in /dev/[vhs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)|$BRempty"; done
-  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)|$BRempty"; done
+  for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)|$BRempty"; done
+  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)|$BRempty"; done
 }
 
 part_sel_dialog() {
@@ -749,7 +749,7 @@ mount_all() {
 }
 
 show_summary() {
-  echo -e "PARTITIONS:"
+  echo "PARTITIONS:"
   echo "root partition: $BRroot $BRfsystem $BRfsize $BR_MOUNT_OPTS"
 
   if [ -n "$BRcustomparts" ]; then
@@ -827,15 +827,15 @@ show_summary() {
   fi
 
   if [ "$BRdistro" = "Unsupported" ]; then
-    echo -e "System:   $BRdistro (WARNING)"
+    echo "System:   $BRdistro (WARNING)"
   elif [ "$BRmode" = "Restore" ]; then
-    echo -e "System:   $BRdistro based $target_arch"
+    echo "System:   $BRdistro based $target_arch"
   elif [ "$BRmode" = "Transfer" ]; then
-     echo -e "System:   $BRdistro based $(uname -m)"
+     echo "System:   $BRdistro based $(uname -m)"
   fi
 
   if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
-    echo -e "Info:     Skip initramfs building"
+    echo "Info:     Skip initramfs building"
   fi
 
   if [ "$BRmode" = "Transfer" ]; then
@@ -1654,12 +1654,12 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   partition_list=(
-   `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)"; done | sort
-    for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)"; done
-    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done`
+   `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done | sort
+    for f in $(find /dev/mapper/ | grep '-'); do echo "$f $(lsblk -d -n -o size $f)"; done
+    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done`
   )
 
-  disk_list=(`for f in /dev/[vhs]d[a-z]; do echo -e "$f $(lsblk -d -n -o size $f)"; done; for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)"; done`)
+  disk_list=(`for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done; for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done`)
 
   editorlist=(nano vi)
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
@@ -2130,9 +2130,9 @@ if [ "$BRinterface" = "cli" ]; then
 
 elif [ "$BRinterface" = "dialog" ]; then
   partition_list=(
-   `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done | sort
-    for f in $(find /dev/mapper/ | grep '-'); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done
-    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo -e "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done`
+   `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done | sort
+    for f in $(find /dev/mapper/ | grep '-'); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done
+    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done`
   )
 
   IFS=$DEFAULTIFS

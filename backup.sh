@@ -59,7 +59,7 @@ exit_screen_quiet() {
 }
 
 show_summary() {
-  echo -e "ARCHIVE:"
+  echo "ARCHIVE:"
   echo "$BRFile.$BR_EXT"
 
   echo -e "\nARCHIVER INFO:"

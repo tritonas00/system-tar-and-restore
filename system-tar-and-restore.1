@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 4.5
+.\"    Source: system-tar-and-restore 4.6
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "01 Nov 2014" "4.5" "General Manual"
+.TH "system-tar-and-restore" "1" "03 Dec 2014" "4.6" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -134,6 +134,11 @@ passphrase for encryption
 \fB\-D, \-\-disable-genkernel\fR
 .RS 4
 disable genkernel check in gentoo  
+.RE
+.PP
+\fB\-C, \-\-conf\fR
+.RS 4
+alternative configuration file path
 .RE
 .PP
 \fB\-\-help\fR
@@ -284,13 +289,18 @@ specify other subvolumes (subvolume path e.g /home /var /usr ...)
 disable genkernel check and initramfs building in gentoo 
 .RE
 .PP
+\fB\-B, \-\-bios\fR
+.RS 4
+ignore UEFI environment
+.RE
+.PP
 \fB\-\-help\fR
 .RS 4
 show all arguments
 .RE
 .SH NOTES
 .sp
-With \fBGNU Tar 1.27+\fR\& you can add \fB--xattrs --acls\fR (and \fB--selinux\fR)\& in backup and restore additional tar options.
+With \fBGNU Tar 1.27+\fR\& you can add \fB--xattrs --acls\fR (and \fB--selinux\fR if available)\& in backup and restore additional tar options. In case of Fedora, those options are added automatically.
 .sp
 In case of Gentoo package \fBgenkernel\fR\& is required to build initramfs. If you dont want to use initramfs image you can use \fB-D\fR\& in 
 both scripts to disable genkernel check and initramfs building.

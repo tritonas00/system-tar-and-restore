@@ -114,6 +114,9 @@ The script also supports all input as arguments:
 
     -D, --disable-genkernel
         disable genkernel check in gentoo  
+        
+    -C, --conf
+        alternative configuration file path
 
     --help
         show all arguments
@@ -219,7 +222,10 @@ The script also supports all input as arguments:
         specify other subvolumes (subvolume path e.g /home /var /usr ...)
 
     -D, --disable-genkernel
-        disable genkernel check and initramfs building in gentoo  
+        disable genkernel check and initramfs building in gentoo
+        
+    -B, --bios
+        ignore UEFI environment
 
     --help
         show all arguments

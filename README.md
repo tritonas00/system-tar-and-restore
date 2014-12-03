@@ -228,6 +228,8 @@ When the process completes, you may want to check */tmp/restore.log*.
 
 ###NOTES###
 
+- The target system may not boot properly in different hardware from the one that the process took place. This is because of missing modules for the new hardware in the initramfs, which has to be rebuilt.
+
 - With GNU Tar 1.27+ you can add *--xattrs --acls* (and *--selinux* if available) in backup and restore additional tar options. In case of Fedora, those options are added automatically.
 
 - In case of Gentoo package genkernel is required to build initramfs. If you dont want to use initramfs image you can use -D in both scripts to disable

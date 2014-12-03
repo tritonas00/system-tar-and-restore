@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.5.1"
+BR_VERSION="System Tar & Restore 4.6"
 BR_SEP="::"
 
 color_variables() {
@@ -44,9 +44,9 @@ clean_files() {
 
 exit_screen() {
   if [ -f /tmp/b_error ]; then
-    echo -e "${BR_RED}\nAn error occurred. Check $BRFOLDER/backup.log for details.\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec\n\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
+    echo -e "${BR_RED}\nAn error occurred.\n\nCheck $BRFOLDER/backup.log for details.\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec\n\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
   else
-    echo -e "${BR_CYAN}\nBackup archive and log saved in $BRFOLDER\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec\n\nPress ENTER to exit.${BR_NORM}"
+    echo -e "${BR_CYAN}\nCompleted.\n\nBackup archive and log saved in $BRFOLDER\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec\n\nPress ENTER to exit.${BR_NORM}"
   fi
 }
 

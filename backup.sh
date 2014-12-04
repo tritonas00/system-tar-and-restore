@@ -146,8 +146,7 @@ set_tar_options() {
   fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
     BR_TAROPTS+=(--exclude=/home/*?*)
-  fi
-  if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
+  elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
     find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
     BR_TAROPTS+=(--exclude-from=/tmp/excludelist)
   fi

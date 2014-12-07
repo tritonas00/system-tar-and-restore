@@ -1,5 +1,11 @@
 Changelog:
 
+4.6
+    added elapsed time info in backup.sh
+    added argument for alternative configuration file
+    added argument to ignore UEFI environment
+    code cleaning
+
 4.5
     backup.sh: common tar/bsdtar options syntax
     backup.sh: added argument to override archiver options with user options

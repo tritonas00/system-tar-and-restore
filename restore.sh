@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.6"
+BR_VERSION="System Tar & Restore 4.7"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -192,9 +192,7 @@ detect_distro() {
   if [ "$BRmode" = "Restore" ]; then
     if grep -Fxq "etc/yum.conf" /tmp/filelist 2>/dev/null; then
       BRdistro="Fedora"
-      if [ "$BRarchiver" = "tar" ]; then
-        USER_OPTS+=(--selinux --acls "--xattrs-include='*'")
-      fi
+      USER_OPTS+=(--selinux --acls "--xattrs-include='*'")
     elif grep -Fxq "etc/pacman.conf" /tmp/filelist 2>/dev/null; then
       BRdistro="Arch"
     elif grep -Fxq "etc/apt/sources.list" /tmp/filelist 2>/dev/null; then
@@ -346,11 +344,11 @@ run_tar() {
   IFS=$DEFAULTIFS
 
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | $BRarchiver ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | $BRarchiver ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   else
-    $BRarchiver ${BR_MAINOPTS} "$BRsource" "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+    tar ${BR_MAINOPTS} "$BRsource" "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   fi
 }
 
@@ -443,11 +441,6 @@ check_input() {
       echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase"
       BRSTOP="y"
     fi
-  fi
-
-  if [ -n "$BRuri" ] && [ -z "$BRarchiver" ]; then
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify archiver"
-    BRSTOP="y"
   fi
 
   if [ -n "$BRuri" ] && [ -n "$BRtfr" ]; then
@@ -644,16 +637,6 @@ check_input() {
     BRSTOP="y"
   fi
 
-  if [ -n "$BRarchiver" ] && [ ! "$BRarchiver" = "tar" ] && [ ! "$BRarchiver" = "bsdtar" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong archiver: $BRarchiver. Available options: tar bsdtar"
-    BRSTOP="y"
-  fi
-
-  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2>/dev/null) ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
-    BRSTOP="y"
-  fi
-
   if [ ! -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRefisp" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Dont use EFI system partition in bios mode"
     BRSTOP="y"
@@ -814,7 +797,6 @@ show_summary() {
   fi
 
   if [ "$BRmode" = "Restore" ]; then
-    echo "Archiver: $BRarchiver"
     if [ "$BRfiletype" = "uncompressed" ]; then
       echo "Archive:  $BRfiletype $enc_info"
     else
@@ -1295,31 +1277,22 @@ rsync_pgrs_cli() {
 }
 
 options_info() {
-  if [ "$BRarchiver" = "tar" ]; then
+  if [ "$BRmode" = "Restore" ]; then
     BRoptinfo="see tar --help"
-    BRtbr="$BRarchiver"
-  elif [ "$BRarchiver" = "bsdtar" ]; then
-    BRoptinfo="see man bsdtar"
-    BRtbr="$BRarchiver"
+    BRtbr="tar"
   elif [ "$BRmode" = "Transfer" ]; then
     BRoptinfo="see rsync --help"
     BRtbr="rsync"
   fi
 }
 
-log_bsdtar() {
-  if [ "$BRarchiver" = "bsdtar" ]; then
-    cat /tmp/filelist | grep -i ": " >> /tmp/restore.log
-  fi
-}
-
 read_archive() {
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | $BRarchiver "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/tar_error
+    openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/tar_error
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | $BRarchiver "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/tar_error
+    gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/tar_error
   else
-    $BRarchiver tf "$BRsource" "${USER_OPTS[@]}" || touch /tmp/tar_error
+    tar tf "$BRsource" "${USER_OPTS[@]}" || touch /tmp/tar_error
   fi
 }
 
@@ -1330,7 +1303,7 @@ start_log() {
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:a:O:vdDHP:B" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,archiver:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,bios" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:O:vdDHP:B" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,bios" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1428,10 +1401,6 @@ while true; do
       BRcustomparts=($2)
       shift 2
     ;;
-    -a|--archiver)
-      BRarchiver=$2
-      shift 2
-    ;;
     -O|--other-subvolumes)
       BRsubvols=($2)
       shift 2
@@ -1467,13 +1436,12 @@ while true; do
   -N,  --no-color           disable colors
   -q,  --quiet              dont ask, just run
   -v,  --verbose            enable verbose tar/rsync output (cli interface only)
-  -u,  --user-options       additional tar/rsync options (see tar --help, man bsdtar or rsync --help)
+  -u,  --user-options       additional tar/rsync options (see tar --help or rsync --help)
   -H,  --hide-cursor        hide cursor when running tar/rsync (useful for some terminal emulators)
 \nRestore Mode:
   -f,  --file               backup file path or url
   -n,  --username           username
   -p,  --password           password
-  -a,  --archiver           select archiver: tar bsdtar
   -P,  --passphrase         passphrase for decryption
 \nTransfer Mode:
   -t,  --transfer           activate transfer mode
@@ -1881,24 +1849,6 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  if [ "$BRmode" = "Restore" ] && [ -z "$BRarchiver" ]; then
-    echo -e "\n${BR_CYAN}Select the archiver you used to create the backup archive:${BR_NORM}"
-    select c in "tar    (GNU Tar)" "bsdtar (Libarchive Tar)"; do
-      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-        exit
-      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-        BRarchiver="tar"
-        break
-      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
-        BRarchiver="bsdtar"
-        break
-      else
-        echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
-      fi
-    done
-  fi
-
   if [ "$BRmode" = "Transfer" ]; then
     while [ -z "$BRhidden" ]; do
       echo -e "\n${BR_CYAN}Transfer entire /home directory?\n${BR_MAGENTA}(If no, only hidden files and folders will be transferred)${BR_NORM}"
@@ -2056,14 +2006,7 @@ if [ "$BRinterface" = "cli" ]; then
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
-
-    if [ "$BRarchiver" = "tar" ]; then
-      run_tar 2>>/tmp/restore.log
-    elif [ "$BRarchiver" = "bsdtar" ]; then
-      run_tar 2>&1 | tee /tmp/filelist
-    fi | tar_pgrs_cli
-
-    log_bsdtar
+    run_tar 2>>/tmp/restore.log | tar_pgrs_cli
     echo " "
 
   elif [ "$BRmode" = "Transfer" ]; then
@@ -2317,12 +2260,6 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ "$?" = "1" ]; then exit; fi
   fi
 
-  if [ "$BRmode" = "Restore" ]; then
-    if [ -z "$BRarchiver" ]; then
-      BRarchiver=$(dialog --no-cancel --menu "Select the archiver you used to create the backup archive:" 12 45 12 tar "GNU Tar" bsdtar "Libarchive Tar" 2>&1 1>&3)
-    fi
-  fi
-
   if [ "$BRmode" = "Transfer" ] && [ -z "$BRhidden" ]; then
     dialog --yesno "Transfer entire /home directory?\n\nIf No, only hidden files and folders will be transferred" 8 50
     if [ "$?" = "0" ]; then
@@ -2459,14 +2396,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
-
-    if [ "$BRarchiver" = "tar" ]; then
-      run_tar 2>>/tmp/restore.log
-    elif [ "$BRarchiver" = "bsdtar" ]; then
-      run_tar 2>&1 | tee /tmp/filelist
-    fi | count_gauge | dialog --gauge "Extracting..." 0 50
-
-    log_bsdtar
+    run_tar 2>>/tmp/restore.log | count_gauge | dialog --gauge "Extracting..." 0 50
 
   elif [ "$BRmode" = "Transfer" ]; then
     if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi

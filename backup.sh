@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.6"
+BR_VERSION="System Tar & Restore 4.7"
 BR_SEP="::"
 
 color_variables() {
@@ -61,11 +61,6 @@ exit_screen_quiet() {
 show_summary() {
   echo "ARCHIVE:"
   echo "$BRFile.$BR_EXT"
-
-  echo -e "\nARCHIVER INFO:"
-  echo "Archiver:    $BRarchiver"
-  echo "Compression: $BRcompression"
-  echo "Encryption:  $BRencmethod"
 
   echo -e "\nARCHIVER OPTIONS:"
   for i in "${BR_TAROPTS[@]}"; do echo "$i"; done
@@ -134,18 +129,15 @@ set_tar_options() {
     BR_EXT="${BR_EXT}.gpg"
   fi
 
-  BR_TAROPTS=(--exclude=/run/*?* --exclude=/dev/*?* --exclude=/sys/*?* --exclude=/tmp/*?* --exclude=/mnt/*?* --exclude=/proc/*?* --exclude=/media/*?* --exclude=/var/run/*?* --exclude=/var/lock/*?* --exclude=.gvfs --exclude=lost+found --exclude="$BRFOLDER")
+  BR_TAROPTS=(--exclude=/run/* --exclude=/dev/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=/proc/* --exclude=/media/* --exclude=/var/run/* --exclude=/var/lock/* --exclude=.gvfs --exclude=lost+found --exclude="$BRFOLDER" --sparse)
   if [ -n "$BRoverride" ]; then
-    BR_TAROPTS=(--exclude="$BRFOLDER")
+    BR_TAROPTS=(--exclude="$BRFOLDER" --sparse)
   fi
-  if [ "$BRarchiver" = "tar" ]; then
-    BR_TAROPTS+=(--sparse)
-  fi
-  if [ "$BRarchiver" = "tar" ] && [ -f /etc/yum.conf ]; then
+  if [ -f /etc/yum.conf ]; then
     BR_TAROPTS+=(--acls --xattrs --selinux)
   fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
-    BR_TAROPTS+=(--exclude=/home/*?*)
+    BR_TAROPTS+=(--exclude=/home/*)
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
     find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print > /tmp/excludelist
     BR_TAROPTS+=(--exclude-from=/tmp/excludelist)
@@ -155,16 +147,16 @@ set_tar_options() {
 }
 
 run_calc() {
-   $BRarchiver cvf /dev/null "${BR_TAROPTS[@]}" / 2>&1 | tee /tmp/b_filelist
+  tar cvf /dev/null "${BR_TAROPTS[@]}" / 2>/dev/null | tee /tmp/b_filelist
 }
 
 run_tar() {
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    ($BRarchiver ${BR_MAINOPTS} - "${BR_TAROPTS[@]}" / || touch /tmp/b_error) | openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log
+    tar ${BR_MAINOPTS} >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log) "${BR_TAROPTS[@]}" / 2>> "$BRFOLDER"/backup.log || touch /tmp/b_error
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    ($BRarchiver ${BR_MAINOPTS} - "${BR_TAROPTS[@]}" / || touch /tmp/b_error) | gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log
+    tar ${BR_MAINOPTS} >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFile".${BR_EXT} 2>> "$BRFOLDER"/backup.log) "${BR_TAROPTS[@]}" / 2>> "$BRFOLDER"/backup.log || touch /tmp/b_error
   else
-    $BRarchiver ${BR_MAINOPTS} "$BRFile".${BR_EXT} "${BR_TAROPTS[@]}" / || touch /tmp/b_error
+    tar ${BR_MAINOPTS} "$BRFile".${BR_EXT} "${BR_TAROPTS[@]}" / 2>> "$BRFOLDER"/backup.log || touch /tmp/b_error
   fi
 }
 
@@ -202,14 +194,6 @@ prepare() {
   start=$(date +%s)
 }
 
-options_info() {
-  if [ "$BRarchiver" = "tar" ]; then
-    BRoptinfo="see tar --help"
-  elif [ "$BRarchiver" = "bsdtar" ]; then
-    BRoptinfo="see man bsdtar"
-  fi
-}
-
 out_pgrs_cli() {
   lastper=-1
   while read ln; do
@@ -226,7 +210,7 @@ out_pgrs_cli() {
   done
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNa:qvgDHP:E:orC:" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,archiver:,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNqvgDHP:E:orC:" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -268,10 +252,6 @@ while true; do
     -N|--no-color)
       BRnocolor="y"
       shift
-    ;;
-    -a|--archiver)
-      BRarchiver=$2
-      shift 2
     ;;
     -q|--quiet)
       BRquiet="y"
@@ -330,9 +310,8 @@ while true; do
   -h, --exclude-home	   exclude /home directory (keep hidden files and folders)
   -n, --no-hidden          dont keep home's hidden files and folders (use with -h)
 \nArchiver Options:
-  -a, --archiver           select archiver: tar bsdtar
   -c, --compression        compression type: gzip bzip2 xz none
-  -u, --user-options       additional tar options (see tar --help or man bsdtar)
+  -u, --user-options       additional tar options (see tar --help)
   -o, --override           override the default tar options with user options (use with -u)
   -E, --encryption-method  encryption method: openssl gpg
   -P, --passphrase         passphrase for encryption
@@ -386,23 +365,8 @@ if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompres
   BRSTOP="y"
 fi
 
-if [ -n "$BRarchiver" ] && [ ! "$BRarchiver" = "tar" ] && [ ! "$BRarchiver" = "bsdtar" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong archiver: $BRarchiver. Available options: tar bsdtar"
-  BRSTOP="y"
-fi
-
 if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" = "dialog" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong interface name: $BRinterface. Available options: cli dialog"
-  BRSTOP="y"
-fi
-
-if [ -n "$BRarchiver" ] && [ -z "$BRFOLDER" ]; then
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify a destination directory"
-  BRSTOP="y"
-fi
-
-if [ -z "$BRarchiver" ] && [ -n "$BRFOLDER" ]; then
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify archiver"
   BRSTOP="y"
 fi
 
@@ -528,29 +492,6 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  if [ -z "$BRarchiver" ]; then
-    echo -e "\n${BR_CYAN}Select archiver:${BR_NORM}"
-    select c in "tar    (GNU Tar)" "bsdtar (Libarchive Tar)"; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-        exit
-      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-        BRarchiver="tar"
-        break
-      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
-        BRarchiver="bsdtar"
-        break
-      else
-        echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
-      fi
-    done
-  fi
-
-  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2>/dev/null) ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
-    exit
-  fi
-
   if [ -z "$BRcompression" ]; then
     echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
     select c in "gzip  (Fast, big file)" "bzip2 (Slow, smaller file)" "xz    (Slow, smallest file)" "none  (No compression)"; do
@@ -575,11 +516,9 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  options_info
-
   if [ -z "$BR_USER_OPTS" ]; then
-    echo -e "\n${BR_CYAN}Enter additional $BRarchiver options\n${BR_MAGENTA}(If you want spaces in names replace them with //)\n(Leave blank for defaults)${BR_NORM}"
-    read -p "Options ($BRoptinfo): " BR_USER_OPTS
+    echo -e "\n${BR_CYAN}Enter additional tar options\n${BR_MAGENTA}(If you want spaces in names replace them with //)\n(Leave blank for defaults)${BR_NORM}"
+    read -p "Options (see tar --help): " BR_USER_OPTS
   fi
 
   if which openssl &>/dev/null || which gpg &>/dev/null; then
@@ -667,11 +606,9 @@ if [ "$BRinterface" = "cli" ]; then
   sleep 1
   echo " "
 
-  run_tar 2>&1 | tee /tmp/b_filelist | out_pgrs_cli
+  run_tar | out_pgrs_cli
 
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
-
-  cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
   if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
 
   elapsed=$(($(date +%s)-$start))
@@ -745,26 +682,13 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  if [ -z "$BRarchiver" ]; then
-    BRarchiver=$(dialog --cancel-label Quit --menu "Select archiver:" 12 35 12 tar "GNU Tar" bsdtar "Libarchive Tar" 2>&1 1>&3)
-    if [ "$?" = "1" ]; then exit; fi
-  fi
-
-  if [ "$BRarchiver" = "bsdtar" ] && [ -z $(which bsdtar 2>/dev/null) ]; then
-    if [ -z "$BRnocolor" ]; then color_variables; fi
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Package bsdtar is not installed. Install the package and re-run the script"
-    exit
-  fi
-
   if [ -z "$BRcompression" ]; then
     BRcompression=$(dialog --cancel-label Quit --menu "Select compression type:" 12 35 12 gzip "Fast, big file" bzip2 "Slow, smaller file" xz "Slow, smallest file" none "No compression" 2>&1 1>&3)
     if [ "$?" = "1" ]; then exit; fi
   fi
 
-  options_info
-
   if [ -z "$BR_USER_OPTS" ]; then
-    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional $BRarchiver options. Leave empty for defaults.\n\n(If you want spaces in names replace them with //)\n($BRoptinfo)" 11 70 2>&1 1>&3)
+    BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional tar options. Leave empty for defaults.\n\n(If you want spaces in names replace them with //)\n(see tar --help)" 11 70 2>&1 1>&3)
   fi
 
   if which openssl &>/dev/null || which gpg &>/dev/null; then
@@ -818,7 +742,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
 
-  run_tar 2>&1 | tee /tmp/b_filelist |
+  run_tar |
   while read ln; do
     b=$((b + 1))
     per=$(($b*100/$total))
@@ -829,8 +753,6 @@ elif [ "$BRinterface" = "dialog" ]; then
   done | dialog --gauge "Archiving..." 0 50
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
-
-  cat /tmp/b_filelist | grep -i ": " >> "$BRFOLDER"/backup.log
   if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
 
   elapsed=$(($(date +%s)-$start))
@@ -845,7 +767,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 fi
 
 if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
-  echo -e "#Auto-generated configuration file for backup.sh.\n#Place it in /etc/backup.conf.\n\nBRinterface=$BRinterface\nBRFOLDER='$(dirname "$BRFOLDER")'\nBRarchiver=$BRarchiver\nBRcompression=$BRcompression" > "$BRFOLDER"/backup.conf
+  echo -e "#Auto-generated configuration file for backup.sh.\n#Place it in /etc/backup.conf.\n\nBRinterface=$BRinterface\nBRFOLDER='$(dirname "$BRFOLDER")'\nBRcompression=$BRcompression" > "$BRFOLDER"/backup.conf
   if [ -n "$BRnocolor" ]; then echo "BRnocolor=Yes" >> "$BRFOLDER"/backup.conf; fi
   if [ -n "$BRverb" ]; then echo "BRverb=Yes" >> "$BRFOLDER"/backup.conf; fi
   if [ -n "$BRquiet" ]; then echo "BRquiet=Yes" >> "$BRFOLDER"/backup.conf; fi

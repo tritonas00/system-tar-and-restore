@@ -779,6 +779,8 @@ if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
   if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'" >> "$BRFOLDER"/backup.conf; fi
   if [ -n "$BRencpass" ]; then echo -e "BRencmethod=$BRencmethod\nBRencpass='$BRencpass'" >> "$BRFOLDER"/backup.conf; fi
   if [ -n "$BRclean" ]; then echo "BRclean=Yes" >> "$BRFOLDER"/backup.conf; fi
+  if [ -n "$BRhide" ]; then echo "BRhide=Yes" >> "$BRFOLDER"/backup.conf; fi
+  if [ -n "$BRgenkernel" ]; then echo "BRgenkernel=No" >> "$BRFOLDER"/backup.conf; fi
 fi
 
 if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi

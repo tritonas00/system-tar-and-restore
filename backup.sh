@@ -538,31 +538,28 @@ if [ "$BRinterface" = "cli" ]; then
     read -p "Options (see tar --help): " BR_USER_OPTS
   fi
 
-  if which openssl &>/dev/null || which gpg &>/dev/null; then
-    while  [ -z "$BRencmethod" ]; do
-      echo -e "\n${BR_CYAN}Enter passphrase to encrypt archive\n${BR_MAGENTA}(Leave blank for no encryption)${BR_NORM}"
-      read -p "Passphrase: " BRencpass
-      if [ -n "$BRencpass" ]; then
-        echo -e "\n${BR_CYAN}Select encryption method:${BR_NORM}"
-        select c in openssl gpg; do
-          if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
-            echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-            exit
-          elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-            BRencmethod="openssl"
-            break
-          elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
-            BRencmethod="gpg"
-            break
-          else
-            echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
-          fi
-        done
-      else
-        BRencmethod="none"
-      fi
-      break
-    done
+  if  [ -z "$BRencmethod" ]; then
+    echo -e "\n${BR_CYAN}Enter passphrase to encrypt archive\n${BR_MAGENTA}(Leave blank for no encryption)${BR_NORM}"
+    read -p "Passphrase: " BRencpass
+    if [ -n "$BRencpass" ]; then
+      echo -e "\n${BR_CYAN}Select encryption method:${BR_NORM}"
+      select c in openssl gpg; do
+        if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+          exit
+        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
+          BRencmethod="openssl"
+          break
+        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+          BRencmethod="gpg"
+          break
+        else
+          echo -e "${BR_RED}Please enter a valid option from the list${BR_NORM}"
+        fi
+      done
+    else
+      BRencmethod="none"
+    fi
   fi
 
   IFS=$DEFAULTIFS
@@ -708,20 +705,18 @@ elif [ "$BRinterface" = "dialog" ]; then
     BR_USER_OPTS=$(dialog --no-cancel --inputbox "Enter additional tar options. Leave empty for defaults.\n\n(If you want spaces in names replace them with //)\n(see tar --help)" 11 70 2>&1 1>&3)
   fi
 
-  if which openssl &>/dev/null || which gpg &>/dev/null; then
-    if [ -z "$BRencmethod" ]; then
-      BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to encrypt archive. Leave empty for no encryption." 9 70 2>&1 1>&3)
-      if [ -n  "$BRencpass" ]; then
-        REPLY=$(dialog --cancel-label Quit --menu "Select encryption method:" 12 35 12 1 openssl 2 gpg 2>&1 1>&3)
-        if [ "$?" = "1" ]; then exit; fi
-        if [ "$REPLY" = "1" ]; then
-          BRencmethod="openssl"
-        elif [ "$REPLY" = "2" ]; then
-          BRencmethod="gpg"
-        fi
-      else
-        BRencmethod="none"
+  if [ -z "$BRencmethod" ]; then
+    BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to encrypt archive. Leave empty for no encryption." 9 70 2>&1 1>&3)
+    if [ -n  "$BRencpass" ]; then
+      REPLY=$(dialog --cancel-label Quit --menu "Select encryption method:" 12 35 12 1 openssl 2 gpg 2>&1 1>&3)
+      if [ "$?" = "1" ]; then exit; fi
+      if [ "$REPLY" = "1" ]; then
+        BRencmethod="openssl"
+      elif [ "$REPLY" = "2" ]; then
+        BRencmethod="gpg"
       fi
+    else
+      BRencmethod="none"
     fi
   fi
 

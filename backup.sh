@@ -784,7 +784,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 fi
 
 if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
-  generate_conf >"$BRFOLDER"/backup.conf
+  generate_conf > "$BRFOLDER"/backup.conf
 fi
 
 if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi

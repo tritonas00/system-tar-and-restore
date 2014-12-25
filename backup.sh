@@ -538,7 +538,7 @@ if [ "$BRinterface" = "cli" ]; then
     read -p "Options (see tar --help): " BR_USER_OPTS
   fi
 
-  if  [ -z "$BRencmethod" ]; then
+  if [ -z "$BRencmethod" ]; then
     echo -e "\n${BR_CYAN}Enter passphrase to encrypt archive\n${BR_MAGENTA}(Leave blank for no encryption)${BR_NORM}"
     read -p "Passphrase: " BRencpass
     if [ -n "$BRencpass" ]; then

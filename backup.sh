@@ -774,6 +774,7 @@ if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
   if [ ! "$BRFile" = "$BRfiledefault" ]; then echo "BRNAME='$BRNAME'" >> "$BRFOLDER"/backup.conf; fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then echo "BRhome=No" >> "$BRFOLDER"/backup.conf; fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then echo -e "BRhome=No\nBRhidden=No" >> "$BRFOLDER"/backup.conf; fi
+  if [ -n "$BRoverride" ]; then echo "BRoverride=Yes" >> "$BRFOLDER"/backup.conf; fi
   if [ "$BR_USER_OPTS" = " " ]; then unset BR_USER_OPTS; fi
   if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'" >> "$BRFOLDER"/backup.conf; fi
   if [ -n "$BRencpass" ]; then echo -e "BRencmethod=$BRencmethod\nBRencpass='$BRencpass'" >> "$BRFOLDER"/backup.conf; fi

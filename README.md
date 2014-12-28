@@ -32,7 +32,6 @@ The package is provided by the <code>gentoo-el</code> overlay. You can install i
 
 ###REQUIREMENTS###
 
-- bsdtar (for libarchive tar)  
 - rsync (for Transfer Mode)
 - dialog (for ncurses interface)
 - wget   (for downloading backup archives)
@@ -54,9 +53,8 @@ The backup.sh script makes a tar backup of your system. You will be asked for:
 - **Destination directory:** Where you want to save the backup. Default is /.
 - **Archive name:** A desired name for the backup. Default is *Backup-$(hostname)-$(date +%d-%m-%Y-%T)*.
 - **/home directory options:** You have three options: fully include it, keep only it's hidden files and folders (which are necessary to login and keep basic settings) or completely exclude it (in case it's located in separate partition and you want to use that in restore).
-- **Archiver:** You can choose between GNU Tar and bsdtar (Libarchive).
 - **Compression:** You can choose between gzip, bzip2, xz and none (for no compression). Gzip should be fine.
-- **Archiver options:** You can pass your own extra options in the archiver. See <code>tar --help</code> or <code>man bsdtar</code> for more info.
+- **Archiver options:** You can pass your own extra options in the archiver. See <code>tar --help</code> for more info.
 - **Passphrase and encryption method:** Enter a passphrase if you want to encrypt the archive and select encryption method (openssl or gpg). Leave empty for no encryption.
 
 The script also supports all input as arguments:
@@ -95,13 +93,10 @@ The script also supports all input as arguments:
         dont keep home's hidden files and folders (use with -h)  
 
     -c, --compression
-        compression type: gzip bzip2 xz none  
-
-    -a, --archiver
-        select archiver: tar bsdtar      
+        compression type: gzip bzip2 xz none     
 
     -u, --user-options
-        additional tar options (see tar --help or man bsdtar)  
+        additional tar options (see tar --help)  
         
     -o, --override
         override the default tar options with user options (use with -u)
@@ -137,9 +132,9 @@ Boot from a livecd - preferably one of the target (backed up) distro - or anothe
 - **Mount options:** You can specify alternative comma-seperated mount options for the target root partition. Defaults are: *defaults,noatime*.
 - **Btrfs subvolumes:** If the target root filesystem is Btrfs, you will be prompted for root subvolume name. Leave empty if you dont want subvolumes. Also you can specify other subvolumes. Just enter the paths (/home /var /usr etc.) seperated by space. Recommended root subvolume name is: *__active*.
 - **Bootloader:** You can choose grub (version 2) or syslinux, the target disk and in case of syslinux any additional kernel options that will be written in the target *syslinux.cfg*. If you select a raid array as bootloader disk, the script will install the bootloader in all disks that the array contains.
-- **Select mode:** In *Restore mode* you have to specify the archiver you used to create the backup archive and the backup archive location, local or remote. If the archive is encrypted you will be prompted for the passphrase. In *Transfer mode* you will have to specify if you want to transfer your entire /home directory or only it's hidden files and folders (which are necessary to login and keep basic settings).
+- **Select mode:** In *Restore mode* you have to specify the backup archive location, local or remote. If the archive is encrypted you will be prompted for the passphrase. In *Transfer mode* you will have to specify if you want to transfer your entire /home directory or only it's hidden files and folders (which are necessary to login and keep basic settings).
 - **Tar/Rsync options:** You may want to specify any additional options.  
-See <code>tar --help</code>, <code>man bsdtar</code> or <code>rsync --help</code> for more info.
+See <code>tar --help</code> or <code>rsync --help</code> for more info.
 
 The script also supports all input as arguments:
 
@@ -156,7 +151,7 @@ The script also supports all input as arguments:
         enable verbose tar/rsync output (cli interface only)
 
     -u, --user-options
-        additional tar/rsync options (see tar --help, man bsdtar or rsync --help)  
+        additional tar/rsync options (see tar --help or rsync --help)  
 
     -H, --hide-cursor
         hide cursor when running tar/rsync (useful for some terminal emulators)  
@@ -168,10 +163,7 @@ The script also supports all input as arguments:
         username
 
     -p, --password
-        password
-
-    -a, --archiver
-        select archiver: tar bsdtar    
+        password  
 
     -P, --passphrase
         passphrase for decryption    
@@ -262,31 +254,28 @@ Recommended subvolume name is: *__active*
 
 - Destination: /home/john/
 - Compression: gzip  
-- Archiver: tar
 - Additional options: --acls --xattrs 
 
-<code>./backup.sh -d /home/john/ -c gzip -a tar -u "--acls --xattrs"</code>  
+<code>./backup.sh -d /home/john/ -c gzip -u "--acls --xattrs"</code>  
 
 - Destination: /home/john/
 - Compression: xz  
-- Archiver: bsdtar   
 - Exclude /home directory  
 
-<code>./backup.sh -d /home/john/ -c xz -hn -a bsdtar</code>   
+<code>./backup.sh -d /home/john/ -c xz -hn</code>   
 
 - Destination: /home/john/
 - Compression: gzip  
-- Archiver: tar  
 - Keep only /home's hidden files and folders
 
-<code>./backup.sh -d /home/john/ -c gzip -h -a tar</code>   
+<code>./backup.sh -d /home/john/ -c gzip -h</code>   
 
 - root partition: /dev/sdb1
 - grub  
 - local file
 - tar options: --acls --xattrs 
 
-<code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -a tar -u "--acls --xattrs"</code>  
+<code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -u "--acls --xattrs"</code>  
 
 - root partition: /dev/sda1 (ssd)
 - syslinux  
@@ -301,14 +290,14 @@ Recommended subvolume name is: *__active*
 - syslinux 
 - remote file on ftp server
 
-<code>./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -f ftp://server/backup.tar.xz -a bsdtar</code>
+<code>./restore.sh -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -f ftp://server/backup.tar.xz</code>
 
 - root partition: /dev/sdb2
 - boot partition: /dev/sdb1
 - syslinux 
 - remote file in protected http server
 
-<code>./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -f http://server/backup.tar.gz -n user -p pass -a tar</code>
+<code>./restore.sh -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -f http://server/backup.tar.gz -n user -p pass</code>
 
 - root partition: /dev/mapper/debian-root
 - boot partition: /dev/sdb1  
@@ -331,14 +320,14 @@ Recommended subvolume name is: *__active*
 - local file  
 - syslinux  
 
-<code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0 -a bsdtar</code>  
+<code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0</code>  
 
 - root partition: /dev/sda2
 - esp partition: /dev/sda1
 - local file  
 - grub
 
-<code>./restore.sh -r /dev/sda2  -e /dev/sda1 -g /boot/efi -f /home/john/Downloads/backup.tar.gz -a tar</code>   
+<code>./restore.sh -r /dev/sda2  -e /dev/sda1 -g /boot/efi -f /home/john/Downloads/backup.tar.gz</code>   
 
 - root partition: /dev/sdb2
 - boot partition: /dev/sdb1

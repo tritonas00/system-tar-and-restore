@@ -4,7 +4,7 @@
 .\"    Manual: system-tar-and-restore Manual
 .\"    Source: system-tar-and-restore 4.6
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "03 Dec 2014" "4.6" "General Manual"
+.TH "system-tar-and-restore" "1" "23 Dec 2014" "4.7" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -101,11 +101,6 @@ exclude \fI/home\fR directory (keep hidden files and folders)
 dont keep home's hidden files and folders (use with -h)
 .RE
 .PP
-\fB\-a, \-\-archiver\fR
-.RS 4
-select archiver\&: tar and bsdtar are supported
-.RE
-.PP
 \fB\-c, \-\-compression\fR
 .RS 4
 compression type\&: gzip bzip2 xz and none are supported
@@ -113,7 +108,7 @@ compression type\&: gzip bzip2 xz and none are supported
 .PP
 \fB\-u, \-\-user-options\fR
 .RS 4
-additional tar options (see tar --help or man bsdtar) 
+additional tar options (see tar --help) 
 .RE
 .PP
 \fB\-o, \-\-override\fR
@@ -147,7 +142,7 @@ show all arguments
 .RE
 .SH RESTORE DESCRIPTION
 .sp
-The restore.sh script has two modes: \fBRestore\fR and \fBTransfer\fR\&. The first uses the above created archive to extract it in desired partition(s). The second transfers your system in desired partition(s) using \fBRSYNC\fR. Then, in both cases, generates the target system's fstab, rebuilds initramfs for every available kernel, generates locales and finally installs and configures the selected bootloader.
+The restore.sh script has two modes: \fBRestore\fR and \fBTransfer\fR\&. The first uses the above created archive to extract it in desired partition(s). The second transfers your system in desired partition(s) using \fBrsync\fR. Then, in both cases, generates the target system's fstab, rebuilds initramfs for every available kernel, generates locales and finally installs and configures the selected bootloader.
 .sp
 Boot from a livecd - preferably one of the target (backed up) distro - or another existing system, prepare your target partition(s) and start the script.
 .sp
@@ -176,7 +171,7 @@ enable verbose tar/rsync output (cli interface only)
 .PP
 \fB\-u, \-\-user-options\fR
 .RS 4
-additional tar/rsync options (see tar --help, man bsdtar or rsync --help)
+additional tar/rsync options (see tar --help or rsync --help)
 .RE
 .PP
 \fB\-H, \-\-hide-cursor\fR
@@ -197,11 +192,6 @@ username
 \fB\-p, \-\-password\fR
 .RS 4
 password
-.RE
-.PP
-\fB\-a, \-\-archiver\fR
-.RS 4
-select the archiver you used to create the backup archive: tar bsdtar
 .RE
 .PP
 \fB\-P, \-\-passphrase\fR
@@ -333,28 +323,28 @@ an \fBESP (EFI System Partition)\fR\&.
 .SH EXAMPLES USING ARGUMENTS
 .sp
 Backup system in the directory \fI/home/john/\fR, use \fBgzip\fR 
-compression, \fBtar\fR archiver and enable \fB--acls\fR and \fB--xattrs\fR options:
+compression and enable \fB--acls\fR and \fB--xattrs\fR options:
 .RS 4
-\fB./backup.sh \-d /home/john/ \-c gzip -a tar \-u "--acls --xattrs"\fR 
+\fB./backup.sh \-d /home/john/ \-c gzip \-u "--acls --xattrs"\fR 
 .RE
 .sp
-Backup system in the directory \fI/home/john/\fR\&, use \fBxz\fR compression, 
-\fBbsdtar\fR archiver and exclude \fI/home/\fR directory from backup tarball:
+Backup system in the directory \fI/home/john/\fR\&, use \fBxz\fR compression 
+and exclude \fI/home/\fR directory from backup tarball:
 .RS 4
-\fB./backup.sh \-d /home/john/ \-c xz \-hn -a bsdtar\fR 
+\fB./backup.sh \-d /home/john/ \-c xz \-hn\fR 
 .RE
 .sp
-Backup system in the directory \fI/home/john/\fR\&, use \fBgzip\fR compression, 
-\fBtar\fR archiver and keep only hidden files and folders from \fI/home/\fR: 
+Backup system in the directory \fI/home/john/\fR\&, use \fBgzip\fR compression 
+and keep only hidden files and folders from \fI/home/\fR: 
 .RS 4
-\fB./backup.sh \-d /home/john/ \-c gzip \-h -a tar\fR 
+\fB./backup.sh \-d /home/john/ \-c gzip \-h\fR 
 .RE
 .sp
 Restore system in \fI/dev/sdb1\fR partition, use \fBgrub\fR as bootloader, 
 use \fI/home/john/Downloads/backup.tar.gz\fR as local backup file and enable 
 \fB--acls --xattrs\fR tar options:
 .RS 4
-\fB./restore.sh \-r /dev/sdb1 \-g /dev/sdb \-f /home/john/Downloads/backup.tar.gz -a tar -u "--acls --xattrs"\fR
+\fB./restore.sh \-r /dev/sdb1 \-g /dev/sdb \-f /home/john/Downloads/backup.tar.gz -u "--acls --xattrs"\fR
 .RE
 .sp
 Transfer running system using \fBrsync\fR\& in \fBssd\fR\&. The \fI/\fR partition will be
@@ -368,7 +358,7 @@ for \fI/home\fR partition\&, \fI/dev/sdb3\fR for \fIswap\fR\& partition, using \
 as bootloader and download backup file from ftp server:
 .RS 4
 \fB./restore.sh \-r /dev/sdb1 \-h /dev/sdb2 \-s /dev/sdb3 \-S /dev/sdb \-f 
-ftp://server/data/backup.tar.xz -a bsdtar\fR
+ftp://server/data/backup.tar.xz\fR
 .RE
 .sp
 Restore system in \fI/dev/sdb2\fR for \fI/\fR (root) partition, \fI/dev/sdb1\fR
@@ -376,7 +366,7 @@ for \fI/boot\fR partition, \fI/dev/sdb3\fR for \fI/home\fR\& partition, using \f
 as bootloader and download backup file from protected http server\&.
 .RS 4
 \fB./restore.sh \-r /dev/sdb2 \-b /dev/sdb1 \-h /dev/sdb3 \-S /dev/sdb \-f 
-http://server/backup.tar.gz \-n user \-p pass -a tar\fR
+http://server/backup.tar.gz \-n user \-p pass\fR
 .RE
 .sp
 Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be
@@ -399,14 +389,14 @@ Restore system in \fBRAID\fR partitions\&. The boot partition will be \fI/dev/md
 and the root partition will be \fI/dev/md1\fR\&. The backup will be the local file
 \fI/home/john/Downloads/backup.tar.gz\fR and \fBsyslinux\fR will be installed in all disks that array \fI/dev/md0\fR\ contains:
 .RS 4
-\fB./restore.sh \-r /dev/md1 \-b /dev/md0 \-f /home/john/Downloads/backup.tar.gz \-S /dev/md0 -a bsdtar\fR
+\fB./restore.sh \-r /dev/md1 \-b /dev/md0 \-f /home/john/Downloads/backup.tar.gz \-S /dev/md0\fR
 .RE
 .sp
 Restore system in \fBUEFI\fR environment\&. The EFI system partition will be \fI/dev/sda1\fR
 and the root partition will be \fI/dev/sda2\fR\&. The backup will be the local file
 \fI/home/john/Downloads/backup.tar.gz\fR and \fBgrub\fR will be installed in \fI/boot/efi\fR\::
 .RS 4
-\fB./restore.sh \-r /dev/sda2 \-e /dev/sda1 \-f /home/john/Downloads/backup.tar.gz \-g /boot/efi -a tar\fR
+\fB./restore.sh \-r /dev/sda2 \-e /dev/sda1 \-f /home/john/Downloads/backup.tar.gz \-g /boot/efi\fR
 .RE
 .sp
 Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be

@@ -1,5 +1,15 @@
 Changelog:
 
+4.7
+    removed bsdtar and -a, --archiver argument: GNU tar 1.27+ supports acls xattrs and selinux
+    capture tar stderr directly in logs
+    more accurate progress
+    cleaned backup summary: compression and encryption already shown in archive extension
+    updated tar default options
+    added missing variables in backup conf generator
+    updated backup.conf
+    code cleaning
+
 4.6
     added elapsed time info in backup.sh
     added argument for alternative configuration file

@@ -16,7 +16,7 @@ System tar & restore contains two bash scripts, **backup.sh** and **restore.sh**
 
 Supported distributions: Arch, Debian/Ubuntu, Fedora, openSUSE, Gentoo, Mandriva          
 
-[Demo Video](https://www.youtube.com/watch?v=dr5ZB3ajhTQ&hd=1)  
+[Demo Video](https://www.youtube.com/watch?v=xonBVTCxpdc)  
 [Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)  
 
 ### DISTRIBUTION PACKAGES

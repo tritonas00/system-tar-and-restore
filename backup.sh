@@ -446,7 +446,7 @@ echo -e "\n${BR_BOLD}$BR_VERSION${BR_NORM}"
 if [ -z "$BRinterface" ]; then
   echo -e "\n${BR_CYAN}Select interface:${BR_NORM}"
   select c in "CLI" "Dialog"; do
-    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
       echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
       exit
     elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
@@ -490,7 +490,7 @@ if [ "$BRinterface" = "cli" ]; then
   if [ -z "$BRhome" ]; then
     echo -e "\n${BR_CYAN}Home (/home) directory options:${BR_NORM}"
     select c in "Include" "Only hidden files and folders" "Exclude"; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [ "$REPLY" = "1" ]; then
@@ -513,7 +513,7 @@ if [ "$BRinterface" = "cli" ]; then
   if [ -z "$BRcompression" ]; then
     echo -e "\n${BR_CYAN}Select the type of compression:${BR_NORM}"
     select c in "gzip  (Fast, big file)" "bzip2 (Slow, smaller file)" "xz    (Slow, smallest file)" "none  (No compression)"; do
-      if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
@@ -545,7 +545,7 @@ if [ "$BRinterface" = "cli" ]; then
     if [ -n "$BRencpass" ]; then
       echo -e "\n${BR_CYAN}Select encryption method:${BR_NORM}"
       select c in openssl gpg; do
-        if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
           echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
           exit
         elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then

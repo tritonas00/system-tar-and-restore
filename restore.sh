@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.7"
+BR_VERSION="System Tar & Restore 4.8"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -1597,7 +1597,7 @@ fi
 if [ -z "$BRinterface" ]; then
   echo -e "\n${BR_CYAN}Select interface:${BR_NORM}"
   select c in "CLI" "Dialog"; do
-    if [ $REPLY = "q" ] || [ $REPLY = "Q" ]; then
+    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
       echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
       exit
     elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then

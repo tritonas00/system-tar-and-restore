@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.7"
+BR_VERSION="System Tar & Restore 4.8"
 BR_SEP="::"
 
 color_variables() {
@@ -180,7 +180,6 @@ set_names() {
   else
     BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
   fi
-  BRfiledefault="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
 }
 
 prepare() {
@@ -215,7 +214,9 @@ generate_conf() {
   if [ -n "$BRnocolor" ]; then echo "BRnocolor=Yes"; fi
   if [ -n "$BRverb" ]; then echo "BRverb=Yes"; fi
   if [ -n "$BRquiet" ]; then echo "BRquiet=Yes"; fi
-  if [ ! "$BRFile" = "$BRfiledefault" ]; then echo "BRNAME='$BRNAME'"; fi
+  if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then 
+    echo "BRNAME='$BRNAME'"
+  fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then echo "BRhome=No"; fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then echo -e "BRhome=No\nBRhidden=No"; fi
   if [ -n "$BRoverride" ]; then echo "BRoverride=Yes"; fi

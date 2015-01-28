@@ -1617,8 +1617,7 @@ if [ "$BRinterface" = "cli" ]; then
   dstr="------------------------"
 
   if [ ! "$BRmode" = "Transfer" ] && [ -z "$BRuri" ]; then
-    info_screen
-    read -s a
+    info_screen; read -s
   fi
 
   partition_list=(
@@ -2064,7 +2063,7 @@ if [ "$BRinterface" = "cli" ]; then
    sleep 1) 1> >(tee -a /tmp/restore.log) 2>&1
 
   if [ -z "$BRquiet" ]; then
-    exit_screen; read -s a
+    exit_screen; read -s
   else
     exit_screen_quiet
   fi

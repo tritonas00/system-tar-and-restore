@@ -44,17 +44,12 @@ clean_files() {
 
 exit_screen() {
   if [ -f /tmp/b_error ]; then
-    echo -e "${BR_RED}\nAn error occurred.\n\nCheck $BRFOLDER/backup.log for details.\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec\n\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
+    echo -e "${BR_RED}\nAn error occurred.\n\nCheck $BRFOLDER/backup.log for details.\n$elapsed_conv${BR_NORM}"
   else
-    echo -e "${BR_CYAN}\nCompleted.\n\nBackup archive and log saved in $BRFOLDER\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec\n\nPress ENTER to exit.${BR_NORM}"
+    echo -e "${BR_CYAN}\nCompleted.\n\nBackup archive and log saved in $BRFOLDER\n$elapsed_conv${BR_NORM}"
   fi
-}
-
-exit_screen_quiet() {
-  if [ -f /tmp/b_error ]; then
-    echo -e "${BR_RED}\nAn error occurred.\n\nCheck $BRFOLDER/backup.log for details\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec${BR_NORM}"
-  else
-    echo -e "${BR_CYAN}\nCompleted.\n\nBackup archive and log saved in $BRFOLDER\nElapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec${BR_NORM}"
+  if [ -z "$BRquiet" ]; then
+    echo -e "\n${BR_CYAN}Press ENTER to exit.${BR_NORM}"
   fi
 }
 
@@ -226,6 +221,11 @@ generate_conf() {
   if [ -n "$BRclean" ]; then echo "BRclean=Yes"; fi
   if [ -n "$BRhide" ]; then echo "BRhide=Yes"; fi
   if [ -n "$BRgenkernel" ]; then echo "BRgenkernel=No"; fi
+}
+
+elapsed_time() {
+  elapsed=$(($(date +%s)-$start))
+  elapsed_conv="Elapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec"
 }
 
 BRargs=`getopt -o "i:d:f:c:u:hnNqvgDHP:E:orC:" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,help" -n "$1" -- "$@"`
@@ -468,7 +468,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   if [ -z "$BRFOLDER" ]; then
     info_screen
-    read -s a
+    read -s
   fi
 
   while [ -z "$BRFOLDER" ] || [ ! -d "$BRFOLDER" ]; do
@@ -625,14 +625,12 @@ if [ "$BRinterface" = "cli" ]; then
 
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
   if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
-
-  elapsed=$(($(date +%s)-$start))
-  echo "Elapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec" >> "$BRFOLDER"/backup.log
+  elapsed_time
+  echo "$elapsed_conv" >> "$BRFOLDER"/backup.log
+  exit_screen
 
   if [ -z "$BRquiet" ]; then
-    exit_screen; read -s a
-  else
-    exit_screen_quiet
+    read -s
   fi
 
 elif [ "$BRinterface" = "dialog" ]; then
@@ -767,15 +765,14 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
   if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
-
-  elapsed=$(($(date +%s)-$start))
-  echo "Elapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec" >> "$BRFOLDER"/backup.log
+  elapsed_time
+  echo "$elapsed_conv" >> "$BRFOLDER"/backup.log
 
   if [ -z "$BRquiet" ]; then
     dialog --no-collapse --yes-label "OK" --no-label "View Log" --title "$diag_tl" --yesno "$(exit_screen)" 0 0
     if [ "$?" = "1" ]; then dialog --title "Log (Up/Dn:Scroll)" --no-collapse --textbox "$BRFOLDER"/backup.log 0 0; fi
   else
-    dialog --no-collapse --title "$diag_tl" --infobox "$(exit_screen_quiet)" 0 0
+    dialog --no-collapse --title "$diag_tl" --infobox "$(exit_screen)" 0 0
   fi
 fi
 

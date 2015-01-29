@@ -118,6 +118,7 @@ ask_passphrase() {
 }
 
 detect_filetype() {
+echo "Checking archive type..."
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
     BRtype=$(openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b -)
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
@@ -412,7 +413,7 @@ check_input() {
   if [ -n "$BRsource" ] && [ ! -f "$BRsource" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] File not found: $BRsource"
     BRSTOP="y"
-  elif [ -n "$BRsource" ] && [ -f "$BRsource" ]; then
+  elif [ -n "$BRsource" ] && [ -f "$BRsource" ] && [ -z "$BRfiletype" ]; then
     detect_encryption
     detect_filetype
     if [ "$BRfiletype" = "wrong" ]; then

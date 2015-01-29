@@ -119,49 +119,27 @@ ask_passphrase() {
 
 detect_filetype() {
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    if openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b - | grep -w gzip >/dev/null; then
-      BRfiletype="gz"
-      BRreadopts="tfz"
-    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b - | grep -w bzip2 >/dev/null; then
-      BRfiletype="bz2"
-      BRreadopts="tfj"
-    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b - | grep -w XZ >/dev/null; then
-      BRfiletype="xz"
-      BRreadopts="tfJ"
-    elif openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b - | grep -w POSIX >/dev/null; then
-      BRfiletype="uncompressed"
-      BRreadopts="tf"
-    else
-      BRfiletype="wrong"
-    fi
+    BRtype=$(openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b -)
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    if gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b - | grep -w gzip >/dev/null; then
-      BRfiletype="gz"
-      BRreadopts="tfz"
-    elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null| file -b - | grep -w bzip2 >/dev/null; then
-      BRfiletype="bz2"
-      BRreadopts="tfj"
-    elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b - | grep -w XZ >/dev/null; then
-      BRfiletype="xz"
-      BRreadopts="tfJ"
-    elif gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b - | grep -w POSIX >/dev/null; then
-      BRfiletype="uncompressed"
-      BRreadopts="tf"
-    else
-      BRfiletype="wrong"
-    fi
+    BRtype=$(gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b -)
   else
-    if file -b "$BRsource" | grep -w gzip >/dev/null; then
-      BRfiletype="gz"
-    elif file -b "$BRsource" | grep -w bzip2 >/dev/null; then
-      BRfiletype="bz2"
-    elif file -b "$BRsource" | grep -w XZ >/dev/null; then
-      BRfiletype="xz"
-    elif file -b "$BRsource" | grep -w POSIX >/dev/null; then
-      BRfiletype="uncompressed"
-    else
-      BRfiletype="wrong"
-    fi
+    BRtype=$(file -b "$BRsource")
+  fi
+
+  if echo "$BRtype" | grep -q -w gzip; then
+    BRfiletype="gz"
+    BRreadopts="tfz"
+  elif echo "$BRtype" | grep -q -w bzip2; then
+    BRfiletype="bz2"
+    BRreadopts="tfj"
+  elif echo "$BRtype" | grep -q -w XZ; then
+    BRfiletype="xz"
+    BRreadopts="tfJ"
+  elif echo "$BRtype" | grep -q -w POSIX; then
+    BRfiletype="uncompressed"
+    BRreadopts="tf"
+  else
+     BRfiletype="wrong"
   fi
 }
 

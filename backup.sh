@@ -209,7 +209,7 @@ generate_conf() {
   if [ -n "$BRnocolor" ]; then echo "BRnocolor=Yes"; fi
   if [ -n "$BRverb" ]; then echo "BRverb=Yes"; fi
   if [ -n "$BRquiet" ]; then echo "BRquiet=Yes"; fi
-  if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then 
+  if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
     echo "BRNAME='$BRNAME'"
   fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then echo "BRhome=No"; fi

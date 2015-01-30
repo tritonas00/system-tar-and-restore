@@ -128,17 +128,21 @@ detect_filetype() {
   fi
 
   if echo "$BRtype" | grep -q -w gzip; then
-    BRfiletype="gz"
+    BRfiletype="gzip compressed"
     BRreadopts="tfz"
+    BR_MAINOPTS="xvpfz"
   elif echo "$BRtype" | grep -q -w bzip2; then
-    BRfiletype="bz2"
+    BRfiletype="bzip2 compressed"
     BRreadopts="tfj"
+    BR_MAINOPTS="xvpfj"
   elif echo "$BRtype" | grep -q -w XZ; then
-    BRfiletype="xz"
+    BRfiletype="xz compressed"
     BRreadopts="tfJ"
+    BR_MAINOPTS="xvpfJ"
   elif echo "$BRtype" | grep -q -w POSIX; then
     BRfiletype="uncompressed"
     BRreadopts="tf"
+    BR_MAINOPTS="xvpf"
   else
      BRfiletype="wrong"
   fi
@@ -310,18 +314,7 @@ set_user_options() {
 }
 
 run_tar() {
-  if [ "$BRfiletype" = "gz" ]; then
-    BR_MAINOPTS="xvpfz"
-  elif [ "$BRfiletype" = "xz" ]; then
-    BR_MAINOPTS="xvpfJ"
-  elif [ "$BRfiletype" = "bz2" ]; then
-    BR_MAINOPTS="xvpfj"
-  elif [ "$BRfiletype" = "uncompressed" ]; then
-    BR_MAINOPTS="xvpf"
-  fi
-
   IFS=$DEFAULTIFS
-
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
     openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
@@ -740,7 +733,6 @@ show_summary() {
   fi
 
   echo -e "\nBOOTLOADER:"
-
   if [ -n "$BRgrub" ]; then
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
       echo "$BRbootloader ($BRgrubefiarch)"
@@ -776,15 +768,11 @@ show_summary() {
   fi
 
   if [ "$BRmode" = "Restore" ]; then
-    if [ "$BRfiletype" = "uncompressed" ]; then
-      echo "Archive:  $BRfiletype $enc_info"
-    else
-      echo "Archive:  $BRfiletype compressed $enc_info"
-    fi
+    echo "Archive:  $BRfiletype $enc_info"
   elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "n" ]; then
-     echo "Home:     Include"
+    echo "Home:     Include"
   elif [ "$BRmode" = "Transfer" ] && [ "$BRhidden" = "y" ]; then
-     echo "Home:     Only hidden files and folders"
+    echo "Home:     Only hidden files and folders"
   fi
 
   if [ "$BRdistro" = "Unsupported" ]; then

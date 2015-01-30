@@ -1588,9 +1588,9 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   partition_list=(
-   `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done | sort
-    for f in $(find /dev/mapper/ | grep '-'); do echo "$f $(lsblk -d -n -o size $f)"; done
-    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done`
+   `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
+    for f in $(find /dev/mapper/ | grep '-'); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
+    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done`
   )
 
   disk_list=(`for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done; for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done`)

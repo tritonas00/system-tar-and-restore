@@ -78,7 +78,7 @@ show_summary() {
   if which extlinux &>/dev/null && which syslinux &>/dev/null; then
     echo "Syslinux"
   else
-   BRsyslinux="n"
+    BRsyslinux="n"
   fi
   if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
     echo "None or not supported"

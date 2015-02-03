@@ -1668,7 +1668,7 @@ if [ "$BRinterface" = "cli" ]; then
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
   if [ -z "$BRhome" ] && [ -n "${list[*]}" ]; then
-    echo -e "\n${BR_CYAN}Select target home partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select target home partition:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1688,7 +1688,7 @@ if [ "$BRinterface" = "cli" ]; then
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
   if [ -z "$BRboot" ] && [ -n "${list[*]}" ]; then
-    echo -e "\n${BR_CYAN}Select target boot partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select target boot partition:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1708,7 +1708,7 @@ if [ "$BRinterface" = "cli" ]; then
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
   if [ -z "$BRswap" ] && [ -n "${list[*]}" ]; then
-    echo -e "\n${BR_CYAN}Select swap partition: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select swap partition:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
@@ -1737,7 +1737,7 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
-    echo -e "\n${BR_CYAN}Select bootloader: \n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Select bootloader:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in Grub Syslinux; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"

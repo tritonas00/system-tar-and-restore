@@ -2206,8 +2206,8 @@ elif [ "$BRinterface" = "dialog" ]; then
       if [ "$?" = "1" ]; then
         exit
       elif [ -z "$BR_KERNEL_OPTS" ]; then
-         BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Specify additional kernel options. Leave empty for defaults." 8 70 2>&1 1>&3)
-       fi
+        BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Specify additional kernel options. Leave empty for defaults." 8 70 2>&1 1>&3)
+      fi
     fi
   fi
 

@@ -1647,22 +1647,20 @@ if [ "$BRinterface" = "cli" ]; then
 
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
 
-  if [ -d "$BR_EFI_DETECT_DIR" ]; then
-    if [ -z "$BRefisp" ] && [ -n "${list[*]}" ]; then
-      echo -e "\n${BR_CYAN}Select target EFI system partition:${BR_NORM}"
-      select c in ${list[@]}; do
-        if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-          exit
-        elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-          BRefisp=(`echo $c | awk '{ print $1 }'`)
-          BRcustomparts+=(/boot/efi="$BRefisp")
-          break
-        else
-          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-        fi
-      done
-    fi
+  if [ -d "$BR_EFI_DETECT_DIR" ] && [ -z "$BRefisp" ] && [ -n "${list[*]}" ]; then
+    echo -e "\n${BR_CYAN}Select target EFI system partition:${BR_NORM}"
+    select c in ${list[@]}; do
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+        echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+        exit
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
+        BRefisp=(`echo $c | awk '{ print $1 }'`)
+        BRcustomparts+=(/boot/efi="$BRefisp")
+        break
+      else
+        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+      fi
+    done
   fi
 
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
@@ -2066,11 +2064,9 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   update_options() {
     options=("Root partition" "$BRroot")
-
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
       options+=("EFI system partition" "$BRefisp")
     fi
-
     options+=("(Optional) Home partition" "$BRhome" \
     "(Optional) Boot partition" "$BRboot" \
     "(Optional) Swap partition" "$BRswap" \

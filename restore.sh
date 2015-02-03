@@ -2201,7 +2201,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       else
         BRgrub="/boot/efi"
       fi
-   elif [ "$REPLY" = "2" ]; then
+    elif [ "$REPLY" = "2" ]; then
       BRsyslinux=$(dialog --column-separator "|" --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
       if [ "$?" = "1" ]; then
         exit

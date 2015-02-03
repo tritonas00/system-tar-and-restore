@@ -1769,24 +1769,24 @@ if [ "$BRinterface" = "cli" ]; then
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
         echo -e "\n${BR_CYAN}Select target disk Syslinux:${BR_NORM}"
 	select c in ${disk_list[@]}; do
-	if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
-          echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
-	  exit
-	elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
-	  BRsyslinux=(`echo $c | awk '{ print $1 }'`)
-          if [ -z "$BR_KERNEL_OPTS" ]; then
-	    echo -e "\n${BR_CYAN}Enter additional kernel options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
-            read -p "Options: " BR_KERNEL_OPTS
-          fi
-          break
-	else
-          echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-	fi
-      done
-      break
-    else
-      echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
-    fi
+	  if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+            echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+	    exit
+	  elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
+	    BRsyslinux=(`echo $c | awk '{ print $1 }'`)
+            if [ -z "$BR_KERNEL_OPTS" ]; then
+	      echo -e "\n${BR_CYAN}Enter additional kernel options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
+              read -p "Options: " BR_KERNEL_OPTS
+            fi
+            break
+	  else
+            echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+	  fi
+        done
+        break
+      else
+        echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+      fi
     done
   fi
 

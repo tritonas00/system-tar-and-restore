@@ -1524,16 +1524,6 @@ if [ -n "$BRrootsubvolname" ] && [ -z "$BRsubvols" ]; then
   BRsubvols="-1"
 fi
 
-if [ "$BRgrub" = "-1" ] && [ "$BRsyslinux" = "-1" ] && [ -n "$BR_KERNEL_OPTS" ]; then
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] No bootloader selected, skipping kernel options"
-elif [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ] && [ -n "$BR_KERNEL_OPTS" ]; then
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] No bootloader selected, skipping kernel options"
-fi
-
-if [ -n "$BRgrub" ] && [ -z "$BRsyslinux" ] && [ -n "$BR_KERNEL_OPTS" ]; then
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Grub selected, skipping kernel options"
-fi
-
 if [ $(id -u) -gt 0 ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Script must run as root"
   exit
@@ -1784,8 +1774,10 @@ if [ "$BRinterface" = "cli" ]; then
 	  exit
 	elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
 	  BRsyslinux=(`echo $c | awk '{ print $1 }'`)
-	  echo -e "\n${BR_CYAN}Enter additional kernel options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
-          read -p "Options: " BR_KERNEL_OPTS
+          if [ -z "$BR_KERNEL_OPTS" ]; then
+	    echo -e "\n${BR_CYAN}Enter additional kernel options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
+            read -p "Options: " BR_KERNEL_OPTS
+          fi
           break
 	else
           echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -2213,7 +2205,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       BRsyslinux=$(dialog --column-separator "|" --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
       if [ "$?" = "1" ]; then
         exit
-      else
+      elif [ -z "$BR_KERNEL_OPTS" ]; then
          BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Specify additional kernel options. Leave empty for defaults." 8 70 2>&1 1>&3)
        fi
     fi

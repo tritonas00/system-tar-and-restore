@@ -1,5 +1,14 @@
 Changelog:
 
+4.8
+    restore.sh: re-writed detect_filetype
+    restore.sh: show partitions filesystem in cli interface also
+    restore.sh: added some messages
+    backup.sh: better filename detection in generate_conf
+    check_input: dont decrypt/check archive type again if already checked
+    accept -k, --kernel-options without defining bootloader in arguments
+    code cleaning
+
 4.7
     removed bsdtar and -a, --archiver argument: GNU tar 1.27+ supports acls xattrs and selinux
     capture tar stderr directly in logs

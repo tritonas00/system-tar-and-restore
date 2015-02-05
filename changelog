@@ -1,7 +1,7 @@
 Changelog:
 
 4.8
-    restore.sh: re-writed detect_filetype
+    restore.sh: rewritten detect_filetype
     restore.sh: show partitions filesystem in cli interface also
     restore.sh: added some messages
     backup.sh: better filename detection in generate_conf

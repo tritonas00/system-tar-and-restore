@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.8"
+BR_VERSION="System Tar & Restore 4.9"
 BR_SEP="::"
 
 color_variables() {
@@ -38,6 +38,7 @@ info_screen() {
 clean_files() {
   if [ -f /tmp/excludelist ]; then rm /tmp/excludelist; fi
   if [ -f /tmp/b_error ]; then rm /tmp/b_error; fi
+  if [ -f /tmp/c_stderr ]; then rm /tmp/c_stderr; fi
   if [ -f /tmp/b_filelist ]; then rm /tmp/b_filelist; fi
   if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi
 }
@@ -142,7 +143,7 @@ set_tar_options() {
 }
 
 run_calc() {
-  tar cvf /dev/null "${BR_TAROPTS[@]}" / 2>/dev/null | tee /tmp/b_filelist
+  tar cvf /dev/null "${BR_TAROPTS[@]}" / 2>/tmp/c_stderr | tee /tmp/b_filelist
 }
 
 run_tar() {
@@ -227,7 +228,17 @@ elapsed_time() {
   elapsed_conv="Elapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec"
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNqvgDHP:E:orC:" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,help" -n "$1" -- "$@"`
+exclude_sockets() {
+  IFS=$'\n'
+  for soc in $(cat /tmp/c_stderr | grep "socket ignored"); do
+    soc="${soc#*: }"
+    if [ "$BRinterface" = "cli" ]; then echo -e "[${BR_CYAN}INFO${BR_NORM}] Excluding socket: ${soc%: *}"; fi
+    BR_TAROPTS+=(--exclude="${soc%: *}")
+  done
+  IFS=$DEFAULTIFS
+}
+
+BRargs=`getopt -o "i:d:f:c:u:hnNqvgDHP:E:orC:s" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,exclude-sockets,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -310,6 +321,10 @@ while true; do
       BRconf=$2
       shift 2
     ;;
+    -s|--exclude-sockets)
+      BRnosockets="y"
+      shift
+    ;;
     --help)
       echo -e "$BR_VERSION\nUsage: backup.sh [options]
 \nGeneral:
@@ -330,6 +345,8 @@ while true; do
   -c, --compression        compression type: gzip bzip2 xz none
   -u, --user-options       additional tar options (see tar --help)
   -o, --override           override the default tar options with user options (use with -u)
+  -s, --exclude-sockets    exclude sockets
+\nEncryption Options:
   -E, --encryption-method  encryption method: openssl gpg
   -P, --passphrase         passphrase for encryption
 \nMisc Options:
@@ -619,7 +636,7 @@ if [ "$BRinterface" = "cli" ]; then
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
   echo " "
-
+  if [ -n "$BRnosockets" ]; then exclude_sockets; fi
   run_tar | out_pgrs_cli
 
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
@@ -751,6 +768,7 @@ elif [ "$BRinterface" = "dialog" ]; then
    run_calc | while read ln; do a=$((a + 1)) && echo "Calculating: $a Files"; done) | dialog --progressbox 3 40
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
+  if [ -n "$BRnosockets" ]; then exclude_sockets; fi
 
   run_tar |
   while read ln; do

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.8"
+BR_VERSION="System Tar & Restore 4.9"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -1542,7 +1542,6 @@ fi
 clean_files
 
 PATH="$PATH:/usr/sbin:/bin:/sbin"
-
 PS3="Enter number or Q to quit: "
 
 echo -e "\n${BR_BOLD}$BR_VERSION${BR_NORM}"
@@ -1586,7 +1585,6 @@ if [ "$BRinterface" = "cli" ]; then
 
   disk_list=(`for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done; for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done`)
 
-  editorlist=(nano vi)
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
   COLUMNS=1
 
@@ -1597,7 +1595,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-        BRroot=(`echo $c | awk '{ print $1 }'`)
+        BRroot=$(echo $c | awk '{ print $1 }')
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1654,7 +1652,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-        BRefisp=(`echo $c | awk '{ print $1 }'`)
+        BRefisp=$(echo $c | awk '{ print $1 }')
         BRcustomparts+=(/boot/efi="$BRefisp")
         break
       else
@@ -1672,7 +1670,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-        BRhome=(`echo $c | awk '{ print $1 }'`)
+        BRhome=$(echo $c | awk '{ print $1 }')
         BRcustomparts+=(/home="$BRhome")
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
@@ -1692,7 +1690,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-        BRboot=(`echo $c | awk '{ print $1 }'`)
+        BRboot=$(echo $c | awk '{ print $1 }')
         BRcustomparts+=(/boot="$BRboot")
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
@@ -1712,7 +1710,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-        BRswap=(`echo $c | awk '{ print $1 }'`)
+        BRswap=$(echo $c | awk '{ print $1 }')
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
         break
@@ -1751,7 +1749,7 @@ if [ "$BRinterface" = "cli" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
 	    elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
-	      BRgrub=(`echo $c | awk '{ print $1 }'`)
+	      BRgrub=$(echo $c | awk '{ print $1 }')
 	      break
 	    else
               echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1771,7 +1769,7 @@ if [ "$BRinterface" = "cli" ]; then
             echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	    exit
 	  elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
-	    BRsyslinux=(`echo $c | awk '{ print $1 }'`)
+	    BRsyslinux=$(echo $c | awk '{ print $1 }')
             if [ -z "$BR_KERNEL_OPTS" ]; then
 	      echo -e "\n${BR_CYAN}Enter additional kernel options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
               read -p "Options: " BR_KERNEL_OPTS
@@ -2001,9 +1999,8 @@ if [ "$BRinterface" = "cli" ]; then
   if [ "$BRedit" = "y" ]; then
     PS3="Enter number: "
     echo -e "\n${BR_CYAN}Select editor${BR_NORM}"
-    select c in ${editorlist[@]}; do
-      if [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#editorlist[@]} ]; then
-        BReditor=$c
+    select BReditor in "nano" "vi"; do
+      if [[ "$REPLY" = [1-2] ]]; then
         $BReditor /mnt/target/etc/fstab
         echo -e "\n${BR_SEP}EDITED FSTAB" >> /tmp/restore.log
         cat /mnt/target/etc/fstab >> /tmp/restore.log

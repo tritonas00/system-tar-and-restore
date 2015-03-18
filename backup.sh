@@ -778,7 +778,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       lastper=$per
       echo $lastper
     fi
-  done | dialog --gauge "Archiving..." 0 50
+  done | dialog --gauge "Archiving $total Files..." 0 50
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
   if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi

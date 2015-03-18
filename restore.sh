@@ -2349,7 +2349,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
-    run_tar 2>>/tmp/restore.log | count_gauge | dialog --gauge "Extracting..." 0 50
+    run_tar 2>>/tmp/restore.log | count_gauge | dialog --gauge "Extracting $total Files..." 0 50
 
   elif [ "$BRmode" = "Transfer" ]; then
     if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
@@ -2357,7 +2357,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi
-    run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Transferring..." 0 50
+    run_rsync 2>>/tmp/restore.log | count_gauge | dialog --gauge "Transferring $total Files..." 0 50
   fi
 
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old

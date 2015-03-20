@@ -223,6 +223,7 @@ generate_conf() {
   if [ -n "$BRclean" ]; then echo "BRclean=Yes"; fi
   if [ -n "$BRhide" ]; then echo "BRhide=Yes"; fi
   if [ -n "$BRgenkernel" ]; then echo "BRgenkernel=No"; fi
+  if [ -n "$BRnosockets" ]; then echo "BRnosockets=Yes"; fi
 }
 
 elapsed_time() {

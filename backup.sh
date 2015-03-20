@@ -186,6 +186,8 @@ prepare() {
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
   echo -e "====================$BR_VERSION {$(date +%d-%m-%Y-%T)}====================\n" >> "$BRFOLDER"/backup.log
   echo "${BR_SEP}SUMMARY" >> "$BRFOLDER"/backup.log
+  show_summary >> "$BRFOLDER"/backup.log
+  echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
   start=$(date +%s)
 }
 
@@ -630,8 +632,6 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   prepare
-  show_summary >> "$BRFOLDER"/backup.log
-  echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
   run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
@@ -762,8 +762,6 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   prepare
-  show_summary >> "$BRFOLDER"/backup.log
-  echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
   (echo "Calculating: Wait..."
    run_calc | while read ln; do a=$((a + 1)) && echo "Calculating: $a Files"; done) | dialog --progressbox 3 40
   total=$(cat /tmp/b_filelist | wc -l)

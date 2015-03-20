@@ -226,8 +226,10 @@ generate_conf() {
 }
 
 elapsed_time() {
+  if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
   elapsed=$(($(date +%s)-$start))
   elapsed_conv="Elapsed time: $(($elapsed/3600)) hours $((($elapsed%3600)/60)) min $(($elapsed%60)) sec"
+  echo "$elapsed_conv" >> "$BRFOLDER"/backup.log
 }
 
 exclude_sockets() {
@@ -640,9 +642,7 @@ if [ "$BRinterface" = "cli" ]; then
   run_tar | out_pgrs_cli
 
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
-  if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
   elapsed_time
-  echo "$elapsed_conv" >> "$BRFOLDER"/backup.log
   exit_screen
 
   if [ -z "$BRquiet" ]; then
@@ -779,9 +779,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   done | dialog --gauge "Archiving $total Files..." 0 50
 
   chmod ugo+rw -R "$BRFOLDER" 2>> "$BRFOLDER"/backup.log
-  if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
   elapsed_time
-  echo "$elapsed_conv" >> "$BRFOLDER"/backup.log
 
   if [ -z "$BRquiet" ]; then
     dialog --no-collapse --yes-label "OK" --no-label "View Log" --title "$diag_tl" --yesno "$(exit_screen)" 0 0

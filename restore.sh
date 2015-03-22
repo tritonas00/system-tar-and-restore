@@ -2360,10 +2360,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   generate_fstab > /mnt/target/etc/fstab
   detect_initramfs_prefix
 
-  if [ -n "$BRedit" ]; then
-    cat /mnt/target/etc/fstab | dialog --title "GENERATING FSTAB" --progressbox 20 100
-    sleep 2
-  else
+  if [ -z "$BRedit" ]; then
     dialog --cr-wrap --title "GENERATING FSTAB" --yesno "Edit fstab? Generated fstab:\n\n$(cat /mnt/target/etc/fstab)" 20 100
     if [ "$?" = "0" ]; then
       REPLY=$(dialog --no-cancel --menu "Select editor:" 10 25 10 1 nano 2 vi 2>&1 1>&3)

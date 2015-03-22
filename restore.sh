@@ -346,7 +346,7 @@ count_gauge() {
   while read ln; do
     b=$((b + 1))
     per=$(($b*100/$total))
-    if [[ $per -gt $lastper ]]; then
+    if [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
       lastper=$per
       echo $lastper
     fi
@@ -1215,14 +1215,12 @@ tar_pgrs_cli() {
   lastper=-1
   while read ln; do
     a=$((a + 1))
-    if [ -n "$BRverb" ]; then
-      echo -e "${BR_YELLOW}[$(($a*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
-    else
-      per=$(($a*100/$total))
-      if [[ $per -gt $lastper ]]; then
-        lastper=$per
-        echo -ne "\rExtracting: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
-      fi
+    per=$(($a*100/$total))
+    if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
+      echo -e "${BR_YELLOW}[$per%] ${BR_GREEN}$ln${BR_NORM}"
+    elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
+      lastper=$per
+      echo -ne "\rExtracting: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
     fi
   done
 }
@@ -1231,14 +1229,12 @@ rsync_pgrs_cli() {
   lastper=-1
   while read ln; do
     b=$((b + 1))
-    if [ -n "$BRverb" ]; then
-      echo -e "${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
-    else
-      per=$(($b*100/$total))
-      if [[ $per -gt $lastper ]]; then
-        lastper=$per
-        echo -ne "\rTransferring: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
-      fi
+    per=$(($b*100/$total))
+    if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
+      echo -e "${BR_YELLOW}[$per%] ${BR_GREEN}$ln${BR_NORM}"
+    elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
+      lastper=$per
+      echo -ne "\rTransferring: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
     fi
   done
 }

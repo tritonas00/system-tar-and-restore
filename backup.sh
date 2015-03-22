@@ -195,14 +195,12 @@ out_pgrs_cli() {
   lastper=-1
   while read ln; do
     b=$((b + 1))
-    if [ -n "$BRverb" ]; then
-      echo -e "${BR_YELLOW}[$(($b*100/$total))%] ${BR_GREEN}$ln${BR_NORM}"
-    else
-      per=$(($b*100/$total))
-      if [[ $per -gt $lastper ]]; then
-        lastper=$per
-        echo -ne "\rArchiving: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
-      fi
+    per=$(($b*100/$total))
+    if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
+      echo -e "${BR_YELLOW}[$per%] ${BR_GREEN}$ln${BR_NORM}"
+    elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
+      lastper=$per
+      echo -ne "\rArchiving: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
     fi
   done
 }
@@ -773,7 +771,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   while read ln; do
     b=$((b + 1))
     per=$(($b*100/$total))
-    if [[ $per -gt $lastper ]]; then
+    if [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
       lastper=$per
       echo $lastper
     fi

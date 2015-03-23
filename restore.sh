@@ -10,7 +10,6 @@ color_variables() {
   BR_RED='\e[00;31m'
   BR_GREEN='\e[00;32m'
   BR_YELLOW='\e[00;33m'
-  BR_BLUE='\e[00;34m'
   BR_MAGENTA='\e[00;35m'
   BR_CYAN='\e[00;36m'
   BR_BOLD='\033[1m'
@@ -2036,7 +2035,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     exit
   fi
 
-  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
+  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ ! "$BRmode" = "Transfer" ] && [ -z "$BRuri" ]; then
     dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 19 80
@@ -2230,7 +2229,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   check_input
   mount_all
   set_user_options
-  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
+  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ "$BRmode" = "Restore" ]; then
 

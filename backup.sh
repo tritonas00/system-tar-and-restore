@@ -8,7 +8,6 @@ color_variables() {
   BR_RED='\e[00;31m'
   BR_GREEN='\e[00;32m'
   BR_YELLOW='\e[00;33m'
-  BR_BLUE='\e[00;34m'
   BR_MAGENTA='\e[00;35m'
   BR_CYAN='\e[00;36m'
   BR_BOLD='\033[1m'
@@ -655,7 +654,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   exec 3>&1
-  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_BLUE BR_MAGENTA BR_CYAN BR_BOLD
+  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRFOLDER" ]; then
     dialog --no-collapse --title "$BR_VERSION" --msgbox "$(info_screen)" 28 70

@@ -92,6 +92,11 @@ show_path() {
 detect_root_fs_size() {
   BRfsystem=$(blkid -s TYPE -o value $BRroot)
   BRfsize=$(lsblk -d -n -o size 2>/dev/null $BRroot)
+  if [ -z "$BRfsystem" ]; then
+    if [ -z "$BRnocolor" ]; then color_variables; fi
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system"
+    exit
+  fi
 }
 
 detect_encryption() {
@@ -1600,11 +1605,6 @@ if [ "$BRinterface" = "cli" ]; then
 
   detect_root_fs_size
 
-  if [ -z "$BRfsystem" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system"
-    exit
-  fi
-
   if [ -n "$BRrootsubvolname" ] && [ ! "$BRrootsubvolname" = "-1" ] && [ ! "$BRfsystem" = "btrfs" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Not a btrfs root filesystem, proceeding without subvolumes..."
   fi
@@ -2136,12 +2136,6 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   detect_root_fs_size
-
-  if [ -z "$BRfsystem" ]; then
-    if [ -z "$BRnocolor" ]; then color_variables; fi
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system"
-    exit
-  fi
 
   if [ -n "$BRrootsubvolname" ] && [ ! "$BRrootsubvolname" = "-1" ] && [ ! "$BRfsystem" = "btrfs" ]; then
     dialog --title "Warning" --msgbox "Not a btrfs root filesystem, press ok to proceed without subvolumes." 5 72

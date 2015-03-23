@@ -1021,15 +1021,12 @@ set_bootloader() {
     fi
     detect_partition_table_syslinux
     if [ ! "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
-      if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
       BRabort="y"
     elif [ "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ "$BRmode" = "Transfer" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
-      if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
       BRabort="y"
     elif [ "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ "$BRmode" = "Restore" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist 2>/dev/null; then
-      if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "[${BR_RED}ERROR${BR_NORM}] sgdisk not found in the archived system"
       BRabort="y"
     fi
@@ -1037,17 +1034,14 @@ set_bootloader() {
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist 2>/dev/null && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist 2>/dev/null; then
-      if [ -z "$BRnocolor" ]; then color_variables; fi
       echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
       BRabort="y"
     elif [ -n "$BRsyslinux" ]; then
       if ! grep -Fq "bin/extlinux" /tmp/filelist 2>/dev/null; then
-        if [ -z "$BRnocolor" ]; then color_variables; fi
         echo -e "[${BR_RED}ERROR${BR_NORM}] Extlinux not found in the archived system"
         BRabort="y"
       fi
       if ! grep -Fq "bin/syslinux" /tmp/filelist 2>/dev/null; then
-        if [ -z "$BRnocolor" ]; then color_variables; fi
         echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system"
         BRabort="y"
       fi
@@ -1055,12 +1049,10 @@ set_bootloader() {
 
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
       if ! grep -Fq "bin/efibootmgr" /tmp/filelist 2>/dev/null; then
-        if [ -z "$BRnocolor" ]; then color_variables; fi
         echo -e "[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system"
         BRabort="y"
       fi
       if ! grep -Fq "bin/mkfs.vfat" /tmp/filelist 2>/dev/null; then
-        if [ -z "$BRnocolor" ]; then color_variables; fi
         echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
         BRabort="y"
       fi
@@ -2229,7 +2221,6 @@ elif [ "$BRinterface" = "dialog" ]; then
   check_input
   mount_all
   set_user_options
-  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ "$BRmode" = "Restore" ]; then
 
@@ -2320,6 +2311,7 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   detect_distro
   set_bootloader
+  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
     dialog --yes-label "Disable initramfs building" --no-label "Abort" --title Warning --yesno "Genkernel not found in the archived system. (you can disable this check with -D)" 5 85

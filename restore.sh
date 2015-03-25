@@ -508,9 +508,9 @@ check_input() {
       done
     fi
 
-    while read ln; do
-      BRmpoint=$(echo $ln | cut -f1 -d"=")
-      BRdevice=$(echo $ln | cut -f2 -d"=")
+    for k in ${BRcustomparts[@]}; do
+      BRmpoint=$(echo $k | cut -f1 -d"=")
+      BRdevice=$(echo $k | cut -f2 -d"=")
 
       for i in $(check_parts); do if [[ $i == ${BRdevice} ]]; then BRcustomcheck="true"; fi; done
       if [ ! "$BRcustomcheck" = "true" ]; then
@@ -544,7 +544,7 @@ check_input() {
         BRSTOP="y"
       fi
       unset BRcustomcheck
-    done < <(for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); BRdevice=$(echo $a | cut -f2 -d"="); echo "$BRmpoint=$BRdevice"; done)
+    done
   fi
 
   if [ -n "$BRsubvols" ] && [ -z "$BRrootsubvolname" ]; then
@@ -561,16 +561,16 @@ check_input() {
       done
     fi
 
-    while read ln; do
-      if [[ ! "$ln" == /* ]]; then
-        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Wrong subvolume syntax: $ln"
+    for k in ${BRsubvols[@]}; do
+      if [[ ! "$k" == /* ]]; then
+        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Wrong subvolume syntax: $k"
         BRSTOP="y"
       fi
-      if [ "$ln" = "/" ]; then
+      if [ "$k" = "/" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Use -R to assign root subvolume"
         BRSTOP="y"
       fi
-    done < <(for a in ${BRsubvols[@]}; do echo $a; done)
+    done
   fi
 
   if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "/boot/efi" ]; then
@@ -716,7 +716,7 @@ show_summary() {
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRmpoint="${BRmpoint///\//\ }"
-      BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
+      BRcustomfs=$(blkid -s TYPE -o value $BRdevice)
       BRcustomsize=$(lsblk -d -n -o size 2>/dev/null $BRdevice)
       echo "${BRmpoint#*/} partition: $BRdevice $BRcustomfs $BRcustomsize"
     done
@@ -730,9 +730,9 @@ show_summary() {
     echo -e "\nSUBVOLUMES:"
     echo "$BRrootsubvolname"
     if [ -n "$BRsubvols" ]; then
-      while read ln; do
-        echo "$BRrootsubvolname$ln"
-      done< <(for a in "${BRsubvols[@]}"; do echo "$a"; done | sort)
+      for k in "${BRsubvols[@]}"; do
+        echo "$BRrootsubvolname$k"
+      done | sort
     fi
   fi
 
@@ -828,7 +828,7 @@ generate_fstab() {
       BRdevice=$(echo $i | cut -f2 -d"=")
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRmpoint="${BRmpoint///\//\\040}"
-      BRcustomfs=$(df -T | grep $BRdevice | awk '{print $2}')
+      BRcustomfs=$(blkid -s TYPE -o value $BRdevice)
       echo -e "\n# $BRdevice"
       if [[ "$BRdevice" == *dev/md* ]]; then
         echo "$BRdevice  $BRmpoint  $BRcustomfs  defaults  0  2"

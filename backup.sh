@@ -407,17 +407,17 @@ if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" =
 fi
 
 if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z $(which genkernel 2>/dev/null) ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
   BRSTOP="y"
 fi
 
 if [ -n "$BRencpass" ] && [ -z "$BRencmethod" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify an encryption method"
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify an encryption method"
   BRSTOP="y"
 fi
 
 if [ -z "$BRencpass" ] && [ -n "$BRencmethod" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a passphrase"
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify a passphrase"
   BRSTOP="y"
 fi
 

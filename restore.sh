@@ -508,9 +508,9 @@ check_input() {
       done
     fi
 
-    for a in ${BRcustomparts[@]}; do
-      BRmpoint=$(echo $a | cut -f1 -d"=")
-      BRdevice=$(echo $a | cut -f2 -d"=")
+    while read ln; do
+      BRmpoint=$(echo $ln | cut -f1 -d"=")
+      BRdevice=$(echo $ln | cut -f2 -d"=")
 
       for i in $(check_parts); do if [[ $i == ${BRdevice} ]]; then BRcustomcheck="true"; fi; done
       if [ ! "$BRcustomcheck" = "true" ]; then
@@ -544,7 +544,7 @@ check_input() {
         BRSTOP="y"
       fi
       unset BRcustomcheck
-    done
+    done < <(for a in ${BRcustomparts[@]}; do BRmpoint=$(echo $a | cut -f1 -d"="); BRdevice=$(echo $a | cut -f2 -d"="); echo "$BRmpoint=$BRdevice"; done)
   fi
 
   if [ -n "$BRsubvols" ] && [ -z "$BRrootsubvolname" ]; then

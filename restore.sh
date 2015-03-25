@@ -540,7 +540,7 @@ check_input() {
         done
       fi
       if [[ ! "$BRmpoint" == /* ]]; then
-        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Wrong mountpoint syntax: $BRmpoint"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong mountpoint syntax: $BRmpoint"
         BRSTOP="y"
       fi
       unset BRcustomcheck
@@ -563,7 +563,7 @@ check_input() {
 
     for k in ${BRsubvols[@]}; do
       if [[ ! "$k" == /* ]]; then
-        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Wrong subvolume syntax: $k"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong subvolume syntax: $k"
         BRSTOP="y"
       fi
       if [ "$k" = "/" ]; then
@@ -614,7 +614,7 @@ check_input() {
   fi
 
   if [ ! -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRefisp" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Dont use EFI system partition in bios mode"
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use EFI system partition in bios mode"
     BRSTOP="y"
   fi
 

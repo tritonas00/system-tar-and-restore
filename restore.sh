@@ -100,7 +100,7 @@ detect_root_fs_size() {
 }
 
 detect_encryption() {
-  if [ "$(file -b "$BRsource")" == "data" ]; then
+  if [ "$(file -b "$BRsource")" = "data" ]; then
     BRencmethod="openssl"
   elif file -b "$BRsource" | grep -w GPG >/dev/null; then
     BRencmethod="gpg"
@@ -464,7 +464,7 @@ check_input() {
   fi
 
   if [ -n "$BRroot" ]; then
-    for i in $(check_parts); do if [[ $i == ${BRroot} ]]; then BRrootcheck="true"; fi; done
+    for i in $(check_parts); do if [ "$i" = "$BRroot" ]; then BRrootcheck="true"; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong root partition: $BRroot"
       BRSTOP="y"
@@ -478,7 +478,7 @@ check_input() {
   fi
 
   if [ -n "$BRswap" ]; then
-    for i in $(check_parts); do if [[ $i == ${BRswap} ]]; then BRswapcheck="true"; fi; done
+    for i in $(check_parts); do if [ "$i" = "$BRswap" ]; then BRswapcheck="true"; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong swap partition: $BRswap"
       BRSTOP="y"
@@ -486,7 +486,7 @@ check_input() {
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRswap contains lvm physical volume, refusing to use it. Use a logical volume instead"
       BRSTOP="y"
     fi
-    if [ "$BRswap" == "$BRroot" ]; then
+    if [ "$BRswap" = "$BRroot" ]; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRswap already used"
       BRSTOP="y"
     fi
@@ -512,7 +512,7 @@ check_input() {
       BRmpoint=$(echo $k | cut -f1 -d"=")
       BRdevice=$(echo $k | cut -f2 -d"=")
 
-      for i in $(check_parts); do if [[ $i == ${BRdevice} ]]; then BRcustomcheck="true"; fi; done
+      for i in $(check_parts); do if [ "$i" = "$BRdevice" ]; then BRcustomcheck="true"; fi; done
       if [ ! "$BRcustomcheck" = "true" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong $BRmpoint partition: $BRdevice"
         BRSTOP="y"
@@ -523,7 +523,7 @@ check_input() {
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null $BRdevice), refusing to use it"
         BRSTOP="y"
       fi
-      if [ "$BRdevice" == "$BRroot" ] || [ "$BRdevice" == "$BRswap" ]; then
+      if [ "$BRdevice" = "$BRroot" ] || [ "$BRdevice" = "$BRswap" ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice already used"
         BRSTOP="y"
       fi
@@ -574,7 +574,7 @@ check_input() {
   fi
 
   if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "/boot/efi" ]; then
-    for i in $(check_disks); do if [[ $i == ${BRgrub} ]]; then BRgrubcheck="true"; fi; done
+    for i in $(check_disks); do if [ "$i" = "$BRgrub" ]; then BRgrubcheck="true"; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
       BRSTOP="y"
@@ -592,7 +592,7 @@ check_input() {
   fi
 
   if [ -n "$BRsyslinux" ]; then
-    for i in $(check_disks); do if [[ $i == ${BRsyslinux} ]]; then BRsyslinuxcheck="true"; fi; done
+    for i in $(check_disks); do if [ "$i" = "$BRsyslinux" ]; then BRsyslinuxcheck="true"; fi; done
     if [ ! "$BRsyslinuxcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for syslinux: $BRsyslinux"
       BRSTOP="y"
@@ -1061,18 +1061,18 @@ set_bootloader() {
         echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
         BRabort="y"
       fi
-      if [ "$target_arch" == "x86_64" ]; then
+      if [ "$target_arch" = "x86_64" ]; then
         BRgrubefiarch="x86_64-efi"
-      elif [ "$target_arch" == "i686" ]; then
+      elif [ "$target_arch" = "i686" ]; then
         BRgrubefiarch="i386-efi"
       fi
     fi
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ] && [ "$BRmode" = "Transfer" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
-    if [ "$(uname -m)" == "x86_64" ]; then
+    if [ "$(uname -m)" = "x86_64" ]; then
       BRgrubefiarch="x86_64-efi"
-    elif [ "$(uname -m)" == "i686" ]; then
+    elif [ "$(uname -m)" = "i686" ]; then
       BRgrubefiarch="i386-efi"
     fi
   fi
@@ -1098,7 +1098,7 @@ check_archive() {
     if [ -z "$target_arch" ]; then
       target_arch="unknown"
     fi
-    if [ ! "$(uname -m)" == "$target_arch" ]; then
+    if [ ! "$(uname -m)" = "$target_arch" ]; then
       unset BRsource BRencpass
       if [ "$BRinterface" = "cli" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive"

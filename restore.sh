@@ -29,6 +29,7 @@ info_screen() {
 clean_files() {
   if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
+  if [ -f /tmp/r_errs ]; then rm /tmp/r_errs; fi
   if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
  }
 
@@ -1083,7 +1084,7 @@ check_archive() {
     if [ "$BRinterface" = "cli" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
     elif [ "$BRinterface" = "dialog" ]; then
-      dialog --cr-wrap --title "Error" --msgbox "Error reading archive.\n\n$(cat /tmp/filelist | grep -i ": ")" 0 0
+      dialog --cr-wrap --title "Error" --msgbox "Error reading archive.\n\n$(cat /tmp/r_errs)" 0 0
     fi
   else
     target_arch=$(grep -F 'target_architecture.' /tmp/filelist | cut -f2 -d".")
@@ -2219,7 +2220,7 @@ elif [ "$BRinterface" = "dialog" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
       (echo "Checking and reading archive (Wait...)"
-       read_archive 2>&1 | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done) | dialog --progressbox 3 55
+       read_archive 2>/tmp/r_errs | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done) | dialog --progressbox 3 55
       IFS=$'\n'
       sleep 1
       check_archive
@@ -2279,7 +2280,7 @@ elif [ "$BRinterface" = "dialog" ]; then
         IFS=$DEFAULTIFS
         if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
         (echo "Checking and reading archive (Wait...)"
-         read_archive 2>&1 | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done) | dialog --progressbox 3 55
+         read_archive 2>/tmp/r_errs | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo "Checking and reading archive ($a Files) "; done) | dialog --progressbox 3 55
         IFS=$'\n'
         sleep 1
         check_archive

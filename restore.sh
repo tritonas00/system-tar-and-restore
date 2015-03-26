@@ -531,14 +531,6 @@ check_input() {
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont assign root partition as custom"
         BRSTOP="y"
       fi
-      if [ -n "$BRsubvols" ]; then
-        for item in "${BRsubvols[@]}"; do
-          if [[ "$BRmpoint" == *"$item"* ]] && [[ "$item" == *"$BRmpoint"* ]]; then
-            echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use partitions inside btrfs subvolumes"
-            BRSTOP="y"
-          fi
-        done
-      fi
       if [[ ! "$BRmpoint" == /* ]]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong mountpoint syntax: $BRmpoint"
         BRSTOP="y"
@@ -1622,10 +1614,6 @@ if [ "$BRinterface" = "cli" ]; then
         IFS=$DEFAULTIFS
         BRsubvols+=($BRsubvolslist)
         IFS=$'\n'
-        for item in "${BRsubvols[@]}"; do
-          if [[ "$item" == *"/home"* ]]; then BRhome="-1"; fi
-          if [[ "$item" == *"/boot"* ]]; then BRboot="-1"; fi
-        done
       fi
     fi
   fi
@@ -2150,10 +2138,6 @@ elif [ "$BRinterface" = "dialog" ]; then
       BRsubvolslist=$(dialog --no-cancel --inputbox "Specify other subvolumes. Leave empty for none.\n\n(subvolume path e.g /home /var /usr ...)" 9 70 2>&1 1>&3)
       if [ -n "$BRsubvolslist" ]; then
         BRsubvols+=($BRsubvolslist)
-        for item in "${BRsubvols[@]}"; do
-          if [[ "$item" == *"/home"* ]]; then BRhome="-1"; fi
-          if [[ "$item" == *"/boot"* ]]; then BRboot="-1"; fi
-        done
       fi
     fi
   fi

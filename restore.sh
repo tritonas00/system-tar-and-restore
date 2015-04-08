@@ -103,7 +103,7 @@ detect_root_fs_size() {
 detect_encryption() {
   if [ "$(file -b "$BRsource")" = "data" ]; then
     BRencmethod="openssl"
-  elif file -b "$BRsource" | grep -w GPG >/dev/null; then
+  elif file -b "$BRsource" | grep -qw GPG; then
     BRencmethod="gpg"
   else
     unset BRencmethod
@@ -178,18 +178,18 @@ check_wget() {
 
 detect_distro() {
   if [ "$BRmode" = "Restore" ]; then
-    if grep -Fxq "etc/yum.conf" /tmp/filelist 2>/dev/null; then
+    if grep -Fxq "etc/yum.conf" /tmp/filelist; then
       BRdistro="Fedora"
       USER_OPTS+=(--selinux --acls "--xattrs-include='*'")
-    elif grep -Fxq "etc/pacman.conf" /tmp/filelist 2>/dev/null; then
+    elif grep -Fxq "etc/pacman.conf" /tmp/filelist; then
       BRdistro="Arch"
-    elif grep -Fxq "etc/apt/sources.list" /tmp/filelist 2>/dev/null; then
+    elif grep -Fxq "etc/apt/sources.list" /tmp/filelist; then
       BRdistro="Debian"
-    elif grep -Fxq "etc/zypp/zypp.conf" /tmp/filelist 2>/dev/null; then
+    elif grep -Fxq "etc/zypp/zypp.conf" /tmp/filelist; then
       BRdistro="Suse"
-    elif grep -Fxq "etc/urpmi/urpmi.cfg" /tmp/filelist 2>/dev/null; then
+    elif grep -Fxq "etc/urpmi/urpmi.cfg" /tmp/filelist; then
       BRdistro="Mandriva"
-    elif grep -Fxq "etc/portage/make.conf" /tmp/filelist 2>/dev/null || grep -Fxq "etc/make.conf" /tmp/filelist 2>/dev/null; then
+    elif grep -Fxq "etc/portage/make.conf" /tmp/filelist || grep -Fxq "etc/make.conf" /tmp/filelist; then
       BRdistro="Gentoo"
     else
       BRdistro="Unsupported"
@@ -236,7 +236,7 @@ detect_partition_table_syslinux() {
   else
     BRsyslinuxdisk="$BRsyslinux"
   fi
-  if dd if="$BRsyslinuxdisk" skip=64 bs=8 count=1 2>/dev/null | grep -w "EFI PART" >/dev/null; then
+  if dd if="$BRsyslinuxdisk" skip=64 bs=8 count=1 2>/dev/null | grep -qw "EFI PART"; then
     BRpartitiontable="gpt"
   else
     BRpartitiontable="mbr"
@@ -285,8 +285,8 @@ generate_syslinux_cfg() {
     fi
   fi
 
-  for FILE in /mnt/target/boot/*; do RESP=$(file -b -k "$FILE" | grep -w "bzImage")
-    if [ -n "$RESP" ]; then
+  for FILE in /mnt/target/boot/*; do
+    if file -b -k "$FILE" | grep -qw "bzImage"; then
       cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
       kn=$(basename "$FILE")
 
@@ -469,10 +469,10 @@ check_input() {
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong root partition: $BRroot"
       BRSTOP="y"
-    elif pvdisplay 2>&1 | grep -w $BRroot >/dev/null; then
+    elif pvdisplay 2>&1 | grep -qw $BRroot; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRroot contains lvm physical volume, refusing to use it. Use a logical volume instead"
       BRSTOP="y"
-    elif [[ ! -z `lsblk -d -n -o mountpoint 2>/dev/null $BRroot` ]]; then
+    elif [ ! -z $(lsblk -d -n -o mountpoint 2>/dev/null $BRroot) ]; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null $BRroot), refusing to use it"
       BRSTOP="y"
     fi
@@ -483,7 +483,7 @@ check_input() {
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong swap partition: $BRswap"
       BRSTOP="y"
-    elif pvdisplay 2>&1 | grep -w $BRswap >/dev/null; then
+    elif pvdisplay 2>&1 | grep -qw $BRswap; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRswap contains lvm physical volume, refusing to use it. Use a logical volume instead"
       BRSTOP="y"
     fi
@@ -517,10 +517,10 @@ check_input() {
       if [ ! "$BRcustomcheck" = "true" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong $BRmpoint partition: $BRdevice"
         BRSTOP="y"
-      elif pvdisplay 2>&1 | grep -w $BRdevice >/dev/null; then
+      elif pvdisplay 2>&1 | grep -qw $BRdevice; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice contains lvm physical volume, refusing to use it. Use a logical volume instead"
         BRSTOP="y"
-      elif [[ ! -z `lsblk -d -n -o mountpoint 2>/dev/null $BRdevice` ]]; then
+      elif [ ! -z $(lsblk -d -n -o mountpoint 2>/dev/null $BRdevice) ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null $BRdevice), refusing to use it"
         BRSTOP="y"
       fi
@@ -859,8 +859,8 @@ build_initramfs() {
     echo " "
   fi
 
-  for FILE in /mnt/target/boot/*; do RESP=$(file -b -k "$FILE" | grep -w "bzImage")
-    if [ -n "$RESP" ]; then
+  for FILE in /mnt/target/boot/*; do
+    if file -b -k "$FILE" | grep -qw "bzImage"; then
       cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
 
       if [ "$BRdistro" = "Arch" ]; then
@@ -886,7 +886,7 @@ build_initramfs() {
 }
 
 detect_initramfs_prefix() {
-  if ls /mnt/target/boot/ | grep "initramfs-" >/dev/null; then
+  if ls /mnt/target/boot/ | grep -q "initramfs-"; then
     ipn="initramfs"
   else
     ipn="initrd"
@@ -1024,33 +1024,33 @@ set_bootloader() {
     elif [ "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ "$BRmode" = "Transfer" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
       BRabort="y"
-    elif [ "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ "$BRmode" = "Restore" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist 2>/dev/null; then
+    elif [ "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ "$BRmode" = "Restore" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] sgdisk not found in the archived system"
       BRabort="y"
     fi
   fi
 
   if [ "$BRmode" = "Restore" ]; then
-    if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist 2>/dev/null && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist 2>/dev/null; then
+    if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
       BRabort="y"
     elif [ -n "$BRsyslinux" ]; then
-      if ! grep -Fq "bin/extlinux" /tmp/filelist 2>/dev/null; then
+      if ! grep -Fq "bin/extlinux" /tmp/filelist; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Extlinux not found in the archived system"
         BRabort="y"
       fi
-      if ! grep -Fq "bin/syslinux" /tmp/filelist 2>/dev/null; then
+      if ! grep -Fq "bin/syslinux" /tmp/filelist; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system"
         BRabort="y"
       fi
     fi
 
     if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
-      if ! grep -Fq "bin/efibootmgr" /tmp/filelist 2>/dev/null; then
+      if ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system"
         BRabort="y"
       fi
-      if ! grep -Fq "bin/mkfs.vfat" /tmp/filelist 2>/dev/null; then
+      if ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
         BRabort="y"
       fi
@@ -1889,7 +1889,7 @@ if [ "$BRinterface" = "cli" ]; then
   detect_distro
   set_bootloader
 
-  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
+  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Genkernel not found in the archived system. (you can disable this check with -D)"
     while [ -z "$BRgenkernel" ]; do
       echo -e "\n${BR_CYAN}Disable initramfs building?${BR_NORM}"
@@ -2292,7 +2292,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   set_bootloader
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
 
-  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist 2>/dev/null; then
+  if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
     dialog --yes-label "Disable initramfs building" --no-label "Abort" --title Warning --yesno "Genkernel not found in the archived system. (you can disable this check with -D)" 5 85
     if [ "$?" = "1" ]; then
       clean_unmount_in

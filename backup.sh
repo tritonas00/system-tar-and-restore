@@ -232,10 +232,9 @@ elapsed_time() {
 
 exclude_sockets() {
   IFS=$'\n'
-  for FILE in $(cat /tmp/c_stderr | grep "tar: /"); do
+  for FILE in $(grep "tar: /" /tmp/c_stderr); do
     FILE="${FILE#*: }"
-    RESP=$(file -b -k "${FILE%: *}" | grep -w "socket")
-    if [ -n "$RESP" ]; then
+    if file -b -k "${FILE%: *}" | grep -qw "socket"; then
       if [ "$BRinterface" = "cli" ]; then echo -e "[${BR_CYAN}INFO${BR_NORM}] Excluding socket: ${FILE%: *}"; fi
       BR_TAROPTS+=(--exclude="${FILE%: *}")
     fi

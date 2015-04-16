@@ -100,6 +100,9 @@ The script also supports all input as arguments:
         
     -o, --override
         override the default tar options with user options (use with -u)
+        
+    -s, --exclude-sockets
+        exclude sockets
 
     -E, --encryption-method
         encryption method: openssl gpg

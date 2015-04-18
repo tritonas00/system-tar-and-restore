@@ -1,5 +1,19 @@
 Changelog:
 
+4.9
+    backup.sh: added argument to exclude sockets
+    backup.sh: updated backup.conf generator
+    show total files in dialog interface
+    more accurate progress counters
+    dont show fstab in dialog interface and quiet mode
+    use blkid for all partitions
+    removed partitions-in-subvolumes check: not working as intended, let the user decide
+    removed unused colors
+    use tmp file for tar reading errors in dialog interface, keep filelist clean
+    updated backup.conf
+    many code cleanups
+
+
 4.8
     restore.sh: rewritten detect_filetype
     restore.sh: show partitions filesystem in cli interface also

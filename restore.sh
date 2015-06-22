@@ -330,7 +330,9 @@ run_tar() {
 }
 
 set_rsync_opts() {
-  BR_RSYNCOPTS=(--exclude=/run/* --exclude=/dev/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=/proc/* --exclude=/media/* --exclude=/var/run/* --exclude=/var/lock/* --exclude=/home/*/.gvfs --exclude=lost+found)
+  if [ -z "$BRoverride" ]; then
+    BR_RSYNCOPTS=(--exclude=/run/* --exclude=/dev/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=/proc/* --exclude=/media/* --exclude=/var/run/* --exclude=/var/lock/* --exclude=/home/*/.gvfs --exclude=lost+found)
+  fi
   if [ "$BRhidden" = "y" ]; then
     BR_RSYNCOPTS+=(--exclude=/home/*/[^.]*)
   fi
@@ -780,7 +782,7 @@ show_summary() {
     echo "Info:     Skip initramfs building"
   fi
 
-  if [ "$BRmode" = "Transfer" ]; then
+  if [ "$BRmode" = "Transfer" ] && [ -n "$BR_RSYNCOPTS" ]; then
     echo -e "\nRSYNC OPTIONS:"
     for i in "${BR_RSYNCOPTS[@]}"; do echo "$i"; done
   elif [ "$BRmode" = "Restore" ] && [ -n "$USER_OPTS" ]; then
@@ -1251,7 +1253,7 @@ start_log() {
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:O:vdDHP:B" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,bios" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:O:vdDHP:Bx" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,bios,override" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1377,6 +1379,10 @@ while true; do
       unset BR_EFI_DETECT_DIR
       shift
     ;;
+    -x|--override)
+      BRoverride="y"
+      shift
+    ;;
     --help)
     echo -e "$BR_VERSION\nUsage: restore.sh [options]
 \nGeneral:
@@ -1394,6 +1400,7 @@ while true; do
 \nTransfer Mode:
   -t,  --transfer           activate transfer mode
   -o,  --only-hidden        transfer /home's hidden files and folders only
+  -x,  --override           override the default rsync options with user options (use with -u)
 \nPartitions:
   -r,  --root               target root partition
   -e,  --esp                target EFI system partition

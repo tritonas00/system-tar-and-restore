@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.9"
+BR_VERSION="System Tar & Restore 4.9.1"
 BR_SEP="::"
 
 color_variables() {
@@ -623,6 +623,7 @@ if [ "$BRinterface" = "cli" ]; then
     elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
       BRcontinue="n"
       echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+      clean_files
       exit
     else
       echo -e "${BR_RED}Please enter a valid option${BR_NORM}"
@@ -754,7 +755,10 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   if [ -z "$BRcontinue" ]; then
     dialog --no-collapse --title "Summary (PgUp/PgDn:Scroll)" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0
-    if [ "$?" = "1" ]; then exit; fi
+    if [ "$?" = "1" ]; then
+      clean_files 
+      exit
+    fi
   fi
 
   if [ -n "$BRoldbackups" ] && [ -n "$BRclean" ]; then

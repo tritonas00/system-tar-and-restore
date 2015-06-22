@@ -698,8 +698,8 @@ mount_all() {
 
 show_summary() {
   echo "TARGET PARTITION SCHEME:"
-  BRpartitions="Partition-Mountpoint-Filesystem-Size-Options"
-  BRpartitions="$BRpartitions\n$BRroot-/-$BRfsystem-$BRfsize-$BR_MOUNT_OPTS"
+  BRpartitions="Partition|Mountpoint|Filesystem|Size|Options"
+  BRpartitions="$BRpartitions\n$BRroot|/|$BRfsystem|$BRfsize|$BR_MOUNT_OPTS"
   if [ -n "$BRcustomparts" ]; then
     for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
@@ -707,13 +707,13 @@ show_summary() {
       BRmpoint="${BRmpoint///\//\ }"
       BRcustomfs=$(blkid -s TYPE -o value $BRdevice)
       BRcustomsize=$(lsblk -d -n -o size 2>/dev/null $BRdevice)
-      BRpartitions="$BRpartitions\n$BRdevice-$BRmpoint-$BRcustomfs-$BRcustomsize"
+      BRpartitions="$BRpartitions\n$BRdevice|$BRmpoint|$BRcustomfs|$BRcustomsize"
     done
   fi
   if [ -n "$BRswap" ]; then
-    BRpartitions="$BRpartitions\n$BRswap-swap"
+    BRpartitions="$BRpartitions\n$BRswap|swap"
   fi
-  echo -e "$BRpartitions" | column -t -s '-'
+  echo -e "$BRpartitions" | column -t -s '|'
 
   if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
     echo -e "\nSUBVOLUMES:"

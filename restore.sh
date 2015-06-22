@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.9"
+BR_VERSION="System Tar & Restore 4.9.1"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -375,16 +375,19 @@ check_parts() {
   for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f"; done
   for f in $(find /dev/mapper/ | grep '-'); do echo "$f"; done
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f"; done
+  for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f"; done
 }
 
 check_disks() {
   for f in /dev/[vhs]d[a-z]; do echo "$f"; done
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f"; done
+  for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f"; done
 }
 
 disk_list_dialog() {
   for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)|$BRempty"; done
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)|$BRempty"; done
+  for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)|$BRempty"; done
 }
 
 part_sel_dialog() {
@@ -1565,10 +1568,15 @@ if [ "$BRinterface" = "cli" ]; then
   partition_list=(
    `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
     for f in $(find /dev/mapper/ | grep '-'); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
-    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done`
+    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
+    for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done`
   )
 
-  disk_list=(`for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done; for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done`)
+  disk_list=(
+   `for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done
+    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done
+    for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done`
+  )
 
   list=(`echo "${partition_list[*]}" | hide_used_parts`)
   COLUMNS=1
@@ -2006,7 +2014,8 @@ elif [ "$BRinterface" = "dialog" ]; then
   partition_list=(
    `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done | sort
     for f in $(find /dev/mapper/ | grep '-'); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done
-    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done`
+    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done
+    for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done`
   )
 
   IFS=$DEFAULTIFS

@@ -756,7 +756,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   if [ -z "$BRcontinue" ]; then
     dialog --no-collapse --title "Summary (PgUp/PgDn:Scroll)" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue or Quit to abort.")" 0 0
     if [ "$?" = "1" ]; then
-      clean_files 
+      clean_files
       exit
     fi
   fi

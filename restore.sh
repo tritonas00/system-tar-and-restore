@@ -403,13 +403,6 @@ no_parts() {
   dialog --title "Error" --msgbox "No partitions left. Unset a partition and try again." 5 56
 }
 
-disk_report() {
-  for i in /dev/[vhs]d[a-z]; do
-    echo -e "\n$i  ($(lsblk -d -n -o model $i)  $(lsblk -d -n -o size $i))"
-    for f in $i[0-9]; do echo -e "\t\t$f  $(blkid -s TYPE -o value $f)  $(lsblk -d -n -o size $f)  $(lsblk -d -n -o mountpoint 2>/dev/null $f)"; done
-  done
-}
-
 check_input() {
   if [ -n "$BRsource" ] && [ ! -f "$BRsource" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] File not found: $BRsource"
@@ -1578,7 +1571,7 @@ if [ "$BRinterface" = "cli" ]; then
     for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done`
   )
 
-  list=(`echo "${partition_list[*]}" | hide_used_parts`)
+  list=(`echo "${partition_list[*]}" | hide_used_parts | column -t`)
   COLUMNS=1
 
   if [ -z "$BRroot" ]; then
@@ -1627,7 +1620,7 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   fi
 
-  list=(`echo "${partition_list[*]}" | hide_used_parts`)
+  list=(`echo "${partition_list[*]}" | hide_used_parts | column -t`)
 
   if [ -d "$BR_EFI_DETECT_DIR" ] && [ -z "$BRefisp" ] && [ -n "${list[*]}" ]; then
     echo -e "\n${BR_CYAN}Select target EFI system partition:${BR_NORM}"
@@ -1645,7 +1638,7 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  list=(`echo "${partition_list[*]}" | hide_used_parts`)
+  list=(`echo "${partition_list[*]}" | hide_used_parts | column -t`)
 
   if [ -z "$BRhome" ] && [ -n "${list[*]}" ]; then
     echo -e "\n${BR_CYAN}Select target home partition:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
@@ -1665,7 +1658,7 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  list=(`echo "${partition_list[*]}" | hide_used_parts`)
+  list=(`echo "${partition_list[*]}" | hide_used_parts | column -t`)
 
   if [ -z "$BRboot" ] && [ -n "${list[*]}" ]; then
     echo -e "\n${BR_CYAN}Select target boot partition:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
@@ -1685,7 +1678,7 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  list=(`echo "${partition_list[*]}" | hide_used_parts`)
+  list=(`echo "${partition_list[*]}" | hide_used_parts | column -t`)
 
   if [ -z "$BRswap" ] && [ -n "${list[*]}" ]; then
     echo -e "\n${BR_CYAN}Select swap partition:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
@@ -1704,7 +1697,7 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
-  list=(`echo "${partition_list[*]}" | hide_used_parts`)
+  list=(`echo "${partition_list[*]}" | hide_used_parts | column -t`)
 
   if [ -z "$BRcustompartslist" ] && [ -n "${list[*]}" ]; then
     echo -e "\n${BR_CYAN}Specify custom partitions: mountpoint=device e.g /var=/dev/sda3\n${BR_MAGENTA}(If you want spaces in mountpoints replace them with //)\n(Leave blank for none)${BR_NORM}"
@@ -1728,7 +1721,7 @@ if [ "$BRinterface" = "cli" ]; then
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
         if [ -z "$BRefisp" ]; then
           echo -e "\n${BR_CYAN}Select target disk for Grub:${BR_NORM}"
-	  select c in ${disk_list[@]}; do
+	  select c in $(echo "${disk_list[*]}" | column -t); do
 	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
               echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	      exit
@@ -1748,7 +1741,7 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] The script does not support Syslinux as UEFI bootloader yet"
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
         echo -e "\n${BR_CYAN}Select target disk Syslinux:${BR_NORM}"
-	select c in ${disk_list[@]}; do
+	select c in $(echo "${disk_list[*]}" | column -t); do
 	  if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
             echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
 	    exit
@@ -2028,10 +2021,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ ! "$BRmode" = "Transfer" ] && [ -z "$BRuri" ]; then
-    dialog --yes-label "Continue" --no-label "View Partition Table" --title "$BR_VERSION" --yesno "$(info_screen)" 19 80
-    if [ "$?" = "1" ]; then
-      dialog --title "Partition Table" --msgbox "$(disk_report)" 0 0
-    fi
+    dialog --yes-label "Continue" --title "$BR_VERSION" --msgbox "$(info_screen)" 19 80
   fi
 
   exec 3>&1

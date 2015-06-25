@@ -370,26 +370,20 @@ count_gauge_wget() {
 }
 
 hide_used_parts() {
-  grep -vw -e `echo /dev/"${BRroot##*/}"` -e `echo /dev/"${BRswap##*/}"` -e `echo /dev/"${BRhome##*/}"` -e `echo /dev/"${BRboot##*/}"` -e `echo /dev/"${BRefisp##*/}"` -e `echo /dev/mapper/"${BRroot##*/}"` -e `echo /dev/mapper/"${BRswap##*/}"` -e `echo /dev/mapper/"${BRhome##*/}"` -e `echo /dev/mapper/"${BRboot##*/}"`
+  grep -vw -e "/${BRroot#*/}" -e "/${BRswap#*/}" -e "/${BRhome#*/}" -e "/${BRboot#*/}" -e "/${BRefisp#*/}"
 }
 
-check_parts() {
-  for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f"; done
+scan_parts() {
+  for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f"; done | sort
   for f in $(find /dev/mapper/ | grep '-'); do echo "$f"; done
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f"; done
   for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f"; done
 }
 
-check_disks() {
+scan_disks() {
   for f in /dev/[vhs]d[a-z]; do echo "$f"; done
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f"; done
   for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f"; done
-}
-
-disk_list_dialog() {
-  for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)|$BRempty"; done
-  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)|$BRempty"; done
-  for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)|$BRempty"; done
 }
 
 part_sel_dialog() {
@@ -463,7 +457,7 @@ check_input() {
   fi
 
   if [ -n "$BRroot" ]; then
-    for i in $(check_parts); do if [ "$i" = "$BRroot" ]; then BRrootcheck="true"; fi; done
+    for i in $(scan_parts); do if [ "$i" = "$BRroot" ]; then BRrootcheck="true"; fi; done
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong root partition: $BRroot"
       BRSTOP="y"
@@ -477,7 +471,7 @@ check_input() {
   fi
 
   if [ -n "$BRswap" ]; then
-    for i in $(check_parts); do if [ "$i" = "$BRswap" ]; then BRswapcheck="true"; fi; done
+    for i in $(scan_parts); do if [ "$i" = "$BRswap" ]; then BRswapcheck="true"; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong swap partition: $BRswap"
       BRSTOP="y"
@@ -511,7 +505,7 @@ check_input() {
       BRmpoint=$(echo $k | cut -f1 -d"=")
       BRdevice=$(echo $k | cut -f2 -d"=")
 
-      for i in $(check_parts); do if [ "$i" = "$BRdevice" ]; then BRcustomcheck="true"; fi; done
+      for i in $(scan_parts); do if [ "$i" = "$BRdevice" ]; then BRcustomcheck="true"; fi; done
       if [ ! "$BRcustomcheck" = "true" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong $BRmpoint partition: $BRdevice"
         BRSTOP="y"
@@ -565,7 +559,7 @@ check_input() {
   fi
 
   if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "/boot/efi" ]; then
-    for i in $(check_disks); do if [ "$i" = "$BRgrub" ]; then BRgrubcheck="true"; fi; done
+    for i in $(scan_disks); do if [ "$i" = "$BRgrub" ]; then BRgrubcheck="true"; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
       BRSTOP="y"
@@ -583,7 +577,7 @@ check_input() {
   fi
 
   if [ -n "$BRsyslinux" ]; then
-    for i in $(check_disks); do if [ "$i" = "$BRsyslinux" ]; then BRsyslinuxcheck="true"; fi; done
+    for i in $(scan_disks); do if [ "$i" = "$BRsyslinux" ]; then BRsyslinuxcheck="true"; fi; done
     if [ ! "$BRsyslinuxcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for syslinux: $BRsyslinux"
       BRSTOP="y"
@@ -1517,7 +1511,7 @@ if [ $(id -u) -gt 0 ]; then
   exit
 fi
 
-if [ -z "$(check_parts 2>/dev/null)" ]; then
+if [ -z "$(scan_parts 2>/dev/null)" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] No partitions found"
   exit
 fi
@@ -1565,18 +1559,8 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   echo "Probing hardware..."
-  partition_list=(
-   `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
-    for f in $(find /dev/mapper/ | grep '-'); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
-    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
-    for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done`
-  )
-
-  disk_list=(
-   `for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done
-    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done
-    for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done`
-  )
+  partition_list=(`for i in $(scan_parts); do echo "$i $(lsblk -d -n -o size $i) $(blkid -s TYPE -o value $i)"; done`)
+  disk_list=(`for i in $(scan_disks); do echo "$i $(lsblk -d -n -o size $i)"; done`)
 
   list=(`echo "${partition_list[*]}" | hide_used_parts | column -t`)
   COLUMNS=1
@@ -2011,12 +1995,7 @@ if [ "$BRinterface" = "cli" ]; then
 
 elif [ "$BRinterface" = "dialog" ]; then
   echo "Probing hardware..."
-  partition_list=(
-   `for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done | sort
-    for f in $(find /dev/mapper/ | grep '-'); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done
-    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done
-    for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)|$(blkid -s TYPE -o value $f)"; done`
-  )
+  partition_list=(`for i in $(scan_parts); do echo "$i $(lsblk -d -n -o size $i)|$(blkid -s TYPE -o value $i)"; done`)
 
   IFS=$DEFAULTIFS
 
@@ -2161,13 +2140,13 @@ elif [ "$BRinterface" = "dialog" ]; then
 
     if [ "$REPLY" = "1" ]; then
       if [ -z "$BRefisp" ]; then
-        BRgrub=$(dialog --column-separator "|" --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 `disk_list_dialog` 2>&1 1>&3)
+        BRgrub=$(dialog --column-separator "|" --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 $(for i in $(scan_disks); do echo "$i $(lsblk -d -n -o size $i)|$BRempty"; done) 2>&1 1>&3)
         if [ "$?" = "1" ]; then exit; fi
       else
         BRgrub="/boot/efi"
       fi
     elif [ "$REPLY" = "2" ]; then
-      BRsyslinux=$(dialog --column-separator "|" --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 `disk_list_dialog` 2>&1 1>&3)
+      BRsyslinux=$(dialog --column-separator "|" --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 $(for i in $(scan_disks); do echo "$i $(lsblk -d -n -o size $i)|$BRempty"; done) 2>&1 1>&3)
       if [ "$?" = "1" ]; then
         exit
       elif [ -z "$BR_KERNEL_OPTS" ]; then

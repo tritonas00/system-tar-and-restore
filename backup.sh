@@ -126,7 +126,7 @@ set_tar_options() {
 
   BR_TAROPTS=(--exclude=/run/* --exclude=/dev/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=/proc/* --exclude=/media/* --exclude=/var/run/* --exclude=/var/lock/* --exclude=.gvfs --exclude=lost+found --exclude="$BRFOLDER" --sparse)
   if [ -n "$BRoverride" ]; then
-    BR_TAROPTS=(--exclude="$BRFOLDER" --sparse)
+    BR_TAROPTS=(--exclude="$BRFOLDER")
   fi
   if [ -f /etc/yum.conf ]; then
     BR_TAROPTS+=(--acls --xattrs --selinux)

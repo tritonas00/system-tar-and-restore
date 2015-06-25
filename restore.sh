@@ -729,7 +729,7 @@ show_summary() {
       echo "$BRbootloader (i386-pc)"
     fi
     if [[ "$BRgrub" == *md* ]]; then
-      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[vhs]d[a-z]'))"
+      echo Locations: $(grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
     else
       echo "Location: $BRgrub"
       if [ -d "$BR_EFI_DETECT_DIR" ] && [ "$(ls -A /mnt/target/boot/efi)" ]; then
@@ -739,7 +739,7 @@ show_summary() {
   elif [ -n "$BRsyslinux" ]; then
     echo "$BRbootloader ($BRpartitiontable)"
     if [[ "$BRsyslinux" == *md* ]]; then
-      echo "Locations: $(echo $(cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z]'))"
+      echo Locations: $(grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
     else
       echo "Location: $BRsyslinux"
     fi
@@ -906,7 +906,7 @@ install_bootloader() {
   if [ -n "$BRgrub" ]; then
     echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [[ "$BRgrub" == *md* ]]; then
-      for f in `cat /proc/mdstat | grep $(echo "$BRgrub" | cut -c 6-) | grep -oP '[vhs]d[a-z]'`; do
+      for f in `grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]'`; do
         if [ "$BRdistro" = "Arch" ]; then
           chroot /mnt/target grub-install --target=i386-pc --recheck /dev/$f || touch /tmp/bl_error
         elif [ "$BRdistro" = "Debian" ]; then
@@ -965,7 +965,7 @@ install_bootloader() {
     else
       if [[ "$BRsyslinux" == *md* ]]; then
         chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
-        for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'`; do
+        for f in `grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z][0-9]'`; do
           BRdev=`echo /dev/$f | cut -c -8`
           BRpart=`echo /dev/$f | cut -c 9-`
           detect_partition_table_syslinux
@@ -1005,8 +1005,8 @@ set_bootloader() {
 
   if [ -n "$BRsyslinux" ]; then
     if [[ "$BRsyslinux" == *md* ]]; then
-      for f in `cat /proc/mdstat | grep $(echo "$BRsyslinux" | cut -c 6-) | grep -oP '[vhs]d[a-z][0-9]'`; do
-        BRdev=`echo /dev/$f | cut -c -8`
+      for f in `grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]'`; do
+        BRdev="/dev/$f"
       done
     fi
     detect_partition_table_syslinux

@@ -664,7 +664,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --yesno "The default directory for creating the backup archive is </>.\n\nSave in the default directory?" 8 65
+    dialog --yesno "The default directory for creating the backup archive is </>.\n\nSave in the default directory?" 9 67
     if [ "$?" = "0" ]; then
       BRFOLDER="/"
     else
@@ -694,11 +694,11 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRNAME" ]; then
-    BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default: <Backup-$(hostname)-$(date +%d-%m-%Y-%T)>." 9 70 2>&1 1>&3)
+    BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default: <Backup-$(hostname)-$(date +%d-%m-%Y-%T)>." 9 67 2>&1 1>&3)
   fi
 
   if [ -z "$BRhome" ]; then
-    REPLY=$(dialog --cancel-label Quit --menu "Home (/home) directory options:" 13 50 13 1 Include 2 "Only hidden files and folders" 3 Exclude 2>&1 1>&3)
+    REPLY=$(dialog --cancel-label Quit --menu "Home (/home) directory options:" 12 40 13 1 Include 2 "Only hidden files and folders" 3 Exclude 2>&1 1>&3)
     if [ "$?" = "1" ]; then exit; fi
 
     if [ "$REPLY" = "1" ]; then
@@ -713,7 +713,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRcompression" ]; then
-    BRcompression=$(dialog --cancel-label Quit --menu "Select compression type:" 12 35 12 gzip "Fast, big file" bzip2 "Slow, smaller file" xz "Slow, smallest file" none "No compression" 2>&1 1>&3)
+    BRcompression=$(dialog --cancel-label Quit --menu "Select compression type:" 12 40 12 gzip "Fast, big file" bzip2 "Slow, smaller file" xz "Slow, smallest file" none "No compression" 2>&1 1>&3)
     if [ "$?" = "1" ]; then exit; fi
   fi
 
@@ -722,7 +722,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRencmethod" ]; then
-    BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to encrypt archive. Leave empty for no encryption." 9 70 2>&1 1>&3)
+    BRencpass=$(dialog --no-cancel --insecure --passwordbox "Enter passphrase to encrypt archive. Leave empty for no encryption." 11 70 2>&1 1>&3)
     if [ -n  "$BRencpass" ]; then
       REPLY=$(dialog --cancel-label Quit --menu "Select encryption method:" 12 35 12 1 openssl 2 gpg 2>&1 1>&3)
       if [ "$?" = "1" ]; then exit; fi

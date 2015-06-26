@@ -793,10 +793,10 @@ prepare_chroot() {
   mount --bind /dev /mnt/target/dev
   echo "Binding /dev/pts"
   mount --bind /dev/pts /mnt/target/dev/pts
-  echo "Mounting /proc"
-  mount -t proc /proc /mnt/target/proc
-  echo "Mounting /sys"
-  mount -t sysfs /sys /mnt/target/sys
+  echo "Binding /proc"
+  mount --bind /proc /mnt/target/proc
+  echo "Binding /sys"
+  mount --bind /sys /mnt/target/sys
 }
 
 generate_fstab() {
@@ -975,12 +975,11 @@ install_bootloader() {
         done
       else
         chroot /mnt/target extlinux -i /boot/syslinux || touch /tmp/bl_error
+        BRdev="$BRsyslinux"
         if [ -n "$BRboot" ]; then
-          BRdev=`echo $BRboot | cut -c -8`
-          BRpart=`echo $BRboot | cut -c 9-`
+          BRpart="${BRboot##*[[:alpha:]]}"
         else
-          BRdev=`echo $BRroot | cut -c -8`
-          BRpart=`echo $BRroot | cut -c 9-`
+          BRpart="${BRroot##*[[:alpha:]]}"
         fi
         detect_partition_table_syslinux
         set_syslinux_flags_and_paths

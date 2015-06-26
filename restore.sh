@@ -92,7 +92,7 @@ show_path() {
 
 detect_root_fs_size() {
   BRfsystem=$(blkid -s TYPE -o value $BRroot)
-  BRfsize=$(lsblk -d -n -o size 2>/dev/null $BRroot)
+  BRfsize=$(lsblk -d -n -o size 2>/dev/null $BRroot | sed -e 's/ *//')
   if [ -z "$BRfsystem" ]; then
     if [ -z "$BRnocolor" ]; then color_variables; fi
     echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system"
@@ -702,7 +702,7 @@ show_summary() {
       BRmpoint=$(echo $i | cut -f1 -d"=")
       BRmpoint="${BRmpoint///\//\ }"
       BRcustomfs=$(blkid -s TYPE -o value $BRdevice)
-      BRcustomsize=$(lsblk -d -n -o size 2>/dev/null $BRdevice)
+      BRcustomsize=$(lsblk -d -n -o size 2>/dev/null $BRdevice | sed -e 's/ *//')
       BRpartitions="$BRpartitions\n$BRdevice|$BRmpoint|$BRcustomfs|$BRcustomsize"
     done
   fi

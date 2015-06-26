@@ -245,11 +245,11 @@ detect_partition_table_syslinux() {
 
 set_syslinux_flags_and_paths() {
   if [ "$BRpartitiontable" = "gpt" ]; then
-    echo "Setting legacy_boot flag on partition $BRpart"
+    echo "Setting legacy_boot flag on partition $BRpart of $BRdev"
     sgdisk $BRdev --attributes=$BRpart:set:2 &>> /tmp/restore.log || touch /tmp/bl_error
     BRsyslinuxmbr="gptmbr.bin"
   else
-    echo "Setting boot flag on partition $BRpart"
+    echo "Setting boot flag on partition $BRpart of $BRdev"
     sfdisk $BRdev -A $BRpart &>> /tmp/restore.log || touch /tmp/bl_error
     BRsyslinuxmbr="mbr.bin"
   fi

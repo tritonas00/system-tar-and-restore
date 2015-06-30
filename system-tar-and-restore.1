@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 4.9
+.\"    Source: system-tar-and-restore 4.9.1
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "17 April 2015" "4.9" "General Manual"
+.TH "system-tar-and-restore" "1" "30 June 2015" "4.9.1" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -212,6 +212,11 @@ activate tranfer mode
 \fB\-o, \-\-only-hidden\fR
 .RS 4
 transfer /home's hidden files and folders only 
+.RE
+.PP
+\fB\-x, \-\-override\fR
+.RS 4
+override the default rsync options with user options (use with -u)  
 .RE
 .PP
 \fB\-r, \-\-root\fR

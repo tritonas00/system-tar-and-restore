@@ -177,6 +177,9 @@ The script also supports all input as arguments:
     -o, --only-hidden
         transfer /home's hidden files and folders only  
 
+    -x, --override
+        override the default rsync options with user options (use with -u)  
+
     -r, --root
         target root partition
 

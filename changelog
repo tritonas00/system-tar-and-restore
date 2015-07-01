@@ -1,17 +1,17 @@
 Changelog:
 
 4.9.1
-  backup.sh: clean temp files on abort also
-  backup.sh: more consistent dialog sizes
-  backup.sh/backup.conf: updated tar options on override
-  restore.sh: removed useless disk_report
-  added support for mmcblk devices
-  added argument to override the default rsync options
-  use columns in partition/disk lists in cli interface
-  better partitions summary using columns
-  bind /proc and /sys instead of specifying proc/sysfs filesystem
-  use only two basic functions (scan_parts and scan_disks) in both interfaces and check_input
-  code cleaning
+    backup.sh: clean temp files on abort also
+    backup.sh: more consistent dialog sizes
+    backup.sh/backup.conf: updated tar options on override
+    restore.sh: removed useless disk_report
+    added support for mmcblk devices
+    added argument to override the default rsync options
+    use columns in partition/disk lists in cli interface
+    better partitions summary using columns
+    bind /proc and /sys instead of specifying proc/sysfs filesystem
+    use only two basic functions (scan_parts and scan_disks) in both interfaces and check_input
+    code cleaning
 
 4.9
     backup.sh: added argument to exclude sockets

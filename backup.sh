@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.9.1"
+BR_VERSION="System Tar & Restore 4.9.2"
 BR_SEP="::"
 
 color_variables() {
@@ -55,7 +55,7 @@ exit_screen() {
 
 show_summary() {
   echo "ARCHIVE:"
-  echo "$BRFile.$BR_EXT"
+  echo "$BRFile.$BR_EXT $BRmcinfo"
 
   echo -e "\nARCHIVER OPTIONS:"
   for i in "${BR_TAROPTS[@]}"; do echo "$i"; done
@@ -104,12 +104,20 @@ show_path() {
 }
 
 set_tar_options() {
-  if [ "$BRcompression" = "gzip" ]; then
+  if [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ]; then
+    BR_MAINOPTS="-c -I pigz -vpf"
+    BR_EXT="tar.gz"
+    BRmcinfo="(pigz)"
+  elif [ "$BRcompression" = "gzip" ]; then
     BR_MAINOPTS="cvpzf"
     BR_EXT="tar.gz"
   elif [ "$BRcompression" = "xz" ]; then
     BR_MAINOPTS="cvpJf"
     BR_EXT="tar.xz"
+  elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcore" ]; then
+    BR_MAINOPTS="-c -I pbzip2 -vpf"
+    BR_EXT="tar.bz2"
+    BRmcinfo="(pbzip2)"
   elif [ "$BRcompression" = "bzip2" ]; then
     BR_MAINOPTS="cvpjf"
     BR_EXT="tar.bz2"
@@ -242,7 +250,7 @@ exclude_sockets() {
   IFS=$DEFAULTIFS
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNqvgDHP:E:orC:s" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,exclude-sockets,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNqvgDHP:E:orC:sm" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,exclude-sockets,multi-core,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -329,6 +337,10 @@ while true; do
       BRnosockets="y"
       shift
     ;;
+    -m|--multi-core)
+      BRmcore="y"
+      shift
+    ;;
     --help)
       echo -e "$BR_VERSION\nUsage: backup.sh [options]
 \nGeneral:
@@ -350,6 +362,7 @@ while true; do
   -u, --user-options       additional tar options (see tar --help)
   -o, --override           override the default tar options with user options (use with -u)
   -s, --exclude-sockets    exclude sockets
+  -m, --multi-core         enable multi-core compression (pigz or pbzip2)
 \nEncryption Options:
   -E, --encryption-method  encryption method: openssl gpg
   -P, --passphrase         passphrase for encryption
@@ -425,6 +438,16 @@ fi
 
 if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong encryption method: $BRencmethod. Available options: openssl gpg"
+  BRSTOP="y"
+fi
+
+if [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z $(which pigz 2>/dev/null) ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Package pigz is not installed. Install the package and re-run the script."
+  BRSTOP="y"
+fi
+
+if [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z $(which pbzip2 2>/dev/null) ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Package pbzip2 is not installed. Install the package and re-run the script."
   BRSTOP="y"
 fi
 

@@ -366,7 +366,7 @@ while true; do
   -u, --user-options       additional tar options (see tar --help)
   -o, --override           override the default tar options with user options (use with -u)
   -s, --exclude-sockets    exclude sockets
-  -m, --multi-core         enable multi-core compression (pigz, pbzip2 or pxz)
+  -m, --multi-core         enable multi-core compression (via pigz, pbzip2 or pxz)
 \nEncryption Options:
   -E, --encryption-method  encryption method: openssl gpg
   -P, --passphrase         passphrase for encryption

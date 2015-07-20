@@ -441,12 +441,13 @@ if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmetho
   BRSTOP="y"
 fi
 
-if [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z $(which pigz 2>/dev/null) ]; then
+if [ -n "$BRmcore" ] && [ -z "$BRcompression" ]; then
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify compression type"
+  BRSTOP="y"
+elif [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z $(which pigz 2>/dev/null) ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Package pigz is not installed. Install the package and re-run the script."
   BRSTOP="y"
-fi
-
-if [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z $(which pbzip2 2>/dev/null) ]; then
+elif [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z $(which pbzip2 2>/dev/null) ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Package pbzip2 is not installed. Install the package and re-run the script."
   BRSTOP="y"
 fi

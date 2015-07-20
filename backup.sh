@@ -111,6 +111,10 @@ set_tar_options() {
   elif [ "$BRcompression" = "gzip" ]; then
     BR_MAINOPTS="cvpzf"
     BR_EXT="tar.gz"
+  elif [ "$BRcompression" = "xz" ] && [ -n "$BRmcore" ]; then
+    BR_MAINOPTS="-c -I pxz -vpf"
+    BR_EXT="tar.xz"
+    BRmcinfo="(pxz)"
   elif [ "$BRcompression" = "xz" ]; then
     BR_MAINOPTS="cvpJf"
     BR_EXT="tar.xz"
@@ -362,7 +366,7 @@ while true; do
   -u, --user-options       additional tar options (see tar --help)
   -o, --override           override the default tar options with user options (use with -u)
   -s, --exclude-sockets    exclude sockets
-  -m, --multi-core         enable multi-core compression (pigz or pbzip2)
+  -m, --multi-core         enable multi-core compression (pigz, pbzip2 or pxz)
 \nEncryption Options:
   -E, --encryption-method  encryption method: openssl gpg
   -P, --passphrase         passphrase for encryption
@@ -449,6 +453,9 @@ elif [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z $(which pigz 2>/
   BRSTOP="y"
 elif [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z $(which pbzip2 2>/dev/null) ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Package pbzip2 is not installed. Install the package and re-run the script."
+  BRSTOP="y"
+elif [ -n "$BRmcore" ] && [ "$BRcompression" = "xz" ] && [ -z $(which pxz 2>/dev/null) ]; then
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Package pxz is not installed. Install the package and re-run the script."
   BRSTOP="y"
 fi
 

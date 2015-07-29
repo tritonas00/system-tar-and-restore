@@ -18,8 +18,6 @@ scan_disks() {
 fun_run() {
   if [[ ! "$BR_NAME" == Backup-$(hostname)-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
     BACKUP_ARGS+=(-f "$BR_NAME")
-  else
-    unset BR_NAME
   fi
 
   if [ "$ENTRY1" = "Only hidden files and folders" ]; then

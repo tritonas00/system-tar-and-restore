@@ -69,13 +69,13 @@ fun_run() {
   if [ -n "$BR_ROOT_SUBVOL" ]; then RESTORE_ARGS+=(-R "$BR_ROOT_SUBVOL"); fi
   if [ -n "$BR_OTHER_SUBVOLS" ]; then RESTORE_ARGS+=(-O "$BR_OTHER_SUBVOLS"); fi
 
+  if [ "$ENTRY14" = "true" ]; then RESTORE_ARGS+=(-o); fi
   if [ "$ENTRY15" = "true" ]; then RESTORE_ARGS+=(-v); fi
   if [ "$ENTRY16" = "true" ]; then RESTORE_ARGS+=(-N); fi
   if [ "$ENTRY17" = "true" ]; then RESTORE_ARGS+=(-H); fi
   if [ "$ENTRY18" = "true" ]; then RESTORE_ARGS+=(-D); fi
   if [ "$ENTRY19" = "true" ]; then RESTORE_ARGS+=(-d); fi
   if [ "$ENTRY20" = "true" ]; then RESTORE_ARGS+=(-B); fi
-  if [ "$ENTRY14" = "true" ]; then RESTORE_ARGS+=(-o); fi
   if [ "$ENTRY21" = "true" ]; then RESTORE_ARGS+=(-x); fi
 
   if [ -n "$BR_SHOW" ]; then act="echo"; fi

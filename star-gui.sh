@@ -82,7 +82,6 @@ fun_run() {
 
   if [ -n "$BR_SHOW" ]; then act="echo"; fi
 
-
   if [ "$BR_MODE" = "0" ]; then
     xterm -hold -e $act sudo ./backup.sh -i cli -d "$BR_DIR" "${BACKUP_ARGS[@]}"
   elif [ "$BR_MODE" = "1" ]; then

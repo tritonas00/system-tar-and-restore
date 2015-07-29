@@ -17,63 +17,76 @@ scan_disks() {
 
 fun_run() {
   if [[ ! "$BR_NAME" == Backup-$(hostname)-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
-    ARG1="-f"
+    BACKUP_ARGS+=(-f "$BR_NAME")
   else
     unset BR_NAME
   fi
 
   if [ "$ENTRY1" = "Only hidden files and folders" ]; then
-    ARG2="-h"
+    BACKUP_ARGS+=(-h)
   elif [ "$ENTRY1" = "Exclude" ]; then
-    ARG2="-hn"
+    BACKUP_ARGS+=(-hn)
   fi
 
-  if [ "$ENTRY2" = "openssl" ] || [ "$ENTRY2" = "gpg" ]; then ARG3="-E $ENTRY2"; fi
-  if [ ! "$ENTRY2" = "none" ]; then ARG4="-P"; fi
-  if [ -n "$BR_OPTIONS" ]; then ARG5="-u"; fi
-  if [ "$ENTRY3" = "true" ]; then ARG6="-m"; fi
-  if [ "$ENTRY4" = "true" ]; then ARG7="-v"; fi
-  if [ "$ENTRY5" = "true" ]; then ARG8="-s"; fi
-  if [ "$ENTRY6" = "true" ]; then ARG9="-N"; fi
-  if [ "$ENTRY7" = "true" ]; then ARG10="-g"; fi
-  if [ "$ENTRY8" = "true" ]; then ARG11="-H"; fi
-  if [ "$ENTRY9" = "true" ]; then ARG12="-r"; fi
-  if [ "$ENTRY10" = "true" ]; then ARG13="-o"; fi
-  if [ "$ENTRY11" = "true" ]; then ARG14="-D"; fi
-  if [ ! "$BR_BOOT" = "" ]; then ARG15="-b"; fi
-  if [ ! "$BR_HOME" = "" ]; then ARG16="-h"; fi
-  if [ ! "$BR_ESP" = "" ]; then ARG17="-e"; fi
-  if [ ! "$BR_SWAP" = "" ]; then ARG18="-s"; fi
-  if [ -n "$BR_OTHER_PARTS" ]; then ARG19="-c"; fi
+  if [ "$ENTRY2" = "openssl" ] || [ "$ENTRY2" = "gpg" ]; then 
+    BACKUP_ARGS+=(-E "$ENTRY2")
+  fi
+
+  if [ -n "$BR_PASS" ]; then BACKUP_ARGS+=(-P "$BR_PASS"); fi
+  if [ -n "$BR_OPTIONS" ]; then BACKUP_ARGS+=(-u "$BR_OPTIONS"); fi
+
+  if [ "$ENTRY3" = "true" ]; then BACKUP_ARGS+=(-m); fi
+  if [ "$ENTRY4" = "true" ]; then BACKUP_ARGS+=(-v); fi
+  if [ "$ENTRY5" = "true" ]; then BACKUP_ARGS+=(-s); fi
+  if [ "$ENTRY6" = "true" ]; then BACKUP_ARGS+=(-N); fi
+  if [ "$ENTRY7" = "true" ]; then BACKUP_ARGS+=(-g); fi
+  if [ "$ENTRY8" = "true" ]; then BACKUP_ARGS+=(-H); fi
+  if [ "$ENTRY9" = "true" ]; then BACKUP_ARGS+=(-r); fi
+  if [ "$ENTRY10" = "true" ]; then BACKUP_ARGS+=(-o); fi
+  if [ "$ENTRY11" = "true" ]; then BACKUP_ARGS+=(-D); fi
+
+  if [ ! "$BR_BOOT" = "" ]; then RESTORE_ARGS+=(-b ${BR_BOOT%% *}); fi
+  if [ ! "$BR_HOME" = "" ]; then RESTORE_ARGS+=(-h ${BR_HOME%% *}); fi
+  if [ ! "$BR_ESP" = "" ]; then RESTORE_ARGS+=(-e ${BR_ESP%% *}); fi
+  if [ ! "$BR_SWAP" = "" ]; then RESTORE_ARGS+=(-s ${BR_SWAP%% *}); fi
+  if [ -n "$BR_OTHER_PARTS" ]; then RESTORE_ARGS+=(-c "$BR_OTHER_PARTS"); fi
 
   if [ "$ENTRY12" = "Grub" ]; then
-    ARG20="-g"
+    RESTORE_ARGS+=(-g ${BR_DISK%% *})
   elif [ "$ENTRY12" = "Syslinux" ]; then
-    ARG20="-S"
+    RESTORE_ARGS+=(-S ${BR_DISK%% *})
   fi
 
-  if [ -n "$BR_SL_OPTS" ]; then ARG21="-k"; fi
-  if [ -n "$BR_USERNAME" ]; then ARG22="-n"; fi
-  if [ -n "$BR_PASSWORD" ]; then ARG23="-p"; fi
-  if [ -n "$BR_PASSPHRASE" ]; then ARG24="-P"; fi
-  if [ -n "$BR_ROOT_SUBVOL" ]; then ARG25="-R"; fi
-  if [ -n "$BR_OTHER_SUBVOLS" ]; then ARG26="-O"; fi
-  if [ -n "$BR_TR_OPTIONS" ]; then ARG27="-u"; fi
-  if [ "$ENTRY15" = "true" ]; then ARG28="-v"; fi
-  if [ "$ENTRY16" = "true" ]; then ARG29="-N"; fi
-  if [ "$ENTRY17" = "true" ]; then ARG30="-H"; fi
-  if [ "$ENTRY18" = "true" ]; then ARG31="-D"; fi
-  if [ "$ENTRY19" = "true" ]; then ARG32="-d"; fi
-  if [ "$ENTRY20" = "true" ]; then ARG33="-B"; fi
-  if [ "$ENTRY14" = "true" ]; then ARG34="-o"; fi
-  if [ "$ENTRY21" = "true" ]; then ARG35="-x"; fi
+  if [ "$ENTRY13" = "false" ]; then
+    RESTORE_ARGS+=(-f "$BR_FILE")
+  elif [ "$ENTRY13" = "true" ]; then
+    RESTORE_ARGS+=(-t)
+  fi
+
+  if [ -n "$BR_SL_OPTS" ]; then RESTORE_ARGS+=(-k "$BR_SL_OPTS"); fi
+  if [ -n "$BR_USERNAME" ]; then RESTORE_ARGS+=(-n "$BR_USERNAME"); fi
+  if [ -n "$BR_PASSWORD" ]; then RESTORE_ARGS+=(-p "$BR_PASSWORD"); fi
+  if [ -n "$BR_PASSPHRASE" ]; then RESTORE_ARGS+=(-P "$BR_PASSPHRASE"); fi
+  if [ -n "$BR_ROOT_SUBVOL" ]; then RESTORE_ARGS+=(-R "$BR_ROOT_SUBVOL"); fi
+  if [ -n "$BR_OTHER_SUBVOLS" ]; then RESTORE_ARGS+=(-O "$BR_OTHER_SUBVOLS"); fi
+  if [ -n "$BR_TR_OPTIONS" ]; then RESTORE_ARGS+=(-u "$BR_TR_OPTIONS"); fi
+
+  if [ "$ENTRY15" = "true" ]; then RESTORE_ARGS+=(-v); fi
+  if [ "$ENTRY16" = "true" ]; then RESTORE_ARGS+=(-N); fi
+  if [ "$ENTRY17" = "true" ]; then RESTORE_ARGS+=(-H); fi
+  if [ "$ENTRY18" = "true" ]; then RESTORE_ARGS+=(-D); fi
+  if [ "$ENTRY19" = "true" ]; then RESTORE_ARGS+=(-d); fi
+  if [ "$ENTRY20" = "true" ]; then RESTORE_ARGS+=(-B); fi
+  if [ "$ENTRY14" = "true" ]; then RESTORE_ARGS+=(-o); fi
+  if [ "$ENTRY21" = "true" ]; then RESTORE_ARGS+=(-x); fi
+
+  if [ -n "$BR_SHOW" ]; then act="echo"; fi
+
 
   if [ "$BR_MODE" = "0" ]; then
-    xterm -hold -e sudo ./backup.sh -i cli -d "$BR_DIR" -c $BR_COMP  $ARG1 "$BR_NAME" $ARG2 $ARG3 $ARG4 "$BR_PASS" $ARG5 "$BR_OPTIONS" $ARG6 $ARG7 $ARG8 $ARG9 $ARG10 $ARG11 $ARG12 $ARG13 $ARG14
-  elif [ "$BR_MODE" = "1" ] && [ "$ENTRY13" = "false" ]; then
-    xterm -hold -e sudo ./restore.sh -i cli -r $BR_ROOT -m "$BR_MN_OPTS" -f "$BR_FILE" $ARG15 $BR_BOOT $ARG16 $BR_HOME $ARG17 $BR_ESP $ARG18 $BR_SWAP $ARG19 "$BR_OTHER_PARTS" $ARG20 $BR_DISK $ARG21 "$BR_SL_OPTS" $ARG22 "$BR_USERNAME" $ARG23 "$BR_PASSWORD" $ARG24 "$BR_PASSPHRASE" $ARG25 "$BR_ROOT_SUBVOL" $ARG26 "$BR_OTHER_SUBVOLS" $ARG27 "$BR_TR_OPTIONS" $ARG28 $ARG29 $ARG30 $ARG31 $ARG32 $ARG33
-  elif [ "$BR_MODE" = "1" ] && [ "$ENTRY13" = "true" ]; then
-    xterm -hold -e sudo  ./restore.sh -i cli -r $BR_ROOT -m "$BR_MN_OPTS" -t $ARG15 $BR_BOOT $ARG16 $BR_HOME $ARG17 $BR_ESP $ARG18 $BR_SWAP $ARG19 "$BR_OTHER_PARTS" $ARG20 $BR_DISK $ARG21 "$BR_SL_OPTS" $ARG25 "$BR_ROOT_SUBVOL" $ARG26 "$BR_OTHER_SUBVOLS" $ARG27 "$BR_TR_OPTIONS" $ARG28 $ARG29 $ARG30 $ARG31 $ARG32 $ARG33 $ARG34 $ARG35
+    xterm -hold -e $act sudo ./backup.sh -i cli -d "$BR_DIR" "${BACKUP_ARGS[@]}"
+  elif [ "$BR_MODE" = "1" ]; then
+    xterm -hold -e $act sudo ./restore.sh -i cli -r ${BR_ROOT%% *} -m "$BR_MN_OPTS" "${RESTORE_ARGS[@]}"
   fi
 }
 
@@ -403,6 +416,11 @@ export MAIN_DIALOG='
                                 <input file icon="gtk-ok"></input>
                                 <label>RUN</label>
                                 <action>fun_run</action>
+                        </button>
+                        <button tooltip-text="Show generated command in xterm">
+                                <input file icon="system-run"></input>
+                                <label>SHOW</label>
+                                <action>BR_SHOW=y && fun_run</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <input file icon="gtk-cancel"></input>

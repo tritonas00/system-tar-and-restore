@@ -367,7 +367,7 @@ export MAIN_DIALOG='
                                                 <variable>ENTRY16</variable>
                                         </checkbox>
 
-                                        <checkbox tooltip-text="Hide the cursor when running archiver (useful for some terminal emulators)">
+                                        <checkbox tooltip-text="Hide the cursor when running tar/rsync (useful for some terminal emulators)">
                                                 <label>Hide cursor</label>
                                                 <variable>ENTRY17</variable>
                                         </checkbox>

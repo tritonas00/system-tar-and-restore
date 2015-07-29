@@ -28,7 +28,7 @@ fun_run() {
     BACKUP_ARGS+=(-hn)
   fi
 
-  if [ "$ENTRY2" = "openssl" ] || [ "$ENTRY2" = "gpg" ]; then 
+  if [ "$ENTRY2" = "openssl" ] || [ "$ENTRY2" = "gpg" ]; then
     BACKUP_ARGS+=(-E "$ENTRY2")
   fi
 

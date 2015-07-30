@@ -94,7 +94,7 @@ export -f fun_run
 export MAIN_DIALOG='
 
 <window title="System Tar & Restore" icon-name="applications-system">
-        <vbox scrollable="true" height="697" width="369">
+        <vbox scrollable="true" height="715" width="369">
                 <notebook labels="Backup|Restore/Transfer">
                         <vbox>
 
@@ -284,9 +284,6 @@ export MAIN_DIALOG='
 	                                                <item>Grub</item>
 	                                                <item>Syslinux</item>
                                                 </comboboxtext>
-                                                <entry tooltip-text="Set additional kernel options (Syslinux only)">
-                                                        <variable>BR_SL_OPTS</variable>
-                                                </entry>
                                         </frame>
                                         <frame Disk:>
                                                 <comboboxtext tooltip-text="Select target disk for bootloader">
@@ -297,6 +294,11 @@ export MAIN_DIALOG='
 			                        </comboboxtext>
                                         </frame>
                                 </hbox>
+                                <frame Kernel options:>
+                                        <entry tooltip-text="Set additional kernel options (Syslinux only)">
+                                                <variable>BR_SL_OPTS</variable>
+                                        </entry>
+                                </frame>
 
                                 <text use-markup="true"><label>"<span color='"'brown'"'>Mode</span>"</label></text>
                                 <frame Restore:>

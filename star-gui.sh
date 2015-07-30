@@ -81,7 +81,7 @@ fun_run() {
   if [ -n "$BR_SHOW" ]; then act="echo"; fi
 
   if [ "$BR_MODE" = "0" ]; then
-    xterm -hold -e $act sudo ./backup.sh -i cli -d "$BR_DIR" "${BACKUP_ARGS[@]}"
+    xterm -hold -e $act sudo ./backup.sh -i cli -d "$BR_DIR" -c $BR_COMP "${BACKUP_ARGS[@]}"
   elif [ "$BR_MODE" = "1" ]; then
     xterm -hold -e $act sudo ./restore.sh -i cli -r ${BR_ROOT%% *} -m "$BR_MN_OPTS" "${RESTORE_ARGS[@]}"
   fi

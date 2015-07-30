@@ -108,13 +108,13 @@ export MAIN_DIALOG='
 
                                 <text use-markup="true"><label>"<span color='"'brown'"'>Destination</span>"</label></text>
                                 <hbox tooltip-text="Choose where to save the backup archive">
-                                        <entry accept="directory">
+                                        <entry fs-action="folder" fs-title="Select a directory">
                                                 <input>echo ~</input>
-                                                <variable>BR_DIR</variable>
-                                        </entry>
-                                        <button>
-                                                <input file stock="gtk-open"></input>
-                                                <action type="fileselect">BR_DIR</action>
+                                                <variable>BR_DIR</variable> 
+                                        </entry> 
+                                        <button tooltip-text="Select directory"> 
+                                                <input file stock="gtk-open"></input> 
+                                                <action>fileselect:BR_DIR</action> 
                                         </button>
                                  </hbox>
 
@@ -300,13 +300,13 @@ export MAIN_DIALOG='
                                 <text use-markup="true"><label>"<span color='"'brown'"'>Mode</span>"</label></text>
                                 <frame Restore:>
                                         <hbox tooltip-text="Choose a local archive or enter URL">
-                                                <entry accept="file">
-                                                        <variable>BR_FILE</variable>
-                                                </entry>
-                                                <button>
+                                                <entry fs-action="file" fs-title="Select a backup archive">
+                                                        <variable>BR_FILE</variable> 
+                                                </entry> 
+                                                <button tooltip-text="Select archive"> 
                                                         <variable>BTN</variable>
-                                                        <input file stock="gtk-open"></input>
-                                                        <action type="fileselect">BR_FILE</action>
+                                                        <input file stock="gtk-open"></input> 
+                                                        <action>fileselect:BR_FILE</action> 
                                                 </button>
                                         </hbox>
                                         <expander label="Authentication">

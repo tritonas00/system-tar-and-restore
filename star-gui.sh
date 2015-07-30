@@ -153,9 +153,10 @@ export MAIN_DIALOG='
                                 </vbox>
 
                                 <text use-markup="true"><label>"<span color='"'brown'"'>Additional tar options</span>"</label></text>
-                                <entry tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
+                                <comboboxentry tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
                                         <variable>BR_OPTIONS</variable>
-                                </entry>
+                                        <item>--acls --xattrs</item>
+                                </comboboxentry>
 
                                 <expander label="Advanced"><vbox>
                                         <checkbox tooltip-text="Check to enable multi-core compression via pigz, pbzip2 or pxz">
@@ -362,9 +363,10 @@ export MAIN_DIALOG='
                                 </hbox>
 
                                 <text use-markup="true"><label>"<span color='"'brown'"'>Additional tar/rsync options</span>"</label></text>
-                                <entry tooltip-text="Set extra tar/rsync options. See tar --help  or rsync --help for more info. If you want spaces in names replace them with //">
+                                <comboboxentry tooltip-text="Set extra tar/rsync options. See tar --help  or rsync --help for more info. If you want spaces in names replace them with //">
                                         <variable>BR_TR_OPTIONS</variable>
-                                </entry>
+                                        <item>--acls --xattrs</item>
+                                </comboboxentry>
 
                                 <expander label="Advanced"><vbox>
                                         <checkbox tooltip-text="Check to make tar/rsync output verbose">

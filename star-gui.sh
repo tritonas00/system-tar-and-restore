@@ -15,6 +15,10 @@ scan_disks() {
   for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done
 }
 
+hide_used_parts() {
+  grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"
+}
+
 fun_run() {
   if [[ ! "$BR_NAME" == Backup-$(hostname)-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
     BACKUP_ARGS+=(-f "$BR_NAME")
@@ -90,6 +94,9 @@ fun_run() {
 export -f scan_parts
 export -f scan_disks
 export -f fun_run
+export -f hide_used_parts
+export BR_ROOT=$(scan_parts | head -n 1)
+
 
 export MAIN_DIALOG='
 
@@ -215,7 +222,10 @@ export MAIN_DIALOG='
                                         <frame Root:>
 		                                <comboboxtext tooltip-text="Select target root partition">
 	                                                <variable>BR_ROOT</variable>
-	                                                <input>scan_parts</input>
+                                                        <input>echo "$BR_ROOT"</input>
+	                                                <input>scan_parts | hide_used_parts</input>
+                                                        <input>if [ -n "$BR_ROOT" ]; then echo ""; fi</input>
+                                                        <action>refresh:BR_BOOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
 			                        </comboboxtext>
                                                 <entry tooltip-text="Set comma-separated list of mount options for the root partition">
                                                         <variable>BR_MN_OPTS</variable>
@@ -228,40 +238,44 @@ export MAIN_DIALOG='
                                                 <hbox>
                                                         <frame /boot:>
 		                                                <comboboxtext tooltip-text="(Optional) Select target /boot partition">
-                                                                        <default>""</default>
 	                                                                <variable>BR_BOOT</variable>
-                                                                        <item>""</item>
-	                                                                <input>scan_parts</input>
+                                                                        <input>echo "$BR_BOOT"</input>
+	                                                                <input>scan_parts | hide_used_parts</input>
+                                                                        <input>if [ -n "$BR_BOOT" ]; then echo ""; fi</input>
+                                                                        <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
 			                                        </comboboxtext>
                                                         </frame>
                                                 </hbox>
                                                 <hbox>
                                                         <frame /boot/efi:>
 		                                                <comboboxtext tooltip-text="(UEFI only) Select target ESP partition">
-                                                                        <default>""</default>
 	                                                                <variable>BR_ESP</variable>
-                                                                        <item>""</item>
-	                                                                <input>scan_parts</input>
+                                                                        <input>echo "$BR_ESP"</input>                                                         
+	                                                                <input>scan_parts | hide_used_parts</input>
+                                                                        <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
+                                                                        <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_SWAP</action>
 			                                        </comboboxtext>
                                                         </frame>
                                                 </hbox>
                                                 <hbox>
                                                         <frame /home:>
 		                                                <comboboxtext tooltip-text="(Optional) Select target /home partition">
-                                                                        <default>""</default>
 	                                                                <variable>BR_HOME</variable>
-                                                                        <item>""</item>
-	                                                                <input>scan_parts</input>
+                                                                        <input>echo "$BR_HOME"</input>
+	                                                                <input>scan_parts | hide_used_parts</input>
+                                                                        <input>if [ -n "$BR_HOME" ]; then echo ""; fi</input>
+                                                                        <action>refresh:BR_BOOT</action><action>refresh:BR_ROOT</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
 			                                        </comboboxtext>
                                                         </frame>
                                                 </hbox>
                                                 <hbox>
                                                         <frame swap:>
 		                                                <comboboxtext tooltip-text="(Optional) Select target swap partition">
-                                                                        <default>""</default>
 	                                                                <variable>BR_SWAP</variable>
-                                                                        <item>""</item>
-	                                                                <input>scan_parts</input>
+                                                                        <input>echo "$BR_SWAP"</input>
+	                                                                <input>scan_parts | hide_used_parts</input>
+                                                                        <input>if [ -n "$BR_SWAP" ]; then echo ""; fi</input>
+                                                                        <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_ESP</action>
 			                                        </comboboxtext>
                                                         </frame>
                                                 </hbox>

@@ -250,7 +250,7 @@ export MAIN_DIALOG='
                                                         <frame /boot/efi:>
 		                                                <comboboxtext tooltip-text="(UEFI only) Select target ESP partition">
 	                                                                <variable>BR_ESP</variable>
-                                                                        <input>echo "$BR_ESP"</input>                                                         
+                                                                        <input>echo "$BR_ESP"</input>
 	                                                                <input>scan_parts | hide_used_parts</input>
                                                                         <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
                                                                         <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_SWAP</action>

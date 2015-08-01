@@ -141,9 +141,9 @@ export BR_ROOT=$(scan_parts | head -n 1)
 export MAIN_DIALOG='
 
 <window title="System Tar & Restore" icon-name="applications-system">
-        <vbox scrollable="true" height="715" width="369">
+        <vbox>
                 <notebook labels="Backup|Restore/Transfer">
-                        <vbox>
+                        <vbox scrollable="true" height="715" width="369">
 
                                 <text use-markup="true"><label>"<span  weight='"'bold'"'>Make a tar backup image of this system.</span>"</label></text>
 
@@ -266,7 +266,7 @@ export MAIN_DIALOG='
                                 </vbox></expander>
                         </vbox>
 
-                        <vbox>
+                        <vbox scrollable="true" height="715" width="369">
 
                                 <text use-markup="true"><label>"<span  weight='"'bold'"'>Restore a backup image or transfer this system in user defined partitions.</span>"</label></text>
 

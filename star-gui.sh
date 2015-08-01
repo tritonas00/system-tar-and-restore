@@ -2,6 +2,45 @@
 
 cd $(dirname $0)
 
+if [ -f /etc/backup.conf ]; then
+  source /etc/backup.conf
+fi
+
+if [ -f ~/.backup.conf ]; then
+  source ~/.backup.conf
+fi
+
+if [ -n "$BRNAME" ]; then export BRNAME; else BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"; fi
+if [ -n "$BRFOLDER" ]; then export BRFOLDER; else BRFOLDER=$(echo ~); fi
+if [ -n "$BRcompression" ]; then export BRcompression; else BRcompression="gzip"; fi
+if [ -n "$BRencmethod" ]; then export BRencmethod; else BRencmethod="none"; fi
+if [ -n "$BRencpass" ]; then export BRencpass; fi
+if [ -n "$BR_USER_OPTS" ]; then export BR_USER_OPTS; fi
+if [ -n "$BRmcore" ]; then export ENTRY3="true"; else export ENTRY3="false"; fi
+if [ -n "$BRverb" ]; then export ENTRY4="true"; else export ENTRY4="false"; fi
+if [ -n "$BRnosockets" ]; then export ENTRY5="true"; else export ENTRY5="false"; fi
+if [ -n "$BRnocolor" ]; then export ENTRY6="true"; else export ENTRY6="false"; fi
+if [ -n "$BRhide" ]; then export ENTRY8="true"; else export ENTRY8="false"; fi
+if [ -n "$BRclean" ]; then export ENTRY9="true"; else export ENTRY9="false"; fi
+if [ -n "$BRoverride" ]; then export ENTRY10="true"; else export ENTRY10="false"; fi
+if [ -n "$BRgenkernel" ]; then export ENTRY11="true"; else export ENTRY11="false"; fi
+
+if [ "$BRhome" = "No" ] && [ -z "$BRhidden" ]; then
+  export ENTRY1="Only hidden files and folders"
+elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
+  export ENTRY1="Exclude"
+else
+  export ENTRY1="Include"
+fi
+
+set_default_pass() {
+  if [ -n "$BRencpass" ]; then echo '<default>'"$BRencpass"'</default>'; fi
+}
+
+set_default_opts() {
+  if [ -n "$BR_USER_OPTS" ]; then echo '<default>'"$BR_USER_OPTS"'</default>'; fi
+}
+
 scan_parts() {
   for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(lsblk -d -n -o fstype $f)"; done | sort
   for f in $(find /dev/mapper/ | grep '-'); do echo "$f $(lsblk -d -n -o size $f) $(lsblk -d -n -o fstype $f)"; done
@@ -19,7 +58,9 @@ hide_used_parts() {
   grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"
 }
 
-fun_run() {
+set_args() {
+  touch /tmp/empty
+
   if [[ ! "$BR_NAME" == Backup-$(hostname)-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
     BACKUP_ARGS+=(-f "$BR_NAME")
   fi
@@ -60,15 +101,17 @@ fun_run() {
   fi
 
   if [ "$ENTRY13" = "false" ]; then
+    ttl="Restore"
     RESTORE_ARGS+=(-f "$BR_FILE")
+    if [ -n "$BR_USERNAME" ]; then RESTORE_ARGS+=(-n "$BR_USERNAME"); fi
+    if [ -n "$BR_PASSWORD" ]; then RESTORE_ARGS+=(-p "$BR_PASSWORD"); fi
+    if [ -n "$BR_PASSPHRASE" ]; then RESTORE_ARGS+=(-P "$BR_PASSPHRASE"); fi
   elif [ "$ENTRY13" = "true" ]; then
+    ttl="Transfer"
     RESTORE_ARGS+=(-t)
   fi
 
   if [ -n "$BR_SL_OPTS" ]; then RESTORE_ARGS+=(-k "$BR_SL_OPTS"); fi
-  if [ -n "$BR_USERNAME" ]; then RESTORE_ARGS+=(-n "$BR_USERNAME"); fi
-  if [ -n "$BR_PASSWORD" ]; then RESTORE_ARGS+=(-p "$BR_PASSWORD"); fi
-  if [ -n "$BR_PASSPHRASE" ]; then RESTORE_ARGS+=(-P "$BR_PASSPHRASE"); fi
   if [ -n "$BR_TR_OPTIONS" ]; then RESTORE_ARGS+=(-u "$BR_TR_OPTIONS"); fi
   if [ -n "$BR_ROOT_SUBVOL" ]; then RESTORE_ARGS+=(-R "$BR_ROOT_SUBVOL"); fi
   if [ -n "$BR_OTHER_SUBVOLS" ]; then RESTORE_ARGS+=(-O "$BR_OTHER_SUBVOLS"); fi
@@ -85,16 +128,13 @@ fun_run() {
   if [ -n "$BR_SHOW" ]; then act="echo"; fi
 
   if [ "$BR_MODE" = "0" ]; then
-    xterm -hold -e $act sudo ./backup.sh -i cli -d "$BR_DIR" -c $BR_COMP "${BACKUP_ARGS[@]}"
+    xterm -hold -T Backup -e $act sudo ./backup.sh -i cli -d "$BR_DIR" -c $BR_COMP -C /tmp/empty "${BACKUP_ARGS[@]}"
   elif [ "$BR_MODE" = "1" ]; then
-    xterm -hold -e $act sudo ./restore.sh -i cli -r ${BR_ROOT%% *} -m "$BR_MN_OPTS" "${RESTORE_ARGS[@]}"
+    xterm -hold -T $ttl -e $act sudo ./restore.sh -i cli -r ${BR_ROOT%% *} -m "$BR_MN_OPTS" "${RESTORE_ARGS[@]}"
   fi
 }
 
-export -f scan_parts
-export -f scan_disks
-export -f fun_run
-export -f hide_used_parts
+export -f scan_parts scan_disks set_args hide_used_parts set_default_pass set_default_opts
 export BR_ROOT=$(scan_parts | head -n 1)
 
 
@@ -109,15 +149,15 @@ export MAIN_DIALOG='
 
                                 <text use-markup="true"><label>"<span color='"'brown'"'>Filename</span>"</label></text>
                                 <entry tooltip-text="Set backup archive name">
-                                        <input>echo "Backup-$(hostname)-$(date +%d-%m-%Y-%T)"</input>
                                         <variable>BR_NAME</variable>
+                                        <default>'"$BRNAME"'</default>
                                 </entry>
 
                                 <text use-markup="true"><label>"<span color='"'brown'"'>Destination</span>"</label></text>
                                 <hbox tooltip-text="Choose where to save the backup archive">
                                         <entry fs-action="folder" fs-title="Select a directory">
-                                                <input>echo ~</input>
                                                 <variable>BR_DIR</variable>
+                                                <default>'"$BRFOLDER"'</default>
                                         </entry>
                                         <button tooltip-text="Select directory">
                                                 <input file stock="gtk-open"></input>
@@ -128,6 +168,7 @@ export MAIN_DIALOG='
                                 <text use-markup="true"><label>"<span color='"'brown'"'>Home directory options</span>"</label></text>
                                 <comboboxtext tooltip-text="Choose what to do with your /home directory">
                                         <variable>ENTRY1</variable>
+                                        <default>'"$ENTRY1"'</default>
                                         <item>Include</item>
 	                                <item>Only hidden files and folders</item>
 	                                <item>Exclude</item>
@@ -136,6 +177,7 @@ export MAIN_DIALOG='
                                 <text use-markup="true"><label>"<span color='"'brown'"'>Compression</span>"</label></text>
                                 <comboboxtext tooltip-text="Select compressor">
 	                                <variable>BR_COMP</variable>
+                                        <default>'"$BRcompression"'</default>
 	                                <item>gzip</item>
 	                                <item>bzip2</item>
 	                                <item>xz</item>
@@ -147,6 +189,7 @@ export MAIN_DIALOG='
                                         <frame Method:>
                                                 <comboboxtext tooltip-text="Select encryption method">
 	                                                <variable>ENTRY2</variable>
+                                                        <default>'"$BRencmethod"'</default>
                                                         <item>none</item>
 	                                                <item>openssl</item>
 	                                                <item>gpg</item>
@@ -155,6 +198,7 @@ export MAIN_DIALOG='
                                         <frame Passphrase:>
                                                 <entry tooltip-text="Set passphrase for encryption">
                                                         <variable>BR_PASS</variable>
+                                                        '"`set_default_pass`"'
                                                 </entry>
                                         </frame>
                                 </vbox>
@@ -162,6 +206,7 @@ export MAIN_DIALOG='
                                 <text use-markup="true"><label>"<span color='"'brown'"'>Additional tar options</span>"</label></text>
                                 <comboboxentry tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
                                         <variable>BR_OPTIONS</variable>
+                                       '"`set_default_opts`"'
                                         <item>--acls --xattrs</item>
                                 </comboboxentry>
 
@@ -169,21 +214,25 @@ export MAIN_DIALOG='
                                         <checkbox tooltip-text="Check to enable multi-core compression via pigz, pbzip2 or pxz">
                                                 <label>Enable multi-core compression</label>
                                                 <variable>ENTRY3</variable>
+                                                <default>'"$ENTRY3"'</default>
                                         </checkbox>
 
                                         <checkbox tooltip-text="Check to make tar output verbose">
                                                 <label>Verbose</label>
                                                 <variable>ENTRY4</variable>
+                                                <default>'"$ENTRY4"'</default>
                                         </checkbox>
 
                                         <checkbox tooltip-text="Check to exclude sockets">
                                                 <label>Exclude sockets</label>
                                                 <variable>ENTRY5</variable>
+                                                <default>'"$ENTRY5"'</default>
                                         </checkbox>
 
                                         <checkbox tooltip-text="Check to disable colors">
                                                 <label>Disable colors</label>
                                                 <variable>ENTRY6</variable>
+                                                <default>'"$ENTRY6"'</default>
                                         </checkbox>
 
                                         <checkbox tooltip-text="Check to generate configuration file in case of successful backup">
@@ -194,21 +243,25 @@ export MAIN_DIALOG='
                                         <checkbox tooltip-text="Hide the cursor when running archiver (useful for some terminal emulators)">
                                                 <label>Hide cursor</label>
                                                 <variable>ENTRY8</variable>
+                                                <default>'"$ENTRY8"'</default>
                                         </checkbox>
 
                                         <checkbox tooltip-text="Check to remove older backups in the destination directory">
                                                 <label>Remove older backups</label>
                                                 <variable>ENTRY9</variable>
+                                               <default>'"$ENTRY9"'</default>
                                         </checkbox>
 
                                         <checkbox tooltip-text="Check to override the default tar options with user options">
                                                 <label>Override</label>
                                                 <variable>ENTRY10</variable>
+                                                <default>'"$ENTRY10"'</default>
                                         </checkbox>
 
                                         <checkbox tooltip-text="Check to disable genkernel check in gentoo">
                                                 <label>Disable genkernel</label>
                                                 <variable>ENTRY11</variable>
+                                                <default>'"$ENTRY11"'</default>
                                         </checkbox>
                                 </vbox></expander>
                         </vbox>
@@ -224,7 +277,6 @@ export MAIN_DIALOG='
 	                                                <variable>BR_ROOT</variable>
                                                         <input>echo "$BR_ROOT"</input>
 	                                                <input>scan_parts | hide_used_parts</input>
-                                                        <input>if [ -n "$BR_ROOT" ]; then echo ""; fi</input>
                                                         <action>refresh:BR_BOOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
 			                        </comboboxtext>
                                                 <entry tooltip-text="Set comma-separated list of mount options for the root partition">
@@ -430,12 +482,12 @@ export MAIN_DIALOG='
                         <button tooltip-text="Run generated command in xterm">
                                 <input file icon="gtk-ok"></input>
                                 <label>RUN</label>
-                                <action>fun_run</action>
+                                <action>set_args</action>
                         </button>
                         <button tooltip-text="Show generated command in xterm">
                                 <input file icon="system-run"></input>
                                 <label>SHOW</label>
-                                <action>BR_SHOW=y && fun_run</action>
+                                <action>BR_SHOW=y && set_args</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <input file icon="gtk-cancel"></input>
@@ -447,3 +499,5 @@ export MAIN_DIALOG='
 '
 
 gtkdialog --program=MAIN_DIALOG
+
+rm /tmp/empty

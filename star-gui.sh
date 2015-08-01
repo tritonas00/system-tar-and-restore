@@ -4,9 +4,7 @@ cd $(dirname $0)
 
 if [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
-fi
-
-if [ -f ~/.backup.conf ]; then
+elif [ -f ~/.backup.conf ]; then
   source ~/.backup.conf
 fi
 

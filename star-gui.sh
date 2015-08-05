@@ -180,7 +180,7 @@ export MAIN_DIALOG='
                                         <item>none</item>
 	                        </comboboxtext></hbox>
 
-                                <vbox><frame Encryption:> 
+                                <vbox><frame Encryption:>
                                         <hbox><text width-request="86" space-expand="false"><label>Method:</label></text>
                                                 <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select encryption method">
 	                                                <variable>ENTRY2</variable>
@@ -204,7 +204,7 @@ export MAIN_DIALOG='
                                        '"`set_default_opts`"'
                                         <item>--acls --xattrs</item>
                                 </comboboxentry>
-                                
+
                                 <checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
                                         <label>Enable multi-core compression</label>
                                         <variable>ENTRY3</variable>
@@ -257,7 +257,6 @@ export MAIN_DIALOG='
                                         <variable>ENTRY11</variable>
                                         <default>'"$ENTRY11"'</default>
                                 </checkbox>
-                               
                         </vbox>
 
                         <vbox scrollable="true" shadow-type="0" height="560" width="435">
@@ -280,7 +279,7 @@ export MAIN_DIALOG='
 
                                 <expander label="More">
                                         <vbox>
-                                                <hbox><text width-request="55" space-expand="false"><label>/boot:</label></text>        
+                                                <hbox><text width-request="55" space-expand="false"><label>/boot:</label></text>
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
 	                                                        <variable>BR_BOOT</variable>
                                                                 <input>echo "$BR_BOOT"</input>
@@ -289,7 +288,7 @@ export MAIN_DIALOG='
                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
 			                                </comboboxtext>
                                                 </hbox>
-                                                <hbox><text width-request="55" space-expand="false"><label>/boot/efi:</label></text>                 
+                                                <hbox><text width-request="55" space-expand="false"><label>/boot/efi:</label></text>
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(UEFI only) Select target ESP partition">
 	                                                        <variable>BR_ESP</variable>
                                                                 <input>echo "$BR_ESP"</input>
@@ -305,7 +304,7 @@ export MAIN_DIALOG='
 	                                                        <input>scan_parts | hide_used_parts</input>
                                                                 <input>if [ -n "$BR_HOME" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_BOOT</action><action>refresh:BR_ROOT</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
-         	                                        </comboboxtext>
+                                                        </comboboxtext>
                                                 </hbox>
                                                 <hbox><text width-request="55" space-expand="false"><label>swap:</label></text>
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
@@ -322,7 +321,6 @@ export MAIN_DIALOG='
                                                                 <variable>BR_OTHER_PARTS</variable>
                                                         </entry>
                                                 </hbox>
-                                               
                                         </vbox>
                                 </expander></frame>
 
@@ -333,14 +331,14 @@ export MAIN_DIALOG='
 	                                        <item>Grub</item>
 	                                        <item>Syslinux</item>
                                         </comboboxtext>
-                                                     
+
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk for bootloader">
                                                 <default>""</default>
 	                                        <variable>BR_DISK</variable>
 	                                        <input>scan_disks</input>
                                                 <item>""</item>
 	                                </comboboxtext>
-                                       
+
                                         <entry tooltip-text="Set additional kernel options (Syslinux only)">
                                                 <variable>BR_SL_OPTS</variable>
                                         </entry>
@@ -412,7 +410,7 @@ export MAIN_DIALOG='
                                                 </entry>
                                         </hbox>
                                 </frame>
-                               
+
                                <text xalign="0"><label>Additional options:</label></text>
                                 <comboboxentry tooltip-text="Set extra tar/rsync options. See tar --help  or rsync --help for more info. If you want spaces in names replace them with //">
                                         <variable>BR_TR_OPTIONS</variable>

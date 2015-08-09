@@ -10,7 +10,7 @@ fi
 
 if [ -n "$BRNAME" ]; then export BRNAME; else export BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"; fi
 if [ -n "$BRFOLDER" ]; then export BRFOLDER; else export BRFOLDER=$(echo ~); fi
-if [ -n "$BRcompression" ]; then export BRcompression="$BRcompression"; else export BRcompression="gzip"; fi
+if [ -n "$BRcompression" ]; then export BRcompression; else export BRcompression="gzip"; fi
 if [ -n "$BRencmethod" ]; then export BRencmethod; else export BRencmethod="none"; fi
 if [ -n "$BRencpass" ]; then export BRencpass; fi
 if [ -n "$BR_USER_OPTS" ]; then export BR_USER_OPTS; fi
@@ -97,6 +97,7 @@ set_args() {
     RESTORE_ARGS+=(-g ${BR_DISK%% *})
   elif [ "$ENTRY12" = "Syslinux" ]; then
     RESTORE_ARGS+=(-S ${BR_DISK%% *})
+    if [ -n "$BR_SL_OPTS" ]; then RESTORE_ARGS+=(-k "$BR_SL_OPTS"); fi
   fi
 
   if [ "$ENTRY13" = "false" ]; then
@@ -112,7 +113,6 @@ set_args() {
     if [ "$ENTRY21" = "true" ]; then RESTORE_ARGS+=(-x); fi
   fi
 
-  if [ -n "$BR_SL_OPTS" ]; then RESTORE_ARGS+=(-k "$BR_SL_OPTS"); fi
   if [ -n "$BR_MN_OPTS" ]; then RESTORE_ARGS+=(-m "$BR_MN_OPTS"); fi
   if [ -n "$BR_TR_OPTIONS" ]; then RESTORE_ARGS+=(-u "$BR_TR_OPTIONS"); fi
   if [ -n "$BR_ROOT_SUBVOL" ]; then RESTORE_ARGS+=(-R "$BR_ROOT_SUBVOL"); fi
@@ -128,7 +128,7 @@ set_args() {
 
 status_bar() {
   if [ "$BR_MODE" = "0" ]; then
-    echo backup.sh -i cli -d "$BRFOLDER" -c $BRcompression -C /tmp/empty "${BACKUP_ARGS[@]}"
+    echo backup.sh -i cli -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}"
   elif [ "$BR_MODE" = "1" ]; then
     echo restore.sh -i cli -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}"
   fi

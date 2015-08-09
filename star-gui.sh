@@ -138,7 +138,7 @@ run_main() {
   if [ "$BR_MODE" = "0" ]; then
     xterm -hold -T Backup -e sudo ./backup.sh -i cli -d "$BRFOLDER" -c $BRcompression -C /tmp/empty "${BACKUP_ARGS[@]}"
   elif [ "$BR_MODE" = "1" ]; then
-    xterm -hold -T $ttl -e sudo ./restore.sh -i cli -r ${BR_ROOT%% *} -m "$BR_MN_OPTS" "${RESTORE_ARGS[@]}"
+    xterm -hold -T $ttl -e sudo ./restore.sh -i cli -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}"
   fi
 }
 

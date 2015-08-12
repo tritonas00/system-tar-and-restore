@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.9.1"
+BR_VERSION="System Tar & Restore 4.9.2"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -28,6 +28,7 @@ info_screen() {
 
 clean_files() {
   if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
+  if [ -f /tmp/start ]; then rm /tmp/start; fi
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
   if [ -f /tmp/r_errs ]; then rm /tmp/r_errs; fi
   if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
@@ -159,6 +160,7 @@ check_wget() {
     unset BRsource BRencpass
     if [ "$BRinterface" = "cli" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL, network is down or package wget is not installed."
+      if [ -n "$BRwrap" ]; then clean_unmount_in; fi
     elif [ "$BRinterface" = "dialog" ]; then
       dialog --title "Error" --msgbox "Error downloading file. Wrong URL, network is down or package wget is not installed." 6 65
     fi
@@ -169,6 +171,7 @@ check_wget() {
       unset BRsource BRencpass
       if [ "$BRinterface" = "cli" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase"
+        if [ -n "$BRwrap" ]; then clean_unmount_in; fi
       elif [ "$BRinterface" = "dialog" ]; then
         dialog --title "Error" --msgbox "Invalid file type or wrong passphrase." 5 42
       fi
@@ -1074,6 +1077,7 @@ check_archive() {
     unset BRsource BRencpass
     if [ "$BRinterface" = "cli" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
+      if [ -n "$BRwrap" ]; then clean_unmount_in; fi
     elif [ "$BRinterface" = "dialog" ]; then
       dialog --cr-wrap --title "Error" --msgbox "Error reading archive.\n\n$(cat /tmp/r_errs)" 0 0
     fi
@@ -1088,6 +1092,7 @@ check_archive() {
         echo -e "[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive"
         echo -e "[${BR_CYAN}INFO${BR_NORM}] Target  system: $target_arch"
         echo -e "[${BR_CYAN}INFO${BR_NORM}] Running system: $(uname -m)"
+        if [ -n "$BRwrap" ]; then clean_unmount_in; fi
       elif [ "$BRinterface" = "dialog" ]; then
         dialog --title "Error" --msgbox "Running and target system architecture mismatch or invalid archive.\n\nTarget  system: $target_arch\nRunning system: $(uname -m)" 8 71
       fi
@@ -1200,7 +1205,11 @@ tar_pgrs_cli() {
       echo -e "${BR_YELLOW}[$per%] ${BR_GREEN}$ln${BR_NORM}"
     elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
       lastper=$per
-      echo -ne "\rExtracting: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
+      if [ -n "$BRwrap" ]; then
+        echo "Extracting $total Files: $per%" > /tmp/wr_proc
+      else
+        echo -ne "\rExtracting: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
+      fi
     fi
   done
 }
@@ -1214,7 +1223,11 @@ rsync_pgrs_cli() {
       echo -e "${BR_YELLOW}[$per%] ${BR_GREEN}$ln${BR_NORM}"
     elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
       lastper=$per
-      echo -ne "\rTransferring: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
+      if [ -n "$BRwrap" ]; then
+        echo "Transferring $total Files: $per%" > /tmp/wr_proc
+      else
+        echo -ne "\rTransferring: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
+      fi
     fi
   done
 }
@@ -1246,7 +1259,7 @@ start_log() {
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:O:vdDHP:Bx" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,bios,override" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:O:vdDHP:Bxw" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,bios,override,wrapper" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1376,6 +1389,10 @@ while true; do
       BRoverride="y"
       shift
     ;;
+    -w|--wrapper)
+      BRwrap="y"
+      shift
+    ;;
     --help)
     echo -e "$BR_VERSION\nUsage: restore.sh [options]
 \nGeneral:
@@ -1413,6 +1430,7 @@ while true; do
 \nMisc Options:
   -D,  --disable-genkernel  disable genkernel check and initramfs building in gentoo
   -B,  --bios               ignore UEFI environment
+  -w,  --wrapper            make the script wrapper-friendly (cli interface only)
        --help               print this page"
       exit
       shift
@@ -1801,7 +1819,7 @@ if [ "$BRinterface" = "cli" ]; then
   set_user_options
 
   if [ "$BRmode" = "Restore" ]; then
-    echo -e "\n${BR_SEP}GETTING TAR IMAGE"
+    if [ -z "$BRwrap" ]; then echo -e "\n${BR_SEP}GETTING TAR IMAGE"; fi
 
     if [ -n "$BRurl" ]; then
       BRsource="$BRmaxsize/downloaded_backup"
@@ -1816,7 +1834,16 @@ if [ "$BRinterface" = "cli" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-      read_archive | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
+      if [ -n "$BRwrap" ]; then touch /tmp/start; fi
+      read_archive | tee /tmp/filelist | while read ln; do
+        a=$((a + 1))
+        if [ -n "$BRwrap" ]; then
+          echo "Checking and reading archive ($a Files) " > /tmp/wr_proc
+        else
+          echo -en "\rChecking and reading archive ($a Files) "
+        fi
+      done
+
       IFS=$'\n'
       check_archive
     fi
@@ -1923,7 +1950,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   start_log >> /tmp/restore.log
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-  echo -e "\n${BR_SEP}PROCESSING"
+  if [ -z "$BRwrap" ]; then echo -e "\n${BR_SEP}PROCESSING"; fi
 
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
@@ -1932,7 +1959,16 @@ if [ "$BRinterface" = "cli" ]; then
     echo " "
 
   elif [ "$BRmode" = "Transfer" ]; then
-    run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
+    if [ -n "$BRwrap" ]; then touch /tmp/start; fi
+    run_calc | while read ln; do
+      a=$((a + 1))
+      if [ -n "$BRwrap" ]; then
+        echo "Calculating $a Files" > /tmp/wr_proc
+      else
+        echo -en "\rCalculating: $a Files"
+      fi
+    done
+
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     echo " "

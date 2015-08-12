@@ -39,6 +39,7 @@ clean_files() {
   if [ -f /tmp/b_error ]; then rm /tmp/b_error; fi
   if [ -f /tmp/c_stderr ]; then rm /tmp/c_stderr; fi
   if [ -f /tmp/b_filelist ]; then rm /tmp/b_filelist; fi
+  if [ -f /tmp/start ]; then rm /tmp/start; fi
   if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi
 }
 
@@ -191,11 +192,11 @@ set_names() {
 
 prepare() {
   touch /target_architecture.$(uname -m)
-  if [ "$BRinterface" = "cli" ]; then echo -e "\n${BR_SEP}PROCESSING"; fi
+  if [ "$BRinterface" = "cli" ] && [ -z "$BRwrap" ]; then echo -e "\n${BR_SEP}PROCESSING"; fi
   mkdir -p "$BRFOLDER"
   sleep 1
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-  echo -e "====================$BR_VERSION {$(date +%d-%m-%Y-%T)}====================\n" >> "$BRFOLDER"/backup.log
+  echo -e "====================$BR_VERSION {$(date +%d-%m-%Y-%T)}====================\n" > "$BRFOLDER"/backup.log
   echo "${BR_SEP}SUMMARY" >> "$BRFOLDER"/backup.log
   show_summary >> "$BRFOLDER"/backup.log
   echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
@@ -211,7 +212,11 @@ out_pgrs_cli() {
       echo -e "${BR_YELLOW}[$per%] ${BR_GREEN}$ln${BR_NORM}"
     elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
       lastper=$per
-      echo -ne "\rArchiving: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
+      if [ -n "$BRwrap" ]; then
+        echo "Archiving $total Files: $per%" > /tmp/wr_proc
+      else
+        echo -ne "\rArchiving: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
+      fi
     fi
   done
 }
@@ -254,7 +259,7 @@ exclude_sockets() {
   IFS=$DEFAULTIFS
 }
 
-BRargs=`getopt -o "i:d:f:c:u:hnNqvgDHP:E:orC:sm" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,exclude-sockets,multi-core,help" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:d:f:c:u:hnNqvgDHP:E:orC:smw" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,exclude-sockets,multi-core,wrapper,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -345,6 +350,10 @@ while true; do
       BRmcore="y"
       shift
     ;;
+    -w|--wrapper)
+      BRwrap="y"
+      shift
+    ;;
     --help)
       echo -e "$BR_VERSION\nUsage: backup.sh [options]
 \nGeneral:
@@ -373,6 +382,7 @@ while true; do
 \nMisc Options:
   -D, --disable-genkernel  disable genkernel check in gentoo
   -C, --conf               alternative configuration file path
+  -w, --wrapper            make the script wrapper-friendly (cli interface only)
       --help	           print this page"
       exit
       shift
@@ -430,17 +440,17 @@ if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel"
   BRSTOP="y"
 fi
 
-if [ -n "$BRencpass" ] && [ -z "$BRencmethod" ]; then
+if [ -z "$BRencmethod" ] ||  [ "$BRencmethod" = "none" ] && [ -n "$BRencpass" ]; then
   echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify an encryption method"
   BRSTOP="y"
 fi
 
-if [ -z "$BRencpass" ] && [ -n "$BRencmethod" ]; then
+if [ -z "$BRencpass" ] && [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "none" ]; then
   echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify a passphrase"
   BRSTOP="y"
 fi
 
-if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ]; then
+if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ] && [ ! "$BRencmethod" = "none" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong encryption method: $BRencmethod. Available options: openssl gpg"
   BRSTOP="y"
 fi
@@ -456,6 +466,11 @@ elif [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z $(which pbzip2 
   BRSTOP="y"
 elif [ -n "$BRmcore" ] && [ "$BRcompression" = "xz" ] && [ -z $(which pxz 2>/dev/null) ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Package pxz is not installed. Install the package and re-run the script."
+  BRSTOP="y"
+fi
+
+if [ -n "$BRwrap" ] && [ -z "$BRFOLDER" ]; then
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify destination directory"
   BRSTOP="y"
 fi
 
@@ -666,7 +681,17 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   prepare
-  run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
+
+  if [ -n "$BRwrap" ]; then touch /tmp/start; fi
+  run_calc | while read ln; do
+    a=$((a + 1))
+    if [ -n "$BRwrap" ]; then
+      echo "Calculating $a Files" > /tmp/wr_proc
+    else
+      echo -en "\rCalculating: $a Files"
+    fi
+  done
+
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
   echo " "
@@ -830,4 +855,3 @@ fi
 
 if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi
 clean_files
-

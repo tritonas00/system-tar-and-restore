@@ -21,7 +21,7 @@ if [ -f /etc/backup.conf ]; then
 fi
 
 if [ -n "$BRNAME" ]; then export BRNAME; else export BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"; fi
-if [ -n "$BRFOLDER" ]; then export BRFOLDER; else export BRFOLDER=$(echo /); fi
+if [ -n "$BRFOLDER" ]; then export BRFOLDER; else export BRFOLDER="/"; fi
 if [ -n "$BRcompression" ]; then export BRcompression; else export BRcompression="gzip"; fi
 if [ -n "$BRencmethod" ]; then export BRencmethod; else export BRencmethod="none"; fi
 if [ -n "$BRencpass" ]; then export BRencpass; fi

@@ -143,8 +143,8 @@ status_bar() {
 }
 
 run_main() {
-echo > /tmp/wr_proc
-echo > /tmp/wr_log
+  echo > /tmp/wr_proc
+  echo > /tmp/wr_log
 
   if [ "$BR_MODE" = "0" ]; then
     ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression -C /tmp/empty "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1 &

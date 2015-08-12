@@ -196,7 +196,7 @@ prepare() {
   mkdir -p "$BRFOLDER"
   sleep 1
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-  echo -e "====================$BR_VERSION {$(date +%d-%m-%Y-%T)}====================\n" > "$BRFOLDER"/backup.log
+  echo -e "====================$BR_VERSION {$(date +%d-%m-%Y-%T)}====================\n" >> "$BRFOLDER"/backup.log
   echo "${BR_SEP}SUMMARY" >> "$BRFOLDER"/backup.log
   show_summary >> "$BRFOLDER"/backup.log
   echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log

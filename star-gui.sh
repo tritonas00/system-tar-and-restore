@@ -2,14 +2,26 @@
 
 cd $(dirname $0)
 
+clean_files() {
+  if [ -f /tmp/empty ]; then rm /tmp/empty; fi
+  if [ -f /tmp/wr_proc ]; then rm /tmp/wr_proc; fi
+  if [ -f /tmp/wr_log ]; then rm /tmp/wr_log; fi
+  if [ -f /tmp/tab ]; then rm /tmp/tab; fi
+}
+
+clean_files
+
+touch /tmp/empty
+touch /tmp/wr_proc
+touch /tmp/wr_log
+echo 2 > /tmp/tab
+
 if [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
-elif [ -f ~/.backup.conf ]; then
-  source ~/.backup.conf
 fi
 
 if [ -n "$BRNAME" ]; then export BRNAME; else export BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"; fi
-if [ -n "$BRFOLDER" ]; then export BRFOLDER; else export BRFOLDER=$(echo ~); fi
+if [ -n "$BRFOLDER" ]; then export BRFOLDER; else export BRFOLDER=$(echo /); fi
 if [ -n "$BRcompression" ]; then export BRcompression; else export BRcompression="gzip"; fi
 if [ -n "$BRencmethod" ]; then export BRencmethod; else export BRencmethod="none"; fi
 if [ -n "$BRencpass" ]; then export BRencpass; fi
@@ -17,7 +29,6 @@ if [ -n "$BR_USER_OPTS" ]; then export BR_USER_OPTS; fi
 if [ -n "$BRmcore" ]; then export ENTRY3="true"; else export ENTRY3="false"; fi
 if [ -n "$BRverb" ]; then export ENTRY4="true"; else export ENTRY4="false"; fi
 if [ -n "$BRnosockets" ]; then export ENTRY5="true"; else export ENTRY5="false"; fi
-if [ -n "$BRnocolor" ]; then export ENTRY6="true"; else export ENTRY6="false"; fi
 if [ -n "$BRhide" ]; then export ENTRY8="true"; else export ENTRY8="false"; fi
 if [ -n "$BRclean" ]; then export ENTRY9="true"; else export ENTRY9="false"; fi
 if [ -n "$BRoverride" ]; then export ENTRY10="true"; else export ENTRY10="false"; fi
@@ -57,8 +68,6 @@ hide_used_parts() {
 }
 
 set_args() {
-  touch /tmp/empty
-
   if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
     BACKUP_ARGS+=(-f "$BRNAME")
   fi
@@ -80,12 +89,15 @@ set_args() {
   if [ "$ENTRY3" = "true" ]; then BACKUP_ARGS+=(-m); fi
   if [ "$ENTRY4" = "true" ]; then BACKUP_ARGS+=(-v); fi
   if [ "$ENTRY5" = "true" ]; then BACKUP_ARGS+=(-s); fi
-  if [ "$ENTRY6" = "true" ]; then BACKUP_ARGS+=(-N); fi
   if [ "$ENTRY7" = "true" ]; then BACKUP_ARGS+=(-g); fi
   if [ "$ENTRY8" = "true" ]; then BACKUP_ARGS+=(-H); fi
   if [ "$ENTRY9" = "true" ]; then BACKUP_ARGS+=(-r); fi
   if [ "$ENTRY10" = "true" ]; then BACKUP_ARGS+=(-o); fi
   if [ "$ENTRY11" = "true" ]; then BACKUP_ARGS+=(-D); fi
+
+  if [ "$BR_MODE" = "1" ]; then
+    unset BRencmethod BRencpass BR_USER_OPTS
+  fi
 
   if [ ! "$BR_BOOT" = "" ]; then RESTORE_ARGS+=(-b ${BR_BOOT%% *}); fi
   if [ ! "$BR_HOME" = "" ]; then RESTORE_ARGS+=(-h ${BR_HOME%% *}); fi
@@ -119,7 +131,6 @@ set_args() {
   if [ -n "$BR_OTHER_SUBVOLS" ]; then RESTORE_ARGS+=(-O "$BR_OTHER_SUBVOLS"); fi
 
   if [ "$ENTRY15" = "true" ]; then RESTORE_ARGS+=(-v); fi
-  if [ "$ENTRY16" = "true" ]; then RESTORE_ARGS+=(-N); fi
   if [ "$ENTRY17" = "true" ]; then RESTORE_ARGS+=(-H); fi
   if [ "$ENTRY18" = "true" ]; then RESTORE_ARGS+=(-D); fi
   if [ "$ENTRY19" = "true" ]; then RESTORE_ARGS+=(-d); fi
@@ -128,22 +139,26 @@ set_args() {
 
 status_bar() {
   if [ "$BR_MODE" = "0" ]; then
-    echo backup.sh -i cli -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}"
+    echo backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}"
   elif [ "$BR_MODE" = "1" ]; then
-    echo restore.sh -i cli -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}"
+    echo restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}"
   fi
 }
 
 run_main() {
+echo > /tmp/wr_proc
+echo > /tmp/wr_log
+
   if [ "$BR_MODE" = "0" ]; then
-    xterm -hold -T Backup -e sudo ./backup.sh -i cli -d "$BRFOLDER" -c $BRcompression -C /tmp/empty "${BACKUP_ARGS[@]}"
+    ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression -C /tmp/empty "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1 &
   elif [ "$BR_MODE" = "1" ]; then
-    xterm -hold -T $ttl -e sudo ./restore.sh -i cli -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}"
+    ./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" 1> /tmp/wr_log 2>&1 &
   fi
 }
 
-export -f scan_parts scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main
-export BR_ROOT=$(scan_parts | head -n 1)
+export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main
+export BR_PARTS=$(scan_parts)
+export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
 export MAIN_DIALOG='
 
@@ -151,8 +166,11 @@ export MAIN_DIALOG='
         <vbox>
                 <timer visible="false">
 		        <action>refresh:BR_SB</action>
+                        <action>refresh:BR_PROC</action>
+			<action condition="command_is_true([ -f /tmp/start ] && echo true)">disable:BTN_RUN</action>
+			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">enable:BTN_RUN</action>
 		</timer>
-                <notebook labels="Backup|Restore/Transfer">
+                <notebook labels="Backup|Restore/Transfer|Log">
                         <vbox scrollable="true" shadow-type="0">
                                 <text height-request="30" use-markup="true"><label>"<span color='"'brown'"'>Make a tar backup image of this system.</span>"</label></text>
 
@@ -251,13 +269,6 @@ export MAIN_DIALOG='
                                         <action>refresh:BR_SB</action>
                                 </checkbox>
 
-                                <checkbox tooltip-text="Disable colors">
-                                        <label>Disable colors</label>
-                                        <variable>ENTRY6</variable>
-                                        <default>'"$ENTRY6"'</default>
-                                        <action>refresh:BR_SB</action>
-                                </checkbox>
-
                                 <checkbox tooltip-text="Generate configuration file in case of successful backup">
                                         <label>Generate backup.conf</label>
                                         <variable>ENTRY7</variable>
@@ -302,7 +313,7 @@ export MAIN_DIALOG='
 		                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
 	                                        <variable>BR_ROOT</variable>
                                                 <input>echo "$BR_ROOT"</input>
-	                                        <input>scan_parts | hide_used_parts</input>
+	                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
                                                 <action>refresh:BR_BOOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
                                                 <action>refresh:BR_SB</action>
 			                </comboboxtext>
@@ -319,7 +330,7 @@ export MAIN_DIALOG='
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
 	                                                        <variable>BR_BOOT</variable>
                                                                 <input>echo "$BR_BOOT"</input>
-	                                                        <input>scan_parts | hide_used_parts</input>
+	                                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
                                                                 <input>if [ -n "$BR_BOOT" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
                                                                 <action>refresh:BR_SB</action>
@@ -329,7 +340,7 @@ export MAIN_DIALOG='
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(UEFI only) Select target ESP partition">
 	                                                        <variable>BR_ESP</variable>
                                                                 <input>echo "$BR_ESP"</input>
-	                                                        <input>scan_parts | hide_used_parts</input>
+	                                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
                                                                 <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_SWAP</action>
                                                                 <action>refresh:BR_SB</action>
@@ -339,7 +350,7 @@ export MAIN_DIALOG='
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
 	                                                        <variable>BR_HOME</variable>
                                                                 <input>echo "$BR_HOME"</input>
-	                                                        <input>scan_parts | hide_used_parts</input>
+	                                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
                                                                 <input>if [ -n "$BR_HOME" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_BOOT</action><action>refresh:BR_ROOT</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
                                                                 <action>refresh:BR_SB</action>
@@ -349,7 +360,7 @@ export MAIN_DIALOG='
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
 	                                                        <variable>BR_SWAP</variable>
                                                                 <input>echo "$BR_SWAP"</input>
-	                                                        <input>scan_parts | hide_used_parts</input>
+	                                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
                                                                 <input>if [ -n "$BR_SWAP" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_ESP</action>
                                                                 <action>refresh:BR_SB</action>
@@ -478,12 +489,6 @@ export MAIN_DIALOG='
                                                 <action>refresh:BR_SB</action>
                                         </checkbox>
 
-                                        <checkbox tooltip-text="Disable colors">
-                                                <label>Disable colors</label>
-                                                <variable>ENTRY16</variable>
-                                                <action>refresh:BR_SB</action>
-                                        </checkbox>
-
                                         <checkbox tooltip-text="Hide the cursor when running tar/rsync (useful for some terminal emulators)">
                                                 <label>Hide cursor</label>
                                                 <variable>ENTRY17</variable>
@@ -508,16 +513,39 @@ export MAIN_DIALOG='
                                                 <action>refresh:BR_SB</action>
                                         </checkbox>
                                 </vbox>
-
 			</vbox>
+
+                        <vbox>
+                                <vbox>
+                                        <frame Processing:>
+                                                <text xalign="0" wrap="false">
+                                                        <input file>/tmp/wr_proc</input>
+                                                        <variable>BR_PROC</variable>
+                                                </text>
+                                        </frame>
+                                </vbox>
+
+                                <frame Log:>
+                                        <vbox scrollable="true" shadow-type="0">
+                                                <text xalign="0" wrap="false" auto-refresh="true">
+                                                        <input file>/tmp/wr_log</input>
+                                                        <variable>BR_LOG</variable>
+                                                </text>
+                                        </vbox>
+                                </frame>
+                        </vbox>
+
                         <variable>BR_MODE</variable>
+                        <input file>/tmp/tab</input>
 		</notebook>
 
                 <hbox homogeneous="true" space-expand="true">
-                        <button tooltip-text="Run generated command in xterm">
+                        <button tooltip-text="Run generated command">
                                 <input file icon="gtk-ok"></input>
                                 <label>RUN</label>
+                                <variable>BTN_RUN</variable>
                                 <action>set_args && run_main</action>
+                                <action>refresh:BR_MODE</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <input file icon="gtk-cancel"></input>
@@ -534,4 +562,4 @@ export MAIN_DIALOG='
 
 gtkdialog --program=MAIN_DIALOG
 
-if [ -f /tmp/empty ]; then rm /tmp/empty; fi
+clean_files

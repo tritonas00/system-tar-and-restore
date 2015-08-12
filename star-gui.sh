@@ -29,7 +29,6 @@ if [ -n "$BR_USER_OPTS" ]; then export BR_USER_OPTS; fi
 if [ -n "$BRmcore" ]; then export ENTRY3="true"; else export ENTRY3="false"; fi
 if [ -n "$BRverb" ]; then export ENTRY4="true"; else export ENTRY4="false"; fi
 if [ -n "$BRnosockets" ]; then export ENTRY5="true"; else export ENTRY5="false"; fi
-if [ -n "$BRhide" ]; then export ENTRY8="true"; else export ENTRY8="false"; fi
 if [ -n "$BRclean" ]; then export ENTRY9="true"; else export ENTRY9="false"; fi
 if [ -n "$BRoverride" ]; then export ENTRY10="true"; else export ENTRY10="false"; fi
 if [ -n "$BRgenkernel" ]; then export ENTRY11="true"; else export ENTRY11="false"; fi
@@ -90,7 +89,6 @@ set_args() {
   if [ "$ENTRY4" = "true" ]; then BACKUP_ARGS+=(-v); fi
   if [ "$ENTRY5" = "true" ]; then BACKUP_ARGS+=(-s); fi
   if [ "$ENTRY7" = "true" ]; then BACKUP_ARGS+=(-g); fi
-  if [ "$ENTRY8" = "true" ]; then BACKUP_ARGS+=(-H); fi
   if [ "$ENTRY9" = "true" ]; then BACKUP_ARGS+=(-r); fi
   if [ "$ENTRY10" = "true" ]; then BACKUP_ARGS+=(-o); fi
   if [ "$ENTRY11" = "true" ]; then BACKUP_ARGS+=(-D); fi
@@ -131,7 +129,6 @@ set_args() {
   if [ -n "$BR_OTHER_SUBVOLS" ]; then RESTORE_ARGS+=(-O "$BR_OTHER_SUBVOLS"); fi
 
   if [ "$ENTRY15" = "true" ]; then RESTORE_ARGS+=(-v); fi
-  if [ "$ENTRY17" = "true" ]; then RESTORE_ARGS+=(-H); fi
   if [ "$ENTRY18" = "true" ]; then RESTORE_ARGS+=(-D); fi
   if [ "$ENTRY19" = "true" ]; then RESTORE_ARGS+=(-d); fi
   if [ "$ENTRY20" = "true" ]; then RESTORE_ARGS+=(-B); fi
@@ -272,13 +269,6 @@ export MAIN_DIALOG='
                                 <checkbox tooltip-text="Generate configuration file in case of successful backup">
                                         <label>Generate backup.conf</label>
                                         <variable>ENTRY7</variable>
-                                        <action>refresh:BR_SB</action>
-                                </checkbox>
-
-                                <checkbox tooltip-text="Hide the cursor when running archiver (useful for some terminal emulators)">
-                                        <label>Hide cursor</label>
-                                        <variable>ENTRY8</variable>
-                                        <default>'"$ENTRY8"'</default>
                                         <action>refresh:BR_SB</action>
                                 </checkbox>
 
@@ -486,12 +476,6 @@ export MAIN_DIALOG='
                                         <checkbox tooltip-text="Make tar/rsync output verbose">
                                                 <label>Verbose</label>
                                                 <variable>ENTRY15</variable>
-                                                <action>refresh:BR_SB</action>
-                                        </checkbox>
-
-                                        <checkbox tooltip-text="Hide the cursor when running tar/rsync (useful for some terminal emulators)">
-                                                <label>Hide cursor</label>
-                                                <variable>ENTRY17</variable>
                                                 <action>refresh:BR_SB</action>
                                         </checkbox>
 

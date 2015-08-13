@@ -150,7 +150,7 @@ run_main() {
   if [ "$BR_MODE" = "0" ]; then
     ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression -C /tmp/empty "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1 &
   elif [ "$BR_MODE" = "1" ]; then
-    ./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" 1> /tmp/wr_log 2>&1 &
+    ./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" > /tmp/wr_log 2>&1 &
   fi
 }
 

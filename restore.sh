@@ -1834,16 +1834,13 @@ if [ "$BRinterface" = "cli" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-      if [ -n "$BRwrap" ]; then touch /tmp/start; fi
-      read_archive | tee /tmp/filelist | while read ln; do
-        a=$((a + 1))
-        if [ -n "$BRwrap" ]; then
-          echo "Checking and reading archive ($a Files) " > /tmp/wr_proc
-        else
-          echo -en "\rChecking and reading archive ($a Files) "
-        fi
-      done
-
+      if [ -n "$BRwrap" ]; then 
+        touch /tmp/start
+        echo "Please wait while checking and reading archive..." > /tmp/wr_proc
+        read_archive > /tmp/filelist
+      else
+        read_archive | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
+      fi
       IFS=$'\n'
       check_archive
     fi
@@ -1959,15 +1956,13 @@ if [ "$BRinterface" = "cli" ]; then
     echo " "
 
   elif [ "$BRmode" = "Transfer" ]; then
-    if [ -n "$BRwrap" ]; then touch /tmp/start; fi
-    run_calc | while read ln; do
-      a=$((a + 1))
-      if [ -n "$BRwrap" ]; then
-        echo "Calculating $a Files" > /tmp/wr_proc
-      else
-        echo -en "\rCalculating: $a Files"
-      fi
-    done
+    if [ -n "$BRwrap" ]; then 
+      touch /tmp/start
+      echo "Please wait while calculating files..." > /tmp/wr_proc
+      run_calc > /dev/null
+    else
+      run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
+    fi
 
     total=$(cat /tmp/filelist | wc -l)
     sleep 1

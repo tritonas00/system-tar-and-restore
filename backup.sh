@@ -682,15 +682,13 @@ if [ "$BRinterface" = "cli" ]; then
 
   prepare
 
-  if [ -n "$BRwrap" ]; then touch /tmp/start; fi
-  run_calc | while read ln; do
-    a=$((a + 1))
-    if [ -n "$BRwrap" ]; then
-      echo "Calculating $a Files" > /tmp/wr_proc
-    else
-      echo -en "\rCalculating: $a Files"
-    fi
-  done
+  if [ -n "$BRwrap" ]; then 
+    touch /tmp/start
+    echo "Please wait while calculating files..." > /tmp/wr_proc
+    run_calc > /dev/null
+  else
+    run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
+  fi
 
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1

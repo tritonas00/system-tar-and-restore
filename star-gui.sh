@@ -13,8 +13,8 @@ clean_files() {
 clean_files
 
 touch /tmp/empty
-touch /tmp/wr_proc
 touch /tmp/wr_log
+echo > /tmp/wr_proc
 echo 2 > /tmp/tab
 
 if [ -f /etc/backup.conf ]; then

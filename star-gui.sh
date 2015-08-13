@@ -167,6 +167,10 @@ export MAIN_DIALOG='
                         <action>refresh:BR_PROC</action>
 			<action condition="command_is_true([ -f /tmp/start ] && echo true)">disable:BTN_RUN</action>
 			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">enable:BTN_RUN</action>
+			<action condition="command_is_true([ -f /tmp/start ] && echo true)">show:BR_WARN</action>
+			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">hide:BR_WARN</action>
+			<action condition="command_is_true([ -f /tmp/start ] && echo true)">hide:BR_IDL</action>
+			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">show:BR_IDL</action>
 		</timer>
                 <notebook labels="Backup|Restore/Transfer|Log">
                         <vbox scrollable="true" shadow-type="0">
@@ -501,6 +505,14 @@ export MAIN_DIALOG='
 			</vbox>
 
                         <vbox>
+                                <text wrap="false" use-markup="true">
+                                        <label>"<span color='"'brown'"'>Do not exit or close this window until the process is complete!</span>"</label>
+                                        <variable>BR_WARN</variable>
+                                </text>
+                                <text wrap="false" use-markup="true">
+                                        <label>"<span color='"'green'"'>Idle</span>"</label>
+                                        <variable>BR_IDL</variable>
+                                </text>
                                 <vbox>
                                         <frame Processing:>
                                                 <text xalign="0" wrap="false">

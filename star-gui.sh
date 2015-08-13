@@ -7,6 +7,7 @@ clean_files() {
   if [ -f /tmp/wr_proc ]; then rm /tmp/wr_proc; fi
   if [ -f /tmp/wr_log ]; then rm /tmp/wr_log; fi
   if [ -f /tmp/tab ]; then rm /tmp/tab; fi
+  if [ -f /tmp/start ]; then rm /tmp/start; fi
 }
 
 clean_files

@@ -179,7 +179,33 @@ export MAIN_DIALOG='
 		</timer>
                 <notebook labels="Backup|Restore/Transfer|Log">
                         <vbox scrollable="true" shadow-type="0">
-                                <text height-request="30" use-markup="true"><label>"<span color='"'brown'"'>Make a tar backup image of this system.</span>"</label></text>
+                                <text height-request="30" use-markup="true" tooltip-text="==>Make sure you have enough free space.
+
+==>If you plan to restore in btrfs/lvm/mdadm, make sure that
+       this system is capable to boot from btrfs/lvm/mdadm.
+
+==>Make sure you have GRUB or SYSLINUX packages
+       installed.
+
+GRUB PACKAGES:
+**Arch/Gentoo:
+    grub efibootmgr* dosfstools*
+**Fedora/Suse:
+    grub2 efibootmgr* dosfstools*
+**Mandriva:
+    grub2 grub2-efi* dosfstools*
+**Debian:
+    grub-pc grub-efi* dosfstools*
+
+SYSLINUX PACKAGES:
+**Arch/Suse/Gentoo:
+    syslinux
+**Debian/Mandriva:
+    syslinux extlinux
+**Fedora:
+    syslinux syslinux-extlinux
+
+*Required for UEFI systems"><label>"<span color='"'brown'"'>Make a tar backup image of this system.</span>"</label></text>
 
                                 <hbox><text width-request="93"><label>Filename:</label></text>
                                 <entry tooltip-text="Set backup archive name">
@@ -304,8 +330,20 @@ export MAIN_DIALOG='
                                 </checkbox>
                         </vbox>
 
+
+
                         <vbox scrollable="true" shadow-type="0" height="585" width="435">
-                                <text wrap="false" height-request="30" use-markup="true"><label>"<span color='"'brown'"'>Restore a backup image or transfer this system in user defined partitions.</span>"</label></text>
+                                <text wrap="false" height-request="30" use-markup="true" tooltip-text="In the first case, you should run it from a LiveCD of the target (backed up) distro.
+
+==>Make sure you have created one target root (/) partition.
+       Optionally you can create or use any other partition
+       (/boot /home /var etc).
+
+==>Make sure that target LVM volume groups are activated
+       and target RAID arrays are properly assembled.
+
+==>If you plan to transfer in btrfs/lvm/mdadm, make sure
+       that this system is capable to boot from btrfs/lvm/mdadm."><label>"<span color='"'brown'"'>Restore a backup image or transfer this system in user defined partitions.</span>"</label></text>
 
                                 <frame Target partitions:>
                                 <hbox><text width-request="30" space-expand="false"><label>Root:</label></text>

@@ -170,8 +170,8 @@ export MAIN_DIALOG='
                 <timer visible="false">
 		        <action>refresh:BR_SB</action>
                         <action>refresh:BR_PROC</action>
-			<action condition="command_is_true([ -f /tmp/start ] && echo true)">disable:BTN_RUN</action>
-			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">enable:BTN_RUN</action>
+			<action condition="command_is_true([ -f /tmp/start ] && echo true)">disable:BTNS</action>
+			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">enable:BTNS</action>
 			<action condition="command_is_true([ -f /tmp/start ] && echo true)">show:BR_WARN</action>
 			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">hide:BR_WARN</action>
 			<action condition="command_is_true([ -f /tmp/start ] && echo true)">hide:BR_IDL</action>
@@ -511,7 +511,7 @@ export MAIN_DIALOG='
 
                         <vbox>
                                 <text wrap="false" use-markup="true">
-                                        <label>"<span color='"'brown'"'>Do not exit or close this window until the process is complete!</span>"</label>
+                                        <label>"<span color='"'brown'"'>Do not close this window until the process is complete!</span>"</label>
                                         <variable>BR_WARN</variable>
                                 </text>
                                 <text wrap="false" use-markup="true">
@@ -545,7 +545,7 @@ export MAIN_DIALOG='
                         <button tooltip-text="Run generated command">
                                 <input file icon="gtk-ok"></input>
                                 <label>RUN</label>
-                                <variable>BTN_RUN</variable>
+                               
                                 <action>set_args && run_main</action>
                                 <action>refresh:BR_MODE</action>
                         </button>
@@ -553,6 +553,7 @@ export MAIN_DIALOG='
                                 <input file icon="gtk-cancel"></input>
                                 <label>EXIT</label>
                         </button>
+                        <variable>BTNS</variable>
                 </hbox>
                 <statusbar has-resize-grip="false" tooltip-text="Generated command">
 			<variable>BR_SB</variable>

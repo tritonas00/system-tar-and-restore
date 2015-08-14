@@ -545,7 +545,6 @@ export MAIN_DIALOG='
                         <button tooltip-text="Run generated command">
                                 <input file icon="gtk-ok"></input>
                                 <label>RUN</label>
-                               
                                 <action>set_args && run_main</action>
                                 <action>refresh:BR_MODE</action>
                         </button>

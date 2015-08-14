@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if file /bin/sh | grep -q -w dash; then
+  ln -sf /bin/bash /bin/sh
+  force_bash="y"
+fi
+
 cd $(dirname $0)
 
 clean_files() {
@@ -560,3 +565,7 @@ export MAIN_DIALOG='
 gtkdialog --program=MAIN_DIALOG
 
 clean_files
+
+if [ -n "$force_bash" ]; then
+  ln -sf /bin/dash /bin/sh
+fi

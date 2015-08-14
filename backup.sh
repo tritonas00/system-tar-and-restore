@@ -682,7 +682,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   prepare
 
-  if [ -n "$BRwrap" ]; then 
+  if [ -n "$BRwrap" ]; then
     touch /tmp/start
     echo "Please wait while calculating files..." > /tmp/wr_proc
     run_calc > /dev/null

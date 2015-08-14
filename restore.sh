@@ -1834,7 +1834,7 @@ if [ "$BRinterface" = "cli" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-      if [ -n "$BRwrap" ]; then 
+      if [ -n "$BRwrap" ]; then
         touch /tmp/start
         echo "Please wait while checking and reading archive..." > /tmp/wr_proc
         read_archive > /tmp/filelist
@@ -1956,7 +1956,7 @@ if [ "$BRinterface" = "cli" ]; then
     echo " "
 
   elif [ "$BRmode" = "Transfer" ]; then
-    if [ -n "$BRwrap" ]; then 
+    if [ -n "$BRwrap" ]; then
       touch /tmp/start
       echo "Please wait while calculating files..." > /tmp/wr_proc
       run_calc > /dev/null

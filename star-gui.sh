@@ -169,10 +169,10 @@ export MAIN_DIALOG='
 		        <action>refresh:BR_SB</action>
                         <action>refresh:BR_PROC</action>
 			<action condition="command_is_true([ -f /tmp/start ] && echo true)">disable:BTNS</action>
-			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">enable:BTNS</action>
 			<action condition="command_is_true([ -f /tmp/start ] && echo true)">show:BR_WARN</action>
-			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">hide:BR_WARN</action>
 			<action condition="command_is_true([ -f /tmp/start ] && echo true)">hide:BR_IDL</action>
+			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">enable:BTNS</action>
+			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">hide:BR_WARN</action>
 			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">show:BR_IDL</action>
 		</timer>
                 <notebook labels="Backup|Restore/Transfer|Log">

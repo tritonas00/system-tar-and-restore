@@ -400,7 +400,7 @@ elif [ -n "$BRconf" ] && [ ! -f "$BRconf" ]; then
   BRconferror="y"
 fi
 
-if [ -f "$BRconf" ]; then
+if [ -f "$BRconf" ] && [ -z "$BRwrap" ]; then
   source "$BRconf"
 fi
 

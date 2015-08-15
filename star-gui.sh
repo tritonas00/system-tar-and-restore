@@ -8,19 +8,15 @@ fi
 cd $(dirname $0)
 
 clean_files() {
-  if [ -f /tmp/empty ]; then rm /tmp/empty; fi
   if [ -f /tmp/wr_proc ]; then rm /tmp/wr_proc; fi
   if [ -f /tmp/wr_log ]; then rm /tmp/wr_log; fi
-  if [ -f /tmp/tab ]; then rm /tmp/tab; fi
   if [ -f /tmp/start ]; then rm /tmp/start; fi
 }
 
 clean_files
 
-touch /tmp/empty
 touch /tmp/wr_log
 echo > /tmp/wr_proc
-echo 2 > /tmp/tab
 
 if [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
@@ -153,7 +149,7 @@ run_main() {
   echo > /tmp/wr_log
 
   if [ "$BR_MODE" = "0" ]; then
-    ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression -C /tmp/empty "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1 &
+    ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1 &
   elif [ "$BR_MODE" = "1" ]; then
     ./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" > /tmp/wr_log 2>&1 &
   fi
@@ -576,7 +572,7 @@ SYSLINUX PACKAGES:
                         </vbox>
 
                         <variable>BR_MODE</variable>
-                        <input file>/tmp/tab</input>
+                        <input>echo "2"</input>
 		</notebook>
 
                 <hbox homogeneous="true" space-expand="true">

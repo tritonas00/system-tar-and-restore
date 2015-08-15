@@ -39,7 +39,6 @@ clean_files() {
   if [ -f /tmp/b_error ]; then rm /tmp/b_error; fi
   if [ -f /tmp/c_stderr ]; then rm /tmp/c_stderr; fi
   if [ -f /tmp/b_filelist ]; then rm /tmp/b_filelist; fi
-  if [ -f /tmp/start ]; then rm /tmp/start; fi
   if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi
 }
 
@@ -683,7 +682,6 @@ if [ "$BRinterface" = "cli" ]; then
   prepare
 
   if [ -n "$BRwrap" ]; then
-    touch /tmp/start
     echo "Please wait while calculating files..." > /tmp/wr_proc
     run_calc > /dev/null
   else

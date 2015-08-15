@@ -15,7 +15,7 @@ clean_files() {
 
 clean_files
 
-touch /tmp/wr_log
+echo > /tmp/wr_log
 echo > /tmp/wr_proc
 
 if [ -f /etc/backup.conf ]; then
@@ -145,13 +145,15 @@ status_bar() {
 }
 
 run_main() {
-  echo > /tmp/wr_proc
   echo > /tmp/wr_log
+  echo > /tmp/wr_proc
 
   if [ "$BR_MODE" = "0" ]; then
-    ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1 &
+    touch /tmp/start
+    (./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1; rm /tmp/start) &
   elif [ "$BR_MODE" = "1" ]; then
-    ./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" > /tmp/wr_log 2>&1 &
+    touch /tmp/start
+    (./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" > /tmp/wr_log 2>&1; rm /tmp/start) &
   fi
 }
 

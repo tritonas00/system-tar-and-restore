@@ -28,7 +28,6 @@ info_screen() {
 
 clean_files() {
   if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
-  if [ -f /tmp/start ]; then rm /tmp/start; fi
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
   if [ -f /tmp/r_errs ]; then rm /tmp/r_errs; fi
   if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
@@ -1835,7 +1834,6 @@ if [ "$BRinterface" = "cli" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
       if [ -n "$BRwrap" ]; then
-        touch /tmp/start
         echo "Please wait while checking and reading archive..." > /tmp/wr_proc
         read_archive > /tmp/filelist
       else
@@ -1957,7 +1955,6 @@ if [ "$BRinterface" = "cli" ]; then
 
   elif [ "$BRmode" = "Transfer" ]; then
     if [ -n "$BRwrap" ]; then
-      touch /tmp/start
       echo "Please wait while calculating files..." > /tmp/wr_proc
       run_calc > /dev/null
     else

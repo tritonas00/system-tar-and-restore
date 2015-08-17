@@ -167,13 +167,14 @@ run_main() {
 export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main
 export BR_PARTS=$(scan_parts)
 export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
+export BR_MODE="0"
 
 export MAIN_DIALOG='
 
 <window title="System Tar & Restore" icon-name="applications-system">
         <vbox>
                 <timer visible="false">
-		        <action>refresh:BR_SB</action>
+                        <action>refresh:BR_SB</action>
                         <action>refresh:BR_PROC</action>
 			<action condition="command_is_true([ -f /tmp/start ] && echo true)">disable:BTNS</action>
 			<action condition="command_is_true([ -f /tmp/start ] && echo true)">show:BR_WARN</action>
@@ -582,6 +583,8 @@ SYSLINUX PACKAGES:
 
                         <variable>BR_MODE</variable>
                         <input>echo "2"</input>
+                        <action signal="button-release-event">refresh:BR_SB</action>
+                        <action signal="key-release-event">refresh:BR_SB</action>
 		</notebook>
 
                 <hbox homogeneous="true" space-expand="true">

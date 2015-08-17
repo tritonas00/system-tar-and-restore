@@ -137,10 +137,16 @@ set_args() {
 }
 
 status_bar() {
-  if [ "$BR_MODE" = "0" ]; then
+  if [ $(id -u) -gt 0 ]; then
+    echo "Script must run as root."
+  elif [ "$BR_MODE" = "0" ]; then
     echo backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}"
   elif [ "$BR_MODE" = "1" ]; then
     echo restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}"
+  elif [ "$BR_MODE" = "2" ] && [ -f /tmp/start ]; then
+    echo "Running..."
+  elif [ "$BR_MODE" = "2" ] && [ ! -f /tmp/start ]; then
+    echo " "
   fi
 }
 
@@ -592,7 +598,7 @@ SYSLINUX PACKAGES:
                         </button>
                         <variable>BTNS</variable>
                 </hbox>
-                <statusbar has-resize-grip="false" tooltip-text="Generated command">
+                <statusbar has-resize-grip="false">
 			<variable>BR_SB</variable>
 			<input>set_args && status_bar</input>
 		</statusbar>

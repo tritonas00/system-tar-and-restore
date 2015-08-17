@@ -147,14 +147,15 @@ status_bar() {
 run_main() {
   echo > /tmp/wr_log
   echo > /tmp/wr_proc
+  touch /tmp/start
 
   if [ "$BR_MODE" = "0" ]; then
-    touch /tmp/start
-    (./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1; rm /tmp/start) &
+    ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1
   elif [ "$BR_MODE" = "1" ]; then
-    touch /tmp/start
-    (./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" > /tmp/wr_log 2>&1; rm /tmp/start) &
+    ./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" > /tmp/wr_log 2>&1
   fi
+
+  rm /tmp/start
 }
 
 export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main
@@ -581,8 +582,9 @@ SYSLINUX PACKAGES:
                         <button tooltip-text="Run generated command">
                                 <input file icon="gtk-ok"></input>
                                 <label>RUN</label>
-                                <action>set_args && run_main</action>
+                                <action>set_args && run_main &</action>
                                 <action>refresh:BR_MODE</action>
+                                <action>disable:BTNS</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <input file icon="gtk-cancel"></input>

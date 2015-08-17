@@ -146,7 +146,7 @@ status_bar() {
   elif [ "$BR_MODE" = "2" ] && [ -f /tmp/start ]; then
     echo "Running..."
   elif [ "$BR_MODE" = "2" ] && [ ! -f /tmp/start ]; then
-    echo " "
+    echo "Nothing to do."
   fi
 }
 

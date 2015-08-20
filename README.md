@@ -104,6 +104,9 @@ The script also supports all input as arguments:
         
     -s, --exclude-sockets
         exclude sockets
+        
+    -m, --multi-core
+        enable multi-core compression (via pigz, pbzip2 or pxz)
 
     -E, --encryption-method
         encryption method: openssl gpg

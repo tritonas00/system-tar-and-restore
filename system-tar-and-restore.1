@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 4.9.1
+.\"    Source: system-tar-and-restore 4.9.2
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "30 June 2015" "4.9.1" "General Manual"
+.TH "system-tar-and-restore" "1" "21 Aug 2015" "4.9.2" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -121,6 +121,11 @@ override the default tar options with user options (use with -u)
 exclude sockets
 .RE
 .PP
+\fB\-m, \-\-multi-core\fR
+.RS 4
+enable multi-core compression (via pigz, pbzip2 or pxz)
+.RE
+.PP
 \fB\-E, \-\-encryption-method\fR
 .RS 4
 encryption method: openssl gpg
@@ -139,6 +144,11 @@ disable genkernel check in gentoo
 \fB\-C, \-\-conf\fR
 .RS 4
 alternative configuration file path
+.RE
+.PP
+\fB\-w, \-\-wrapper\fR
+.RS 4
+make the script wrapper-friendly (cli interface only)
 .RE
 .PP
 \fB\-\-help\fR
@@ -292,6 +302,11 @@ disable genkernel check and initramfs building in gentoo
 \fB\-B, \-\-bios\fR
 .RS 4
 ignore UEFI environment
+.RE
+.PP
+\fB\-w, \-\-wrapper\fR
+.RS 4
+make the script wrapper-friendly (cli interface only)
 .RE
 .PP
 \fB\-\-help\fR

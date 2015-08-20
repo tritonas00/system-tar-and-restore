@@ -1,5 +1,9 @@
 Changelog:
 
+4.9.2
+    added support for multi-core compression via pigz, pbzip2 or pxz
+    added gtkdialog wrapper
+
 4.9.1
     backup.sh: clean temp files on abort also
     backup.sh: more consistent dialog sizes

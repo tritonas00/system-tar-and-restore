@@ -244,12 +244,6 @@ A gui wrapper is available (star-gui.sh). The script requires **gtkdialog 0.8.3*
 ![Restore](https://github.com/tritonas00/system-tar-and-restore/images/restore.png)
 ![Log](https://github.com/tritonas00/system-tar-and-restore/images/log.png)
 
-
-
-
-
-
-
 ###NOTES###
 
 - With GNU Tar 1.27+ you can add *--xattrs --acls* (and *--selinux* if available) in backup and restore additional tar options. In case of Fedora, those options are added automatically.

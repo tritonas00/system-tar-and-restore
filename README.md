@@ -115,6 +115,9 @@ The script also supports all input as arguments:
         
     -C, --conf
         alternative configuration file path
+        
+    -w, --wrapper 
+        make the script wrapper-friendly (cli interface only)
 
     --help
         show all arguments
@@ -224,11 +227,28 @@ The script also supports all input as arguments:
         
     -B, --bios
         ignore UEFI environment
+        
+    -w, --wrapper 
+        make the script wrapper-friendly (cli interface only)
 
     --help
         show all arguments
  
 When the process completes, you may want to check */tmp/restore.log*.
+
+###GUI###
+
+A gui wrapper is available (star-gui.sh). The script requires **gtkdialog 0.8.3** and **bash**. Run it as root, set your options and press *RUN* to run the generated command. Also the wrapper reads */etc/backup.conf* if exists.
+
+![Backup](https://github.com/tritonas00/system-tar-and-restore/images/backup.png)
+![Restore](https://github.com/tritonas00/system-tar-and-restore/images/restore.png)
+![Log](https://github.com/tritonas00/system-tar-and-restore/images/log.png)
+
+
+
+
+
+
 
 ###NOTES###
 

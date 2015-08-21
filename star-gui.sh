@@ -163,13 +163,13 @@ run_main() {
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
 }
 
-abort() {
+cancel() {
   kill -9 -$(cat /tmp/wr_pid)
-  echo Aborted > /tmp/wr_log
-  echo Aborted > /tmp/wr_proc
+  echo Cancelled > /tmp/wr_log
+  echo Cancelled > /tmp/wr_proc
 }
 
-export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main abort
+export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main cancel
 export BR_PARTS=$(scan_parts)
 export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 export BR_MODE="0"
@@ -185,7 +185,7 @@ export MAIN_DIALOG='
 			<action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">hide:BR_IDL</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_RUN</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_EXIT</action>
-			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_ABORT</action>
+			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_CANCEL</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">hide:BR_WARN</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">show:BR_IDL</action>
 		</timer>
@@ -599,13 +599,13 @@ SYSLINUX PACKAGES:
                                 <action>refresh:BR_MODE</action>
                                 <action>disable:BTN_RUN</action>
                                 <action>disable:BTN_EXIT</action>
-                                <action>enable:BTN_ABORT</action>
+                                <action>enable:BTN_CANCEL</action>
                         </button>
-                        <button tooltip-text="Abort" sensitive="false">
+                        <button tooltip-text="Kill the process" sensitive="false">
                                 <input file icon="gtk-cancel"></input>
-                                <variable>BTN_ABORT</variable>
-                                <label>ABORT</label>
-                                <action>abort</action>
+                                <variable>BTN_CANCEL</variable>
+                                <label>CANCEL</label>
+                                <action>cancel</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>

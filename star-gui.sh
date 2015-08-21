@@ -10,7 +10,7 @@ cd $(dirname $0)
 clean_files() {
   if [ -f /tmp/wr_proc ]; then rm /tmp/wr_proc; fi
   if [ -f /tmp/wr_log ]; then rm /tmp/wr_log; fi
-  if [ -f /tmp/start ]; then rm /tmp/start; fi
+  if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
 }
 
 clean_files
@@ -143,9 +143,9 @@ status_bar() {
     echo backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}"
   elif [ "$BR_MODE" = "1" ]; then
     echo restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}"
-  elif [ "$BR_MODE" = "2" ] && [ -f /tmp/start ]; then
+  elif [ "$BR_MODE" = "2" ] && [ -f /tmp/wr_pid ]; then
     echo "Running..."
-  elif [ "$BR_MODE" = "2" ] && [ ! -f /tmp/start ]; then
+  elif [ "$BR_MODE" = "2" ] && [ ! -f /tmp/wr_pid ]; then
     echo "Nothing to do."
   fi
 }
@@ -153,18 +153,23 @@ status_bar() {
 run_main() {
   echo > /tmp/wr_log
   echo > /tmp/wr_proc
-  touch /tmp/start
 
   if [ "$BR_MODE" = "0" ]; then
-    ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1
+    setsid ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1
   elif [ "$BR_MODE" = "1" ]; then
-    ./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" > /tmp/wr_log 2>&1
+    setsid ./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" > /tmp/wr_log 2>&1
   fi
 
-  rm /tmp/start
+  if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
 }
 
-export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main
+abort() {
+  kill -9 -$(cat /tmp/wr_pid)
+  echo Aborted > /tmp/wr_log
+  echo Aborted > /tmp/wr_proc
+}
+
+export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main abort
 export BR_PARTS=$(scan_parts)
 export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 export BR_MODE="0"
@@ -176,12 +181,13 @@ export MAIN_DIALOG='
                 <timer visible="false">
                         <action>refresh:BR_SB</action>
                         <action>refresh:BR_PROC</action>
-			<action condition="command_is_true([ -f /tmp/start ] && echo true)">disable:BTNS</action>
-			<action condition="command_is_true([ -f /tmp/start ] && echo true)">show:BR_WARN</action>
-			<action condition="command_is_true([ -f /tmp/start ] && echo true)">hide:BR_IDL</action>
-			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">enable:BTNS</action>
-			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">hide:BR_WARN</action>
-			<action condition="command_is_true([ ! -f /tmp/start ] && echo true)">show:BR_IDL</action>
+                        <action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">show:BR_WARN</action>
+			<action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">hide:BR_IDL</action>
+			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_RUN</action>
+			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_EXIT</action>
+			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_ABORT</action>
+			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">hide:BR_WARN</action>
+			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">show:BR_IDL</action>
 		</timer>
                 <notebook labels="Backup|Restore/Transfer|Log">
                         <vbox scrollable="true" shadow-type="0">
@@ -336,8 +342,6 @@ SYSLINUX PACKAGES:
                                 </checkbox>
                         </vbox>
 
-
-
                         <vbox scrollable="true" shadow-type="0" height="585" width="435">
                                 <text wrap="false" height-request="30" use-markup="true" tooltip-text="In the first case, you should run it from a LiveCD of the target (backed up) distro.
 
@@ -450,7 +454,6 @@ SYSLINUX PACKAGES:
                                                         <action>refresh:BR_SB</action>
                                                 </entry>
                                                 <button tooltip-text="Select archive">
-                                                        <variable>BTN</variable>
                                                         <input file stock="gtk-open"></input>
                                                         <action>fileselect:BR_FILE</action>
                                                 </button>
@@ -591,21 +594,31 @@ SYSLINUX PACKAGES:
                         <button tooltip-text="Run generated command">
                                 <input file icon="gtk-ok"></input>
                                 <label>RUN</label>
+                                <variable>BTN_RUN</variable>
                                 <action>set_args && run_main &</action>
                                 <action>refresh:BR_MODE</action>
-                                <action>disable:BTNS</action>
+                                <action>disable:BTN_RUN</action>
+                                <action>disable:BTN_EXIT</action>
+                                <action>enable:BTN_ABORT</action>
+                        </button>
+                        <button tooltip-text="Abort" sensitive="false">
+                                <input file icon="gtk-cancel"></input>
+                                <variable>BTN_ABORT</variable>
+                                <label>ABORT</label>
+                                <action>abort</action>
                         </button>
                         <button tooltip-text="Exit">
-                                <input file icon="gtk-cancel"></input>
+                                <variable>BTN_EXIT</variable>
+                                <input file icon="gtk-quit"></input>
                                 <label>EXIT</label>
                         </button>
-                        <variable>BTNS</variable>
                 </hbox>
                 <statusbar has-resize-grip="false">
 			<variable>BR_SB</variable>
 			<input>set_args && status_bar</input>
 		</statusbar>
         </vbox>
+
 </window>
 '
 

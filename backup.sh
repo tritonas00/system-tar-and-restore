@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.9.2"
+BR_VERSION="System Tar & Restore 4.9.3"
 BR_SEP="::"
 
 color_variables() {
@@ -392,6 +392,10 @@ while true; do
     ;;
   esac
 done
+
+if [ -n "$BRwrap" ]; then
+  echo $$ > /tmp/wr_pid
+fi
 
 if [ -z "$BRconf" ]; then
   BRconf="/etc/backup.conf"

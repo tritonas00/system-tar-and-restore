@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.9.2"
+BR_VERSION="System Tar & Restore 4.9.3"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -1440,6 +1440,10 @@ while true; do
     ;;
   esac
 done
+
+if [ -n "$BRwrap" ]; then
+  echo $$ > /tmp/wr_pid
+fi
 
 if [[ "$BRuri" == /* ]]; then
   BRsource="$BRuri"

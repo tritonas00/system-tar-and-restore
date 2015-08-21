@@ -618,7 +618,6 @@ SYSLINUX PACKAGES:
 			<input>set_args && status_bar</input>
 		</statusbar>
         </vbox>
-
 </window>
 '
 

@@ -163,13 +163,13 @@ run_main() {
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
 }
 
-cancel() {
+cancel_proc() {
   kill -9 -$(cat /tmp/wr_pid)
   echo Cancelled > /tmp/wr_log
   echo Cancelled > /tmp/wr_proc
 }
 
-export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main cancel
+export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main cancel_proc
 export BR_PARTS=$(scan_parts)
 export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 export BR_MODE="0"
@@ -605,7 +605,7 @@ SYSLINUX PACKAGES:
                                 <input file icon="gtk-cancel"></input>
                                 <variable>BTN_CANCEL</variable>
                                 <label>CANCEL</label>
-                                <action>cancel</action>
+                                <action>cancel_proc</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>

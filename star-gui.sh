@@ -113,13 +113,11 @@ set_args() {
   fi
 
   if [ "$ENTRY13" = "false" ]; then
-    ttl="Restore"
     RESTORE_ARGS+=(-f "$BR_FILE")
     if [ -n "$BR_USERNAME" ]; then RESTORE_ARGS+=(-n "$BR_USERNAME"); fi
     if [ -n "$BR_PASSWORD" ]; then RESTORE_ARGS+=(-p "$BR_PASSWORD"); fi
     if [ -n "$BR_PASSPHRASE" ]; then RESTORE_ARGS+=(-P "$BR_PASSPHRASE"); fi
   elif [ "$ENTRY13" = "true" ]; then
-    ttl="Transfer"
     RESTORE_ARGS+=(-t)
     if [ "$ENTRY14" = "true" ]; then RESTORE_ARGS+=(-o); fi
     if [ "$ENTRY21" = "true" ]; then RESTORE_ARGS+=(-x); fi
@@ -167,7 +165,6 @@ cancel_proc() {
   kill -9 -$(cat /tmp/wr_pid)
   echo Cancelled > /tmp/wr_proc
   echo > /tmp/wr_log
-
 }
 
 export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main cancel_proc

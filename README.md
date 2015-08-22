@@ -51,8 +51,8 @@ The package is provided by the <code>gentoo-el</code> overlay. You can install i
 
 The backup.sh script makes a tar backup of your system. You will be asked for:
 
-- **Destination directory:** Where you want to save the backup. Default is /.
-- **Archive name:** A desired name for the backup. Default is *Backup-$(hostname)-$(date +%Y-%m-%d-%T)*.
+- **Destination directory:** Where you want to save the backup. Default is <code>/</code>.
+- **Archive name:** A desired name for the backup. Default is <code>Backup-$(hostname)-$(date +%Y-%m-%d-%T)</code>.
 - **/home directory options:** You have three options: fully include it, keep only it's hidden files and folders (which are necessary to login and keep basic settings) or completely exclude it (in case it's located in separate partition and you want to use that in restore).
 - **Compression:** You can choose between gzip, bzip2, xz and none (for no compression). Gzip should be fine.
 - **Archiver options:** You can pass your own extra options in the archiver. See <code>tar --help</code> for more info.

@@ -567,7 +567,6 @@ SYSLINUX PACKAGES:
                                         <vbox scrollable="true" shadow-type="0">
                                                 <text xalign="0" wrap="false" auto-refresh="true">
                                                         <input file>/tmp/wr_log</input>
-                                                        <variable>BR_LOG</variable>
                                                 </text>
                                         </vbox>
                                 </frame>

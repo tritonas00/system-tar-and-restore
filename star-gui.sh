@@ -144,9 +144,9 @@ status_bar() {
   elif [ "$BR_MODE" = "1" ]; then
     echo restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}"
   elif [ "$BR_MODE" = "2" ] && [ -f /tmp/wr_pid ]; then
-    echo "Running..."
+    echo "Running... Do not close the window until the process is complete."
   elif [ "$BR_MODE" = "2" ] && [ ! -f /tmp/wr_pid ]; then
-    echo "Nothing to do."
+    echo "Idle"
   fi
 }
 
@@ -165,8 +165,9 @@ run_main() {
 
 cancel_proc() {
   kill -9 -$(cat /tmp/wr_pid)
-  echo Cancelled > /tmp/wr_log
   echo Cancelled > /tmp/wr_proc
+  echo > /tmp/wr_log
+
 }
 
 export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main cancel_proc
@@ -181,13 +182,9 @@ export MAIN_DIALOG='
                 <timer visible="false">
                         <action>refresh:BR_SB</action>
                         <action>refresh:BR_PROC</action>
-                        <action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">show:BR_WARN</action>
-			<action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">hide:BR_IDL</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_RUN</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_EXIT</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_CANCEL</action>
-			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">hide:BR_WARN</action>
-			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">show:BR_IDL</action>
 		</timer>
                 <notebook labels="Backup|Restore/Transfer|Log">
                         <vbox scrollable="true" shadow-type="0">
@@ -557,14 +554,6 @@ SYSLINUX PACKAGES:
 			</vbox>
 
                         <vbox>
-                                <text wrap="false" use-markup="true">
-                                        <label>"<span color='"'brown'"'>Do not close this window until the process is complete!</span>"</label>
-                                        <variable>BR_WARN</variable>
-                                </text>
-                                <text wrap="false" use-markup="true">
-                                        <label>"<span color='"'green'"'>Idle</span>"</label>
-                                        <variable>BR_IDL</variable>
-                                </text>
                                 <vbox>
                                         <frame Processing:>
                                                 <text xalign="0" wrap="false">

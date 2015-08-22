@@ -142,7 +142,7 @@ status_bar() {
   elif [ "$BR_MODE" = "1" ]; then
     echo restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}"
   elif [ "$BR_MODE" = "2" ] && [ -f /tmp/wr_pid ]; then
-    echo "Running... Do not close the window until the process is complete."
+    echo "Running (PID $(cat /tmp/wr_pid)). Do not close the window until the process is complete."
   elif [ "$BR_MODE" = "2" ] && [ ! -f /tmp/wr_pid ]; then
     echo "Idle"
   fi

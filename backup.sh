@@ -169,8 +169,8 @@ run_tar() {
 
 find_old_backups() {
   IFS=$'\n'
-  for i in $(find $(dirname "$BRFOLDER") -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]"); do
-    if [ ! "$i" = "$BRFOLDER" ]; then
+  for i in $(find $(dirname "$BRFOLDER") -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]"); do
+    if [ "${i//[![:digit:]]/}" -lt "${BRFOLDER//[![:digit:]]/}" ]; then
       BRoldbackups+=("$i")
     fi
   done
@@ -178,14 +178,14 @@ find_old_backups() {
 }
 
 set_path() {
-  BRFOLDER=$(echo "$BRFOLDER"/Backup-$(date +%d-%m-%Y) | sed 's://*:/:g')
+  BRFOLDER=$(echo "$BRFOLDER"/Backup-$(date +%Y-%m-%d) | sed 's://*:/:g')
 }
 
 set_names() {
   if [ -n "$BRNAME" ]; then
     BRFile="$BRFOLDER"/"$BRNAME"
   else
-    BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%d-%m-%Y-%T)
+    BRFile="$BRFOLDER"/Backup-$(hostname)-$(date +%Y-%m-%d-%T)
   fi
 }
 
@@ -195,7 +195,7 @@ prepare() {
   mkdir -p "$BRFOLDER"
   sleep 1
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-  echo -e "====================$BR_VERSION {$(date +%d-%m-%Y-%T)}====================\n" >> "$BRFOLDER"/backup.log
+  echo -e "====================$BR_VERSION {$(date +%Y-%m-%d-%T)}====================\n" >> "$BRFOLDER"/backup.log
   echo "${BR_SEP}SUMMARY" >> "$BRFOLDER"/backup.log
   show_summary >> "$BRFOLDER"/backup.log
   echo -e "\n${BR_SEP}ARCHIVER STATUS" >> "$BRFOLDER"/backup.log
@@ -225,7 +225,7 @@ generate_conf() {
   if [ -n "$BRnocolor" ]; then echo "BRnocolor=Yes"; fi
   if [ -n "$BRverb" ]; then echo "BRverb=Yes"; fi
   if [ -n "$BRquiet" ]; then echo "BRquiet=Yes"; fi
-  if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
+  if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
     echo "BRNAME='$BRNAME'"
   fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then echo "BRhome=No"; fi
@@ -497,7 +497,7 @@ if [ -n "$BRFOLDER" ]; then
     BR_USER_OPTS=" "
   fi
   if [ -z "$BRNAME" ]; then
-    BRNAME="Backup-$(hostname)-$(date +%d-%m-%Y-%T)"
+    BRNAME="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"
   fi
   if [ -z "$BRcompression" ]; then
     BRcompression="none"
@@ -551,7 +551,7 @@ if [ "$BRinterface" = "cli" ]; then
   done
 
   if [ -z "$BRNAME" ]; then
-    echo -e "\n${BR_CYAN}Enter archive name\n${BR_MAGENTA}(Leave blank for default: <Backup-$(hostname)-$(date +%d-%m-%Y-%T)>)${BR_NORM}"
+    echo -e "\n${BR_CYAN}Enter archive name\n${BR_MAGENTA}(Leave blank for default: <Backup-$(hostname)-$(date +%Y-%m-%d-%T)>)${BR_NORM}"
     read -e -p "Name (without extension): " BRNAME
   fi
   COLUMNS=1
@@ -648,7 +648,7 @@ if [ "$BRinterface" = "cli" ]; then
       if [ "$def" = "y" ] || [ "$def" = "Y" ]; then
         break
       elif [ "$def" = "n" ] || [ "$def" = "N" ]; then
-        echo -e "\n${BR_CYAN}Enter archive name\n${BR_MAGENTA}(Leave blank for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)')${BR_NORM}"
+        echo -e "\n${BR_CYAN}Enter archive name\n${BR_MAGENTA}(Leave blank for default 'Backup-$(hostname)-$(date +%Y-%m-%d-%T)')${BR_NORM}"
         read -e -p "Name (without extension): " BRNAME
         set_names
       else
@@ -750,7 +750,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -z "$BRNAME" ]; then
-    BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default: <Backup-$(hostname)-$(date +%d-%m-%Y-%T)>." 9 67 2>&1 1>&3)
+    BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default: <Backup-$(hostname)-$(date +%Y-%m-%d-%T)>." 9 67 2>&1 1>&3)
   fi
 
   if [ -z "$BRhome" ]; then
@@ -801,7 +801,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     while [ -f "$BRFile.$BR_EXT" ]; do
       dialog --title "Warning" --yes-label "OK" --no-label "Rename" --yesno "Destination ($BRNAME.$BR_EXT) already exists. Overwrite?" 6 70
       if [ "$?" = "1" ]; then
-        BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default 'Backup-$(hostname)-$(date +%d-%m-%Y-%T)'." 8 70 2>&1 1>&3)
+        BRNAME=$(dialog --no-cancel --inputbox "Enter archive name (without extension).\nLeave empty for default 'Backup-$(hostname)-$(date +%Y-%m-%d-%T)'." 8 70 2>&1 1>&3)
         set_names
       else
         break

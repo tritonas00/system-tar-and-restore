@@ -1,5 +1,14 @@
 Changelog:
 
+4.9.3
+    use international standard date format
+    better detection of older backups
+    re-write logs on each run
+    wrapper: added cancel button
+    wrapper: added full log button
+    wrapper: show more info in status bar
+    cleanups
+
 4.9.2
     added support for multi-core compression via pigz, pbzip2 or pxz
     added gtkdialog wrapper

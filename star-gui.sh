@@ -609,7 +609,7 @@ SYSLINUX PACKAGES:
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>
-                                <input file icon="gtk-quit"></input>
+                                <input file icon="gtk-close"></input>
                                 <label>EXIT</label>
                         </button>
                 </hbox>

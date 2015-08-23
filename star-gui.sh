@@ -167,7 +167,15 @@ cancel_proc() {
   echo > /tmp/wr_log
 }
 
-export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main cancel_proc
+full_log() {
+  if grep -Fxq "FOUND BOOTLOADERS:" /tmp/wr_log; then
+    cat "$BRFOLDER"/Backup-$(date +%Y-%m-%d)/backup.log > /tmp/wr_log
+  elif grep -Fxq "BOOTLOADER:" /tmp/wr_log; then
+    cat /tmp/restore.log > /tmp/wr_log
+  fi
+}
+
+export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main cancel_proc full_log
 export BR_PARTS=$(scan_parts)
 export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 export BR_MODE="0"
@@ -182,6 +190,7 @@ export MAIN_DIALOG='
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_RUN</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_EXIT</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_CANCEL</action>
+			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_LOG</action>
 		</timer>
                 <notebook labels="Backup|Restore/Transfer|Log">
                         <vbox scrollable="true" shadow-type="0">
@@ -567,6 +576,11 @@ SYSLINUX PACKAGES:
                                                 </text>
                                         </vbox>
                                 </frame>
+                        <button>
+                                <label>Show full log</label>
+                                <variable>BTN_LOG</variable>
+                                <action>full_log</action>
+                        </button>
                         </vbox>
 
                         <variable>BR_MODE</variable>
@@ -584,6 +598,7 @@ SYSLINUX PACKAGES:
                                 <action>refresh:BR_MODE</action>
                                 <action>disable:BTN_RUN</action>
                                 <action>disable:BTN_EXIT</action>
+                                <action>disable:BTN_LOG</action>
                                 <action>enable:BTN_CANCEL</action>
                         </button>
                         <button tooltip-text="Kill the process" sensitive="false">

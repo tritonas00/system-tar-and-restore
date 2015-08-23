@@ -242,7 +242,7 @@ When the process completes, you may want to check */tmp/restore.log*.
 
 ###GUI###
 
-A gui wrapper is available (star-gui.sh). The script requires **gtkdialog 0.8.3** and **bash**. Run it as root, set your options and press *RUN* to run the generated command. Also the wrapper reads */etc/backup.conf* if exists.
+A gui wrapper is available (star-gui.sh). The script requires **gtkdialog 0.8.3** and **bash**. Run it as root, set your options and press *RUN* to execute the generated command. Also the wrapper reads */etc/backup.conf* if exists.
 
 ![Backup](https://raw.githubusercontent.com/tritonas00/system-tar-and-restore/master/images/backup.png)
 ![Restore](https://raw.githubusercontent.com/tritonas00/system-tar-and-restore/master/images/restore.png)

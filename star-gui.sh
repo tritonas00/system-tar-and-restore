@@ -189,8 +189,8 @@ export MAIN_DIALOG='
                         <action>refresh:BR_PROC</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_RUN</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_EXIT</action>
-			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_CANCEL</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_LOG</action>
+			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_CANCEL</action>
 		</timer>
                 <notebook labels="Backup|Restore/Transfer|Log">
                         <vbox scrollable="true" shadow-type="0">

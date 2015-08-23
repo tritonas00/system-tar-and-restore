@@ -1947,7 +1947,7 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   done
 
-  start_log >> /tmp/restore.log
+  start_log > /tmp/restore.log
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
   if [ -z "$BRwrap" ]; then echo -e "\n${BR_SEP}PROCESSING"; fi
 
@@ -2326,7 +2326,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
-  start_log >> /tmp/restore.log
+  start_log > /tmp/restore.log
 
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)

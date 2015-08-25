@@ -1838,7 +1838,7 @@ if [ "$BRinterface" = "cli" ]; then
         WGET_AUTH=(--user="$BRusername" --password="$BRpassword")
       fi
       if [ -n "$BRwrap" ]; then
-       (wget "${WGET_AUTH[@]}" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 | 
+       (wget "${WGET_AUTH[@]}" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
         while read ln; do
           if [ -n "$ln" ]; then echo "Downloading: ${ln//.......... }" > /tmp/wr_proc; fi
         done

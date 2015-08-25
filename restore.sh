@@ -1843,7 +1843,7 @@ if [ "$BRinterface" = "cli" ]; then
     if [ -n "$BRurl" ]; then
       BRsource="$BRmaxsize/downloaded_backup"
       if [ -n "$BRwrap" ]; then
-        run_wget 2>&1 | while read ln; do if [ -n "$ln" ]; then echo "Downloading: ${ln//.......... }" > /tmp/wr_proc; fi; done
+        run_wget 2>&1 | while read ln; do if [ -n "$ln" ]; then echo "Downloading: ${ln//.....}" > /tmp/wr_proc; fi; done
       else
         run_wget
       fi

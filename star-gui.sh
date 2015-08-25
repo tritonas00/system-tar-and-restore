@@ -576,11 +576,11 @@ SYSLINUX PACKAGES:
                                                 </text>
                                         </vbox>
                                 </frame>
-                        <button tooltip-text="Show scripts log">
-                                <label>Show log</label>
-                                <variable>BTN_LOG</variable>
-                                <action>full_log</action>
-                        </button>
+                                <button tooltip-text="Show scripts log">
+                                        <label>Show log</label>
+                                        <variable>BTN_LOG</variable>
+                                        <action>full_log</action>
+                                </button>
                         </vbox>
 
                         <variable>BR_MODE</variable>

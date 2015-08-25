@@ -158,10 +158,10 @@ check_wget() {
     rm /tmp/wget_error
     unset BRsource BRencpass BRusername BRpassword
     if [ "$BRinterface" = "cli" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL, network is down or package wget is not installed."
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL, wrong authentication, network is down or package wget is not installed."
       if [ -n "$BRwrap" ]; then clean_unmount_in; fi
     elif [ "$BRinterface" = "dialog" ]; then
-      dialog --title "Error" --msgbox "Error downloading file. Wrong URL, network is down or package wget is not installed." 6 65
+      dialog --title "Error" --msgbox "Error downloading file. Wrong URL, wrong authentication, network is down or package wget is not installed." 6 60
     fi
   else
     ask_passphrase

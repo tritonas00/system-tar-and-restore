@@ -1259,6 +1259,14 @@ read_archive() {
   fi
 }
 
+run_wget() {
+  if [ -n "$BRusername" ] || [ -n "$BRpassword" ]; then
+    wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
+  else
+    wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
+  fi
+}
+
 start_log() {
   echo -e "====================$BR_VERSION {$(date +%Y-%m-%d-%T)}====================\n"
   echo "${BR_SEP}SUMMARY"
@@ -1834,16 +1842,10 @@ if [ "$BRinterface" = "cli" ]; then
 
     if [ -n "$BRurl" ]; then
       BRsource="$BRmaxsize/downloaded_backup"
-      if [ -n "$BRusername" ] || [ -n "$BRpassword" ]; then
-        WGET_AUTH=(--user="$BRusername" --password="$BRpassword")
-      fi
       if [ -n "$BRwrap" ]; then
-       (wget "${WGET_AUTH[@]}" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-        while read ln; do
-          if [ -n "$ln" ]; then echo "Downloading: ${ln//.......... }" > /tmp/wr_proc; fi
-        done
+        run_wget 2>&1 | while read ln; do if [ -n "$ln" ]; then echo "Downloading: ${ln//.......... }" > /tmp/wr_proc; fi; done
       else
-        wget "${WGET_AUTH[@]}" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
+        run_wget
       fi
       check_wget
     fi
@@ -1894,11 +1896,8 @@ if [ "$BRinterface" = "cli" ]; then
           if [ "$REPLY" = "3" ]; then
 	    read -p "USERNAME: " BRusername
             read -p "PASSWORD: " BRpassword
-            WGET_AUTH=(--user="$BRusername" --password="$BRpassword")
-          else
-            unset WGET_AUTH
           fi
-	  wget "${WGET_AUTH[@]}" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
+	  run_wget
           check_wget
           break
         else
@@ -2236,11 +2235,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -n "$BRurl" ]; then
       BRurlold="$BRurl"
       BRsource="$BRmaxsize/downloaded_backup"
-      if [ -n "$BRusername" ] || [ -n "$BRpassword" ]; then
-        WGET_AUTH=(--user="$BRusername" --password="$BRpassword")
-      fi
-      (wget "${WGET_AUTH[@]}" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-      sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
+      run_wget 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
       check_wget
     fi
 
@@ -2295,12 +2290,8 @@ elif [ "$BRinterface" = "dialog" ]; then
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-          WGET_AUTH=(--user="$BRusername" --password="$BRpassword")
-        else
-          unset WGET_AUTH
         fi
-        (wget "${WGET_AUTH[@]}" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
+        run_wget 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
         check_wget
       fi
 

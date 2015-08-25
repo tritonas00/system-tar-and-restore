@@ -858,7 +858,7 @@ build_initramfs() {
   for FILE in /mnt/target/boot/*; do
     if file -b -k "$FILE" | grep -qw "bzImage"; then
       cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
-      if [ -n "$BRwrap" ]; then echo "Building image for $ipn-$cn..." >> /tmp/wr_proc; fi
+      if [ -n "$BRwrap" ]; then echo "Building initramfs image for $cn..." >> /tmp/wr_proc; fi
 
       if [ "$BRdistro" = "Arch" ]; then
         chroot /mnt/target mkinitcpio -p $cn

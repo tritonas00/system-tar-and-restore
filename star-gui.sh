@@ -561,7 +561,7 @@ SYSLINUX PACKAGES:
 
                         <vbox>
                                 <vbox>
-                                        <frame Processing:>
+                                        <frame Process:>
                                                 <text xalign="0" wrap="false">
                                                         <input file>/tmp/wr_proc</input>
                                                         <variable>BR_PROC</variable>
@@ -569,15 +569,15 @@ SYSLINUX PACKAGES:
                                         </frame>
                                 </vbox>
 
-                                <frame Log:>
+                                <frame Output:>
                                         <vbox scrollable="true" shadow-type="0">
                                                 <text xalign="0" wrap="false" auto-refresh="true">
                                                         <input file>/tmp/wr_log</input>
                                                 </text>
                                         </vbox>
                                 </frame>
-                        <button>
-                                <label>Show full log</label>
+                        <button tooltip-text="Show scripts log">
+                                <label>Show log</label>
                                 <variable>BTN_LOG</variable>
                                 <action>full_log</action>
                         </button>

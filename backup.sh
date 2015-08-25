@@ -190,6 +190,7 @@ set_names() {
 }
 
 prepare() {
+  if [ -n "$BRwrap" ]; then echo "Preparing..." > /tmp/wr_proc; fi
   touch /target_architecture.$(uname -m)
   if [ "$BRinterface" = "cli" ] && [ -z "$BRwrap" ]; then echo -e "\n${BR_SEP}PROCESSING"; fi
   mkdir -p "$BRFOLDER"

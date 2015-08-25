@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.9.3"
+BR_VERSION="System Tar & Restore 4.9.4"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -616,6 +616,7 @@ check_input() {
 }
 
 mount_all() {
+  if [ -n "$BRwrap" ]; then echo "Preparing..." > /tmp/wr_proc; fi
   echo -e "\n${BR_SEP}MOUNTING"
   echo -ne "${BR_WRK}Making working directory"
   OUTPUT=$(mkdir /mnt/target 2>&1) && ok_status || error_status
@@ -788,6 +789,7 @@ show_summary() {
 }
 
 prepare_chroot() {
+  if [ -n "$BRwrap" ]; then echo "Preparing chroot..." >> /tmp/wr_proc; fi
   echo -e "\n${BR_SEP}PREPARING CHROOT ENVIROMENT"
   echo "Binding /run"
   mount --bind /run /mnt/target/run
@@ -856,6 +858,7 @@ build_initramfs() {
   for FILE in /mnt/target/boot/*; do
     if file -b -k "$FILE" | grep -qw "bzImage"; then
       cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
+      if [ -n "$BRwrap" ]; then echo "Building image for $ipn-$cn..." >> /tmp/wr_proc; fi
 
       if [ "$BRdistro" = "Arch" ]; then
         chroot /mnt/target mkinitcpio -p $cn
@@ -906,6 +909,7 @@ cp_grub_efi() {
 
 install_bootloader() {
   if [ -n "$BRgrub" ]; then
+    if [ -n "$BRwrap" ]; then echo "Installing Grub in $BRgrub..." >> /tmp/wr_proc; fi
     echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [[ "$BRgrub" == *md* ]]; then
       for f in `grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]'`; do
@@ -952,6 +956,7 @@ install_bootloader() {
     fi
 
   elif [ -n "$BRsyslinux" ]; then
+   if [ -n "$BRwrap" ]; then echo "Installing Syslinux in $BRsyslinux..." >> /tmp/wr_proc; fi
     echo -e "\n${BR_SEP}INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
     if [ -d /mnt/target/boot/syslinux ]; then
       mv /mnt/target/boot/syslinux/syslinux.cfg /mnt/target/boot/syslinux.cfg-old
@@ -1101,6 +1106,7 @@ check_archive() {
 
 generate_locales() {
   if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Gentoo" ]; then
+    if [ -n "$BRwrap" ]; then echo "Generating locales..." >> /tmp/wr_proc; fi
     echo -e "\n${BR_SEP}GENERATING LOCALES"
     chroot /mnt/target locale-gen
   fi
@@ -1112,6 +1118,7 @@ rm_work_dir() {
 }
 
 clean_unmount_in() {
+  if [ -n "$BRwrap" ]; then echo "Unmounting..." >> /tmp/wr_proc; fi
   if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
@@ -1157,6 +1164,7 @@ clean_unmount_in() {
 }
 
 clean_unmount_out() {
+  if [ -n "$BRwrap" ]; then echo "Unmounting..." >> /tmp/wr_proc; fi
   if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
@@ -1826,11 +1834,11 @@ if [ "$BRinterface" = "cli" ]; then
 
     if [ -n "$BRurl" ]; then
       BRsource="$BRmaxsize/downloaded_backup"
-      if [ -n "$BRusername" ]; then
-        wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
-      else
-        wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
-      fi
+        if [ -n "$BRwrap" ]; then
+         (wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 | while read ln; do echo "Downloading: ${ln//.......... }" > /tmp/wr_proc; done
+        else
+          wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
+        fi
       check_wget
     fi
 
@@ -1880,14 +1888,10 @@ if [ "$BRinterface" = "cli" ]; then
           if [ "$REPLY" = "3" ]; then
 	    read -p "USERNAME: " BRusername
             read -p "PASSWORD: " BRpassword
-	    wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
-            check_wget
-            break
-          elif [ "$REPLY" = "2" ]; then
-            wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
-            check_wget
-            break
           fi
+	  wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
+          check_wget
+          break
         else
           echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
         fi
@@ -1976,6 +1980,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   echo -e "\n${BR_SEP}GENERATING FSTAB"
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
+  if [ -n "$BRwrap" ]; then echo "Generating fstab..." >> /tmp/wr_proc; fi
   generate_fstab > /mnt/target/etc/fstab
   cat /mnt/target/etc/fstab
   detect_initramfs_prefix
@@ -2222,13 +2227,8 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -n "$BRurl" ]; then
       BRurlold="$BRurl"
       BRsource="$BRmaxsize/downloaded_backup"
-      if [ -n "$BRusername" ]; then
-       (wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
-      else
-       (wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
-      fi
+      (wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
+      sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
       check_wget
     fi
 
@@ -2283,12 +2283,9 @@ elif [ "$BRinterface" = "dialog" ]; then
         if [ "$REPLY" = "Protected URL" ]; then
           BRusername=$(dialog --no-cancel --inputbox "Username:" 8 50 2>&1 1>&3)
           BRpassword=$(dialog --no-cancel --insecure --passwordbox "Password:" 8 50 2>&1 1>&3)
-          (wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
-        elif [ "$REPLY" = "URL" ]; then
-          (wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
-          sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
         fi
+        (wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 |
+        sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' | count_gauge_wget | dialog --gauge "Downloading in "$BRsource"..." 0 62
         check_wget
       fi
 

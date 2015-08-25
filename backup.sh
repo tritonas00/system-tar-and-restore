@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.9.3"
+BR_VERSION="System Tar & Restore 4.9.4"
 BR_SEP="::"
 
 color_variables() {
@@ -698,6 +698,7 @@ if [ "$BRinterface" = "cli" ]; then
   if [ -n "$BRnosockets" ]; then exclude_sockets; fi
   run_tar | out_pgrs_cli
 
+  if [ -n "$BRwrap" ]; then echo "Setting permissions..." >> /tmp/wr_proc; fi
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
   elapsed_time
   exit_screen

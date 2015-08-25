@@ -1834,16 +1834,17 @@ if [ "$BRinterface" = "cli" ]; then
 
     if [ -n "$BRurl" ]; then
       BRsource="$BRmaxsize/downloaded_backup"
-        if [ -n "$BRusername" ] || [ -n "$BRpassword" ]; then
-          WGET_AUTH=(--user="$BRusername" --password="$BRpassword")
-        fi
-        if [ -n "$BRwrap" ]; then
-         (wget "${WGET_AUTH[@]}" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 | while read ln; do
+      if [ -n "$BRusername" ] || [ -n "$BRpassword" ]; then
+        WGET_AUTH=(--user="$BRusername" --password="$BRpassword")
+      fi
+      if [ -n "$BRwrap" ]; then
+       (wget "${WGET_AUTH[@]}" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error) 2>&1 | 
+        while read ln; do
           if [ -n "$ln" ]; then echo "Downloading: ${ln//.......... }" > /tmp/wr_proc; fi
-          done
-        else
-          wget "${WGET_AUTH[@]}" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
-        fi
+        done
+      else
+        wget "${WGET_AUTH[@]}" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
+      fi
       check_wget
     fi
 

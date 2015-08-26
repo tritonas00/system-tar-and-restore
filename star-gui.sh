@@ -44,7 +44,12 @@ else
 fi
 
 set_default_pass() {
-  if [ -n "$BRencpass" ]; then echo '<default>'"$BRencpass"'</default>'; fi
+  if [ ! "$BRencmethod" = "none" ]; then 
+    echo '<entry tooltip-text="Set passphrase for encryption"><variable>BRencpass</variable>'
+  else
+    echo '<entry tooltip-text="Set passphrase for encryption" sensitive="false"><variable>BRencpass</variable>'
+  fi
+  if [ -n "$BRencpass" ]; then echo '<default>'"$BRencpass"'</default>';fi
 }
 
 set_default_opts() {
@@ -81,9 +86,9 @@ set_args() {
 
   if [ "$BRencmethod" = "openssl" ] || [ "$BRencmethod" = "gpg" ]; then
     BACKUP_ARGS+=(-E "$BRencmethod")
+    if [ -n "$BRencpass" ]; then BACKUP_ARGS+=(-P "$BRencpass"); fi
   fi
 
-  if [ -n "$BRencpass" ]; then BACKUP_ARGS+=(-P "$BRencpass"); fi
   for i in ${BR_EXC[@]}; do BR_USER_OPTS="$BR_USER_OPTS --exclude=$i"; done
   if [ -n "$BR_USER_OPTS" ]; then BACKUP_ARGS+=(-u "$BR_USER_OPTS"); fi
 
@@ -271,11 +276,11 @@ SYSLINUX PACKAGES:
 	                                                <item>openssl</item>
 	                                                <item>gpg</item>
                                                         <action>refresh:BR_SB</action>
+                                                        <action condition="command_is_true([ $BRencmethod = none ] && echo true)">disable:BRencpass</action>
+                                                        <action condition="command_is_true([ ! $BRencmethod = none ] && echo true)">enable:BRencpass</action>
                                                 </comboboxtext>
                                         </hbox>
                                         <hbox><text width-request="93" space-expand="false"><label>Passphrase:</label></text>
-                                                <entry tooltip-text="Set passphrase for encryption">
-                                                        <variable>BRencpass</variable>
                                                         '"`set_default_pass`"'
                                                         <action>refresh:BR_SB</action>
                                                 </entry>
@@ -375,7 +380,7 @@ SYSLINUX PACKAGES:
                                         </entry>
                                 </hbox>
 
-                                <expander label="More">
+                                <expander label="More partitions">
                                         <vbox>
                                                 <hbox><text width-request="55" space-expand="false"><label>/boot:</label></text>
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
@@ -425,7 +430,23 @@ SYSLINUX PACKAGES:
                                                         </entry>
                                                 </hbox>
                                         </vbox>
-                                </expander></frame>
+                                </expander>
+
+                                <expander label="Btrfs subvolumes"><vbox>
+                                        <hbox><text width-request="40" space-expand="false"><label>Root:</label></text>
+                                                <entry tooltip-text="Set subvolume name for /">
+                                                        <variable>BR_ROOT_SUBVOL</variable>
+                                                        <action>refresh:BR_SB</action>
+                                                </entry>
+                                        </hbox>
+                                        <hbox><text width-request="40" space-expand="false"><label>Other:</label></text>
+                                                <entry tooltip-text="Set other subvolumes (subvolume path e.g /home /var /usr ...)">
+                                                        <variable>BR_OTHER_SUBVOLS</variable>
+                                                        <action>refresh:BR_SB</action>
+                                                </entry>
+                                        </hbox>
+                                </vbox></expander>
+                                </frame>
 
                                 <frame Bootloader:><hbox>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select bootloader">
@@ -434,17 +455,19 @@ SYSLINUX PACKAGES:
 	                                        <item>Grub</item>
 	                                        <item>Syslinux</item>
                                                 <action>refresh:BR_SB</action>
+                                                <action condition="command_is_true([ $ENTRY12 = none ] && echo true)">disable:BR_DISK</action>
+                                                <action condition="command_is_true([ ! $ENTRY12 = none ] && echo true)">enable:BR_DISK</action>
+                                                <action condition="command_is_true([ $ENTRY12 = Syslinux ] && echo true)">enable:BR_SL_OPTS</action>
+                                                <action condition="command_is_true([ ! $ENTRY12 = Syslinux ] && echo true)">disable:BR_SL_OPTS</action>
                                         </comboboxtext>
 
-                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk for bootloader">
-                                                <default>""</default>
+                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk for bootloader" sensitive="false">
 	                                        <variable>BR_DISK</variable>
 	                                        <input>scan_disks</input>
-                                                <item>""</item>
                                                 <action>refresh:BR_SB</action>
 	                                </comboboxtext>
 
-                                        <entry tooltip-text="Set additional kernel options (Syslinux only)">
+                                        <entry tooltip-text="Set additional kernel options (Syslinux only)" sensitive="false">
                                                 <variable>BR_SL_OPTS</variable>
                                                 <action>refresh:BR_SB</action>
                                         </entry>
@@ -508,21 +531,6 @@ SYSLINUX PACKAGES:
                                                 <variable>ENTRY21</variable>
                                                 <action>refresh:BR_SB</action>
                                         </checkbox>
-                                </frame>
-
-                                <frame Btrfs subvolumes:>
-                                        <hbox><text width-request="40" space-expand="false"><label>Root:</label></text>
-                                                <entry tooltip-text="Set subvolume name for /">
-                                                        <variable>BR_ROOT_SUBVOL</variable>
-                                                        <action>refresh:BR_SB</action>
-                                                </entry>
-                                        </hbox>
-                                        <hbox><text width-request="40" space-expand="false"><label>Other:</label></text>
-                                                <entry tooltip-text="Set other subvolumes (subvolume path e.g /home /var /usr ...)">
-                                                        <variable>BR_OTHER_SUBVOLS</variable>
-                                                        <action>refresh:BR_SB</action>
-                                                </entry>
-                                        </hbox>
                                 </frame>
 
                                <text xalign="0"><label>Additional options:</label></text>

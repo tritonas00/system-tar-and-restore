@@ -841,6 +841,7 @@ generate_fstab() {
 build_initramfs() {
   echo -e "\n${BR_SEP}REBUILDING INITRAMFS IMAGES"
   if grep -q dev/md /mnt/target/etc/fstab; then
+    if [ -n "$BRwrap" ]; then echo "Generating mdadm.conf..." >> /tmp/wr_proc; fi
     echo "Generating mdadm.conf..."
     if [ "$BRdistro" = "Debian" ]; then
       BR_MDADM_PATH="/mnt/target/etc/mdadm"
@@ -877,6 +878,7 @@ build_initramfs() {
     if [ -n "$BRgenkernel" ]; then
       echo "Skipping..."
     else
+      if [ -n "$BRwrap" ]; then echo "Building initramfs images..." >> /tmp/wr_proc; fi
       chroot /mnt/target genkernel --no-color --install initramfs
     fi
   fi

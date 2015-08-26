@@ -44,7 +44,7 @@ else
 fi
 
 set_default_pass() {
-  if [ ! "$BRencmethod" = "none" ]; then 
+  if [ ! "$BRencmethod" = "none" ]; then
     echo '<entry tooltip-text="Set passphrase for encryption"><variable>BRencpass</variable>'
   else
     echo '<entry tooltip-text="Set passphrase for encryption" sensitive="false"><variable>BRencpass</variable>'

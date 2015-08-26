@@ -859,7 +859,7 @@ build_initramfs() {
   for FILE in /mnt/target/boot/*; do
     if file -b -k "$FILE" | grep -qw "bzImage"; then
       cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
-      if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Suse" ] || [ "$BRdistro" = "Mandriva" ]; then
+      if [ ! "$BRdistro" = "Gentoo" ] && [ ! "$BRdistro" = "Unsupported" ]; then
         if [ -n "$BRwrap" ]; then echo "Building initramfs image for $cn..." >> /tmp/wr_proc; fi
       fi
 

@@ -1,5 +1,9 @@
 Changelog:
 
+4.9.4
+    various wrapper improvements
+    code cleaning
+
 4.9.3
     use international standard date format
     better detection of older backups

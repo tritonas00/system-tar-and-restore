@@ -7,7 +7,7 @@ System Tar & Restore
   * [Things you can do](#things-you-can-do)
   * [Backup](#backup)
   * [Restore/Transfer](#restoretransfer)
-  * [GUI](#gui)
+  * [Gui](#gui)
   * [Notes](#notes)
   * [Examples using arguments](#examples-using-arguments)
 

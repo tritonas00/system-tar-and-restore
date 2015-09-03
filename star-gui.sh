@@ -87,6 +87,8 @@ set_args() {
   if [ "$BRencmethod" = "openssl" ] || [ "$BRencmethod" = "gpg" ]; then
     BACKUP_ARGS+=(-E "$BRencmethod")
     if [ -n "$BRencpass" ]; then BACKUP_ARGS+=(-P "$BRencpass"); fi
+  else
+    unset BRencpass
   fi
 
   for i in ${BR_EXC[@]}; do BR_USER_OPTS="$BR_USER_OPTS --exclude=$i"; done

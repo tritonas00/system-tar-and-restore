@@ -129,8 +129,8 @@ set_args() {
 
   if [ "$ENTRY13" = "false" ]; then
     RESTORE_ARGS+=(-f "$BR_FILE")
-    if [ -n "$BR_USERNAME" ]; then RESTORE_ARGS+=(-n "$BR_USERNAME"); fi
-    if [ -n "$BR_PASSWORD" ]; then RESTORE_ARGS+=(-p "$BR_PASSWORD"); fi
+    if [ -n "$BR_USERNAME" ] && [[ ! "$BR_FILE" == /* ]]; then RESTORE_ARGS+=(-n "$BR_USERNAME"); fi
+    if [ -n "$BR_PASSWORD" ] && [[ ! "$BR_FILE" == /* ]]; then RESTORE_ARGS+=(-p "$BR_PASSWORD"); fi
     if [ -n "$BR_PASSPHRASE" ]; then RESTORE_ARGS+=(-P "$BR_PASSPHRASE"); fi
   elif [ "$ENTRY13" = "true" ]; then
     RESTORE_ARGS+=(-t)
@@ -490,6 +490,10 @@ SYSLINUX PACKAGES:
                                                 <entry fs-action="file" fs-title="Select a backup archive">
                                                         <variable>BR_FILE</variable>
                                                         <action>refresh:BR_SB</action>
+                                                        <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_USERNAME</action>
+                                                        <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_PASSWORD</action>
+                                                        <action condition="command_is_true([[ ! $BR_FILE == /* ]] && echo true)">enable:BR_USERNAME</action>
+                                                        <action condition="command_is_true([[ ! $BR_FILE == /* ]] && echo true)">enable:BR_PASSWORD</action>
                                                 </entry>
                                                 <button tooltip-text="Select archive">
                                                         <input file stock="gtk-open"></input>

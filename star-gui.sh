@@ -56,6 +56,14 @@ set_default_opts() {
   if [ -n "$BR_USER_OPTS" ]; then echo '<default>'"$BR_USER_OPTS"'</default>'; fi
 }
 
+set_default_multi() {
+  if [ ! "$BRcompression" = "none" ]; then
+    echo '<checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">'
+  else
+    echo '<checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz" sensitive="false">'
+  fi
+}
+
 scan_parts() {
   for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
   for f in $(find /dev/mapper/ | grep '-'); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
@@ -84,7 +92,7 @@ set_args() {
     BACKUP_ARGS+=(-hn)
   fi
 
-  if [ "$BRencmethod" = "openssl" ] || [ "$BRencmethod" = "gpg" ]; then
+  if [ ! "$BRencmethod" = "none" ]; then
     BACKUP_ARGS+=(-E "$BRencmethod")
     if [ -n "$BRencpass" ]; then BACKUP_ARGS+=(-P "$BRencpass"); fi
   else
@@ -94,7 +102,7 @@ set_args() {
   for i in ${BR_EXC[@]}; do BR_USER_OPTS="$BR_USER_OPTS --exclude=$i"; done
   if [ -n "$BR_USER_OPTS" ]; then BACKUP_ARGS+=(-u "$BR_USER_OPTS"); fi
 
-  if [ "$ENTRY3" = "true" ]; then BACKUP_ARGS+=(-m); fi
+  if [ "$ENTRY3" = "true" ] && [ ! "$BRcompression" = "none" ]; then BACKUP_ARGS+=(-m); fi
   if [ "$ENTRY4" = "true" ]; then BACKUP_ARGS+=(-v); fi
   if [ "$ENTRY5" = "true" ]; then BACKUP_ARGS+=(-s); fi
   if [ "$ENTRY7" = "true" ]; then BACKUP_ARGS+=(-g); fi
@@ -182,7 +190,7 @@ full_log() {
   fi
 }
 
-export -f scan_disks hide_used_parts set_default_pass set_default_opts set_args status_bar run_main cancel_proc full_log
+export -f scan_disks hide_used_parts set_default_pass set_default_opts set_default_multi set_args status_bar run_main cancel_proc full_log
 export BR_PARTS=$(scan_parts)
 export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 export BR_MODE="0"
@@ -267,6 +275,8 @@ SYSLINUX PACKAGES:
 	                                <item>xz</item>
                                         <item>none</item>
                                         <action>refresh:BR_SB</action>
+                                        <action condition="command_is_true([ $BRcompression = none ] && echo true)">disable:ENTRY3</action>
+                                        <action condition="command_is_true([ ! $BRcompression = none ] && echo true)">enable:ENTRY3</action>
 	                        </comboboxtext></hbox>
 
                                 <vbox>
@@ -303,7 +313,7 @@ SYSLINUX PACKAGES:
                                         <action>refresh:BR_SB</action>
                                 </entry>
 
-                                <checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
+                                        '"`set_default_multi`"'
                                         <label>Enable multi-core compression</label>
                                         <variable>ENTRY3</variable>
                                         <default>'"$ENTRY3"'</default>

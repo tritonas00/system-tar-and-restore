@@ -113,7 +113,7 @@ genkernel check and initramfs building.
 |/dev/md0|/|Grub<br>Syslinux|BIOS&nbsp;MBR|level=1<br>metadata=1.0|
 |/dev/md1<br>/dev/md0*|/<br>/boot|Syslinux|BIOS&nbsp;GPT| level=1<br>metadata=1.0*|
 |/dev/sdX2<br>/dev/sdX1|/<br>/boot|Grub<br>Syslinux|BIOS&nbsp;MBR|btrfs<br>Root Subvolume: __active<br>Other&nbsp;Subvolumes:&nbsp;/home&nbsp;/usr&nbsp;/var&nbsp;/opt|
-|/dev/mapper/A-B<br>/dev/sdX3<br>/dev/sdX1*|/<br>/boot|Grub<br>Syslinux|BIOS&nbsp;GPT|lvm<br>Grub needs BIOS Boot Partition*<br>|
+|/dev/mapper/A-B<br>/dev/sdX3<br>/dev/sdX1*|/<br>/boot|Grub<br>Syslinux|BIOS&nbsp;GPT|lvm<br>Grub needs BIOS Boot<br>Partition*|
 |/dev/mapper/A-B<br>/dev/sdX1<br>/dev/mapper/A-C<br>/dev/mapper/A-D<br>/dev/mapper/X|/<br>/boot<br>/home<br>swap|Grub<br>Syslinux|BIOS&nbsp;MBR|lvm on luks|
 |/dev/mapper/A-B<br>/dev/md1<br>/dev/md0*|/<br><br>/boot|Syslinux|BIOS&nbsp;GPT|lvm on mdadm<br>level=1<br>metadata=1.0*|
 |/dev/mapper/A-B<br>/dev/mapper/X<br>/dev/md1<br>/dev/md0*|/<br><br><br>/boot|Syslinux|BIOS&nbsp;GPT|lvm on luks on mdadm<br>level=1<br>metadata=1.0*|

@@ -2,9 +2,9 @@
 .\"		Title: system-tar-and-restore
 .\"    Author: [ see the "Authors" section]
 .\"    Manual: system-tar-and-restore Manual
-.\"    Source: system-tar-and-restore 4.9.4
+.\"    Source: system-tar-and-restore 5.0
 .\"  Language: English
-.TH "system-tar-and-restore" "1" "27 Aug 2015" "4.9.4" "General Manual"
+.TH "system-tar-and-restore" "1" "16 Sep 2015" "5.0" "General Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,12 +38,12 @@ Supported distributions:
 .B Fedora,
 .B openSUSE,
 .B Gentoo,
-.B Mandriva
+.B Mandriva/Mageia
 .SH BACKUP DESCRIPTION
 .sp
 The backup.sh script makes a tar backup of your system in a given location\&. It will make a folder 
-in that location which contains the \fBarchive\fR and the \fBlog\fR file "backup.log" 
-(usefull for tracking tar errors/warnings). The script can also read input from \fI/etc/backup.conf\fR. See the provided sample or use -g to generate a configuration file.\&
+in that location which contains the \fBarchive\fR and the \fBlog\fR file \fIbackup.log\fR 
+(useful for tracking tar errors/warnings). The script can also read input from \fI/etc/backup.conf\fR. See the provided sample or use -g to generate a configuration file.\&
 .SH BACKUP OPERATIONS
 .PP
 \fB\-i, \-\-interface\fR
@@ -161,7 +161,7 @@ The restore.sh script has two modes: \fBRestore\fR and \fBTransfer\fR\&. The fir
 .sp
 Boot from a livecd - preferably one of the target (backed up) distro - or another existing system, prepare your target partition(s) and start the script.
 .sp
-Log file is saved as /tmp/restore.log
+Log file is saved as \fI/tmp/restore.log\fR
 .SH RESTORE OPERATIONS
 .PP
 \fB\-i, \-\-interface\fR
@@ -239,14 +239,19 @@ target root partition
 target EFI system partition
 .RE
 .PP
-\fB\-h, \-\-home\fR
+\fB\-l, \-\-esp-mpoint\fR
 .RS 4
-target home partition
+mount point for ESP: /boot/efi /boot
 .RE
 .PP
 \fB\-b, \-\-boot\fR
 .RS 4
-target boot partition
+target /boot partition
+.RE
+.PP
+\fB\-h, \-\-home\fR
+.RS 4
+target /home partition
 .RE
 .PP
 \fB\-s, \-\-swap\fR
@@ -279,9 +284,19 @@ target disk for grub
 target disk for syslinux
 .RE
 .PP
+\fB\-E, \-\-efistub\fR
+.RS 4
+enable EFISTUB/efibootmgr
+.RE
+.PP
+\fB\-L, \-\-bootctl\fR
+.RS 4
+enable Systemd/bootctl
+.RE
+.PP
 \fB\-k, \-\-kernel-options\fR
 .RS 4
-additional kernel options (syslinux only)
+additional kernel options
 .RE
 .PP
 \fB\-R, \-\-rootsubvolname\fR
@@ -320,30 +335,13 @@ With \fBGNU Tar 1.27+\fR\& you can add \fB--xattrs --acls\fR (and \fB--selinux\f
 In case of Gentoo package \fBgenkernel\fR\& is required to build initramfs. If you dont want to use initramfs image you can use \fB-D\fR\& in 
 both scripts to disable genkernel check and initramfs building.
 .sp
-In \fBRestore Mode\fR\& the system that runs the restore script and the target system (the one you 
-want to restore)\&, must have the same architecture (for \fIchroot\fR to work)\&. Also it's advisable to run the restore.sh script from a LiveCD of the target distro.\&
+In case of Gentoo and simple \fBluks\fR\& it is recommended to open the device as \fB/dev/mapper/root\fR (http://www.gentoo-wiki.info/Initramfs). Otherwise add \fBroot=/dev/ram0\fR in kernel options.
 .sp
-For booting a \fBBTRFS\fR subvolumed root successfully with \fBSyslinux\fR\&,
-it is recommended to have a seperate \fI/boot\fR partition\&. Recommended 
-subvolume name is: __active. 
+In the target system, in case of \fBSyslinux\fR\&, old \fI/boot/syslinux/syslinux.cfg\fR is saved as \fI/boot/syslinux.cfg-old\fR\&
 .sp
-When using \fBLVM\fR\&, it is also recommended to have a seperate 
-\fI/boot\fR partition\&. 
+In the target system, if any kernel options are defined with \fBGrub\fR\&, old \fI/etc/default/grub\fR is saved as \fI/etc/default/grub-old\fR\&.
 .sp
-When using \fBRAID\fR\&, it is recommended to create a seperate raid1 array with 
-metadata=1.0 as your \fI/boot\fR partition\&. 
-.sp
-When using \fBGRUB with BIOS and GPT\fR\& you must create a \fIBIOS Boot Partition:\fR 
-~1 MiB unformatted partition with bios_grub flag enabled (0xEF02 for gdisk).
-.sp
-In the target system, in case of \fBSyslinux\fR\&, old /boot/syslinux/syslinux.cfg
-is saved as /boot/syslinux.cfg-old\&.
-.sp
-In the target system, if distribution is \fBFedora\fR\& and \fBGrub\fR\& is selected\&, old 
-/etc/default/grub is saved as /etc/default/grub-old\&.
-.sp
-In case of \fBUEFI\fR\&, you must boot in UEFI enviroment to restore a system. The 
-script will check if /sys/firmware/efi exists and act accordingly. You must create 
+In case of \fBUEFI\fR\&, you must boot in UEFI enviroment to restore a system. The script will check if \fI/sys/firmware/efi\fR exists and act accordingly. You must create 
 an \fBESP (EFI System Partition)\fR\&.
 .SH EXAMPLES USING ARGUMENTS
 .sp
@@ -421,7 +419,7 @@ Restore system in \fBUEFI\fR environment\&. The EFI system partition will be \fI
 and the root partition will be \fI/dev/sda2\fR\&. The backup will be the local file
 \fI/home/john/Downloads/backup.tar.gz\fR and \fBgrub\fR will be installed in \fI/boot/efi\fR\::
 .RS 4
-\fB./restore.sh \-r /dev/sda2 \-e /dev/sda1 \-f /home/john/Downloads/backup.tar.gz \-g /boot/efi\fR
+\fB./restore.sh \-r /dev/sda2 \-e /dev/sda1 -l /boot/efi \-f /home/john/Downloads/backup.tar.gz \-g auto\fR
 .RE
 .sp
 Transfer running system using \fBrsync\fR\&. The \fI/\fR partition will be

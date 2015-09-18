@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.9.4"
+BR_VERSION="System Tar & Restore 5.0"
 BR_SEP="::"
 
 color_variables() {
@@ -19,18 +19,20 @@ BR_SHOW='\033[?25h'
 info_screen() {
   echo -e "\n${BR_YELLOW}This script will make a tar backup image of this system."
   echo -e "\n==>Make sure you have enough free space."
-  echo -e "\n==>If you plan to restore in btrfs/lvm/mdadm, make sure that\n   this system is capable to boot from btrfs/lvm/mdadm."
-  echo -e "\n==>Make sure you have GRUB or SYSLINUX packages installed."
+  echo -e "\n==>If you plan to restore in lvm/mdadm/dm-crypt, make sure that\n   this system is capable to boot from those configurations."
+  echo -e "\n==>The following bootloaders are supported:\n   Grub Syslinux EFISTUB/efibootmgr Systemd/bootctl."
   echo -e "\nGRUB PACKAGES:"
-  echo "->Arch/Gentoo: grub    efibootmgr* dosfstools*"
-  echo "->Debian:      grub-pc grub-efi*   dosfstools*"
-  echo "->Fedora/Suse: grub2   efibootmgr* dosfstools*"
-  echo "->Mandriva:    grub2   grub2-efi*  dosfstools*"
+  echo "->Arch/Gentoo: grub"
+  echo "->Fedora/Suse: grub2"
+  echo "->Debian:      grub-pc grub-efi"
+  echo "->Mandriva:    grub2   grub2-efi"
   echo -e "\nSYSLINUX PACKAGES:"
   echo "->Arch/Suse/Gentoo: syslinux"
   echo "->Debian/Mandriva:  syslinux extlinux"
   echo "->Fedora:           syslinux syslinux-extlinux"
-  echo -e "\n*Required for UEFI systems"
+  echo -e "\nOTHER PACKAGES:"
+echo "efibootmgr dosfstools systemd"
+
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
@@ -70,17 +72,12 @@ show_summary() {
   fi
 
   echo -e "\nFOUND BOOTLOADERS:"
-  if which grub-mkconfig &>/dev/null || which grub2-mkconfig &>/dev/null; then
-    echo "Grub"
-  else
-    BRgrub="n"
-  fi
-  if which extlinux &>/dev/null && which syslinux &>/dev/null; then
-    echo "Syslinux"
-  else
-    BRsyslinux="n"
-  fi
-  if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
+  if which grub-mkconfig &>/dev/null || which grub2-mkconfig &>/dev/null; then echo "Grub"; else BRgrub="n"; fi
+  if which extlinux &>/dev/null && which syslinux &>/dev/null; then echo "Syslinux"; else BRsyslinux="n"; fi
+  if which efibootmgr &>/dev/null; then echo "EFISTUB/efibootmgr"; else BRefibootmgr="n"; fi
+  if which bootctl &>/dev/null; then echo "Systemd/bootctl"; else BRbootctl="n"; fi
+
+  if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ] && [ -n "$BRefibootmgr" ] && [ -n "$BRbootctl" ]; then
     echo "None or not supported"
   fi
 
@@ -140,7 +137,7 @@ set_tar_options() {
   if [ -n "$BRoverride" ]; then
     BR_TAROPTS=(--exclude="$BRFOLDER")
   fi
-  if [ -f /etc/yum.conf ]; then
+  if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
     BR_TAROPTS+=(--acls --xattrs --selinux)
   fi
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
@@ -718,7 +715,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ -z "$BRFOLDER" ]; then
-    dialog --no-collapse --title "$BR_VERSION" --msgbox "$(info_screen)" 28 70
+    dialog --no-collapse --title "$BR_VERSION" --msgbox "$(info_screen)" 30 70
   fi
 
   if [ -z "$BRFOLDER" ]; then

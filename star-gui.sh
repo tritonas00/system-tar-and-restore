@@ -66,7 +66,7 @@ set_default_multi() {
 
 scan_parts() {
   for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
-  for f in $(find /dev/mapper/ | grep '-'); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
+  for f in $(find /dev/mapper/ -maxdepth 1 -mindepth 1 ! -name "control"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
   for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
 }
@@ -117,15 +117,20 @@ set_args() {
   if [ ! "$BR_BOOT" = "" ]; then RESTORE_ARGS+=(-b ${BR_BOOT%% *}); fi
   if [ ! "$BR_HOME" = "" ]; then RESTORE_ARGS+=(-h ${BR_HOME%% *}); fi
   if [ ! "$BR_SWAP" = "" ]; then RESTORE_ARGS+=(-s ${BR_SWAP%% *}); fi
-  if [ ! "$BR_ESP" = "" ]; then RESTORE_ARGS+=(-e ${BR_ESP%% *}); fi
+  if [ ! "$BR_ESP" = "" ]; then RESTORE_ARGS+=(-e ${BR_ESP%% *} -l $BR_ESP_MPOINT); fi
   if [ -n "$BR_OTHER_PARTS" ]; then RESTORE_ARGS+=(-c "$BR_OTHER_PARTS"); fi
 
   if [ "$ENTRY12" = "Grub" ]; then
     RESTORE_ARGS+=(-g ${BR_DISK%% *})
   elif [ "$ENTRY12" = "Syslinux" ]; then
     RESTORE_ARGS+=(-S ${BR_DISK%% *})
-    if [ -n "$BR_SL_OPTS" ]; then RESTORE_ARGS+=(-k "$BR_SL_OPTS"); fi
+  elif [ "$ENTRY12" = "EFISTUB/efibootmgr" ]; then
+    RESTORE_ARGS+=(-E)
+  elif [ "$ENTRY12" = "Systemd/bootctl" ]; then
+    RESTORE_ARGS+=(-L)
   fi
+
+  if [ ! "$ENTRY12" = "none" ] && [ -n "$BR_KL_OPTS" ]; then RESTORE_ARGS+=(-k "$BR_KL_OPTS"); fi
 
   if [ "$ENTRY13" = "false" ]; then
     RESTORE_ARGS+=(-f "$BR_FILE")
@@ -211,21 +216,22 @@ export MAIN_DIALOG='
                         <vbox scrollable="true" shadow-type="0">
                                 <text height-request="30" use-markup="true" tooltip-text="==>Make sure you have enough free space.
 
-==>If you plan to restore in btrfs/lvm/mdadm, make sure that
-       this system is capable to boot from btrfs/lvm/mdadm.
+==>If you plan to restore in lvm/mdadm/dm-crypt, make
+       sure that this system is capable to boot from those
+       configurations.
 
-==>Make sure you have GRUB or SYSLINUX packages
-       installed.
+==>The following bootloaders are supported:
+       Grub Syslinux EFISTUB/efibootmgr Systemd/bootctl.
 
 GRUB PACKAGES:
 **Arch/Gentoo:
-    grub efibootmgr* dosfstools*
+    grub
 **Fedora/Suse:
-    grub2 efibootmgr* dosfstools*
-**Mandriva:
-    grub2 grub2-efi* dosfstools*
+    grub2
 **Debian:
-    grub-pc grub-efi* dosfstools*
+    grub-pc grub-efi
+**Mandriva:
+    grub2 grub2-efi
 
 SYSLINUX PACKAGES:
 **Arch/Suse/Gentoo:
@@ -235,7 +241,8 @@ SYSLINUX PACKAGES:
 **Fedora:
     syslinux syslinux-extlinux
 
-*Required for UEFI systems"><label>"<span color='"'brown'"'>Make a tar backup image of this system.</span>"</label></text>
+OTHER PACKAGES:
+efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup image of this system.</span>"</label></text>
 
                                 <hbox><text width-request="93"><label>Filename:</label></text>
                                 <entry tooltip-text="Set backup archive name">
@@ -362,18 +369,20 @@ SYSLINUX PACKAGES:
                                 </checkbox>
                         </vbox>
 
-                        <vbox scrollable="true" shadow-type="0" height="585" width="435">
+                        <vbox scrollable="true" shadow-type="0" height="585" width="510">
                                 <text wrap="false" height-request="30" use-markup="true" tooltip-text="In the first case, you should run it from a LiveCD of the target (backed up) distro.
 
 ==>Make sure you have created one target root (/) partition.
        Optionally you can create or use any other partition
        (/boot /home /var etc).
 
-==>Make sure that target LVM volume groups are activated
-       and target RAID arrays are properly assembled.
+==>Make sure that target LVM volume groups are activated,
+       target RAID arrays are properly assembled and target
+       encrypted partitions are opened.
 
-==>If you plan to transfer in btrfs/lvm/mdadm, make sure
-       that this system is capable to boot from btrfs/lvm/mdadm."><label>"<span color='"'brown'"'>Restore a backup image or transfer this system in user defined partitions.</span>"</label></text>
+==>If you plan to transfer in btrfs/lvm/mdadm/dm-crypt,
+       make sure that this system is capable to boot from
+       those configurations."><label>"<span color='"'brown'"'>Restore a backup image or transfer this system in user defined partitions.</span>"</label></text>
 
                                 <frame Target partitions:>
                                 <hbox><text width-request="30" space-expand="false"><label>Root:</label></text>
@@ -394,6 +403,22 @@ SYSLINUX PACKAGES:
 
                                 <expander label="More partitions">
                                         <vbox>
+                                                <hbox><text width-request="55" space-expand="false"><label>Esp:</label></text>
+		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
+	                                                        <variable>BR_ESP</variable>
+                                                                <input>echo "$BR_ESP"</input>
+	                                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
+                                                                <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
+                                                                <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_SWAP</action>
+                                                                <action>refresh:BR_SB</action>
+			                                </comboboxtext>
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select mountpoint">
+	                                                        <variable>BR_ESP_MPOINT</variable>
+	                                                        <item>/boot/efi</item>
+	                                                        <item>/boot</item>
+                                                                <action>refresh:BR_SB</action>
+	                                                </comboboxtext>
+                                                </hbox>
                                                 <hbox><text width-request="55" space-expand="false"><label>/boot:</label></text>
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
 	                                                        <variable>BR_BOOT</variable>
@@ -401,16 +426,6 @@ SYSLINUX PACKAGES:
 	                                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
                                                                 <input>if [ -n "$BR_BOOT" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
-                                                                <action>refresh:BR_SB</action>
-			                                </comboboxtext>
-                                                </hbox>
-                                                <hbox><text width-request="55" space-expand="false"><label>/boot/efi:</label></text>
-		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(UEFI only) Select target ESP partition">
-	                                                        <variable>BR_ESP</variable>
-                                                                <input>echo "$BR_ESP"</input>
-	                                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
-                                                                <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
-                                                                <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_SWAP</action>
                                                                 <action>refresh:BR_SB</action>
 			                                </comboboxtext>
                                                 </hbox>
@@ -466,21 +481,26 @@ SYSLINUX PACKAGES:
                                                 <item>none</item>
 	                                        <item>Grub</item>
 	                                        <item>Syslinux</item>
+	                                        <item>EFISTUB/efibootmgr</item>
+	                                        <item>Systemd/bootctl</item>
                                                 <action>refresh:BR_SB</action>
                                                 <action condition="command_is_true([ $ENTRY12 = none ] && echo true)">disable:BR_DISK</action>
                                                 <action condition="command_is_true([ ! $ENTRY12 = none ] && echo true)">enable:BR_DISK</action>
-                                                <action condition="command_is_true([ $ENTRY12 = Syslinux ] && echo true)">enable:BR_SL_OPTS</action>
-                                                <action condition="command_is_true([ ! $ENTRY12 = Syslinux ] && echo true)">disable:BR_SL_OPTS</action>
+                                                <action condition="command_is_true([ $ENTRY12 = none ] && echo true)">disable:BR_KL_OPTS</action>
+                                                <action condition="command_is_true([ ! $ENTRY12 = none ] && echo true)">enable:BR_KL_OPTS</action>
+                                                <action condition="command_is_true([ $ENTRY12 = EFISTUB/efibootmgr ] && echo true)">disable:BR_DISK</action>
+                                                <action condition="command_is_true([ $ENTRY12 = Systemd/bootctl ] && echo true)">disable:BR_DISK</action>
                                         </comboboxtext>
 
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk for bootloader" sensitive="false">
 	                                        <variable>BR_DISK</variable>
 	                                        <input>scan_disks</input>
+                                                <item>"auto (Grub/UEFI only)"</item>
                                                 <action>refresh:BR_SB</action>
 	                                </comboboxtext>
 
-                                        <entry tooltip-text="Set additional kernel options (Syslinux only)" sensitive="false">
-                                                <variable>BR_SL_OPTS</variable>
+                                        <entry tooltip-text="Set additional kernel options" sensitive="false">
+                                                <variable>BR_KL_OPTS</variable>
                                                 <action>refresh:BR_SB</action>
                                         </entry>
                                 </hbox></frame>

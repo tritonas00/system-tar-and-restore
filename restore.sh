@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 4.9.4"
+BR_VERSION="System Tar & Restore 5.0"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -21,8 +21,8 @@ BR_SHOW='\033[?25h'
 info_screen() {
   echo -e "\n${BR_YELLOW}This script will restore a backup image or transfer this system in user\ndefined partitions. In the first case, you should run it from a LiveCD\nof the target (backed up) distro."
   echo -e "\n==>Make sure you have created one target root (/) partition. Optionally\n   you can create or use any other partition (/boot /home /var etc)."
-  echo -e "\n==>Make sure that target LVM volume groups are activated and target\n   RAID arrays are properly assembled."
-  echo -e "\n==>If you plan to transfer in btrfs/lvm/mdadm, make sure that\n   this system is capable to boot from btrfs/lvm/mdadm."
+  echo -e "\n==>Make sure that target LVM volume groups are activated, target RAID arrays\n   are properly assembled and target encrypted partitions are opened."
+  echo -e "\n==>If you plan to transfer in lvm/mdadm/dm-crypt, make sure that\n   this system is capable to boot from those configurations."
   echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
@@ -36,7 +36,7 @@ clean_files() {
 exit_screen() {
   if [ -f /tmp/bl_error ]; then
     echo -e "\n${BR_RED}Error installing $BRbootloader. Check /tmp/restore.log for details.\n\n${BR_CYAN}Press ENTER to unmount all remaining (engaged) devices.${BR_NORM}"
-  elif [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ]; then
+  elif [ -n "$BRbootloader" ]; then
     echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log\n\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
   else
     echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log"
@@ -180,7 +180,7 @@ check_wget() {
 
 detect_distro() {
   if [ "$BRmode" = "Restore" ]; then
-    if grep -Fxq "etc/yum.conf" /tmp/filelist; then
+    if grep -Fxq "etc/yum.conf" /tmp/filelist || grep -Fxq "etc/dnf/dnf.conf" /tmp/filelist; then
       BRdistro="Fedora"
       USER_OPTS+=(--selinux --acls "--xattrs-include='*'")
     elif grep -Fxq "etc/pacman.conf" /tmp/filelist; then
@@ -198,7 +198,7 @@ detect_distro() {
     fi
 
   elif [ "$BRmode" = "Transfer" ]; then
-    if [ -f /etc/yum.conf ]; then
+    if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
       BRdistro="Fedora"
     elif [ -f /etc/pacman.conf ]; then
       BRdistro="Arch"
@@ -216,7 +216,7 @@ detect_distro() {
    fi
 }
 
-detect_syslinux_root() {
+detect_bl_root() {
   if [[ "$BRroot" == *mapper* ]]; then
     echo "root=$BRroot"
   else
@@ -275,17 +275,6 @@ set_syslinux_flags_and_paths() {
 
 generate_syslinux_cfg() {
   echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50"
-  if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
-    syslinuxrootsubvol="rootflags=subvol=$BRrootsubvolname"
-  fi
-
-  if [ "$BRdistro" = "Gentoo" ]; then
-    if [[ "$BRroot" == *mapper* ]]; then
-      BR_KERNEL_OPTS="${BR_KERNEL_OPTS} dolvm"
-    elif [[ "$BRroot" == *dev/md* ]]; then
-      BR_KERNEL_OPTS="${BR_KERNEL_OPTS} domdadm"
-    fi
-  fi
 
   for FILE in /mnt/target/boot/*; do
     if file -b -k "$FILE" | grep -qw "bzImage"; then
@@ -293,22 +282,20 @@ generate_syslinux_cfg() {
       kn=$(basename "$FILE")
 
       if [ "$BRdistro" = "Arch" ]; then
-        echo -e "LABEL arch\n\tMENU LABEL Arch $cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../$ipn-$cn.img"
-        echo -e "LABEL archfallback\n\tMENU LABEL Arch $cn fallback\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS rw\n\tINITRD ../$ipn-$cn-fallback.img"
+        echo -e "LABEL arch\n\tMENU LABEL $BRdistro $cn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BR_KERNEL_OPTS\n\tINITRD ../$ipn-$cn.img"
+        echo -e "LABEL archfallback\n\tMENU LABEL $BRdistro $cn fallback\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BR_KERNEL_OPTS\n\tINITRD ../$ipn-$cn-fallback.img"
       elif [ "$BRdistro" = "Debian" ]; then
-        echo -e "LABEL debian\n\tMENU LABEL Debian-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn.img-$cn"
+        echo -e "LABEL debian\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BR_KERNEL_OPTS\n\tINITRD ../$ipn.img-$cn"
       elif [ "$BRdistro" = "Fedora" ]; then
-        echo -e "LABEL fedora\n\tMENU LABEL Fedora-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn-$cn.img"
+        echo -e "LABEL fedora\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BR_KERNEL_OPTS\n\tINITRD ../$ipn-$cn.img"
       elif [ "$BRdistro" = "Suse" ]; then
-        echo -e "LABEL suse\n\tMENU LABEL Suse-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn-$cn"
+        echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BR_KERNEL_OPTS\n\tINITRD ../$ipn-$cn"
       elif [ "$BRdistro" = "Mandriva" ]; then
-        echo -e "LABEL suse\n\tMENU LABEL Mandriva-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn-$cn.img"
+        echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BR_KERNEL_OPTS\n\tINITRD ../$ipn-$cn.img"
+      elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
+        echo -e "LABEL gentoo\n\tMENU LABEL $BRdistro-$kn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BR_KERNEL_OPTS\n\tINITRD ../$ipn-$cn"
       elif [ "$BRdistro" = "Gentoo" ]; then
-        if [ -z "$BRgenkernel" ]; then
-          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$kn\n\tLINUX ../$kn\n\tAPPEND $(detect_syslinux_root) $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet\n\tINITRD ../$ipn-$cn"
-        else
-          echo -e "LABEL gentoo\n\tMENU LABEL Gentoo-$kn\n\tLINUX ../$kn\n\tAPPEND root=$BRroot $syslinuxrootsubvol $BR_KERNEL_OPTS ro quiet"
-        fi
+        echo -e "LABEL gentoo\n\tMENU LABEL $BRdistro-$kn\n\tLINUX ../$kn\n\tAPPEND root=$BRroot $BR_KERNEL_OPTS"
       fi
     fi
   done
@@ -372,12 +359,12 @@ count_gauge_wget() {
 }
 
 hide_used_parts() {
-  grep -vw -e "/${BRroot#*/}" -e "/${BRswap#*/}" -e "/${BRhome#*/}" -e "/${BRboot#*/}" -e "/${BRefisp#*/}"
+  grep -vw -e "/${BRroot#*/}" -e "/${BRswap#*/}" -e "/${BRhome#*/}" -e "/${BRboot#*/}" -e "/${BResp#*/}"
 }
 
 scan_parts() {
   for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f"; done | sort
-  for f in $(find /dev/mapper/ | grep '-'); do echo "$f"; done
+  for f in $(find /dev/mapper/ -maxdepth 1 -mindepth 1 ! -name "control"); do echo "$f"; done
   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f"; done
   for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f"; done
 }
@@ -389,7 +376,7 @@ scan_disks() {
 }
 
 part_sel_dialog() {
-  dialog --column-separator "|" --cancel-label Back --menu "Set target $1 partition:" 0 0 0 `echo "${list[@]}"` 2>&1 1>&3
+  dialog --column-separator "|" --cancel-label Back --menu "Target $1 partition:" 0 0 0 `echo "${list[@]}"` 2>&1 1>&3
 }
 
 set_custom() {
@@ -441,15 +428,17 @@ check_input() {
         BRSTOP="y"
       fi
     fi
-    if [ -n "$BRsyslinux" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
-      if [ -z $(which mkfs.vfat 2>/dev/null) ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Package dosfstools is not installed. Install the package and re-run the script"
-        BRSTOP="y"
-      fi
-      if [ -z $(which efibootmgr 2>/dev/null) ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Package efibootmgr is not installed. Install the package and re-run the script"
-        BRSTOP="y"
-      fi
+    if [ -n "$BRbootctl" ] || [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DETECT_DIR" ] && [ -z $(which mkfs.vfat 2>/dev/null) ]; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Package dosfstools is not installed. Install the package and re-run the script"
+      BRSTOP="y"
+    fi
+    if [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DETECT_DIR" ] && [ -z $(which efibootmgr 2>/dev/null) ]; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Package efibootmgr is not installed. Install the package and re-run the script"
+      BRSTOP="y"
+    fi
+    if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DETECT_DIR" ] && [ -z $(which bootctl 2>/dev/null) ]; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Bootctl not found"
+      BRSTOP="y"
     fi
   fi
 
@@ -463,9 +452,6 @@ check_input() {
     if [ ! "$BRrootcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong root partition: $BRroot"
       BRSTOP="y"
-    elif pvdisplay 2>&1 | grep -qw $BRroot; then
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRroot contains lvm physical volume, refusing to use it. Use a logical volume instead"
-      BRSTOP="y"
     elif [ ! -z $(lsblk -d -n -o mountpoint 2>/dev/null $BRroot) ]; then
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null $BRroot), refusing to use it"
       BRSTOP="y"
@@ -476,9 +462,6 @@ check_input() {
     for i in $(scan_parts); do if [ "$i" = "$BRswap" ]; then BRswapcheck="true"; fi; done
     if [ ! "$BRswapcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong swap partition: $BRswap"
-      BRSTOP="y"
-    elif pvdisplay 2>&1 | grep -qw $BRswap; then
-      echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRswap contains lvm physical volume, refusing to use it. Use a logical volume instead"
       BRSTOP="y"
     fi
     if [ "$BRswap" = "$BRroot" ]; then
@@ -510,9 +493,6 @@ check_input() {
       for i in $(scan_parts); do if [ "$i" = "$BRdevice" ]; then BRcustomcheck="true"; fi; done
       if [ ! "$BRcustomcheck" = "true" ]; then
         echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong $BRmpoint partition: $BRdevice"
-        BRSTOP="y"
-      elif pvdisplay 2>&1 | grep -qw $BRdevice; then
-        echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice contains lvm physical volume, refusing to use it. Use a logical volume instead"
         BRSTOP="y"
       elif [ ! -z $(lsblk -d -n -o mountpoint 2>/dev/null $BRdevice) ]; then
         echo -e "[${BR_YELLOW}WARNING${BR_NORM}] $BRdevice is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null $BRdevice), refusing to use it"
@@ -560,7 +540,7 @@ check_input() {
     done
   fi
 
-  if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "/boot/efi" ]; then
+  if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ]; then
     for i in $(scan_disks); do if [ "$i" = "$BRgrub" ]; then BRgrubcheck="true"; fi; done
     if [ ! "$BRgrubcheck" = "true" ]; then
       echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
@@ -568,13 +548,13 @@ check_input() {
     fi
   fi
 
-  if [ -n "$BRgrub" ] && [ "$BRgrub" = "/boot/efi" ] && [ ! -d "$BR_EFI_DETECT_DIR" ]; then
+  if [ -n "$BRgrub" ] && [ "$BRgrub" = "auto" ] && [ ! -d "$BR_EFI_DETECT_DIR" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
     BRSTOP="y"
   fi
 
-  if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "/boot/efi" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] In UEFI enviroment use /boot/efi for grub location"
+  if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] In UEFI enviroment use 'auto' for grub location"
     BRSTOP="y"
   fi
 
@@ -585,13 +565,22 @@ check_input() {
       BRSTOP="y"
     fi
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] The script does not support Syslinux as UEFI bootloader yet"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] The script does not support Syslinux as UEFI bootloader"
       BRSTOP="y"
     fi
   fi
 
   if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use both bootloaders at the same time"
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use multiple bootloaders"
+    BRSTOP="y"
+  elif [ -n "$BRgrub" ] && [ -n "$BRefistub" ]; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use multiple bootloaders"
+    BRSTOP="y"
+  elif [ -n "$BRgrub" ] && [ -n "$BRbootctl" ]; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use multiple bootloaders"
+    BRSTOP="y"
+  elif [ -n "$BRefistub" ] && [ -n "$BRbootctl" ]; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use multiple bootloaders"
     BRSTOP="y"
   fi
 
@@ -600,13 +589,31 @@ check_input() {
     BRSTOP="y"
   fi
 
-  if [ ! -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRefisp" ]; then
+  if [ ! -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BResp" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Dont use EFI system partition in bios mode"
     BRSTOP="y"
   fi
 
-  if [ -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRroot" ] && [ -z "$BRefisp" ]; then
+  if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRroot" ] && [ -z "$BResp" ]; then
     echo -e "[${BR_RED}ERROR${BR_NORM}] You must specify a target EFI system partition"
+    BRSTOP="y"
+  fi
+
+  if [ -n "$BRefistub" ] && [ ! -d "$BR_EFI_DETECT_DIR" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] EFISTUB is available in UEFI environment only"
+    BRSTOP="y"
+  fi
+
+  if [ -n "$BRbootctl" ] && [ ! -d "$BR_EFI_DETECT_DIR" ]; then
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Bootctl is available in UEFI environment only"
+    BRSTOP="y"
+  fi
+
+  if [ -n "$BResp" ] && [ -z "$BRespmpoint" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify mount point for ESP ($BResp)"
+    BRSTOP="y"
+  elif [ -n "$BResp" ] && [ ! "$BRespmpoint" = "/boot/efi" ] && [ ! "$BRespmpoint" = "/boot" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot"
     BRSTOP="y"
   fi
 
@@ -698,7 +705,7 @@ mount_all() {
 show_summary() {
   echo "TARGET PARTITION SCHEME:"
   BRpartitions="Partition|Mountpoint|Filesystem|Size|Options"
-  BRpartitions="$BRpartitions\n$BRroot|/|$BRfsystem|$BRfsize|$BR_MOUNT_OPTS"
+  BRpartitions="$BRpartitions\n$BRroot $BRmap|/|$BRfsystem|$BRfsize|$BR_MOUNT_OPTS"
   if [ -n "$BRcustomparts" ]; then
     for i in ${BRsorted[@]}; do
       BRdevice=$(echo $i | cut -f2 -d"=")
@@ -735,9 +742,6 @@ show_summary() {
       echo Locations: $(grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
     else
       echo "Location: $BRgrub"
-      if [ -d "$BR_EFI_DETECT_DIR" ] && [ "$(ls -A /mnt/target/boot/efi)" ]; then
-        echo -e "Target EFI system partition is not empty.\nYou may have problems on boot (WARNING)"
-      fi
     fi
   elif [ -n "$BRsyslinux" ]; then
     echo "$BRbootloader ($BRpartitiontable)"
@@ -746,11 +750,14 @@ show_summary() {
     else
       echo "Location: $BRsyslinux"
     fi
-    if [ -n "$BR_KERNEL_OPTS" ]; then
-      echo "Kernel Options: $BR_KERNEL_OPTS"
-    fi
+  elif [ -n "$BRefistub" ] || [ -n "$BRbootctl" ]; then
+    echo "$BRbootloader"
   else
     echo "None (WARNING)"
+  fi
+
+  if [ -n "$BRbootloader" ] && [ -n "$BR_KERNEL_OPTS" ]; then
+    echo "Kernel Options: $BR_KERNEL_OPTS"
   fi
 
   echo -e "\nPROCESS:"
@@ -801,6 +808,10 @@ prepare_chroot() {
   mount --bind /proc /mnt/target/proc
   echo "Binding /sys"
   mount --bind /sys /mnt/target/sys
+  if [ -d "$BR_EFI_DETECT_DIR" ]; then
+    echo "Binding /sys/firmware/efi/efivars"
+    mount --bind /sys/firmware/efi/efivars /mnt/target/sys/firmware/efi/efivars
+  fi
 }
 
 generate_fstab() {
@@ -840,7 +851,7 @@ generate_fstab() {
 
 build_initramfs() {
   echo -e "\n${BR_SEP}REBUILDING INITRAMFS IMAGES"
-  if grep -q dev/md /mnt/target/etc/fstab; then
+  if grep -q dev/md /mnt/target/etc/fstab || [[ "$BRmap" == *raid* ]]; then
     if [ -n "$BRwrap" ]; then echo "Generating mdadm.conf..." >> /tmp/wr_proc; fi
     echo "Generating mdadm.conf..."
     if [ "$BRdistro" = "Debian" ]; then
@@ -853,6 +864,17 @@ build_initramfs() {
     fi
     mdadm --examine --scan > "$BR_MDADM_PATH/mdadm.conf"
     cat "$BR_MDADM_PATH/mdadm.conf"
+    echo " "
+  fi
+
+  if [ -n "$BRencdev" ] && [ ! "$BRdistro" = "Arch" ] && [ ! "$BRdistro" = "Gentoo" ]; then
+    if [ -f  /mnt/target/etc/crypttab ]; then
+      mv /mnt/target/etc/crypttab /mnt/target/etc/crypttab-old
+    fi
+    if [ -n "$BRwrap" ]; then echo "Generating basic crypttab..." >> /tmp/wr_proc; fi
+    echo "Generating basic crypttab..."
+    echo "$crypttab_root UUID=$(blkid -s UUID -o value $BRencdev) none luks" > /mnt/target/etc/crypttab
+    cat /mnt/target/etc/crypttab
     echo " "
   fi
 
@@ -895,26 +917,123 @@ detect_initramfs_prefix() {
 }
 
 cp_grub_efi() {
-  if [ ! -d /mnt/target/boot/efi/EFI/boot ]; then
-    mkdir /mnt/target/boot/efi/EFI/boot
+  if [ ! -d /mnt/target$BRespmpoint/EFI/boot ]; then
+    mkdir /mnt/target$BRespmpoint/EFI/boot
   fi
-  cd /mnt/target/boot
 
-  BR_GRUBX64_EFI="$(ls efi/EFI/*/grubx64.efi 2>/dev/null | grep -v -e 'BOOT' -e 'boot')"
-  BR_GRUBIA32_EFI="$(ls efi/EFI/*/grubia32.efi 2>/dev/null | grep -v -e 'BOOT' -e 'boot')"
+  BR_GRUBX64_EFI="$(find /mnt/target$BRespmpoint/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubx64.efi" 2>/dev/null)"
+  BR_GRUBIA32_EFI="$(find /mnt/target$BRespmpoint/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubia32.efi" 2>/dev/null)"
 
   if [ -f "$BR_GRUBX64_EFI" ]; then
-    cp "$BR_GRUBX64_EFI" efi/EFI/boot/bootx64.efi
+    echo "Copying "$BR_GRUBX64_EFI" as /mnt/target$BRespmpoint/EFI/boot/bootx64.efi..."
+    cp "$BR_GRUBX64_EFI" /mnt/target$BRespmpoint/EFI/boot/bootx64.efi
   elif [ -f "$BR_GRUBIA32_EFI" ]; then
-    cp "$BR_GRUBIA32_EFI" efi/EFI/boot/bootx32.efi
+    echo "Copying "$BR_GRUBIA32_EFI" as /mnt/target$BRespmpoint/EFI/boot/bootx32.efi..."
+    cp "$BR_GRUBIA32_EFI" /mnt/target$BRespmpoint/EFI/boot/bootx32.efi
   fi
-  cd ~
+}
+
+cp_kernels() {
+  for FILE in /mnt/target/boot/*; do
+    if file -b -k "$FILE" | grep -qw "bzImage"; then
+      echo "Copying $FILE in /mnt/target/boot/efi/"
+      cp "$FILE" /mnt/target/boot/efi/
+    fi
+  done
+
+  for FILE in /mnt/target/boot/*; do
+    if [[ "$FILE" == *initramfs* ]] || [[ "$FILE" == *initrd* ]]; then
+      echo "Copying $FILE in /mnt/target/boot/efi/"
+      cp "$FILE" /mnt/target/boot/efi/
+    fi
+  done
+}
+
+detect_root_map() {
+  if [[ "$BRroot" == *mapper* ]] && cryptsetup status "$BRroot" &>/dev/null; then
+    BRencdev=$(cryptsetup status $BRroot 2>/dev/null | grep device | sed -e "s/ *device:[ \t]*//")
+
+    if [[ "$BRencdev" == *mapper* ]] && lvdisplay "$BRencdev" &>/dev/null; then
+      BRphysical=$(lvdisplay --maps $BRencdev 2>/dev/null | grep "Physical volume" | sed -e "s/ *Physical volume[ \t]*//")
+      if [[ "$BRphysical" == *dev/md* ]]; then
+        BRmap="luks->lvm->raid"
+      else
+        BRmap="luks->lvm"
+      fi
+    elif [[ "$BRencdev" == *dev/md* ]]; then
+      BRmap="luks->raid"
+    else
+      BRmap="luks"
+    fi
+
+  elif [[ "$BRroot" == *mapper* ]] && lvdisplay "$BRroot" &>/dev/null; then
+    BRphysical=$(lvdisplay --maps $BRroot 2>/dev/null | grep "Physical volume" | sed -e "s/ *Physical volume[ \t]*//")
+    BRvgname=$(lvdisplay $BRroot 2>/dev/null | grep "VG Name" | sed -e "s/ *VG Name[ \t]*//")
+
+    if [[ "$BRphysical" == *mapper* ]] && cryptsetup status "$BRphysical" &>/dev/null; then
+      BRencdev=$(cryptsetup status $BRphysical 2>/dev/null | grep device | sed -e "s/ *device:[ \t]*//")
+      if [[ "$BRencdev" == *dev/md* ]]; then
+        BRmap="lvm->luks->raid"
+      else
+        BRmap="lvm->luks"
+      fi
+    elif [[ "$BRphysical" == *dev/md* ]]; then
+      BRmap="lvm->raid"
+    else
+      BRmap="lvm"
+    fi
+  elif [[ "$BRroot" == *dev/md* ]]; then
+    BRmap="raid"
+  fi
+}
+
+set_kern_opts() {
+  if [ -n "$BRsyslinux" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ]; then
+    if [ "$BRdistro" = "Arch" ]; then
+      BR_KERNEL_OPTS="rw ${BR_KERNEL_OPTS}"
+    else
+      BR_KERNEL_OPTS="ro quiet ${BR_KERNEL_OPTS}"
+    fi
+    if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
+      BR_KERNEL_OPTS="rootflags=subvol=$BRrootsubvolname ${BR_KERNEL_OPTS}"
+    fi
+  elif [ -n "$BRgrub" ] && [ "$BRdistro" = "Fedora" ]; then
+    BR_KERNEL_OPTS="quiet rhgb ${BR_KERNEL_OPTS}"
+  fi
+
+  if [ "$BRdistro" = "Gentoo" ] && [[ "$BRmap" == *lvm* ]]; then
+    BR_KERNEL_OPTS="dolvm ${BR_KERNEL_OPTS}"
+  fi
+  if [ "$BRdistro" = "Gentoo" ] && [[ "$BRmap" == *raid* ]]; then
+    BR_KERNEL_OPTS="domdadm ${BR_KERNEL_OPTS}"
+  fi
+
+  if [ "$BRmap" = "luks" ] || [ "$BRmap" = "luks->lvm" ] || [ "$BRmap" = "luks->raid" ] || [ "$BRmap" = "luks->lvm->raid" ]; then
+    if [ -n "$BRencdev" ] && [ "$BRdistro" = "Gentoo" ]; then
+      BR_KERNEL_OPTS="crypt_root=UUID=$(blkid -s UUID -o value $BRencdev) ${BR_KERNEL_OPTS}"
+    elif [ -n "$BRencdev" ]; then
+      BR_KERNEL_OPTS="cryptdevice=UUID=$(blkid -s UUID -o value $BRencdev):${BRroot##*/} ${BR_KERNEL_OPTS}"
+      crypttab_root="${BRroot##*/}"
+    fi
+  elif [ "$BRmap" = "lvm->luks" ] || [ "$BRmap" = "lvm->luks->raid" ]; then
+    if [ -n "$BRencdev" ] && [ "$BRdistro" = "Gentoo" ]; then
+      BR_KERNEL_OPTS="crypt_root=UUID=$(blkid -s UUID -o value $BRencdev) ${BR_KERNEL_OPTS}"
+    elif [ -n "$BRencdev" ]; then
+      BR_KERNEL_OPTS="cryptdevice=UUID=$(blkid -s UUID -o value $BRencdev):$BRvgname ${BR_KERNEL_OPTS}"
+      crypttab_root="${BRphysical##*/}"
+    fi
+  fi
 }
 
 install_bootloader() {
   if [ -n "$BRgrub" ]; then
     if [ -n "$BRwrap" ]; then echo "Installing Grub in $BRgrub..." >> /tmp/wr_proc; fi
     echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
+    if [ -d "$BR_EFI_DETECT_DIR" ] && [ "$BRespmpoint" = "/boot" ] && [ -d /mnt/target/boot/efi ]; then
+     if [ -d /mnt/target/boot/efi-old ]; then rm -r /mnt/target/boot/efi-old; fi
+      mv /mnt/target/boot/efi /mnt/target/boot/efi-old
+    fi
+
     if [[ "$BRgrub" == *md* ]]; then
       for f in `grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]'`; do
         if [ "$BRdistro" = "Arch" ]; then
@@ -925,28 +1044,35 @@ install_bootloader() {
           chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/bl_error
         fi
       done
+    elif [ "$BRdistro" = "Arch" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+      chroot /mnt/target grub-install --target=$BRgrubefiarch --efi-directory=$BRgrub --bootloader-id=grub --recheck || touch /tmp/bl_error
     elif [ "$BRdistro" = "Arch" ]; then
-      if [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then
-        chroot /mnt/target grub-install --target=$BRgrubefiarch --efi-directory=$BRgrub --bootloader-id=grub --recheck || touch /tmp/bl_error
-      else
-        chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/bl_error
-      fi
+      chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/bl_error
+    elif [ "$BRdistro" = "Debian" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+      chroot /mnt/target grub-install --efi-directory=$BRgrub --recheck
     elif [ "$BRdistro" = "Debian" ]; then
       chroot /mnt/target grub-install --recheck $BRgrub || touch /tmp/bl_error
+    elif [ -d "$BR_EFI_DETECT_DIR" ]; then
+      chroot /mnt/target grub2-install --efi-directory=$BRgrub --recheck
     else
       chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
     fi
 
-    if [ ! "$BRdistro" = "Fedora" ] && [ -n "$BRgrubefiarch" ] && [ -n "$BRefisp" ]; then
-      cp_grub_efi
-    fi
+    if [ ! "$BRdistro" = "Fedora" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then cp_grub_efi; fi
+    if [ "$BRdistro" = "Fedora" ] && [ -d "$BR_EFI_DETECT_DIR" ] && [ "$BRespmpoint" = "/boot" ]; then cp_grub_efi; fi
 
-    if [ "$BRdistro" = "Fedora" ]; then
+    if [ -n "$BR_KERNEL_OPTS" ]; then
       if [ -f /mnt/target/etc/default/grub ]; then
         cp /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old
       fi
-      sed -i 's/GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="quiet"/' /mnt/target/etc/default/grub
-      echo -e "\nModified grub2 config" >> /tmp/restore.log
+
+      if grep -q "^GRUB_CMDLINE_LINUX=" /mnt/target/etc/default/grub; then
+        sed -i 's\GRUB_CMDLINE_LINUX=.*\GRUB_CMDLINE_LINUX="'"$BR_KERNEL_OPTS"'"\' /mnt/target/etc/default/grub
+      else
+        echo GRUB_CMDLINE_LINUX='"'$BR_KERNEL_OPTS'"' >> /mnt/target/etc/default/grub
+      fi
+
+      echo -e "\nModified grub config" >> /tmp/restore.log
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
       echo " " >> /tmp/restore.log
     fi
@@ -1000,9 +1126,91 @@ install_bootloader() {
       echo "Copying com32 modules"
       cp "$BRsyslinuxcompath"/*.c32 /mnt/target/boot/syslinux/
     fi
+    echo "Generating syslinux.cfg"
     generate_syslinux_cfg >> /mnt/target/boot/syslinux/syslinux.cfg
     echo -e "\n${BR_SEP}GENERATED SYSLINUX CONFIG" >> /tmp/restore.log
     cat /mnt/target/boot/syslinux/syslinux.cfg >> /tmp/restore.log
+
+  elif [ -n "$BRefistub" ]; then
+    if [ -n "$BRwrap" ]; then echo "Setting boot entries using efibootmgr..." >> /tmp/wr_proc; fi
+    echo -e "\n${BR_SEP}SETTING BOOT ENTRIES"
+    if [[ "$BResp" == *mmcblk* ]]; then
+      BRespdev="${BResp%[[:alpha:]]*}"
+    else
+      BRespdev="${BResp%%[[:digit:]]*}"
+    fi
+    BRespart="${BResp##*[[:alpha:]]}"
+
+    if [ "$BRespmpoint" = "/boot/efi" ]; then cp_kernels; fi
+
+    for FILE in /mnt/target$BRespmpoint/*; do
+      if file -b -k "$FILE" | grep -qw "bzImage"; then
+        cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
+        kn=$(basename "$FILE")
+
+        if [ "$BRdistro" = "Arch" ]; then
+          chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro $cn fallback" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn-fallback.img" || touch /tmp/bl_error
+          chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro $cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn.img" || touch /tmp/bl_error
+        elif [ "$BRdistro" = "Debian" ]; then
+          chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn.img-$cn" || touch /tmp/bl_error
+        elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Mandriva" ]; then
+          chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn.img" || touch /tmp/bl_error
+        elif [ "$BRdistro" = "Suse" ]; then
+          chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn" || touch /tmp/bl_error
+        elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
+          chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$kn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn" || touch /tmp/bl_error
+        elif [ "$BRdistro" = "Gentoo" ]; then
+          chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$kn" -l /$kn -u "root=$BRroot $BR_KERNEL_OPTS" || touch /tmp/bl_error
+        fi
+      fi
+    done
+    chroot /mnt/target efibootmgr -v
+
+  elif [ -n "$BRbootctl" ]; then
+    if [ -n "$BRwrap" ]; then echo "Installing Bootctl in $BRespmpoint..." >> /tmp/wr_proc; fi
+    echo -e "\n${BR_SEP}INSTALLING Bootctl IN $BRespmpoint"
+    if [ -d /mnt/target$BRespmpoint/loader/entries ]; then
+      for CONF in /mnt/target$BRespmpoint/loader/entries/*; do
+        mv "$CONF" "$CONF"-old
+      done
+    fi
+    if [ "$BRespmpoint" = "/boot/efi" ]; then cp_kernels; fi
+
+    chroot /mnt/target bootctl --path=$BRespmpoint install || touch /tmp/bl_error
+
+    if [ -f /mnt/target$BRespmpoint/loader/loader.conf ]; then
+      mv /mnt/target$BRespmpoint/loader/loader.conf /mnt/target$BRespmpoint/loader/loader.conf-old
+    fi
+    echo "timeout  5" > /mnt/target$BRespmpoint/loader/loader.conf
+    echo "Generating configuration entries"
+
+    for FILE in /mnt/target$BRespmpoint/*; do
+      if file -b -k "$FILE" | grep -qw "bzImage"; then
+        cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
+        kn=$(basename "$FILE")
+
+        if [ "$BRdistro" = "Arch" ]; then
+          echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $(detect_bl_root) $BR_KERNEL_OPTS" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
+          echo -e "title $BRdistro $cn fallback\nlinux /$kn\ninitrd /$ipn-$cn-fallback.img\noptions $(detect_bl_root) $BR_KERNEL_OPTS" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn-fallback.conf
+        elif [ "$BRdistro" = "Debian" ]; then
+          echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn.img-$cn\noptions $(detect_bl_root) $BR_KERNEL_OPTS" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
+        elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Mandriva" ]; then
+          echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $(detect_bl_root) $BR_KERNEL_OPTS" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
+        elif [ "$BRdistro" = "Suse" ]; then
+          echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $(detect_bl_root) $BR_KERNEL_OPTS" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
+        elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
+          echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $(detect_bl_root) $BR_KERNEL_OPTS" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
+        elif [ "$BRdistro" = "Gentoo" ]; then
+          echo -e "title $BRdistro $cn\nlinux /$kn\noptions root=$BRroot $BR_KERNEL_OPTS" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
+        fi
+        echo -e "\n${BR_SEP}GENERATED $BRdistro-$cn.conf" >> /tmp/restore.log
+        cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf >> /tmp/restore.log
+        if [ "$BRdistro" = "Arch" ]; then
+          echo -e "\n${BR_SEP}GENERATED $BRdistro-$cn-fallback.conf" >> /tmp/restore.log
+          cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn-fallback.conf >> /tmp/restore.log
+        fi
+      fi
+    done
   fi
 }
 
@@ -1011,6 +1219,10 @@ set_bootloader() {
     BRbootloader="Grub"
   elif [ -n "$BRsyslinux" ]; then
     BRbootloader="Syslinux"
+  elif [ -n "$BRefistub" ]; then
+    BRbootloader="EFISTUB/efibootmgr"
+  elif [ -n "$BRbootctl" ]; then
+    BRbootloader="Systemd/bootctl"
   fi
 
   if [ -n "$BRsyslinux" ]; then
@@ -1047,29 +1259,35 @@ set_bootloader() {
       fi
     fi
 
-    if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
-      if ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system"
-        BRabort="y"
-      fi
-      if ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
-        BRabort="y"
-      fi
-      if [ "$target_arch" = "x86_64" ]; then
-        BRgrubefiarch="x86_64-efi"
-      elif [ "$target_arch" = "i686" ]; then
-        BRgrubefiarch="i386-efi"
-      fi
+    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] && [ -d "$BR_EFI_DETECT_DIR" ] && ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system"
+      BRabort="y"
+    fi
+    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DETECT_DIR" ] && ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
+      BRabort="y"
+    fi
+    if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DETECT_DIR" ] && ! grep -Fq "bin/bootctl" /tmp/filelist; then
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Bootctl not found in the archived system"
+      BRabort="y"
+    fi
+    if [ "$target_arch" = "x86_64" ]; then
+      BRgrubefiarch="x86_64-efi"
+    elif [ "$target_arch" = "i686" ]; then
+      BRgrubefiarch="i386-efi"
     fi
   fi
 
-  if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ] && [ "$BRmode" = "Transfer" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+  if [ -n "$BRgrub" ] && [ "$BRmode" = "Transfer" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
     if [ "$(uname -m)" = "x86_64" ]; then
       BRgrubefiarch="x86_64-efi"
     elif [ "$(uname -m)" = "i686" ]; then
       BRgrubefiarch="i386-efi"
     fi
+  fi
+
+  if [ -n "$BRgrub" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+    BRgrub="$BRespmpoint"
   fi
 
   if [ -n "$BRabort" ]; then
@@ -1176,6 +1394,9 @@ clean_unmount_out() {
   umount /mnt/target/dev/pts
   umount /mnt/target/proc
   umount /mnt/target/dev
+  if [ -d "$BR_EFI_DETECT_DIR" ]; then
+    umount /mnt/target/sys/firmware/efi/efivars
+  fi
   umount /mnt/target/sys
   umount /mnt/target/run
 
@@ -1196,12 +1417,14 @@ clean_unmount_out() {
 }
 
 unset_vars() {
-  if [ "$BRefisp" = "-1" ]; then unset BRefisp; fi
+  if [ "$BResp" = "-1" ]; then unset BResp; fi
   if [ "$BRswap" = "-1" ]; then unset BRswap; fi
   if [ "$BRboot" = "-1" ]; then unset BRboot; fi
   if [ "$BRhome" = "-1" ]; then unset BRhome; fi
   if [ "$BRgrub" = "-1" ]; then unset BRgrub; fi
   if [ "$BRsyslinux" = "-1" ]; then unset BRsyslinux; fi
+  if [ "$BRefistub" = "-1" ]; then unset BRefistub; fi
+  if [ "$BRbootctl" = "-1" ]; then unset BRbootctl; fi
   if [ "$BRsubvols" = "-1" ]; then unset BRsubvols; fi
   if [ "$BRrootsubvolname" = "-1" ]; then unset BRrootsubvolname; fi
   if [ "$BR_USER_OPTS" = "-1" ]; then unset BR_USER_OPTS; fi
@@ -1278,7 +1501,7 @@ start_log() {
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
 }
 
-BRargs=`getopt -o "i:r:e:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:O:vdDHP:Bxw" -l "interface:,root:,esp:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,bios,override,wrapper" -n "$1" -- "$@"`
+BRargs=`getopt -o "i:r:e:l:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:O:vdDHP:BxwEL" -l "interface:,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,bios,override,wrapper,efistub,bootctl" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ];
 then
@@ -1299,8 +1522,11 @@ while true; do
       shift 2
     ;;
     -e|--esp)
-      BRefisp=$2
-      BReficheck="yes"
+      BResp=$2
+      shift 2
+    ;;
+    -l|--esp-mpoint)
+      BRespmpoint=$2
       shift 2
     ;;
     -s|--swap)
@@ -1412,6 +1638,14 @@ while true; do
       BRwrap="y"
       shift
     ;;
+    -E|--efistub)
+      BRefistub="y"
+      shift
+    ;;
+    -L|--bootctl)
+      BRbootctl="y"
+      shift
+    ;;
     --help)
     echo -e "$BR_VERSION\nUsage: restore.sh [options]
 \nGeneral:
@@ -1423,8 +1657,8 @@ while true; do
   -H,  --hide-cursor        hide cursor when running tar/rsync (useful for some terminal emulators)
 \nRestore Mode:
   -f,  --file               backup file path or url
-  -n,  --username           username
-  -p,  --password           password
+  -n,  --username           ftp/http username
+  -p,  --password           ftp/http password
   -P,  --passphrase         passphrase for decryption
 \nTransfer Mode:
   -t,  --transfer           activate transfer mode
@@ -1433,16 +1667,19 @@ while true; do
 \nPartitions:
   -r,  --root               target root partition
   -e,  --esp                target EFI system partition
-  -h,  --home               target home partition
-  -b,  --boot               target boot partition
+  -l,  --esp-mpoint         mount point for ESP: /boot/efi /boot
+  -b,  --boot               target /boot partition
+  -h,  --home               target /home partition
   -s,  --swap               swap partition
   -c,  --custom-partitions  specify custom partitions (mountpoint=device e.g /var=/dev/sda3)
   -m,  --mount-options      comma-separated list of mount options (root partition only)
   -d,  --dont-check-root    dont check if root partition is empty (dangerous)
-\nBootloader:
+\nBootloaders:
   -g,  --grub               target disk for grub
   -S,  --syslinux           target disk for syslinux
-  -k,  --kernel-options     additional kernel options (syslinux only)
+  -E,  --efistub            enable EFISTUB/efibootmgr
+  -L,  --bootctl            enable Systemd/bootctl
+  -k,  --kernel-options     additional kernel options
 \nBtrfs Subvolumes:
   -R,  --rootsubvolname     subvolume name for /
   -O,  --other-subvolumes   specify other subvolumes (subvolume path e.g /home /var /usr ...)
@@ -1479,8 +1716,8 @@ BR_WRK="[${BR_CYAN}WORKING${BR_NORM}] "
 DEFAULTIFS=$IFS
 IFS=$'\n'
 
-if [ -n "$BRefisp" ]; then
-  BRcustomparts+=(/boot/efi="$BRefisp")
+if [ -n "$BResp" ] && [ -n "$BRespmpoint" ]; then
+  BRcustomparts+=("$BRespmpoint"="$BResp")
 fi
 
 if [ -n "$BRhome" ]; then
@@ -1498,9 +1735,8 @@ if [ -n "$BRroot" ]; then
     BRrootsubvolname="-1"
   fi
 
-  if [ -z "$BRefisp" ]; then
-    BRefisp="-1"
-    BReficheck="no"
+  if [ -z "$BResp" ]; then
+    BResp="-1"
   fi
 
   if [ -z "$BRcustompartslist" ]; then
@@ -1527,9 +1763,11 @@ if [ -n "$BRroot" ]; then
     BRhome="-1"
   fi
 
-  if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
+  if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ] && [ -z "$BRefistub" ] && [ -z "$BRbootctl" ]; then
     BRgrub="-1"
     BRsyslinux="-1"
+    BRefistub="-1"
+    BRbootctl="-1"
   fi
 
   if [ -z "$BRuri" ] && [ ! "$BRmode" = "Transfer" ]; then
@@ -1601,7 +1839,6 @@ if [ "$BRinterface" = "cli" ]; then
   echo "Probing hardware..."
   partition_list=(`for i in $(scan_parts); do echo "$i $(lsblk -d -n -o size $i) $(blkid -s TYPE -o value $i)"; done`)
   disk_list=(`for i in $(scan_disks); do echo "$i $(lsblk -d -n -o size $i)"; done`)
-
   list=(`echo "${partition_list[*]}" | hide_used_parts | column -t`)
   COLUMNS=1
 
@@ -1653,15 +1890,34 @@ if [ "$BRinterface" = "cli" ]; then
 
   list=(`echo "${partition_list[*]}" | hide_used_parts | column -t`)
 
-  if [ -d "$BR_EFI_DETECT_DIR" ] && [ -z "$BRefisp" ] && [ -n "${list[*]}" ]; then
-    echo -e "\n${BR_CYAN}Select target EFI system partition:${BR_NORM}"
+  if [ -d "$BR_EFI_DETECT_DIR" ] && [ -z "$BResp" ] && [ -n "${list[*]}" ]; then
+    echo -e "\n${BR_CYAN}Select target EFI system partition:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-        BRefisp=$(echo $c | awk '{ print $1 }')
-        BRcustomparts+=(/boot/efi="$BRefisp")
+        BResp=$(echo $c | awk '{ print $1 }')
+        echo -e "\n${BR_CYAN}Mount it as:${BR_NORM}"
+        select c in "/boot/efi (Suitable for Grub)" "/boot     (Suitable for EFISTUB/Bootctl)"; do
+          if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
+            echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
+            exit
+          elif [ "$REPLY" = "1" ] || [ "$REPLY" = "2" ]; then
+            BRespmpoint=$(echo $c | awk '{ print $1 }')
+            BRcustomparts+=("$BRespmpoint"="$BResp")
+            if [ "$BRespmpoint" = "/boot" ]; then BRboot="-1"; fi
+            break
+          else
+            echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
+          fi
+        done
+        break
+      elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
+        echo -e "\n[${BR_YELLOW}WARNING${BR_NORM}] Since you didn't choose ESP, bootloaders will be disabled"
+        BRgrub="-1"
+        BRefistub="-1"
+        BRbootctl="-1"
         break
       else
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1671,15 +1927,15 @@ if [ "$BRinterface" = "cli" ]; then
 
   list=(`echo "${partition_list[*]}" | hide_used_parts | column -t`)
 
-  if [ -z "$BRhome" ] && [ -n "${list[*]}" ]; then
-    echo -e "\n${BR_CYAN}Select target home partition:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
+  if [ -z "$BRboot" ] && [ -n "${list[*]}" ]; then
+    echo -e "\n${BR_CYAN}Select target /boot partition:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-        BRhome=$(echo $c | awk '{ print $1 }')
-        BRcustomparts+=(/home="$BRhome")
+        BRboot=$(echo $c | awk '{ print $1 }')
+        BRcustomparts+=(/boot="$BRboot")
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
         break
@@ -1691,15 +1947,15 @@ if [ "$BRinterface" = "cli" ]; then
 
   list=(`echo "${partition_list[*]}" | hide_used_parts | column -t`)
 
-  if [ -z "$BRboot" ] && [ -n "${list[*]}" ]; then
-    echo -e "\n${BR_CYAN}Select target boot partition:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
+  if [ -z "$BRhome" ] && [ -n "${list[*]}" ]; then
+    echo -e "\n${BR_CYAN}Select target /home partition:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
     select c in ${list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
         exit
       elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#list[@]} ]; then
-        BRboot=$(echo $c | awk '{ print $1 }')
-        BRcustomparts+=(/boot="$BRboot")
+        BRhome=$(echo $c | awk '{ print $1 }')
+        BRcustomparts+=(/home="$BRhome")
         break
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
         break
@@ -1740,17 +1996,25 @@ if [ "$BRinterface" = "cli" ]; then
     fi
   fi
 
-  if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
+  if [ -d "$BR_EFI_DETECT_DIR" ]; then
+    bootloader_list=(Grub "EFISTUB/efibootmgr" "Systemd/bootctl")
+  else
+    bootloader_list=(Grub Syslinux)
+  fi
+
+  if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ] && [ -z "$BRefistub" ] && [ -z "$BRbootctl" ]; then
     echo -e "\n${BR_CYAN}Select bootloader:\n${BR_MAGENTA}(Optional - Enter C to skip)${BR_NORM}"
-    select c in Grub Syslinux; do
+    select c in ${bootloader_list[@]}; do
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
         echo -e "${BR_YELLOW}Aborted by User${BR_NORM}"
        	exit
       elif [ "$REPLY" = "c" ] || [ "$REPLY" = "C" ]; then
         echo -e "\n[${BR_YELLOW}WARNING${BR_NORM}] NO BOOTLOADER SELECTED"
         break
-      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ]; then
-        if [ -z "$BRefisp" ]; then
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 1 ] && [ "$REPLY" -le ${#bootloader_list[@]} ]; then
+        if [ -d "$BR_EFI_DETECT_DIR" ]; then
+          BRgrub="auto"
+        else
           echo -e "\n${BR_CYAN}Select target disk for Grub:${BR_NORM}"
 	  select c in $(echo "${disk_list[*]}" | column -t); do
 	    if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1762,15 +2026,16 @@ if [ "$BRinterface" = "cli" ]; then
 	    else
               echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
 	    fi
-	  done
-	else
-	  BRgrub="/boot/efi"
-	fi
+          done
+          fi
         break
-
-      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] The script does not support Syslinux as UEFI bootloader yet"
-      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ]; then
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ] && [ "$REPLY" -le ${#bootloader_list[@]} ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+        BRefistub="y"
+        break
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 3 ] && [ "$REPLY" -le ${#bootloader_list[@]} ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+        BRbootctl="y"
+        break
+      elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -eq 2 ] && [ "$REPLY" -le ${#bootloader_list[@]} ]; then
         echo -e "\n${BR_CYAN}Select target disk Syslinux:${BR_NORM}"
 	select c in $(echo "${disk_list[*]}" | column -t); do
 	  if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]; then
@@ -1778,10 +2043,6 @@ if [ "$BRinterface" = "cli" ]; then
 	    exit
 	  elif [[ "$REPLY" = [0-9]* ]] && [ "$REPLY" -gt 0 ] && [ "$REPLY" -le ${#disk_list[@]} ]; then
 	    BRsyslinux=$(echo $c | awk '{ print $1 }')
-            if [ -z "$BR_KERNEL_OPTS" ]; then
-	      echo -e "\n${BR_CYAN}Enter additional kernel options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
-              read -p "Options: " BR_KERNEL_OPTS
-            fi
             break
 	  else
             echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
@@ -1792,6 +2053,10 @@ if [ "$BRinterface" = "cli" ]; then
         echo -e "${BR_RED}Please select a valid option from the list${BR_NORM}"
       fi
     done
+    if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -z "$BR_KERNEL_OPTS" ]; then
+      echo -e "\n${BR_CYAN}Enter additional kernel options\n${BR_MAGENTA}(Leave blank for defaults)${BR_NORM}"
+      read -p "Options: " BR_KERNEL_OPTS
+    fi
   fi
 
   if [ -z "$BRmode" ]; then
@@ -1940,7 +2205,9 @@ if [ "$BRinterface" = "cli" ]; then
     done
   fi
 
+  detect_root_map
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
+  if [ -n "$BRbootloader" ]; then set_kern_opts; fi
 
   echo -e "\n${BR_SEP}SUMMARY${BR_YELLOW}"
   show_summary
@@ -2071,10 +2338,12 @@ elif [ "$BRinterface" = "dialog" ]; then
   update_options() {
     options=("Root partition" "$BRroot")
     if [ -d "$BR_EFI_DETECT_DIR" ]; then
-      options+=("EFI system partition" "$BRefisp")
+      options+=("(Optional) EFI system partition" "$BResp$sbl$BRespmpoint")
+    fi
+    if [ ! "$BRespmpoint" = "/boot" ]; then
+      options+=("(Optional) Boot partition" "$BRboot")
     fi
     options+=("(Optional) Home partition" "$BRhome" \
-    "(Optional) Boot partition" "$BRboot" \
     "(Optional) Swap partition" "$BRswap" \
     "(Optional) Custom partitions" "$BRempty" \
     "Done with partitions" "$BRempty")
@@ -2082,22 +2351,22 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   update_options
 
-  while [ -z "$BRroot" ] || [ -z "$BReficheck" ]; do
+  while [ -z "$BRroot" ]; do
     BRassign="y"
     while opt=$(dialog --ok-label Select --cancel-label Quit --extra-button --extra-label Unset --menu "Set target partitions:" 0 0 0 "${options[@]}" 2>&1 1>&3); rtn="$?"; do
       if [ "$rtn" = "1" ]; then exit; fi
-      BRrootold="$BRroot" BRhomeold="$BRhome" BRbootold="$BRboot" BRefispold="$BRefisp" BRswapold="$BRswap"
+      BRrootold="$BRroot" BRhomeold="$BRhome" BRbootold="$BRboot" BRespold="$BResp" BRswapold="$BRswap"
       case "$opt" in
         "Root partition" )
             if [ "$rtn" = "3" ]; then unset BRroot; elif [ -z "${list[*]}" ]; then no_parts; else BRroot=$(part_sel_dialog root); if [ "$?" = "1" ]; then BRroot="$BRrootold"; fi; fi
             update_list
             update_options;;
         "(Optional) Home partition" )
-            if [ "$rtn" = "3" ]; then unset BRhome; elif [ -z "${list[*]}" ]; then no_parts; else BRhome=$(part_sel_dialog home); if [ "$?" = "1" ]; then BRhome="$BRhomeold"; fi; fi
+            if [ "$rtn" = "3" ]; then unset BRhome; elif [ -z "${list[*]}" ]; then no_parts; else BRhome=$(part_sel_dialog /home); if [ "$?" = "1" ]; then BRhome="$BRhomeold"; fi; fi
             update_list
             update_options;;
         "(Optional) Boot partition" )
-            if [ "$rtn" = "3" ]; then unset BRboot; elif [ -z "${list[*]}" ]; then no_parts; else BRboot=$(part_sel_dialog boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
+            if [ "$rtn" = "3" ]; then unset BRboot; elif [ -z "${list[*]}" ]; then no_parts; else BRboot=$(part_sel_dialog /boot); if [ "$?" = "1" ]; then BRboot="$BRbootold"; fi; fi
             update_list
             update_options;;
         "(Optional) Swap partition" )
@@ -2107,8 +2376,10 @@ elif [ "$BRinterface" = "dialog" ]; then
         "(Optional) Custom partitions" )
             if [ "$rtn" = "3" ]; then unset BRcustompartslist BRcustomold; elif [ -z "${list[*]}" ]; then no_parts; else set_custom; fi
             update_options;;
-        "EFI system partition" )
-            if [ "$rtn" = "3" ]; then unset BRefisp; elif [ -z "${list[*]}" ]; then no_parts; else BRefisp=$(part_sel_dialog "EFI"); if [ "$?" = "1" ]; then BRefisp="$BRefispold"; fi; fi
+        "(Optional) EFI system partition" )
+            if [ "$rtn" = "3" ]; then unset BResp BRespmpoint sbl; elif [ -z "${list[*]}" ]; then no_parts; else BResp=$(part_sel_dialog "ESP"); if [ "$?" = "1" ]; then BResp="$BRespold"; else
+            BRespmpoint=$(dialog --no-cancel --menu "Mount it as:" 0 0 0 /boot/efi "Suitable for Grub" /boot "Suitable for EFISTUB/Bootctl" 2>&1 1>&3); fi; fi
+            if [ -n "$BRespmpoint" ]; then sbl="->"; fi
             update_list
             update_options;;
         "Done with partitions" )
@@ -2120,15 +2391,11 @@ elif [ "$BRinterface" = "dialog" ]; then
     if [ -z "$BRroot" ]; then
       dialog --title "Error" --msgbox "You must specify a target root partition." 5 45
     fi
-    if [ ! -d "$BR_EFI_DETECT_DIR" ]; then
-      BReficheck="no"
-    fi
-    if [ -d "$BR_EFI_DETECT_DIR" ] && [ -z "$BRefisp" ]; then
-      dialog --title "Error" --msgbox "You must specify a target EFI system partition." 5 51
-      unset BReficheck
-    fi
-    if [ -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BRefisp" ]; then
-      BReficheck="yes"
+    if [ -d "$BR_EFI_DETECT_DIR" ] && [ -z "$BResp" ] && [ -n "$BRroot" ]; then
+      dialog --title "Warning" --msgbox "Since you didn't choose ESP, bootloaders will be disabled." 5 62
+      BRgrub="-1"
+      BRefistub="-1"
+      BRbootctl="-1"
     fi
   done
 
@@ -2141,8 +2408,8 @@ elif [ "$BRinterface" = "dialog" ]; then
       BRcustomparts+=(/boot="$BRboot")
     fi
 
-    if [ -n "$BRefisp" ]; then
-      BRcustomparts+=(/boot/efi="$BRefisp")
+    if [ -n "$BResp" ] && [ -n "$BRespmpoint" ]; then
+      BRcustomparts+=("$BRespmpoint"="$BResp")
     fi
 
     if [ -n "$BRcustompartslist" ]; then
@@ -2177,33 +2444,36 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   if [ -d "$BR_EFI_DETECT_DIR" ]; then
-    bootloader_list=(1 Grub)
+    bootloader_list=(1 Grub 2 "EFISTUB/efibootmgr" 3 "Systemd/bootctl")
   else
     bootloader_list=(1 Grub 2 Syslinux)
   fi
 
-  if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
+  if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ] && [ -z "$BRefistub" ] && [ -z "$BRbootctl" ]; then
     REPLY=$(dialog --cancel-label Skip --extra-button --extra-label Quit --menu "Select bootloader:" 10 0 10 "${bootloader_list[@]}" 2>&1 1>&3)
     if [ "$?" = "3" ]; then exit; fi
 
     if [ "$REPLY" = "1" ]; then
-      if [ -z "$BRefisp" ]; then
-        BRgrub=$(dialog --column-separator "|" --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 $(for i in $(scan_disks); do echo "$i $(lsblk -d -n -o size $i)|$BRempty"; done) 2>&1 1>&3)
-        if [ "$?" = "1" ]; then exit; fi
+      if [ -d "$BR_EFI_DETECT_DIR" ]; then
+        BRgrub="auto"
       else
-        BRgrub="/boot/efi"
+        BRgrub=$(dialog --column-separator "|" --cancel-label Quit --menu "Set target disk for Grub:" 0 0 0 $(for i in $(scan_disks); do echo "$i $(lsblk -d -n -o size $i)|$BRempty"; done) 2>&1 1>&3)
       fi
+      if [ "$?" = "1" ]; then exit; fi
+    elif [ "$REPLY" = "2" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+      BRefistub="y"
+    elif [ "$REPLY" = "3" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
+      BRbootctl="y"
     elif [ "$REPLY" = "2" ]; then
       BRsyslinux=$(dialog --column-separator "|" --cancel-label Quit --menu "Set target disk for Syslinux:" 0 35 0 $(for i in $(scan_disks); do echo "$i $(lsblk -d -n -o size $i)|$BRempty"; done) 2>&1 1>&3)
-      if [ "$?" = "1" ]; then
-        exit
-      elif [ -z "$BR_KERNEL_OPTS" ]; then
-        BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Specify additional kernel options. Leave empty for defaults." 8 70 2>&1 1>&3)
-      fi
+      if [ "$?" = "1" ]; then exit;fi
+    fi
+    if [ -n "$BRgrub" ] || [ -n "$BRsyslinux" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -z "$BR_KERNEL_OPTS" ]; then
+      BR_KERNEL_OPTS=$(dialog --no-cancel --inputbox "Specify additional kernel options. Leave empty for defaults." 8 70 2>&1 1>&3)
     fi
   fi
 
-  if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ]; then
+  if [ -z "$BRgrub" ] && [ -z "$BRsyslinux" ] && [ -z "$BRefistub" ] && [ -z "$BRbootctl" ]; then
     dialog --title "Warning" --msgbox "No bootloader selected, press ok to continue." 5 49
   fi
 
@@ -2324,7 +2594,9 @@ elif [ "$BRinterface" = "dialog" ]; then
     fi
   fi
 
+  detect_root_map
   if [ "$BRmode" = "Transfer" ]; then set_rsync_opts; fi
+  if [ -n "$BRbootloader" ]; then set_kern_opts; fi
 
   if [ -z "$BRcontinue" ]; then
     dialog --no-collapse --title "Summary (PgUp/PgDn:Scroll)" --yes-label "OK" --no-label "Quit" --yesno "$(show_summary) $(echo -e "\n\nPress OK to continue, or Quit to abort.")" 0 0

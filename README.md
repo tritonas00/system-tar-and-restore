@@ -118,7 +118,7 @@ genkernel check and initramfs building.
 |/dev/mapper/A-B<br>/dev/md1<br>/dev/md0*|/<br><br>/boot|Syslinux|BIOS&nbsp;GPT|lvm on mdadm<br>level=1<br>metadata=1.0*|
 |/dev/mapper/A-B<br>/dev/mapper/X<br>/dev/md1<br>/dev/md0*|/<br><br><br>/boot|Syslinux|BIOS&nbsp;GPT|lvm on luks on mdadm<br>level=1<br>metadata=1.0*|
 |/dev/mapper/X<br>/dev/sdX1|/<br>/boot|Grub<br>Syslinux|BIOS&nbsp;MBR|luks|
-|/dev/mapper/X<br>/dev/sdX1<br>/dev/A/B|/<br>/boot|Grub<br>Syslinux|BIOS&nbsp;MBR|luks on lvm|
+|/dev/mapper/X<br>/dev/sdX1<br>/dev/A/B|/<br><br>/boot|Grub<br>Syslinux|BIOS&nbsp;MBR|luks on lvm|
 |/dev/mapper/X<br>/dev/md1<br>/dev/md0*|/<br><br>/boot|Syslinux|BIOS&nbsp;GPT|luks on mdadm<br>level=1<br>metadata=1.0*|
 |/dev/mapper/X<br>/dev/mapper/A-B<br>/dev/md1<br>/dev/md0*|/<br><br><br>/boot|Syslinux|BIOS&nbsp;GPT|luks on lvm on mdadm<br>level=1<br>metadata=1.0*|
 |/dev/sdX2<br>/dev/sdX1*|/<br>/boot/efi|Grub<br>EFISTUB/efibootmgr<br>Systemd/bootctl|UEFI&nbsp;GPT|ESP*<br>efibootmgr 0.12<br>efivar 0.21<br>systemd >= 222|

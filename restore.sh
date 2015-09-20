@@ -40,7 +40,7 @@ exit_screen() {
     echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log\n\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
   else
     echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log"
-    echo -e "\n${BR_YELLOW}No bootloader found, so this is the right time to install and\nupdate one. To do so:"
+    echo -e "\n${BR_YELLOW}You didn't choose a bootloader, so this is the right time to install and\nupdate one. To do so:"
     echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
     echo -e "\n==>Then chroot into the target system: chroot /mnt/target"
     echo -e "\n==>Install and update a bootloader"

@@ -892,8 +892,7 @@ build_initramfs() {
       elif [ "$BRdistro" = "Suse" ]; then
         chroot /mnt/target mkinitrd -k vmlinuz-$cn -i $ipn-$cn
       elif [ "$BRdistro" = "Mandriva" ] || [ "$BRdistro" = "Fedora" ]; then
-        echo "Building image for $cn..."
-        chroot /mnt/target dracut --force /boot/$ipn-$cn.img $cn
+        chroot /mnt/target dracut -f -v /boot/$ipn-$cn.img $cn
       fi
     fi
   done

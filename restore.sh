@@ -549,12 +549,12 @@ check_input() {
   fi
 
   if [ -n "$BRgrub" ] && [ "$BRgrub" = "auto" ] && [ ! -d "$BR_EFI_DETECT_DIR" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Use 'auto' in UEFI enviroment only"
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Use 'auto' in UEFI environment only"
     BRSTOP="y"
   fi
 
   if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] In UEFI enviroment use 'auto' for grub location"
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] In UEFI environment use 'auto' for grub location"
     BRSTOP="y"
   fi
 
@@ -797,7 +797,7 @@ show_summary() {
 
 prepare_chroot() {
   if [ -n "$BRwrap" ]; then echo "Preparing chroot..." >> /tmp/wr_proc; fi
-  echo -e "\n${BR_SEP}PREPARING CHROOT ENVIROMENT"
+  echo -e "\n${BR_SEP}PREPARING CHROOT ENVIRONMENT"
   echo "Binding /run"
   mount --bind /run /mnt/target/run
   echo "Binding /dev"

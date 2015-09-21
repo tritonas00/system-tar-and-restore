@@ -489,7 +489,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                 <action condition="command_is_true([ $ENTRY12 = EFISTUB/efibootmgr ] && echo true)">disable:BR_DISK</action>
                                                 <action condition="command_is_true([ $ENTRY12 = Systemd/bootctl ] && echo true)">disable:BR_DISK</action>
                                                 <action condition="command_is_true([ $ENTRY12 = Grub-efi ] && echo true)">disable:BR_DISK</action>
-                                                <action condition="command_is_true([ $ENTRY12 = Grub-efi ] && echo true)">disable:BR_DISK</action>
                                         </comboboxtext>
 
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk for bootloader" sensitive="false">

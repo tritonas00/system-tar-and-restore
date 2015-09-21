@@ -1,10 +1,5 @@
 #!/bin/bash
 
-if file /bin/sh | grep -q -w dash; then
-  ln -sf /bin/bash /bin/sh
-  force_bash="y"
-fi
-
 cd $(dirname $0)
 
 clean_files() {
@@ -390,7 +385,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 		                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
 	                                        <variable>BR_ROOT</variable>
                                                 <input>echo "$BR_ROOT"</input>
-	                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
+	                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
                                                 <action>refresh:BR_BOOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
                                                 <action>refresh:BR_SB</action>
 			                </comboboxtext>
@@ -407,7 +402,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
 	                                                        <variable>BR_ESP</variable>
                                                                 <input>echo "$BR_ESP"</input>
-	                                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
+	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
                                                                 <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_SWAP</action>
                                                                 <action>refresh:BR_SB</action>
@@ -423,7 +418,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
 	                                                        <variable>BR_BOOT</variable>
                                                                 <input>echo "$BR_BOOT"</input>
-	                                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
+	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
                                                                 <input>if [ -n "$BR_BOOT" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
                                                                 <action>refresh:BR_SB</action>
@@ -433,7 +428,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
 	                                                        <variable>BR_HOME</variable>
                                                                 <input>echo "$BR_HOME"</input>
-	                                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
+	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
                                                                 <input>if [ -n "$BR_HOME" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_BOOT</action><action>refresh:BR_ROOT</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
                                                                 <action>refresh:BR_SB</action>
@@ -443,7 +438,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
 	                                                        <variable>BR_SWAP</variable>
                                                                 <input>echo "$BR_SWAP"</input>
-	                                                        <input>echo "$BR_PARTS" | hide_used_parts</input>
+	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
                                                                 <input>if [ -n "$BR_SWAP" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_ESP</action>
                                                                 <action>refresh:BR_SB</action>
@@ -494,7 +489,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk for bootloader" sensitive="false">
 	                                        <variable>BR_DISK</variable>
-	                                        <input>scan_disks</input>
+	                                        <input>bash -c scan_disks</input>
                                                 <item>"auto (Grub/UEFI only)"</item>
                                                 <action>refresh:BR_SB</action>
 	                                </comboboxtext>
@@ -638,7 +633,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 <input file icon="gtk-ok"></input>
                                 <label>RUN</label>
                                 <variable>BTN_RUN</variable>
-                                <action>set_args && run_main &</action>
+                                <action>bash -c "set_args && run_main &"</action>
                                 <action>refresh:BR_MODE</action>
                                 <action>disable:BTN_RUN</action>
                                 <action>disable:BTN_EXIT</action>
@@ -649,7 +644,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 <input file icon="gtk-cancel"></input>
                                 <variable>BTN_CANCEL</variable>
                                 <label>CANCEL</label>
-                                <action>cancel_proc</action>
+                                <action>bash -c cancel_proc</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>
@@ -659,7 +654,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                 </hbox>
                 <statusbar has-resize-grip="false">
 			<variable>BR_SB</variable>
-			<input>set_args && status_bar</input>
+			<input>bash -c "set_args && status_bar"</input>
 		</statusbar>
         </vbox>
 </window>
@@ -668,7 +663,3 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 gtkdialog --program=MAIN_DIALOG
 
 clean_files
-
-if [ -n "$force_bash" ]; then
-  ln -sf /bin/dash /bin/sh
-fi

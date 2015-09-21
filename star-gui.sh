@@ -117,6 +117,8 @@ set_args() {
 
   if [ "$ENTRY12" = "Grub" ]; then
     RESTORE_ARGS+=(-g ${BR_DISK%% *})
+  elif [ "$ENTRY12" = "Grub-efi" ]; then
+    RESTORE_ARGS+=(-g auto)
   elif [ "$ENTRY12" = "Syslinux" ]; then
     RESTORE_ARGS+=(-S ${BR_DISK%% *})
   elif [ "$ENTRY12" = "EFISTUB/efibootmgr" ]; then
@@ -475,6 +477,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                 <variable>ENTRY12</variable>
                                                 <item>none</item>
 	                                        <item>Grub</item>
+	                                        <item>Grub-efi</item>
 	                                        <item>Syslinux</item>
 	                                        <item>EFISTUB/efibootmgr</item>
 	                                        <item>Systemd/bootctl</item>
@@ -485,12 +488,13 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                 <action condition="command_is_true([ ! $ENTRY12 = none ] && echo true)">enable:BR_KL_OPTS</action>
                                                 <action condition="command_is_true([ $ENTRY12 = EFISTUB/efibootmgr ] && echo true)">disable:BR_DISK</action>
                                                 <action condition="command_is_true([ $ENTRY12 = Systemd/bootctl ] && echo true)">disable:BR_DISK</action>
+                                                <action condition="command_is_true([ $ENTRY12 = Grub-efi ] && echo true)">disable:BR_DISK</action>
+                                                <action condition="command_is_true([ $ENTRY12 = Grub-efi ] && echo true)">disable:BR_DISK</action>
                                         </comboboxtext>
 
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk for bootloader" sensitive="false">
 	                                        <variable>BR_DISK</variable>
 	                                        <input>bash -c scan_disks</input>
-                                                <item>"auto (Grub/UEFI only)"</item>
                                                 <action>refresh:BR_SB</action>
 	                                </comboboxtext>
 

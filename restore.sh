@@ -549,7 +549,7 @@ check_input() {
   fi
 
   if [ -n "$BRgrub" ] && [ "$BRgrub" = "auto" ] && [ ! -d "$BR_EFI_DETECT_DIR" ]; then
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong disk for grub: $BRgrub"
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Use 'auto' in UEFI enviroment only"
     BRSTOP="y"
   fi
 

@@ -150,7 +150,7 @@ genkernel check and initramfs building.
 - local file
 - tar options: --acls --xattrs 
 
-<code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/Downloads/backup.tar.gz -u "--acls --xattrs"</code>  
+<code>./restore.sh -r /dev/sdb1 -g /dev/sdb -f /home/john/backup.tar.gz -u "--acls --xattrs"</code>  
 
 - root: /dev/sda1 (ssd)
 - syslinux  
@@ -189,7 +189,7 @@ genkernel check and initramfs building.
 - local file  
 - syslinux  
 
-<code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/Downloads/backup.tar.gz -S /dev/md0</code>  
+<code>./restore.sh -r /dev/md1 -b /dev/md0 -f /home/john/backup.tar.gz -S /dev/md0</code>  
 
 - root: /dev/sda2, esp: /dev/sda1
 - local file  

@@ -195,7 +195,7 @@ genkernel check and initramfs building.
 - local file  
 - grub
 
-<code>./restore.sh -r /dev/sda2  -e /dev/sda1 -l /boot/efi -g auto -f /home/john/Downloads/backup.tar.gz</code>   
+<code>./restore.sh -r /dev/sda2  -e /dev/sda1 -l /boot/efi -g auto -f /home/john/backup.tar.gz</code>   
 
 - root: /dev/sdb2, /boot: /dev/sdb1, /var: /dev/sdb4, /usr: /dev/sdb3
 - transfer mode (/home's hidden files and folders only)

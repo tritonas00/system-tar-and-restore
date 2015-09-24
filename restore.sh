@@ -1295,7 +1295,6 @@ set_bootloader() {
   fi
 
   if [ -n "$BRabort" ]; then
-    set_wrapper_error
     clean_unmount_in
   fi
 }

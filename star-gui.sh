@@ -543,7 +543,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 		</notebook>
 
                 <hbox homogeneous="true" space-expand="false" space-fill="false">
-                        <button tooltip-text="Run generated command">
+                        <button tooltip-text="Run">
                                 <input file icon="gtk-ok"></input>
                                 <label>RUN</label>
                                 <variable>BTN_RUN</variable>

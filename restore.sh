@@ -95,7 +95,8 @@ detect_root_fs_size() {
   BRfsize=$(lsblk -d -n -o size 2>/dev/null $BRroot | sed -e 's/ *//')
   if [ -z "$BRfsystem" ]; then
     if [ -z "$BRnocolor" ]; then color_variables; fi
-    echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system"
+    echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system" >&2
+    set_wrapper_error
     exit
   fi
 }
@@ -124,6 +125,7 @@ ask_passphrase() {
 
 detect_filetype() {
   echo "Checking archive type..."
+  if [ -n "$BRwrap" ]; then echo "Checking archive type..." > /tmp/wr_proc; fi
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
     BRtype=$(openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b -)
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
@@ -158,7 +160,7 @@ check_wget() {
     rm /tmp/wget_error
     unset BRsource BRencpass BRusername BRpassword
     if [ "$BRinterface" = "cli" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL, wrong authentication, network is down or package wget is not installed."
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Error downloading file. Wrong URL, wrong authentication, network is down or package wget is not installed." >&2
       if [ -n "$BRwrap" ]; then clean_unmount_in; fi
     elif [ "$BRinterface" = "dialog" ]; then
       dialog --title "Error" --msgbox "Error downloading file. Wrong URL, wrong authentication, network is down or package wget is not installed." 6 60
@@ -169,7 +171,7 @@ check_wget() {
     if [ "$BRfiletype" = "wrong" ]; then
       unset BRsource BRencpass
       if [ "$BRinterface" = "cli" ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Invalid file type or wrong passphrase" >&2
         if [ -n "$BRwrap" ]; then clean_unmount_in; fi
       elif [ "$BRinterface" = "dialog" ]; then
         dialog --title "Error" --msgbox "Invalid file type or wrong passphrase." 5 42
@@ -618,12 +620,13 @@ check_input() {
   fi
 
   if [ -n "$BRSTOP" ]; then
+    set_wrapper_error
     exit
   fi
 }
 
 mount_all() {
-  if [ -n "$BRwrap" ]; then echo "Preparing..." > /tmp/wr_proc; fi
+  if [ -n "$BRwrap" ]; then echo "Mounting..." > /tmp/wr_proc; fi
   echo -e "\n${BR_SEP}MOUNTING"
   echo -ne "${BR_WRK}Making working directory"
   OUTPUT=$(mkdir /mnt/target 2>&1) && ok_status || error_status
@@ -632,19 +635,21 @@ mount_all() {
   OUTPUT=$(mount -o $BR_MOUNT_OPTS $BRroot /mnt/target 2>&1) && ok_status || error_status
   BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
   if [ -n "$BRSTOP" ]; then
-    echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
+    echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions" >&2
     clean_files
     rm -r /mnt/target
+    set_wrapper_error
     exit
   fi
 
   if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
     if [ -z "$BRdontckroot" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it"
-      echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Root partition not empty, refusing to use it" >&2
+      echo -e "[${BR_CYAN}INFO${BR_NORM}] Root partition must be formatted and cleaned" >&2
       echo -ne "${BR_WRK}Unmounting $BRroot"
       sleep 1
       OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
+      set_wrapper_error
       exit
     else
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Root partition not empty"
@@ -668,7 +673,7 @@ mount_all() {
     echo -ne "${BR_WRK}Mounting $BRrootsubvolname"
     OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
     if [ -n "$BRSTOP" ]; then
-      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while making subvolumes"
+      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while making subvolumes" >&2
       unset BRSTOP
       clean_unmount_in
     fi
@@ -694,7 +699,7 @@ mount_all() {
       fi
     done
     if [ -n "$BRSTOP" ]; then
-      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions"
+      echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions" >&2
       unset BRSTOP
       clean_unmount_in
     fi
@@ -796,7 +801,7 @@ show_summary() {
 }
 
 prepare_chroot() {
-  if [ -n "$BRwrap" ]; then echo "Preparing chroot..." >> /tmp/wr_proc; fi
+  if [ -n "$BRwrap" ]; then echo "Preparing chroot..." > /tmp/wr_proc; fi
   echo -e "\n${BR_SEP}PREPARING CHROOT ENVIRONMENT"
   echo "Binding /run"
   mount --bind /run /mnt/target/run
@@ -852,7 +857,7 @@ generate_fstab() {
 build_initramfs() {
   echo -e "\n${BR_SEP}REBUILDING INITRAMFS IMAGES"
   if grep -q dev/md /mnt/target/etc/fstab || [[ "$BRmap" == *raid* ]]; then
-    if [ -n "$BRwrap" ]; then echo "Generating mdadm.conf..." >> /tmp/wr_proc; fi
+    if [ -n "$BRwrap" ]; then echo "Generating mdadm.conf..." > /tmp/wr_proc; fi
     echo "Generating mdadm.conf..."
     if [ "$BRdistro" = "Debian" ]; then
       BR_MDADM_PATH="/mnt/target/etc/mdadm"
@@ -871,7 +876,7 @@ build_initramfs() {
     if [ -f  /mnt/target/etc/crypttab ]; then
       mv /mnt/target/etc/crypttab /mnt/target/etc/crypttab-old
     fi
-    if [ -n "$BRwrap" ]; then echo "Generating basic crypttab..." >> /tmp/wr_proc; fi
+    if [ -n "$BRwrap" ]; then echo "Generating basic crypttab..." > /tmp/wr_proc; fi
     echo "Generating basic crypttab..."
     echo "$crypttab_root UUID=$(blkid -s UUID -o value $BRencdev) none luks" > /mnt/target/etc/crypttab
     cat /mnt/target/etc/crypttab
@@ -882,7 +887,7 @@ build_initramfs() {
     if file -b -k "$FILE" | grep -qw "bzImage"; then
       cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
       if [ -n "$BRwrap" ] && [ ! "$BRdistro" = "Gentoo" ] && [ ! "$BRdistro" = "Unsupported" ]; then
-        echo "Building initramfs image for $cn..." >> /tmp/wr_proc
+        echo "Building initramfs image for $cn..." > /tmp/wr_proc
       fi
 
       if [ "$BRdistro" = "Arch" ]; then
@@ -901,7 +906,7 @@ build_initramfs() {
     if [ -n "$BRgenkernel" ]; then
       echo "Skipping..."
     else
-      if [ -n "$BRwrap" ]; then echo "Building initramfs images..." >> /tmp/wr_proc; fi
+      if [ -n "$BRwrap" ]; then echo "Building initramfs images..." > /tmp/wr_proc; fi
       chroot /mnt/target genkernel --no-color --install initramfs
     fi
   fi
@@ -1026,7 +1031,7 @@ set_kern_opts() {
 
 install_bootloader() {
   if [ -n "$BRgrub" ]; then
-    if [ -n "$BRwrap" ]; then echo "Installing Grub in $BRgrub..." >> /tmp/wr_proc; fi
+    if [ -n "$BRwrap" ]; then echo "Installing Grub in $BRgrub..." > /tmp/wr_proc; fi
     echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [ -d "$BR_EFI_DETECT_DIR" ] && [ "$BRespmpoint" = "/boot" ] && [ -d /mnt/target/boot/efi ]; then
      if [ -d /mnt/target/boot/efi-old ]; then rm -r /mnt/target/boot/efi-old; fi
@@ -1085,7 +1090,7 @@ install_bootloader() {
     fi
 
   elif [ -n "$BRsyslinux" ]; then
-   if [ -n "$BRwrap" ]; then echo "Installing Syslinux in $BRsyslinux..." >> /tmp/wr_proc; fi
+   if [ -n "$BRwrap" ]; then echo "Installing Syslinux in $BRsyslinux..." > /tmp/wr_proc; fi
     echo -e "\n${BR_SEP}INSTALLING AND CONFIGURING Syslinux IN $BRsyslinux"
     if [ -d /mnt/target/boot/syslinux ]; then
       mv /mnt/target/boot/syslinux/syslinux.cfg /mnt/target/boot/syslinux.cfg-old
@@ -1131,7 +1136,7 @@ install_bootloader() {
     cat /mnt/target/boot/syslinux/syslinux.cfg >> /tmp/restore.log
 
   elif [ -n "$BRefistub" ]; then
-    if [ -n "$BRwrap" ]; then echo "Setting boot entries using efibootmgr..." >> /tmp/wr_proc; fi
+    if [ -n "$BRwrap" ]; then echo "Setting boot entries using efibootmgr..." > /tmp/wr_proc; fi
     echo -e "\n${BR_SEP}SETTING BOOT ENTRIES"
     if [[ "$BResp" == *mmcblk* ]]; then
       BRespdev="${BResp%[[:alpha:]]*}"
@@ -1166,7 +1171,7 @@ install_bootloader() {
     chroot /mnt/target efibootmgr -v
 
   elif [ -n "$BRbootctl" ]; then
-    if [ -n "$BRwrap" ]; then echo "Installing Bootctl in $BRespmpoint..." >> /tmp/wr_proc; fi
+    if [ -n "$BRwrap" ]; then echo "Installing Bootctl in $BRespmpoint..." > /tmp/wr_proc; fi
     echo -e "\n${BR_SEP}INSTALLING Bootctl IN $BRespmpoint"
     if [ -d /mnt/target$BRespmpoint/loader/entries ]; then
       for CONF in /mnt/target$BRespmpoint/loader/entries/*; do
@@ -1232,42 +1237,42 @@ set_bootloader() {
     fi
     detect_partition_table_syslinux
     if [ ! "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" >&2
       BRabort="y"
     elif [ "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ "$BRmode" = "Transfer" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" >&2
       BRabort="y"
     elif [ "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ "$BRmode" = "Restore" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] sgdisk not found in the archived system"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] sgdisk not found in the archived system" >&2
       BRabort="y"
     fi
   fi
 
   if [ "$BRmode" = "Restore" ]; then
     if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Grub not found in the archived system" >&2
       BRabort="y"
     elif [ -n "$BRsyslinux" ]; then
       if ! grep -Fq "bin/extlinux" /tmp/filelist; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Extlinux not found in the archived system"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Extlinux not found in the archived system" >&2
         BRabort="y"
       fi
       if ! grep -Fq "bin/syslinux" /tmp/filelist; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Syslinux not found in the archived system" >&2
         BRabort="y"
       fi
     fi
 
     if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] && [ -d "$BR_EFI_DETECT_DIR" ] && ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] efibootmgr not found in the archived system" >&2
       BRabort="y"
     fi
     if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DETECT_DIR" ] && ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] dosfstools not found in the archived system" >&2
       BRabort="y"
     fi
     if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DETECT_DIR" ] && ! grep -Fq "bin/bootctl" /tmp/filelist; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Bootctl not found in the archived system"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Bootctl not found in the archived system" >&2
       BRabort="y"
     fi
     if [ "$target_arch" = "x86_64" ]; then
@@ -1290,6 +1295,7 @@ set_bootloader() {
   fi
 
   if [ -n "$BRabort" ]; then
+    set_wrapper_error
     clean_unmount_in
   fi
 }
@@ -1301,7 +1307,7 @@ check_archive() {
     rm /tmp/tar_error
     unset BRsource BRencpass
     if [ "$BRinterface" = "cli" ]; then
-      echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive"
+      echo -e "[${BR_RED}ERROR${BR_NORM}] Error reading archive" >&2
       if [ -n "$BRwrap" ]; then clean_unmount_in; fi
     elif [ "$BRinterface" = "dialog" ]; then
       dialog --cr-wrap --title "Error" --msgbox "Error reading archive.\n\n$(cat /tmp/r_errs)" 0 0
@@ -1314,9 +1320,9 @@ check_archive() {
     if [ ! "$(uname -m)" = "$target_arch" ]; then
       unset BRsource BRencpass
       if [ "$BRinterface" = "cli" ]; then
-        echo -e "[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive"
-        echo -e "[${BR_CYAN}INFO${BR_NORM}] Target  system: $target_arch"
-        echo -e "[${BR_CYAN}INFO${BR_NORM}] Running system: $(uname -m)"
+        echo -e "[${BR_RED}ERROR${BR_NORM}] Running and target system architecture mismatch or invalid archive" >&2
+        echo -e "[${BR_CYAN}INFO${BR_NORM}] Target  system: $target_arch" >&2
+        echo -e "[${BR_CYAN}INFO${BR_NORM}] Running system: $(uname -m)" >&2
         if [ -n "$BRwrap" ]; then clean_unmount_in; fi
       elif [ "$BRinterface" = "dialog" ]; then
         dialog --title "Error" --msgbox "Running and target system architecture mismatch or invalid archive.\n\nTarget  system: $target_arch\nRunning system: $(uname -m)" 8 71
@@ -1327,7 +1333,7 @@ check_archive() {
 
 generate_locales() {
   if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Gentoo" ]; then
-    if [ -n "$BRwrap" ]; then echo "Generating locales..." >> /tmp/wr_proc; fi
+    if [ -n "$BRwrap" ]; then echo "Generating locales..." > /tmp/wr_proc; fi
     echo -e "\n${BR_SEP}GENERATING LOCALES"
     chroot /mnt/target locale-gen
   fi
@@ -1339,7 +1345,7 @@ rm_work_dir() {
 }
 
 clean_unmount_in() {
-  if [ -n "$BRwrap" ]; then echo "Unmounting..." >> /tmp/wr_proc; fi
+  if [ -n "$BRwrap" ]; then echo "Unmounting..." > /tmp/wr_proc; fi
   if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
@@ -1381,11 +1387,12 @@ clean_unmount_in() {
   echo -ne "${BR_WRK}Unmounting $BRroot"
   sleep 1
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
+  set_wrapper_error
   exit
 }
 
 clean_unmount_out() {
-  if [ -n "$BRwrap" ]; then echo "Unmounting..." >> /tmp/wr_proc; fi
+  if [ -n "$BRwrap" ]; then echo "Unmounting..." > /tmp/wr_proc; fi
   if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
@@ -1412,6 +1419,7 @@ clean_unmount_out() {
   echo -ne "${BR_WRK}Unmounting $BRroot"
   sleep 1
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
+  if [ -n "$BRwrap" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
   exit
 }
 
@@ -1498,6 +1506,12 @@ start_log() {
   echo "${BR_SEP}SUMMARY"
   show_summary
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
+}
+
+set_wrapper_error() {
+  if [ -n "$BRwrap" ]; then
+    echo "An error occurred. Check log for details." > /tmp/wr_proc
+  fi
 }
 
 BRargs=`getopt -o "i:r:e:l:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:O:vdDHP:BxwEL" -l "interface:,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,bios,override,wrapper,efistub,bootctl" -n "$1" -- "$@"`
@@ -1727,7 +1741,7 @@ if [ -n "$BRboot" ]; then
   BRcustomparts+=(/boot="$BRboot")
 fi
 
-check_input
+check_input >&2
 
 if [ -n "$BRroot" ]; then
   if [ -z "$BRrootsubvolname" ]; then
@@ -1770,7 +1784,8 @@ if [ -n "$BRroot" ]; then
   fi
 
   if [ -z "$BRuri" ] && [ ! "$BRmode" = "Transfer" ]; then
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify a backup file or enable transfer mode"
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify a backup file or enable transfer mode" >&2
+    set_wrapper_error
     exit
   fi
 fi
@@ -1784,17 +1799,20 @@ if [ -n "$BRrootsubvolname" ] && [ -z "$BRsubvols" ]; then
 fi
 
 if [ $(id -u) -gt 0 ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Script must run as root"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Script must run as root" >&2
+  set_wrapper_error
   exit
 fi
 
 if [ -z "$(scan_parts 2>/dev/null)" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] No partitions found"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] No partitions found" >&2
+  set_wrapper_error
   exit
 fi
 
 if [ -d /mnt/target ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] /mnt/target exists, aborting"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] /mnt/target exists, aborting" >&2
+  set_wrapper_error
   exit
 fi
 
@@ -2101,12 +2119,12 @@ if [ "$BRinterface" = "cli" ]; then
   fi
 
   unset_vars
-  check_input
+  check_input >&2
   mount_all
   set_user_options
 
   if [ "$BRmode" = "Restore" ]; then
-    if [ -z "$BRwrap" ]; then echo -e "\n${BR_SEP}GETTING TAR IMAGE"; fi
+    echo -e "\n${BR_SEP}GETTING TAR IMAGE"
 
     if [ -n "$BRurl" ]; then
       BRsource="$BRmaxsize/downloaded_backup"
@@ -2121,12 +2139,9 @@ if [ "$BRinterface" = "cli" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-      if [ -n "$BRwrap" ]; then
-        echo "Please wait while checking and reading archive..." > /tmp/wr_proc
-        read_archive > /tmp/filelist
-      else
-        read_archive | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
-      fi
+      if [ -n "$BRwrap" ]; then echo "Please wait while checking and reading archive..." > /tmp/wr_proc; fi
+      read_archive | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
+
       IFS=$'\n'
       check_archive
     fi
@@ -2231,7 +2246,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   start_log > /tmp/restore.log
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
-  if [ -z "$BRwrap" ]; then echo -e "\n${BR_SEP}PROCESSING"; fi
+  echo -e "\n${BR_SEP}PROCESSING"
 
   if [ "$BRmode" = "Restore" ]; then
     total=$(cat /tmp/filelist | wc -l)
@@ -2240,12 +2255,8 @@ if [ "$BRinterface" = "cli" ]; then
     echo " "
 
   elif [ "$BRmode" = "Transfer" ]; then
-    if [ -n "$BRwrap" ]; then
-      echo "Please wait while calculating files..." > /tmp/wr_proc
-      run_calc > /dev/null
-    else
-      run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
-    fi
+    if [ -n "$BRwrap" ]; then echo "Please wait while calculating files..." > /tmp/wr_proc; fi
+    run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
 
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
@@ -2499,7 +2510,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   IFS=$'\n'
   if [ -z "$BRnocolor" ]; then color_variables; fi
   unset_vars
-  check_input
+  check_input >&2
   mount_all
   set_user_options
 

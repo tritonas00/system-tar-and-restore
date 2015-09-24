@@ -189,7 +189,7 @@ set_names() {
 prepare() {
   if [ -n "$BRwrap" ]; then echo "Preparing..." > /tmp/wr_proc; fi
   touch /target_architecture.$(uname -m)
-  if [ "$BRinterface" = "cli" ] && [ -z "$BRwrap" ]; then echo -e "\n${BR_SEP}PROCESSING"; fi
+  if [ "$BRinterface" = "cli" ]; then echo -e "\n${BR_SEP}PROCESSING"; fi
   mkdir -p "$BRFOLDER"
   sleep 1
   if [ -n "$BRhide" ]; then echo -en "${BR_HIDE}"; fi
@@ -254,6 +254,12 @@ exclude_sockets() {
     fi
   done
   IFS=$DEFAULTIFS
+}
+
+set_wrapper_error() {
+  if [ -n "$BRwrap" ]; then
+    echo "An error occurred. Check log for details." > /tmp/wr_proc
+  fi
 }
 
 BRargs=`getopt -o "i:d:f:c:u:hnNqvgDHP:E:orC:smw" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,exclude-sockets,multi-core,wrapper,help" -n "$1" -- "$@"`
@@ -410,72 +416,74 @@ if [ -z "$BRnocolor" ]; then
 fi
 
 if [ $(id -u) -gt 0 ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Script must run as root"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Script must run as root" >&2
+  set_wrapper_error
   exit
 fi
 
 clean_files
 
 if [ -n "$BRconferror" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] File does not exist: $BRconf"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] File does not exist: $BRconf" >&2
   BRSTOP="y"
 fi
 
 if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Directory does not exist: $BRFOLDER"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Directory does not exist: $BRFOLDER" >&2
   BRSTOP="y"
 fi
 
 if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ] && [ ! "$BRcompression" = "bzip2" ] && [ ! "$BRcompression" = "none" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Available options: gzip bzip2 xz none"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong compression type: $BRcompression. Available options: gzip bzip2 xz none" >&2
   BRSTOP="y"
 fi
 
 if [ -n "$BRinterface" ] && [ ! "$BRinterface" = "cli" ] && [ ! "$BRinterface" = "dialog" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong interface name: $BRinterface. Available options: cli dialog"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong interface name: $BRinterface. Available options: cli dialog" >&2
   BRSTOP="y"
 fi
 
 if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z $(which genkernel 2>/dev/null) ]; then
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)" >&2
   BRSTOP="y"
 fi
 
 if [ -z "$BRencmethod" ] ||  [ "$BRencmethod" = "none" ] && [ -n "$BRencpass" ]; then
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify an encryption method"
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify an encryption method" >&2
   BRSTOP="y"
 fi
 
 if [ -z "$BRencpass" ] && [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "none" ]; then
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify a passphrase"
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify a passphrase" >&2
   BRSTOP="y"
 fi
 
 if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ] && [ ! "$BRencmethod" = "none" ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong encryption method: $BRencmethod. Available options: openssl gpg"
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Wrong encryption method: $BRencmethod. Available options: openssl gpg" >&2
   BRSTOP="y"
 fi
 
 if [ -n "$BRmcore" ] && [ -z "$BRcompression" ]; then
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify compression type"
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify compression type" >&2
   BRSTOP="y"
 elif [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z $(which pigz 2>/dev/null) ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Package pigz is not installed. Install the package and re-run the script."
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Package pigz is not installed. Install the package and re-run the script." >&2
   BRSTOP="y"
 elif [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z $(which pbzip2 2>/dev/null) ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Package pbzip2 is not installed. Install the package and re-run the script."
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Package pbzip2 is not installed. Install the package and re-run the script." >&2
   BRSTOP="y"
 elif [ -n "$BRmcore" ] && [ "$BRcompression" = "xz" ] && [ -z $(which pxz 2>/dev/null) ]; then
-  echo -e "[${BR_RED}ERROR${BR_NORM}] Package pxz is not installed. Install the package and re-run the script."
+  echo -e "[${BR_RED}ERROR${BR_NORM}] Package pxz is not installed. Install the package and re-run the script." >&2
   BRSTOP="y"
 fi
 
 if [ -n "$BRwrap" ] && [ -z "$BRFOLDER" ]; then
-  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify destination directory"
+  echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify destination directory" >&2
   BRSTOP="y"
 fi
 
 if [ -n "$BRSTOP" ]; then
+  set_wrapper_error
   exit
 fi
 
@@ -683,12 +691,8 @@ if [ "$BRinterface" = "cli" ]; then
 
   prepare
 
-  if [ -n "$BRwrap" ]; then
-    echo "Please wait while calculating files..." > /tmp/wr_proc
-    run_calc > /dev/null
-  else
-    run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
-  fi
+  if [ -n "$BRwrap" ]; then echo "Please wait while calculating files..." > /tmp/wr_proc; fi
+  run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
 
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
@@ -696,7 +700,6 @@ if [ "$BRinterface" = "cli" ]; then
   if [ -n "$BRnosockets" ]; then exclude_sockets; fi
   run_tar | out_pgrs_cli
 
-  if [ -n "$BRwrap" ]; then echo "Setting permissions..." >> /tmp/wr_proc; fi
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
   elapsed_time
   exit_screen
@@ -853,4 +856,5 @@ if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
 fi
 
 if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi
+if [ -n "$BRwrap" ]; then cat "$BRFOLDER"/backup.log > /tmp/wr_log; fi
 clean_files

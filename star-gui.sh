@@ -24,7 +24,6 @@ if [ -n "$BRencmethod" ]; then export BRencmethod; else export BRencmethod="none
 if [ -n "$BRencpass" ]; then export BRencpass; fi
 if [ -n "$BR_USER_OPTS" ]; then export BR_USER_OPTS; fi
 if [ -n "$BRmcore" ]; then export ENTRY3="true"; else export ENTRY3="false"; fi
-if [ -n "$BRverb" ]; then export ENTRY4="true"; else export ENTRY4="false"; fi
 if [ -n "$BRnosockets" ]; then export ENTRY5="true"; else export ENTRY5="false"; fi
 if [ -n "$BRclean" ]; then export ENTRY9="true"; else export ENTRY9="false"; fi
 if [ -n "$BRoverride" ]; then export ENTRY10="true"; else export ENTRY10="false"; fi
@@ -98,7 +97,6 @@ set_args() {
   if [ -n "$BR_USER_OPTS" ]; then BACKUP_ARGS+=(-u "$BR_USER_OPTS"); fi
 
   if [ "$ENTRY3" = "true" ] && [ ! "$BRcompression" = "none" ]; then BACKUP_ARGS+=(-m); fi
-  if [ "$ENTRY4" = "true" ]; then BACKUP_ARGS+=(-v); fi
   if [ "$ENTRY5" = "true" ]; then BACKUP_ARGS+=(-s); fi
   if [ "$ENTRY7" = "true" ]; then BACKUP_ARGS+=(-g); fi
   if [ "$ENTRY9" = "true" ]; then BACKUP_ARGS+=(-r); fi
@@ -145,7 +143,6 @@ set_args() {
   if [ -n "$BR_ROOT_SUBVOL" ]; then RESTORE_ARGS+=(-R "$BR_ROOT_SUBVOL"); fi
   if [ -n "$BR_OTHER_SUBVOLS" ]; then RESTORE_ARGS+=(-O "$BR_OTHER_SUBVOLS"); fi
 
-  if [ "$ENTRY15" = "true" ]; then RESTORE_ARGS+=(-v); fi
   if [ "$ENTRY18" = "true" ]; then RESTORE_ARGS+=(-D); fi
   if [ "$ENTRY19" = "true" ]; then RESTORE_ARGS+=(-d); fi
   if [ "$ENTRY20" = "true" ]; then RESTORE_ARGS+=(-B); fi
@@ -154,13 +151,9 @@ set_args() {
 status_bar() {
   if [ $(id -u) -gt 0 ]; then
     echo "Script must run as root."
-  elif [ "$BR_MODE" = "0" ]; then
-    echo backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}"
-  elif [ "$BR_MODE" = "1" ]; then
-    echo restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}"
-  elif [ "$BR_MODE" = "2" ] && [ -f /tmp/wr_pid ]; then
-    echo "Running (PID $(cat /tmp/wr_pid)). Do not close the window until the process is complete."
-  elif [ "$BR_MODE" = "2" ] && [ ! -f /tmp/wr_pid ]; then
+  elif [ -f /tmp/wr_pid ] || grep -Fq "error" /tmp/wr_proc; then
+    echo $(cat /tmp/wr_proc)
+  elif [ ! -f /tmp/wr_pid ]; then
     echo "Idle"
   fi
 }
@@ -170,9 +163,9 @@ run_main() {
   echo > /tmp/wr_proc
 
   if [ "$BR_MODE" = "0" ]; then
-    setsid ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}" > /tmp/wr_log 2>&1
+    setsid ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}" 2> /tmp/wr_log
   elif [ "$BR_MODE" = "1" ]; then
-    setsid ./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" > /tmp/wr_log 2>&1
+    setsid ./restore.sh -i cli -Nwq -r ${BR_ROOT%% *} "${RESTORE_ARGS[@]}" 2> /tmp/wr_log
   fi
 
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
@@ -180,22 +173,12 @@ run_main() {
 
 cancel_proc() {
   kill -9 -$(cat /tmp/wr_pid)
-  echo Cancelled > /tmp/wr_proc
-  echo > /tmp/wr_log
+  echo Cancelled > /tmp/wr_log
 }
 
-full_log() {
-  if grep -Fxq "FOUND BOOTLOADERS:" /tmp/wr_log; then
-    cat "$BRFOLDER"/Backup-$(date +%Y-%m-%d)/backup.log > /tmp/wr_log
-  elif grep -Fxq "BOOTLOADER:" /tmp/wr_log; then
-    cat /tmp/restore.log > /tmp/wr_log
-  fi
-}
-
-export -f scan_disks hide_used_parts set_default_pass set_default_opts set_default_multi set_args status_bar run_main cancel_proc full_log
+export -f scan_disks hide_used_parts set_default_pass set_default_opts set_default_multi set_args status_bar run_main cancel_proc
 export BR_PARTS=$(scan_parts)
 export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
-export BR_MODE="0"
 
 export MAIN_DIALOG='
 
@@ -203,13 +186,12 @@ export MAIN_DIALOG='
         <vbox>
                 <timer visible="false">
                         <action>refresh:BR_SB</action>
-                        <action>refresh:BR_PROC</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_RUN</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_EXIT</action>
-			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_LOG</action>
+			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BR_MODE</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_CANCEL</action>
 		</timer>
-                <notebook labels="Backup|Restore/Transfer|Log">
+                <notebook labels="Backup|Restore/Transfer|Log" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">
                                 <text height-request="30" use-markup="true" tooltip-text="==>Make sure you have enough free space.
 
@@ -324,13 +306,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                         <action>refresh:BR_SB</action>
                                 </checkbox>
 
-                                <checkbox tooltip-text="Make tar output verbose">
-                                        <label>Verbose</label>
-                                        <variable>ENTRY4</variable>
-                                        <default>'"$ENTRY4"'</default>
-                                        <action>refresh:BR_SB</action>
-                                </checkbox>
-
                                 <checkbox tooltip-text="Exclude sockets">
                                         <label>Exclude sockets</label>
                                         <variable>ENTRY5</variable>
@@ -366,7 +341,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 </checkbox>
                         </vbox>
 
-                        <vbox scrollable="true" shadow-type="0" height="585" width="510">
+                        <vbox scrollable="true" shadow-type="0" height="530" width="510">
                                 <text wrap="false" height-request="30" use-markup="true" tooltip-text="In the first case, you should run it from a LiveCD of the target (backed up) distro.
 
 ==>Make sure you have created one target root (/) partition.
@@ -381,7 +356,8 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
        make sure that this system is capable to boot from
        those configurations."><label>"<span color='"'brown'"'>Restore a backup image or transfer this system in user defined partitions.</span>"</label></text>
 
-                                <frame Target partitions:>
+
+                                <vbox><frame Target partitions:>
                                 <hbox><text width-request="30" space-expand="false"><label>Root:</label></text>
 
 		                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
@@ -470,9 +446,9 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                 </entry>
                                         </hbox>
                                 </vbox></expander>
-                                </frame>
+                                </frame> </vbox>
 
-                                <frame Bootloader:><hbox>
+                                 <vbox><frame Bootloader:><hbox>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select bootloader">
                                                 <variable>ENTRY12</variable>
                                                 <item>none</item>
@@ -501,9 +477,9 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                 <variable>BR_KL_OPTS</variable>
                                                 <action>refresh:BR_SB</action>
                                         </entry>
-                                </hbox></frame>
+                                </hbox></frame> </vbox>
 
-                                <frame Restore Mode:>
+                                 <vbox><frame Restore Mode:>
                                         <hbox tooltip-text="Choose a local archive or enter URL">
                                                 <entry fs-action="file" fs-title="Select a backup archive">
                                                         <variable>BR_FILE</variable>
@@ -541,9 +517,9 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                 </vbox>
                                         </expander>
                                         <variable>FRM</variable>
-                                </frame>
+                                </frame> </vbox>
 
-                                <frame Transfer Mode:>
+                                 <vbox><frame Transfer Mode:>
                                         <checkbox tooltip-text="Activate Tranfer Mode">
                                                 <label>Activate</label>
                                                 <variable>ENTRY13</variable>
@@ -565,7 +541,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                 <variable>ENTRY21</variable>
                                                 <action>refresh:BR_SB</action>
                                         </checkbox>
-                                </frame>
+                                </frame> </vbox>
 
                                <text xalign="0"><label>Additional options:</label></text>
                                 <comboboxentry tooltip-text="Set extra tar/rsync options. See tar --help  or rsync --help for more info. If you want spaces in names replace them with //">
@@ -575,12 +551,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 </comboboxentry>
 
                                 <vbox>
-                                        <checkbox tooltip-text="Make tar/rsync output verbose">
-                                                <label>Verbose</label>
-                                                <variable>ENTRY15</variable>
-                                                <action>refresh:BR_SB</action>
-                                        </checkbox>
-
                                         <checkbox tooltip-text="Disable genkernel check and initramfs building in gentoo">
                                                 <label>Disable genkernel</label>
                                                 <variable>ENTRY18</variable>
@@ -601,28 +571,10 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 </vbox>
 			</vbox>
 
-                        <vbox>
-                                <vbox>
-                                        <frame Process:>
-                                                <text xalign="0" wrap="false">
-                                                        <input file>/tmp/wr_proc</input>
-                                                        <variable>BR_PROC</variable>
-                                                </text>
-                                        </frame>
-                                </vbox>
-
-                                <frame Output:>
-                                        <vbox scrollable="true" shadow-type="0">
-                                                <text xalign="0" wrap="false" auto-refresh="true">
-                                                        <input file>/tmp/wr_log</input>
-                                                </text>
-                                        </vbox>
-                                </frame>
-                                <button tooltip-text="Show scripts log">
-                                        <label>Show log</label>
-                                        <variable>BTN_LOG</variable>
-                                        <action>full_log</action>
-                                </button>
+                        <vbox scrollable="true" shadow-type="0">
+                                <text xalign="0" wrap="false" auto-refresh="true">
+                                        <input file>/tmp/wr_log</input>
+                                </text>
                         </vbox>
 
                         <variable>BR_MODE</variable>
@@ -631,16 +583,15 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                         <action signal="key-release-event">refresh:BR_SB</action>
 		</notebook>
 
-                <hbox homogeneous="true" space-expand="true">
+                <hbox homogeneous="true" space-expand="false" space-fill="false">
                         <button tooltip-text="Run generated command">
                                 <input file icon="gtk-ok"></input>
                                 <label>RUN</label>
                                 <variable>BTN_RUN</variable>
                                 <action>bash -c "set_args && run_main &"</action>
-                                <action>refresh:BR_MODE</action>
                                 <action>disable:BTN_RUN</action>
                                 <action>disable:BTN_EXIT</action>
-                                <action>disable:BTN_LOG</action>
+                                <action>disable:BR_MODE</action>
                                 <action>enable:BTN_CANCEL</action>
                         </button>
                         <button tooltip-text="Kill the process" sensitive="false">

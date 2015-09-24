@@ -86,7 +86,6 @@ A gui wrapper is available (star-gui.sh). The script requires **gtkdialog 0.8.3*
 
 ![Backup](https://raw.githubusercontent.com/tritonas00/system-tar-and-restore/master/images/backup.png)
 ![Restore](https://raw.githubusercontent.com/tritonas00/system-tar-and-restore/master/images/restore.png)
-![Log](https://raw.githubusercontent.com/tritonas00/system-tar-and-restore/master/images/log.png)
 
 ###NOTES###
 

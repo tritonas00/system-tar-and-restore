@@ -801,7 +801,6 @@ show_summary() {
 }
 
 prepare_chroot() {
-  if [ -n "$BRwrap" ]; then echo "Preparing chroot..." > /tmp/wr_proc; fi
   echo -e "\n${BR_SEP}PREPARING CHROOT ENVIRONMENT"
   echo "Binding /run"
   mount --bind /run /mnt/target/run
@@ -857,7 +856,6 @@ generate_fstab() {
 build_initramfs() {
   echo -e "\n${BR_SEP}REBUILDING INITRAMFS IMAGES"
   if grep -q dev/md /mnt/target/etc/fstab || [[ "$BRmap" == *raid* ]]; then
-    if [ -n "$BRwrap" ]; then echo "Generating mdadm.conf..." > /tmp/wr_proc; fi
     echo "Generating mdadm.conf..."
     if [ "$BRdistro" = "Debian" ]; then
       BR_MDADM_PATH="/mnt/target/etc/mdadm"
@@ -876,7 +874,6 @@ build_initramfs() {
     if [ -f  /mnt/target/etc/crypttab ]; then
       mv /mnt/target/etc/crypttab /mnt/target/etc/crypttab-old
     fi
-    if [ -n "$BRwrap" ]; then echo "Generating basic crypttab..." > /tmp/wr_proc; fi
     echo "Generating basic crypttab..."
     echo "$crypttab_root UUID=$(blkid -s UUID -o value $BRencdev) none luks" > /mnt/target/etc/crypttab
     cat /mnt/target/etc/crypttab
@@ -2268,7 +2265,6 @@ if [ "$BRinterface" = "cli" ]; then
 
   echo -e "\n${BR_SEP}GENERATING FSTAB"
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
-  if [ -n "$BRwrap" ]; then echo "Generating fstab..." >> /tmp/wr_proc; fi
   generate_fstab > /mnt/target/etc/fstab
   cat /mnt/target/etc/fstab
   detect_initramfs_prefix

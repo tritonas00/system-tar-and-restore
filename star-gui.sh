@@ -227,14 +227,12 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 <entry tooltip-text="Set backup archive name">
                                         <variable>BRNAME</variable>
                                         <default>'"$BRNAME"'</default>
-                                        <action>refresh:BR_SB</action>
                                 </entry></hbox>
 
                                 <hbox><text width-request="93"><label>Destination:</label></text>
                                         <entry fs-action="folder" fs-title="Select a directory" tooltip-text="Choose where to save the backup archive">
                                                 <variable>BRFOLDER</variable>
                                                 <default>'"$BRFOLDER"'</default>
-                                                <action>refresh:BR_SB</action>
                                         </entry>
                                         <button tooltip-text="Select directory">
                                                 <input file stock="gtk-open"></input>
@@ -249,7 +247,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                         <item>Include</item>
 	                                <item>Only hidden files and folders</item>
 	                                <item>Exclude</item>
-                                        <action>refresh:BR_SB</action>
                                 </comboboxtext></hbox>
 
                                 <hbox><text width-request="92" space-expand="false"><label>Compression:</label></text>
@@ -260,7 +257,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 	                                <item>bzip2</item>
 	                                <item>xz</item>
                                         <item>none</item>
-                                        <action>refresh:BR_SB</action>
                                         <action condition="command_is_true([ $BRcompression = none ] && echo true)">disable:ENTRY3</action>
                                         <action condition="command_is_true([ ! $BRcompression = none ] && echo true)">enable:ENTRY3</action>
 	                        </comboboxtext></hbox>
@@ -273,14 +269,12 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                         <item>none</item>
 	                                                <item>openssl</item>
 	                                                <item>gpg</item>
-                                                        <action>refresh:BR_SB</action>
                                                         <action condition="command_is_true([ $BRencmethod = none ] && echo true)">disable:BRencpass</action>
                                                         <action condition="command_is_true([ ! $BRencmethod = none ] && echo true)">enable:BRencpass</action>
                                                 </comboboxtext>
                                         </hbox>
                                         <hbox><text width-request="93" space-expand="false"><label>Passphrase:</label></text>
-                                                        '"`set_default_pass`"'
-                                                        <action>refresh:BR_SB</action>
+                                                '"`set_default_pass`"'
                                                 </entry>
                                         </hbox>
                                 </vbox>
@@ -290,54 +284,46 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                         <variable>BR_USER_OPTS</variable>
                                        '"`set_default_opts`"'
                                         <item>--acls --xattrs</item>
-                                        <action>refresh:BR_SB</action>
                                 </comboboxentry>
 
                                 <text xalign="0"><label>Exclude:</label></text>
                                 <entry tooltip-text="Exclude files and directories. If you want spaces in names replace them with //">
                                         <variable>BR_EXC</variable>
-                                        <action>refresh:BR_SB</action>
                                 </entry>
 
                                         '"`set_default_multi`"'
                                         <label>Enable multi-core compression</label>
                                         <variable>ENTRY3</variable>
                                         <default>'"$ENTRY3"'</default>
-                                        <action>refresh:BR_SB</action>
                                 </checkbox>
 
                                 <checkbox tooltip-text="Exclude sockets">
                                         <label>Exclude sockets</label>
                                         <variable>ENTRY5</variable>
                                         <default>'"$ENTRY5"'</default>
-                                        <action>refresh:BR_SB</action>
                                 </checkbox>
 
                                 <checkbox tooltip-text="Generate configuration file in case of successful backup">
                                         <label>Generate backup.conf</label>
                                         <variable>ENTRY7</variable>
-                                        <action>refresh:BR_SB</action>
                                 </checkbox>
 
                                 <checkbox tooltip-text="Remove older backups in the destination directory">
                                         <label>Remove older backups</label>
                                         <variable>ENTRY9</variable>
                                         <default>'"$ENTRY9"'</default>
-                                        <action>refresh:BR_SB</action>
                                 </checkbox>
 
                                 <checkbox tooltip-text="Override the default tar options with user options">
                                         <label>Override</label>
                                         <variable>ENTRY10</variable>
                                         <default>'"$ENTRY10"'</default>
-                                        <action>refresh:BR_SB</action>
                                 </checkbox>
 
                                 <checkbox tooltip-text="Disable genkernel check in gentoo">
                                         <label>Disable genkernel</label>
                                         <variable>ENTRY11</variable>
                                         <default>'"$ENTRY11"'</default>
-                                        <action>refresh:BR_SB</action>
                                 </checkbox>
                         </vbox>
 
@@ -365,12 +351,10 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                 <input>echo "$BR_ROOT"</input>
 	                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
                                                 <action>refresh:BR_BOOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
-                                                <action>refresh:BR_SB</action>
 			                </comboboxtext>
                                         <entry tooltip-text="Set comma-separated list of mount options for the root partition">
                                                 <variable>BR_MN_OPTS</variable>
                                                 <input>echo "defaults,noatime"</input>
-                                                <action>refresh:BR_SB</action>
                                         </entry>
                                 </hbox>
 
@@ -383,13 +367,11 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
                                                                 <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_SWAP</action>
-                                                                <action>refresh:BR_SB</action>
 			                                </comboboxtext>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select mountpoint">
 	                                                        <variable>BR_ESP_MPOINT</variable>
 	                                                        <item>/boot/efi</item>
 	                                                        <item>/boot</item>
-                                                                <action>refresh:BR_SB</action>
 	                                                </comboboxtext>
                                                 </hbox>
                                                 <hbox><text width-request="55" space-expand="false"><label>/boot:</label></text>
@@ -399,7 +381,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
                                                                 <input>if [ -n "$BR_BOOT" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
-                                                                <action>refresh:BR_SB</action>
 			                                </comboboxtext>
                                                 </hbox>
                                                 <hbox><text width-request="55" space-expand="false"><label>/home:</label></text>
@@ -409,7 +390,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
                                                                 <input>if [ -n "$BR_HOME" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_BOOT</action><action>refresh:BR_ROOT</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
-                                                                <action>refresh:BR_SB</action>
                                                         </comboboxtext>
                                                 </hbox>
                                                 <hbox><text width-request="55" space-expand="false"><label>swap:</label></text>
@@ -419,14 +399,12 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
                                                                 <input>if [ -n "$BR_SWAP" ]; then echo ""; fi</input>
                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_ESP</action>
-                                                                <action>refresh:BR_SB</action>
 			                                </comboboxtext>
                                                 </hbox>
 
                                                 <hbox><text width-request="56" space-expand="false"><label>Other:</label></text>
                                                         <entry tooltip-text="Set other partitions (mountpoint=device e.g /var=/dev/sda3). If you want spaces in mountpoints replace them with //">
                                                                 <variable>BR_OTHER_PARTS</variable>
-                                                                <action>refresh:BR_SB</action>
                                                         </entry>
                                                 </hbox>
                                         </vbox>
@@ -436,13 +414,11 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                         <hbox><text width-request="40" space-expand="false"><label>Root:</label></text>
                                                 <entry tooltip-text="Set subvolume name for /">
                                                         <variable>BR_ROOT_SUBVOL</variable>
-                                                        <action>refresh:BR_SB</action>
                                                 </entry>
                                         </hbox>
                                         <hbox><text width-request="40" space-expand="false"><label>Other:</label></text>
                                                 <entry tooltip-text="Set other subvolumes (subvolume path e.g /home /var /usr ...)">
                                                         <variable>BR_OTHER_SUBVOLS</variable>
-                                                        <action>refresh:BR_SB</action>
                                                 </entry>
                                         </hbox>
                                 </vbox></expander>
@@ -457,7 +433,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 	                                        <item>Syslinux</item>
 	                                        <item>EFISTUB/efibootmgr</item>
 	                                        <item>Systemd/bootctl</item>
-                                                <action>refresh:BR_SB</action>
                                                 <action condition="command_is_true([ $ENTRY12 = none ] && echo true)">disable:BR_DISK</action>
                                                 <action condition="command_is_true([ ! $ENTRY12 = none ] && echo true)">enable:BR_DISK</action>
                                                 <action condition="command_is_true([ $ENTRY12 = none ] && echo true)">disable:BR_KL_OPTS</action>
@@ -470,12 +445,10 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk for bootloader" sensitive="false">
 	                                        <variable>BR_DISK</variable>
 	                                        <input>bash -c scan_disks</input>
-                                                <action>refresh:BR_SB</action>
 	                                </comboboxtext>
 
                                         <entry tooltip-text="Set additional kernel options" sensitive="false">
                                                 <variable>BR_KL_OPTS</variable>
-                                                <action>refresh:BR_SB</action>
                                         </entry>
                                 </hbox></frame> </vbox>
 
@@ -483,7 +456,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                         <hbox tooltip-text="Choose a local archive or enter URL">
                                                 <entry fs-action="file" fs-title="Select a backup archive">
                                                         <variable>BR_FILE</variable>
-                                                        <action>refresh:BR_SB</action>
                                                         <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_USERNAME</action>
                                                         <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_PASSWORD</action>
                                                         <action condition="command_is_true([[ ! $BR_FILE == /* ]] && echo true)">enable:BR_USERNAME</action>
@@ -499,19 +471,16 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                         <hbox><text width-request="86" space-expand="false"><label>Username:</label></text>
                                                                 <entry tooltip-text="Set ftp/http username">
                                                                         <variable>BR_USERNAME</variable>
-                                                                        <action>refresh:BR_SB</action>
                                                                 </entry>
                                                         </hbox>
                                                         <hbox><text width-request="86" space-expand="false"><label>Password:</label></text>
                                                                 <entry tooltip-text="Set ftp/http password">
                                                                         <variable>BR_PASSWORD</variable>
-                                                                        <action>refresh:BR_SB</action>
                                                                 </entry>
                                                         </hbox>
                                                         <hbox><text width-request="86" space-expand="false"><label>Passphrase:</label></text>
                                                                 <entry tooltip-text="Set passphrase for decryption">
                                                                         <variable>BR_PASSPHRASE</variable>
-                                                                        <action>refresh:BR_SB</action>
                                                                 </entry>
                                                         </hbox>
                                                 </vbox>
@@ -529,17 +498,14 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                 <action>if true enable:ENTRY21</action>
                                                 <action>if false disable:ENTRY14</action>
                                                 <action>if false disable:ENTRY21</action>
-                                                <action>refresh:BR_SB</action>
                                         </checkbox>
                                         <checkbox sensitive="false" tooltip-text="Transfer only hidden files and folders from /home">
                                                 <label>"Only hidden files and folders from /home"</label>
                                                 <variable>ENTRY14</variable>
-                                                <action>refresh:BR_SB</action>
                                         </checkbox>
                                         <checkbox sensitive="false" tooltip-text="Override the default rsync options with user options">
                                                 <label>Override</label>
                                                 <variable>ENTRY21</variable>
-                                                <action>refresh:BR_SB</action>
                                         </checkbox>
                                 </frame> </vbox>
 
@@ -547,26 +513,22 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 <comboboxentry tooltip-text="Set extra tar/rsync options. See tar --help  or rsync --help for more info. If you want spaces in names replace them with //">
                                         <variable>BR_TR_OPTIONS</variable>
                                         <item>--acls --xattrs</item>
-                                        <action>refresh:BR_SB</action>
                                 </comboboxentry>
 
                                 <vbox>
                                         <checkbox tooltip-text="Disable genkernel check and initramfs building in gentoo">
                                                 <label>Disable genkernel</label>
                                                 <variable>ENTRY18</variable>
-                                                <action>refresh:BR_SB</action>
                                         </checkbox>
 
                                         <checkbox tooltip-text="Dont check if root partition is empty (dangerous)">
                                                 <label>Dont check root</label>
                                                 <variable>ENTRY19</variable>
-                                                <action>refresh:BR_SB</action>
                                         </checkbox>
 
                                         <checkbox tooltip-text="Ignore UEFI environment">
                                                 <label>Bios</label>
                                                 <variable>ENTRY20</variable>
-                                                <action>refresh:BR_SB</action>
                                         </checkbox>
                                 </vbox>
 			</vbox>
@@ -578,9 +540,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                         </vbox>
 
                         <variable>BR_MODE</variable>
-                        <input>echo "2"</input>
-                        <action signal="button-release-event">refresh:BR_SB</action>
-                        <action signal="key-release-event">refresh:BR_SB</action>
 		</notebook>
 
                 <hbox homogeneous="true" space-expand="false" space-fill="false">

@@ -152,7 +152,7 @@ status_bar() {
   if [ $(id -u) -gt 0 ]; then
     echo "Script must run as root."
   elif [ -f /tmp/wr_pid ] || grep -Fq "error" /tmp/wr_proc; then
-    echo $(cat /tmp/wr_proc)
+    cat /tmp/wr_proc
   elif [ ! -f /tmp/wr_pid ]; then
     echo "Idle"
   fi

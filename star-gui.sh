@@ -567,7 +567,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                 </hbox>
                 <statusbar has-resize-grip="false">
 			<variable>BR_SB</variable>
-			<input>bash -c "set_args && status_bar"</input>
+			<input>bash -c status_bar</input>
 		</statusbar>
         </vbox>
 </window>

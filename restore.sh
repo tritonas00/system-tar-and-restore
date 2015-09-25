@@ -2311,7 +2311,6 @@ if [ "$BRinterface" = "cli" ]; then
   else
     exit_screen_quiet
   fi
-
   sleep 1
   clean_unmount_out
 

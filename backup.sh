@@ -704,9 +704,8 @@ if [ "$BRinterface" = "cli" ]; then
   elapsed_time
   exit_screen
 
-  if [ -z "$BRquiet" ]; then
-    read -s
-  fi
+  if [ -z "$BRquiet" ]; then read -s; fi
+  if [ -f /tmp/b_error ]; then set_wrapper_error; fi
 
 elif [ "$BRinterface" = "dialog" ]; then
   if [ -z $(which dialog 2>/dev/null) ];then

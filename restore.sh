@@ -30,7 +30,6 @@ clean_files() {
   if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
   if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
   if [ -f /tmp/r_errs ]; then rm /tmp/r_errs; fi
-  if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
  }
 
 exit_screen() {
@@ -1410,12 +1409,14 @@ clean_unmount_out() {
     done < <(for i in ${BRsorted[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac)
   fi
 
-  clean_files
-
   echo -ne "${BR_WRK}Unmounting $BRroot"
+  if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
   sleep 1
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
+
+  if [ -f /tmp/bl_error ]; then set_wrapper_error; fi
   if [ -n "$BRwrap" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
+  clean_files
   exit
 }
 
@@ -2310,6 +2311,7 @@ if [ "$BRinterface" = "cli" ]; then
   else
     exit_screen_quiet
   fi
+
   sleep 1
   clean_unmount_out
 

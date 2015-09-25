@@ -182,7 +182,7 @@ export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
 export MAIN_DIALOG='
 
-<window title="System Tar & Restore" icon-name="applications-system">
+<window title="System Tar & Restore" icon-name="applications-system" height-request="630" width-request="510">
         <vbox>
                 <timer visible="false">
                         <action>refresh:BR_SB</action>
@@ -327,7 +327,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 </checkbox>
                         </vbox>
 
-                        <vbox scrollable="true" shadow-type="0" height="530" width="510">
+                        <vbox scrollable="true" shadow-type="0">
                                 <text wrap="false" height-request="30" use-markup="true" tooltip-text="In the first case, you should run it from a LiveCD of the target (backed up) distro.
 
 ==>Make sure you have created one target root (/) partition.

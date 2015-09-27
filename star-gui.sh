@@ -153,7 +153,7 @@ status_bar() {
     echo "Script must run as root."
   elif [ -f /tmp/wr_pid ] || grep -Fq "error" /tmp/wr_proc; then
     cat /tmp/wr_proc
-  elif [ ! -f /tmp/wr_pid ]; then
+  else
     echo "Idle"
   fi
 }

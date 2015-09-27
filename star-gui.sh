@@ -151,7 +151,7 @@ set_args() {
 status_bar() {
   if [ $(id -u) -gt 0 ]; then
     echo "Script must run as root."
-  elif [ -f /tmp/wr_pid ] || grep -Fq "error" /tmp/wr_proc; then
+  elif [ -f /tmp/wr_pid ] || grep -Fq -e "error" -e "Cancelled" /tmp/wr_proc; then
     cat /tmp/wr_proc
   else
     echo "Idle"
@@ -159,9 +159,6 @@ status_bar() {
 }
 
 run_main() {
-  echo > /tmp/wr_log
-  echo > /tmp/wr_proc
-
   if [ "$BR_MODE" = "0" ]; then
     setsid ./backup.sh -i cli -Nwq -d "$BRFOLDER" -c $BRcompression "${BACKUP_ARGS[@]}" 2> /tmp/wr_log
   elif [ "$BR_MODE" = "1" ]; then
@@ -173,7 +170,7 @@ run_main() {
 
 cancel_proc() {
   kill -9 -$(cat /tmp/wr_pid)
-  echo Cancelled > /tmp/wr_log
+  echo Cancelled > /tmp/wr_proc
 }
 
 export -f scan_disks hide_used_parts set_default_pass set_default_opts set_default_multi set_args status_bar run_main cancel_proc

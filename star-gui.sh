@@ -220,13 +220,16 @@ SYSLINUX PACKAGES:
 OTHER PACKAGES:
 efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup image of this system.</span>"</label></text>
 
-                                <hbox><text width-request="93"><label>Filename:</label></text>
-                                <entry tooltip-text="Set backup archive name">
-                                        <variable>BRNAME</variable>
-                                        <default>'"$BRNAME"'</default>
-                                </entry></hbox>
+                                <hbox>
+                                        <text width-request="93"><label>Filename:</label></text>
+                                        <entry tooltip-text="Set backup archive name">
+                                                <variable>BRNAME</variable>
+                                                <default>'"$BRNAME"'</default>
+                                        </entry>
+                                </hbox>
 
-                                <hbox><text width-request="93"><label>Destination:</label></text>
+                                <hbox>
+                                        <text width-request="93"><label>Destination:</label></text>
                                         <entry fs-action="folder" fs-title="Select a directory" tooltip-text="Choose where to save the backup archive">
                                                 <variable>BRFOLDER</variable>
                                                 <default>'"$BRFOLDER"'</default>
@@ -235,46 +238,51 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                                 <input file stock="gtk-open"></input>
                                                 <action>fileselect:BRFOLDER</action>
                                         </button>
-                                 </hbox>
+                                </hbox>
 
-                                <hbox><text width-request="92" space-expand="false"><label>Home directory:</label></text>
-                                <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
-                                        <variable>ENTRY1</variable>
-                                        <default>'"$ENTRY1"'</default>
-                                        <item>Include</item>
-	                                <item>Only hidden files and folders</item>
-	                                <item>Exclude</item>
-                                </comboboxtext></hbox>
+                                <hbox>
+                                        <text width-request="92" space-expand="false"><label>Home directory:</label></text>
+                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
+                                                <variable>ENTRY1</variable>
+                                                <default>'"$ENTRY1"'</default>
+                                                <item>Include</item>
+	                                        <item>Only hidden files and folders</item>
+	                                        <item>Exclude</item>
+                                        </comboboxtext>
+                                </hbox>
 
-                                <hbox><text width-request="92" space-expand="false"><label>Compression:</label></text>
-                                <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
-	                                <variable>BRcompression</variable>
-                                        <default>'"$BRcompression"'</default>
-	                                <item>gzip</item>
-	                                <item>bzip2</item>
-	                                <item>xz</item>
-                                        <item>none</item>
-                                        <action condition="command_is_true([ $BRcompression = none ] && echo true)">disable:ENTRY3</action>
-                                        <action condition="command_is_true([ ! $BRcompression = none ] && echo true)">enable:ENTRY3</action>
-	                        </comboboxtext></hbox>
+                                <hbox>
+                                        <text width-request="92" space-expand="false"><label>Compression:</label></text>
+                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
+	                                        <variable>BRcompression</variable>
+                                                <default>'"$BRcompression"'</default>
+	                                        <item>gzip</item>
+	                                        <item>bzip2</item>
+	                                        <item>xz</item>
+                                                <item>none</item>
+                                                <action condition="command_is_true([ $BRcompression = none ] && echo true)">disable:ENTRY3</action>
+                                                <action condition="command_is_true([ ! $BRcompression = none ] && echo true)">enable:ENTRY3</action>
+	                                </comboboxtext>
+                                </hbox>
 
-                                <vbox>
-                                        <hbox><text width-request="92" space-expand="false"><label>Encryption:</label></text>
-                                                <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select encryption method">
-	                                                <variable>BRencmethod</variable>
-                                                        <default>'"$BRencmethod"'</default>
-                                                        <item>none</item>
-	                                                <item>openssl</item>
-	                                                <item>gpg</item>
-                                                        <action condition="command_is_true([ $BRencmethod = none ] && echo true)">disable:BRencpass</action>
-                                                        <action condition="command_is_true([ ! $BRencmethod = none ] && echo true)">enable:BRencpass</action>
-                                                </comboboxtext>
-                                        </hbox>
-                                        <hbox><text width-request="93" space-expand="false"><label>Passphrase:</label></text>
-                                                '"`set_default_pass`"'
-                                                </entry>
-                                        </hbox>
-                                </vbox>
+                              
+                                <hbox><text width-request="92" space-expand="false"><label>Encryption:</label></text>
+                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select encryption method">
+	                                        <variable>BRencmethod</variable>
+                                                <default>'"$BRencmethod"'</default>
+                                                <item>none</item>
+	                                        <item>openssl</item>
+	                                        <item>gpg</item>
+                                                <action condition="command_is_true([ $BRencmethod = none ] && echo true)">disable:BRencpass</action>
+                                                <action condition="command_is_true([ ! $BRencmethod = none ] && echo true)">enable:BRencpass</action>
+                                        </comboboxtext>
+                                </hbox>
+
+                                <hbox>
+                                        <text width-request="93" space-expand="false"><label>Passphrase:</label></text>
+                                        '"`set_default_pass`"'
+                                        </entry>
+                                </hbox>
 
                                 <text xalign="0"><label>Additional options:</label></text>
                                 <comboboxentry tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
@@ -288,7 +296,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                         <variable>BR_EXC</variable>
                                 </entry>
 
-                                        '"`set_default_multi`"'
+                                '"`set_default_multi`"'
                                         <label>Enable multi-core compression</label>
                                         <variable>ENTRY3</variable>
                                         <default>'"$ENTRY3"'</default>
@@ -339,195 +347,208 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
        make sure that this system is capable to boot from
        those configurations."><label>"<span color='"'brown'"'>Restore a backup image or transfer this system in user defined partitions.</span>"</label></text>
 
-
-                                <vbox><frame Target partitions:>
-                                <hbox><text width-request="30" space-expand="false"><label>Root:</label></text>
-
-		                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
-	                                        <variable>BR_ROOT</variable>
-                                                <input>echo "$BR_ROOT"</input>
-	                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
-                                                <action>refresh:BR_BOOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
-			                </comboboxtext>
-                                        <entry tooltip-text="Set comma-separated list of mount options for the root partition">
-                                                <variable>BR_MN_OPTS</variable>
-                                                <input>echo "defaults,noatime"</input>
-                                        </entry>
-                                </hbox>
-
-                                <expander label="More partitions">
-                                        <vbox>
-                                                <hbox><text width-request="55" space-expand="false"><label>Esp:</label></text>
-		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
-	                                                        <variable>BR_ESP</variable>
-                                                                <input>echo "$BR_ESP"</input>
+                                <vbox>
+                                        <frame Target partitions:>
+                                                <hbox>
+                                                        <text width-request="30" space-expand="false"><label>Root:</label></text>
+		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
+	                                                        <variable>BR_ROOT</variable>
+                                                                <input>echo "$BR_ROOT"</input>
 	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
-                                                                <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
-                                                                <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_SWAP</action>
+                                                                <action>refresh:BR_BOOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
 			                                </comboboxtext>
-                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select mountpoint">
-	                                                        <variable>BR_ESP_MPOINT</variable>
-	                                                        <item>/boot/efi</item>
-	                                                        <item>/boot</item>
-	                                                </comboboxtext>
-                                                </hbox>
-                                                <hbox><text width-request="55" space-expand="false"><label>/boot:</label></text>
-		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
-	                                                        <variable>BR_BOOT</variable>
-                                                                <input>echo "$BR_BOOT"</input>
-	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
-                                                                <input>if [ -n "$BR_BOOT" ]; then echo ""; fi</input>
-                                                                <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
-			                                </comboboxtext>
-                                                </hbox>
-                                                <hbox><text width-request="55" space-expand="false"><label>/home:</label></text>
-		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
-	                                                        <variable>BR_HOME</variable>
-                                                                <input>echo "$BR_HOME"</input>
-	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
-                                                                <input>if [ -n "$BR_HOME" ]; then echo ""; fi</input>
-                                                                <action>refresh:BR_BOOT</action><action>refresh:BR_ROOT</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
-                                                        </comboboxtext>
-                                                </hbox>
-                                                <hbox><text width-request="55" space-expand="false"><label>swap:</label></text>
-		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
-	                                                        <variable>BR_SWAP</variable>
-                                                                <input>echo "$BR_SWAP"</input>
-	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
-                                                                <input>if [ -n "$BR_SWAP" ]; then echo ""; fi</input>
-                                                                <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_ESP</action>
-			                                </comboboxtext>
-                                                </hbox>
-
-                                                <hbox><text width-request="56" space-expand="false"><label>Other:</label></text>
-                                                        <entry tooltip-text="Set other partitions (mountpoint=device e.g /var=/dev/sda3). If you want spaces in mountpoints replace them with //">
-                                                                <variable>BR_OTHER_PARTS</variable>
+                                                        <entry tooltip-text="Set comma-separated list of mount options for the root partition">
+                                                                <variable>BR_MN_OPTS</variable>
+                                                                <input>echo "defaults,noatime"</input>
                                                         </entry>
                                                 </hbox>
-                                        </vbox>
-                                </expander>
 
-                                <expander label="Btrfs subvolumes"><vbox>
-                                        <hbox><text width-request="40" space-expand="false"><label>Root:</label></text>
-                                                <entry tooltip-text="Set subvolume name for /">
-                                                        <variable>BR_ROOT_SUBVOL</variable>
-                                                </entry>
-                                        </hbox>
-                                        <hbox><text width-request="40" space-expand="false"><label>Other:</label></text>
-                                                <entry tooltip-text="Set other subvolumes (subvolume path e.g /home /var /usr ...)">
-                                                        <variable>BR_OTHER_SUBVOLS</variable>
-                                                </entry>
-                                        </hbox>
-                                </vbox></expander>
-                                </frame> </vbox>
+                                                <expander label="More partitions">
+                                                        <vbox>
+                                                                <hbox>
+                                                                        <text width-request="55" space-expand="false"><label>Esp:</label></text>
+		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
+	                                                                        <variable>BR_ESP</variable>
+                                                                                <input>echo "$BR_ESP"</input>
+	                                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
+                                                                                <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
+                                                                                <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_SWAP</action>
+			                                                </comboboxtext>
+                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select mountpoint">
+	                                                                        <variable>BR_ESP_MPOINT</variable>
+	                                                                        <item>/boot/efi</item>
+	                                                                        <item>/boot</item>
+	                                                                </comboboxtext>
+                                                                </hbox>
+                                                                <hbox>
+                                                                        <text width-request="55" space-expand="false"><label>/boot:</label></text>
+		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
+	                                                                        <variable>BR_BOOT</variable>
+                                                                                <input>echo "$BR_BOOT"</input>
+	                                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
+                                                                                <input>if [ -n "$BR_BOOT" ]; then echo ""; fi</input>
+                                                                                <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
+			                                                </comboboxtext>
+                                                                </hbox>
+                                                                <hbox>
+                                                                        <text width-request="55" space-expand="false"><label>/home:</label></text>
+		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
+	                                                                        <variable>BR_HOME</variable>
+                                                                                <input>echo "$BR_HOME"</input>
+	                                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
+                                                                                <input>if [ -n "$BR_HOME" ]; then echo ""; fi</input>
+                                                                                <action>refresh:BR_BOOT</action><action>refresh:BR_ROOT</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
+                                                                        </comboboxtext>
+                                                                </hbox>
+                                                                <hbox>
+                                                                        <text width-request="55" space-expand="false"><label>swap:</label></text>
+		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
+	                                                                        <variable>BR_SWAP</variable>
+                                                                                <input>echo "$BR_SWAP"</input>
+	                                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
+                                                                                <input>if [ -n "$BR_SWAP" ]; then echo ""; fi</input>
+                                                                                <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_ESP</action>
+			                                                </comboboxtext>
+                                                                </hbox>
+                                                                <hbox>
+                                                                        <text width-request="56" space-expand="false"><label>Other:</label></text>
+                                                                        <entry tooltip-text="Set other partitions (mountpoint=device e.g /var=/dev/sda3). If you want spaces in mountpoints replace them with //">
+                                                                                <variable>BR_OTHER_PARTS</variable>
+                                                                        </entry>
+                                                                </hbox>
+                                                        </vbox>
+                                                </expander>
+                                                <expander label="Btrfs subvolumes">
+                                                        <vbox>
+                                                                <hbox>
+                                                                        <text width-request="40" space-expand="false"><label>Root:</label></text>
+                                                                        <entry tooltip-text="Set subvolume name for /">
+                                                                                <variable>BR_ROOT_SUBVOL</variable>
+                                                                        </entry>
+                                                                </hbox>
+                                                                <hbox>
+                                                                        <text width-request="40" space-expand="false"><label>Other:</label></text>
+                                                                        <entry tooltip-text="Set other subvolumes (subvolume path e.g /home /var /usr ...)">
+                                                                                <variable>BR_OTHER_SUBVOLS</variable>
+                                                                        </entry>
+                                                                </hbox>
+                                                        </vbox>
+                                                </expander>
+                                        </frame>
+                                </vbox>
 
-                                 <vbox><frame Bootloader:><hbox>
-                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select bootloader">
-                                                <variable>ENTRY12</variable>
-                                                <item>none</item>
-	                                        <item>Grub</item>
-	                                        <item>Grub-efi</item>
-	                                        <item>Syslinux</item>
-	                                        <item>EFISTUB/efibootmgr</item>
-	                                        <item>Systemd/bootctl</item>
-                                                <action condition="command_is_true([ $ENTRY12 = none ] && echo true)">disable:BR_DISK</action>
-                                                <action condition="command_is_true([ ! $ENTRY12 = none ] && echo true)">enable:BR_DISK</action>
-                                                <action condition="command_is_true([ $ENTRY12 = none ] && echo true)">disable:BR_KL_OPTS</action>
-                                                <action condition="command_is_true([ ! $ENTRY12 = none ] && echo true)">enable:BR_KL_OPTS</action>
-                                                <action condition="command_is_true([ $ENTRY12 = EFISTUB/efibootmgr ] && echo true)">disable:BR_DISK</action>
-                                                <action condition="command_is_true([ $ENTRY12 = Systemd/bootctl ] && echo true)">disable:BR_DISK</action>
-                                                <action condition="command_is_true([ $ENTRY12 = Grub-efi ] && echo true)">disable:BR_DISK</action>
-                                        </comboboxtext>
+                                <vbox>
+                                        <frame Bootloader:>
+                                                <hbox>
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select bootloader">
+                                                                <variable>ENTRY12</variable>
+                                                                <item>none</item>
+	                                                        <item>Grub</item>
+	                                                        <item>Grub-efi</item>
+	                                                        <item>Syslinux</item>
+	                                                        <item>EFISTUB/efibootmgr</item>
+	                                                        <item>Systemd/bootctl</item>
+                                                                <action condition="command_is_true([ $ENTRY12 = none ] && echo true)">disable:BR_DISK</action>
+                                                                <action condition="command_is_true([ ! $ENTRY12 = none ] && echo true)">enable:BR_DISK</action>
+                                                                <action condition="command_is_true([ $ENTRY12 = none ] && echo true)">disable:BR_KL_OPTS</action>
+                                                                <action condition="command_is_true([ ! $ENTRY12 = none ] && echo true)">enable:BR_KL_OPTS</action>
+                                                                <action condition="command_is_true([ $ENTRY12 = EFISTUB/efibootmgr ] && echo true)">disable:BR_DISK</action>
+                                                                <action condition="command_is_true([ $ENTRY12 = Systemd/bootctl ] && echo true)">disable:BR_DISK</action>
+                                                                <action condition="command_is_true([ $ENTRY12 = Grub-efi ] && echo true)">disable:BR_DISK</action>
+                                                        </comboboxtext>
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk for bootloader" sensitive="false">
+	                                                        <variable>BR_DISK</variable>
+	                                                        <input>bash -c scan_disks</input>
+	                                                </comboboxtext>
+                                                        <entry tooltip-text="Set additional kernel options" sensitive="false">
+                                                                <variable>BR_KL_OPTS</variable>
+                                                        </entry>
+                                                </hbox>
+                                        </frame>
+                                </vbox>
 
-                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk for bootloader" sensitive="false">
-	                                        <variable>BR_DISK</variable>
-	                                        <input>bash -c scan_disks</input>
-	                                </comboboxtext>
+                                <vbox>
+                                        <frame Restore Mode:>
+                                                <hbox tooltip-text="Choose a local archive or enter URL">
+                                                        <entry fs-action="file" fs-title="Select a backup archive">
+                                                                <variable>BR_FILE</variable>
+                                                                <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_USERNAME</action>
+                                                                <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_PASSWORD</action>
+                                                                <action condition="command_is_true([[ ! $BR_FILE == /* ]] && echo true)">enable:BR_USERNAME</action>
+                                                                <action condition="command_is_true([[ ! $BR_FILE == /* ]] && echo true)">enable:BR_PASSWORD</action>
+                                                        </entry>
+                                                        <button tooltip-text="Select archive">
+                                                                <input file stock="gtk-open"></input>
+                                                                <action>fileselect:BR_FILE</action>
+                                                        </button>
+                                                </hbox>
+                                                <expander label="Authentication">
+                                                        <vbox>
+                                                                <hbox><text width-request="86" space-expand="false"><label>Username:</label></text>
+                                                                        <entry tooltip-text="Set ftp/http username">
+                                                                                <variable>BR_USERNAME</variable>
+                                                                        </entry>
+                                                                </hbox>
+                                                                <hbox><text width-request="86" space-expand="false"><label>Password:</label></text>
+                                                                        <entry tooltip-text="Set ftp/http password">
+                                                                                <variable>BR_PASSWORD</variable>
+                                                                        </entry>
+                                                                </hbox>
+                                                                <hbox>
+                                                                        <text width-request="86" space-expand="false"><label>Passphrase:</label></text>
+                                                                        <entry tooltip-text="Set passphrase for decryption">
+                                                                                <variable>BR_PASSPHRASE</variable>
+                                                                        </entry>
+                                                                </hbox>
+                                                        </vbox>
+                                                </expander>
+                                                <variable>FRM</variable>
+                                        </frame>
+                                </vbox>
 
-                                        <entry tooltip-text="Set additional kernel options" sensitive="false">
-                                                <variable>BR_KL_OPTS</variable>
-                                        </entry>
-                                </hbox></frame> </vbox>
+                                <vbox>
+                                        <frame Transfer Mode:>
+                                                <checkbox tooltip-text="Activate Tranfer Mode">
+                                                        <label>Activate</label>
+                                                        <variable>ENTRY13</variable>
+                                                        <action>if true disable:FRM</action>
+                                                        <action>if false enable:FRM</action>
+                                                        <action>if true enable:ENTRY14</action>
+                                                        <action>if true enable:ENTRY21</action>
+                                                        <action>if false disable:ENTRY14</action>
+                                                        <action>if false disable:ENTRY21</action>
+                                                </checkbox>
+                                                <checkbox sensitive="false" tooltip-text="Transfer only hidden files and folders from /home">
+                                                        <label>"Only hidden files and folders from /home"</label>
+                                                        <variable>ENTRY14</variable>
+                                                </checkbox>
+                                                <checkbox sensitive="false" tooltip-text="Override the default rsync options with user options">
+                                                        <label>Override</label>
+                                                        <variable>ENTRY21</variable>
+                                                </checkbox>
+                                        </frame>
+                                </vbox>
 
-                                 <vbox><frame Restore Mode:>
-                                        <hbox tooltip-text="Choose a local archive or enter URL">
-                                                <entry fs-action="file" fs-title="Select a backup archive">
-                                                        <variable>BR_FILE</variable>
-                                                        <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_USERNAME</action>
-                                                        <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_PASSWORD</action>
-                                                        <action condition="command_is_true([[ ! $BR_FILE == /* ]] && echo true)">enable:BR_USERNAME</action>
-                                                        <action condition="command_is_true([[ ! $BR_FILE == /* ]] && echo true)">enable:BR_PASSWORD</action>
-                                                </entry>
-                                                <button tooltip-text="Select archive">
-                                                        <input file stock="gtk-open"></input>
-                                                        <action>fileselect:BR_FILE</action>
-                                                </button>
-                                        </hbox>
-                                        <expander label="Authentication">
-                                                <vbox>
-                                                        <hbox><text width-request="86" space-expand="false"><label>Username:</label></text>
-                                                                <entry tooltip-text="Set ftp/http username">
-                                                                        <variable>BR_USERNAME</variable>
-                                                                </entry>
-                                                        </hbox>
-                                                        <hbox><text width-request="86" space-expand="false"><label>Password:</label></text>
-                                                                <entry tooltip-text="Set ftp/http password">
-                                                                        <variable>BR_PASSWORD</variable>
-                                                                </entry>
-                                                        </hbox>
-                                                        <hbox><text width-request="86" space-expand="false"><label>Passphrase:</label></text>
-                                                                <entry tooltip-text="Set passphrase for decryption">
-                                                                        <variable>BR_PASSPHRASE</variable>
-                                                                </entry>
-                                                        </hbox>
-                                                </vbox>
-                                        </expander>
-                                        <variable>FRM</variable>
-                                </frame> </vbox>
-
-                                 <vbox><frame Transfer Mode:>
-                                        <checkbox tooltip-text="Activate Tranfer Mode">
-                                                <label>Activate</label>
-                                                <variable>ENTRY13</variable>
-                                                <action>if true disable:FRM</action>
-                                                <action>if false enable:FRM</action>
-                                                <action>if true enable:ENTRY14</action>
-                                                <action>if true enable:ENTRY21</action>
-                                                <action>if false disable:ENTRY14</action>
-                                                <action>if false disable:ENTRY21</action>
-                                        </checkbox>
-                                        <checkbox sensitive="false" tooltip-text="Transfer only hidden files and folders from /home">
-                                                <label>"Only hidden files and folders from /home"</label>
-                                                <variable>ENTRY14</variable>
-                                        </checkbox>
-                                        <checkbox sensitive="false" tooltip-text="Override the default rsync options with user options">
-                                                <label>Override</label>
-                                                <variable>ENTRY21</variable>
-                                        </checkbox>
-                                </frame> </vbox>
-
-                               <text xalign="0"><label>Additional options:</label></text>
+                                <text xalign="0"><label>Additional options:</label></text>
                                 <comboboxentry tooltip-text="Set extra tar/rsync options. See tar --help  or rsync --help for more info. If you want spaces in names replace them with //">
                                         <variable>BR_TR_OPTIONS</variable>
                                         <item>--acls --xattrs</item>
                                 </comboboxentry>
 
-                                <vbox>
-                                        <checkbox tooltip-text="Disable genkernel check and initramfs building in gentoo">
-                                                <label>Disable genkernel</label>
-                                                <variable>ENTRY18</variable>
-                                        </checkbox>
+                                <checkbox tooltip-text="Disable genkernel check and initramfs building in gentoo">
+                                        <label>Disable genkernel</label>
+                                        <variable>ENTRY18</variable>
+                                </checkbox>
 
-                                        <checkbox tooltip-text="Dont check if root partition is empty (dangerous)">
-                                                <label>Dont check root</label>
-                                                <variable>ENTRY19</variable>
-                                        </checkbox>
+                                <checkbox tooltip-text="Dont check if root partition is empty (dangerous)">
+                                        <label>Dont check root</label>
+                                        <variable>ENTRY19</variable>
+                                </checkbox>
 
-                                        <checkbox tooltip-text="Ignore UEFI environment">
-                                                <label>Bios</label>
-                                                <variable>ENTRY20</variable>
-                                        </checkbox>
-                                </vbox>
+                                <checkbox tooltip-text="Ignore UEFI environment">
+                                        <label>Bios</label>
+                                        <variable>ENTRY20</variable>
+                                </checkbox>
 			</vbox>
 
                         <vbox scrollable="true" shadow-type="0">
@@ -535,7 +556,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                         <input file>/tmp/wr_log</input>
                                 </text>
                         </vbox>
-
                         <variable>BR_MODE</variable>
 		</notebook>
 
@@ -562,6 +582,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 <label>EXIT</label>
                         </button>
                 </hbox>
+
                 <statusbar has-resize-grip="false">
 			<variable>BR_SB</variable>
 			<input>bash -c status_bar</input>

@@ -1,5 +1,17 @@
 Changelog:
 
+5.0
+    added support for encrypted root partition with passphrase (luks, luks on lvm, luks on mdadm, luks on lvm on mdadm)
+    enhanced lvm support (lvm on luks, lvm on mdadm, lvm on luks on mdadm)
+    kernel options now apply to all bootloaders and appear in summary
+    esp is now optional (without bootloader) and you can choose it's mountpoint (/boot/efi or /boot)
+    added support for EFISTUB/efibootmgr and Systemd/bootctl
+    updated fedora detection and made dracut verbose
+    updated lvm and raid detection in gentoo for dolvm/domdadm kernel options
+    many wrapper cleanups, fixes and improvements
+    code cleaning 
+
+
 4.9.4
     various wrapper improvements
     code cleaning

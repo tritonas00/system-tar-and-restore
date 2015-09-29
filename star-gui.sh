@@ -265,7 +265,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 	                                </comboboxtext>
                                 </hbox>
 
-                              
+
                                 <hbox><text width-request="92" space-expand="false"><label>Encryption:</label></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select encryption method">
 	                                        <variable>BRencmethod</variable>

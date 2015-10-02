@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 5.0"
+BR_VERSION="System Tar & Restore 5.1"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -2199,7 +2199,8 @@ if [ "$BRinterface" = "cli" ]; then
   set_bootloader
 
   if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
-    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Genkernel not found in the archived system. (you can disable this check with -D)"
+    echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Genkernel not found in the archived system. (you can disable this check with -D)" >&2
+    if [ -n "$BRwrap" ]; then clean_unmount_in; fi
     while [ -z "$BRgenkernel" ]; do
       echo -e "\n${BR_CYAN}Disable initramfs building?${BR_NORM}"
       read -p "(Y/n, abort):" an

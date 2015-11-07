@@ -343,9 +343,9 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
        target RAID arrays are properly assembled and target
        encrypted partitions are opened.
 
-==>If you plan to transfer in btrfs/lvm/mdadm/dm-crypt,
-       make sure that this system is capable to boot from
-       those configurations."><label>"<span color='"'brown'"'>Restore a backup image or transfer this system in user defined partitions.</span>"</label></text>
+==>If you plan to transfer in lvm/mdadm/dm-crypt, make
+       sure that this system is capable to boot from those
+       configurations."><label>"<span color='"'brown'"'>Restore a backup image or transfer this system in user defined partitions.</span>"</label></text>
 
                                 <vbox>
                                         <frame Target partitions:>

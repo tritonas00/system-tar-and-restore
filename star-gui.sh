@@ -170,11 +170,7 @@ run_main() {
   echo > /tmp/wr_proc
 }
 
-cancel_proc() {
-  kill -9 -$(cat /tmp/wr_pid)
-}
-
-export -f scan_disks hide_used_parts set_default_pass set_default_opts set_default_multi set_args status_bar run_main cancel_proc
+export -f scan_disks hide_used_parts set_default_pass set_default_opts set_default_multi set_args status_bar run_main
 export BR_PARTS=$(scan_parts)
 export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
@@ -577,7 +573,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 <input file icon="gtk-cancel"></input>
                                 <variable>BTN_CANCEL</variable>
                                 <label>CANCEL</label>
-                                <action>bash -c cancel_proc</action>
+                                <action>kill -9 -$(cat /tmp/wr_pid)</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>

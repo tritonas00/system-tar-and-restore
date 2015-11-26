@@ -1507,7 +1507,7 @@ start_log() {
 
 set_wrapper_error() {
   if [ -n "$BRwrap" ]; then
-    echo "An error occurred. Check log for details." > /tmp/wr_proc
+    echo false > /tmp/wr_proc
   fi
 }
 

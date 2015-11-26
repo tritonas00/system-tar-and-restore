@@ -151,7 +151,7 @@ set_args() {
 status_bar() {
   if [ $(id -u) -gt 0 ]; then
     echo "Script must run as root."
-  elif [ -f /tmp/wr_pid ] || grep -Fq -e "error" -e "Cancelled" /tmp/wr_proc; then
+  elif [ -f /tmp/wr_pid ]; then
     cat /tmp/wr_proc
   else
     echo "Idle"
@@ -166,11 +166,12 @@ run_main() {
   fi
 
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
+  sleep 1
+  echo > /tmp/wr_proc
 }
 
 cancel_proc() {
   kill -9 -$(cat /tmp/wr_pid)
-  echo Cancelled > /tmp/wr_proc
 }
 
 export -f scan_disks hide_used_parts set_default_pass set_default_opts set_default_multi set_args status_bar run_main cancel_proc
@@ -187,6 +188,7 @@ export MAIN_DIALOG='
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_EXIT</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BR_MODE</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_CANCEL</action>
+                        <action condition="file_is_false(/tmp/wr_proc)">refresh:BR_MODE</action>
 		</timer>
                 <notebook labels="Backup|Restore/Transfer|Log" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">
@@ -557,6 +559,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 </text>
                         </vbox>
                         <variable>BR_MODE</variable>
+                        <input>echo 2</input>
 		</notebook>
 
                 <hbox homogeneous="true" space-expand="false" space-fill="false">

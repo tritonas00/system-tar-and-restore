@@ -1030,7 +1030,7 @@ install_bootloader() {
     if [ -n "$BRwrap" ]; then echo "Installing Grub in $BRgrub..." > /tmp/wr_proc; fi
     echo -e "\n${BR_SEP}INSTALLING AND UPDATING GRUB2 IN $BRgrub"
     if [ -d "$BR_EFI_DETECT_DIR" ] && [ "$BRespmpoint" = "/boot" ] && [ -d /mnt/target/boot/efi ]; then
-     if [ -d /mnt/target/boot/efi-old ]; then rm -r /mnt/target/boot/efi-old; fi
+      if [ -d /mnt/target/boot/efi-old ]; then rm -r /mnt/target/boot/efi-old; fi
       mv /mnt/target/boot/efi /mnt/target/boot/efi-old
     fi
 

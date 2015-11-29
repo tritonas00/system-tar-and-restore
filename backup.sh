@@ -696,7 +696,7 @@ if [ "$BRinterface" = "cli" ]; then
 
   total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
-  echo " "
+  echo
   if [ -n "$BRnosockets" ]; then exclude_sockets; fi
   run_tar | out_pgrs_cli
 

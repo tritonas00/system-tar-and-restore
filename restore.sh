@@ -866,7 +866,7 @@ build_initramfs() {
     fi
     mdadm --examine --scan > "$BR_MDADM_PATH/mdadm.conf"
     cat "$BR_MDADM_PATH/mdadm.conf"
-    echo " "
+    echo
   fi
 
   if [ -n "$BRencdev" ] && [ ! "$BRdistro" = "Arch" ] && [ ! "$BRdistro" = "Gentoo" ]; then
@@ -876,7 +876,7 @@ build_initramfs() {
     echo "Generating basic crypttab..."
     echo "$crypttab_root UUID=$(blkid -s UUID -o value $BRencdev) none luks" > /mnt/target/etc/crypttab
     cat /mnt/target/etc/crypttab
-    echo " "
+    echo
   fi
 
   for FILE in /mnt/target/boot/*; do
@@ -1074,7 +1074,7 @@ install_bootloader() {
 
       echo -e "\nModified grub config" >> /tmp/restore.log
       cat /mnt/target/etc/default/grub >> /tmp/restore.log
-      echo " " >> /tmp/restore.log
+      echo >> /tmp/restore.log
     fi
 
     if [ "$BRdistro" = "Gentoo" ]; then
@@ -1297,7 +1297,7 @@ set_bootloader() {
 
 check_archive() {
   if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi
-  if [ "$BRinterface" = "cli" ]; then echo " "; fi
+  if [ "$BRinterface" = "cli" ]; then echo; fi
   if [ -f /tmp/tar_error ]; then
     rm /tmp/tar_error
     unset BRsource BRencpass
@@ -2172,7 +2172,7 @@ if [ "$BRinterface" = "cli" ]; then
           echo -e "\n${BR_CYAN}Enter the URL for the backup file${BR_NORM}"
           read -p "URL: " BRurl
           BRsource="$BRmaxsize/downloaded_backup"
-          echo " "
+          echo
           if [ "$REPLY" = "3" ]; then
 	    read -p "USERNAME: " BRusername
             read -p "PASSWORD: " BRpassword
@@ -2250,7 +2250,7 @@ if [ "$BRinterface" = "cli" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     run_tar 2>>/tmp/restore.log | tar_pgrs_cli
-    echo " "
+    echo
 
   elif [ "$BRmode" = "Transfer" ]; then
     if [ -n "$BRwrap" ]; then echo "Please wait while calculating files..." > /tmp/wr_proc; fi
@@ -2258,9 +2258,9 @@ if [ "$BRinterface" = "cli" ]; then
 
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
-    echo " "
+    echo
     run_rsync 2>>/tmp/restore.log | rsync_pgrs_cli
-    echo " "
+    echo
   fi
 
   if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi

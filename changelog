@@ -1,5 +1,10 @@
 Changelog:
 
+5.1
+    wrapper: if error occured go to log tab
+    wrapper: if genkernel not found and -D is not given abort
+    code cleaning
+
 5.0
     added support for encrypted root partition with passphrase (luks, luks on lvm, luks on mdadm, luks on lvm on mdadm)
     enhanced lvm support (lvm on luks, lvm on mdadm, lvm on luks on mdadm)

@@ -219,7 +219,7 @@ OTHER PACKAGES:
 efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup image of this system.</span>"</label></text>
 
                                 <hbox>
-                                        <text width-request="93"><label>Filename:</label></text>
+                                        <text width-request="92"><label>Filename:</label></text>
                                         <entry tooltip-text="Set backup archive name">
                                                 <variable>BRNAME</variable>
                                                 <default>'"$BRNAME"'</default>
@@ -227,7 +227,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="93"><label>Destination:</label></text>
+                                        <text width-request="92"><label>Destination:</label></text>
                                         <entry fs-action="folder" fs-title="Select a directory" tooltip-text="Choose where to save the backup archive">
                                                 <variable>BRFOLDER</variable>
                                                 <default>'"$BRFOLDER"'</default>

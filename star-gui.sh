@@ -176,7 +176,7 @@ export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
 export MAIN_DIALOG='
 
-<window title="System Tar & Restore" icon-name="applications-system" height-request="630" width-request="510">
+<window title="System Tar & Restore" icon-name="applications-system" height-request="655" width-request="515">
         <vbox>
                 <timer visible="false">
                         <action>refresh:BR_SB</action>

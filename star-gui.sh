@@ -409,7 +409,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
 			                                                </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>
-                                                                        <text width-request="56" space-expand="false"><label>Other:</label></text>
+                                                                        <text width-request="55" space-expand="false"><label>Other:</label></text>
                                                                         <entry tooltip-text="Set other partitions (mountpoint=device e.g /var=/dev/sda3). If you want spaces in mountpoints replace them with //">
                                                                                 <variable>BR_OTHER_PARTS</variable>
                                                                         </entry>

@@ -277,7 +277,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="93" space-expand="false"><label>Passphrase:</label></text>
+                                        <text width-request="92" space-expand="false"><label>Passphrase:</label></text>
                                         '"`set_default_pass`"'
                                         </entry>
                                 </hbox>

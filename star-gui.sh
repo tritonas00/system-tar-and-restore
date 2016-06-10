@@ -166,8 +166,7 @@ run_main() {
   fi
 
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
-  sleep 1
-  echo > /tmp/wr_proc
+  echo true > /tmp/wr_proc
 }
 
 export -f scan_disks hide_used_parts set_default_pass set_default_opts set_default_multi set_args status_bar run_main
@@ -184,7 +183,8 @@ export MAIN_DIALOG='
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_EXIT</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BR_MODE</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_CANCEL</action>
-                        <action condition="file_is_false(/tmp/wr_proc)">refresh:BR_MODE</action>
+                        <action condition="file_is_true(/tmp/wr_proc)">refresh:BR_MODE</action>
+                        <action condition="file_is_true(/tmp/wr_proc)">echo > /tmp/wr_proc</action>
 		</timer>
                 <notebook labels="Backup|Restore/Transfer|Log" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">
@@ -574,6 +574,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a tar backup
                                 <variable>BTN_CANCEL</variable>
                                 <label>CANCEL</label>
                                 <action>kill -9 -$(cat /tmp/wr_pid)</action>
+                                <action>echo "Aborted by User" > /tmp/wr_log</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>

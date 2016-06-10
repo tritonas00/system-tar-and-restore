@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 5.1"
+BR_VERSION="System Tar & Restore 5.2"
 BR_SEP="::"
 
 color_variables() {
@@ -256,12 +256,6 @@ exclude_sockets() {
   IFS=$DEFAULTIFS
 }
 
-set_wrapper_error() {
-  if [ -n "$BRwrap" ]; then
-    echo false > /tmp/wr_proc
-  fi
-}
-
 BRargs=`getopt -o "i:d:f:c:u:hnNqvgDHP:E:orC:smw" -l "interface:,directory:,filename:,compression:,user-options:,exclude-home,no-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption-method:,override,remove,conf:,exclude-sockets,multi-core,wrapper,help" -n "$1" -- "$@"`
 
 if [ "$?" -ne "0" ]; then
@@ -417,7 +411,6 @@ fi
 
 if [ $(id -u) -gt 0 ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Script must run as root" >&2
-  set_wrapper_error
   exit
 fi
 
@@ -483,7 +476,6 @@ if [ -n "$BRwrap" ] && [ -z "$BRFOLDER" ]; then
 fi
 
 if [ -n "$BRSTOP" ]; then
-  set_wrapper_error
   exit
 fi
 
@@ -705,7 +697,6 @@ if [ "$BRinterface" = "cli" ]; then
   exit_screen
 
   if [ -z "$BRquiet" ]; then read -s; fi
-  if [ -f /tmp/b_error ]; then set_wrapper_error; fi
 
 elif [ "$BRinterface" = "dialog" ]; then
   if [ -z $(which dialog 2>/dev/null) ];then

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BR_VERSION="System Tar & Restore 5.1"
+BR_VERSION="System Tar & Restore 5.2"
 
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
 BR_SEP="::"
@@ -95,7 +95,6 @@ detect_root_fs_size() {
   if [ -z "$BRfsystem" ]; then
     if [ -z "$BRnocolor" ]; then color_variables; fi
     echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system" >&2
-    set_wrapper_error
     exit
   fi
 }
@@ -619,7 +618,6 @@ check_input() {
   fi
 
   if [ -n "$BRSTOP" ]; then
-    set_wrapper_error
     exit
   fi
 }
@@ -637,7 +635,6 @@ mount_all() {
     echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while mounting partitions" >&2
     clean_files
     rm -r /mnt/target
-    set_wrapper_error
     exit
   fi
 
@@ -648,7 +645,6 @@ mount_all() {
       echo -ne "${BR_WRK}Unmounting $BRroot"
       sleep 1
       OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
-      set_wrapper_error
       exit
     else
       echo -e "[${BR_YELLOW}WARNING${BR_NORM}] Root partition not empty"
@@ -1382,7 +1378,6 @@ clean_unmount_in() {
   echo -ne "${BR_WRK}Unmounting $BRroot"
   sleep 1
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
-  set_wrapper_error
   exit
 }
 
@@ -1414,7 +1409,6 @@ clean_unmount_out() {
   sleep 1
   OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${BR_YELLOW}WARNING${BR_NORM}] /mnt/target remained")
 
-  if [ -f /tmp/bl_error ]; then set_wrapper_error; fi
   if [ -n "$BRwrap" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
   clean_files
   exit
@@ -1503,12 +1497,6 @@ start_log() {
   echo "${BR_SEP}SUMMARY"
   show_summary
   echo -e "\n${BR_SEP}TAR/RSYNC STATUS"
-}
-
-set_wrapper_error() {
-  if [ -n "$BRwrap" ]; then
-    echo false > /tmp/wr_proc
-  fi
 }
 
 BRargs=`getopt -o "i:r:e:l:s:b:h:g:S:f:n:p:R:qtou:Nm:k:c:O:vdDHP:BxwEL" -l "interface:,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,help,quiet,rootsubvolname:,transfer,only-hidden,user-options:,no-color,mount-options:,kernel-options:,custom-partitions:,other-subvolumes:,verbose,dont-check-root,disable-genkernel,hide-cursor,passphrase:,bios,override,wrapper,efistub,bootctl" -n "$1" -- "$@"`
@@ -1782,7 +1770,6 @@ if [ -n "$BRroot" ]; then
 
   if [ -z "$BRuri" ] && [ ! "$BRmode" = "Transfer" ]; then
     echo -e "[${BR_YELLOW}WARNING${BR_NORM}] You must specify a backup file or enable transfer mode" >&2
-    set_wrapper_error
     exit
   fi
 fi
@@ -1797,19 +1784,16 @@ fi
 
 if [ $(id -u) -gt 0 ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] Script must run as root" >&2
-  set_wrapper_error
   exit
 fi
 
 if [ -z "$(scan_parts 2>/dev/null)" ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] No partitions found" >&2
-  set_wrapper_error
   exit
 fi
 
 if [ -d /mnt/target ]; then
   echo -e "[${BR_RED}ERROR${BR_NORM}] /mnt/target exists, aborting" >&2
-  set_wrapper_error
   exit
 fi
 

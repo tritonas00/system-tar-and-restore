@@ -150,7 +150,7 @@ set_args() {
 
 status_bar() {
   if [ $(id -u) -gt 0 ]; then
-    echo "Script must run as root."
+    echo "Script must run as root"
   elif [ -f /tmp/wr_pid ]; then
     cat /tmp/wr_proc
   else

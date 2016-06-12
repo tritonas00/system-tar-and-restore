@@ -13,27 +13,20 @@ color_variables() {
   BR_BOLD='\033[1m'
 }
 
+unset_colors() {
+  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
+}
+
 BR_HIDE='\033[?25l'
 BR_SHOW='\033[?25h'
 
 info_screen() {
-  echo -e "\n${BR_YELLOW}This script will make a tar backup image of this system."
-  echo -e "\n==>Make sure you have enough free space."
+  echo -e "\n${BR_YELLOW}This script will make a tar backup image of this system.\n\n==>Make sure you have enough free space."
   echo -e "\n==>If you plan to restore in lvm/mdadm/dm-crypt, make sure that\n   this system is capable to boot from those configurations."
-  echo -e "\n==>The following bootloaders are supported:\n   Grub Syslinux EFISTUB/efibootmgr Systemd/bootctl."
-  echo -e "\nGRUB PACKAGES:"
-  echo "->Arch/Gentoo: grub"
-  echo "->Fedora/Suse: grub2"
-  echo "->Debian:      grub-pc grub-efi"
-  echo "->Mandriva:    grub2   grub2-efi"
-  echo -e "\nSYSLINUX PACKAGES:"
-  echo "->Arch/Suse/Gentoo: syslinux"
-  echo "->Debian/Mandriva:  syslinux extlinux"
-  echo "->Fedora:           syslinux syslinux-extlinux"
-  echo -e "\nOTHER PACKAGES:"
-echo "efibootmgr dosfstools systemd"
-
-  echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
+  echo -e "\n==>The following bootloaders are supported:\n   Grub Syslinux EFISTUB/efibootmgr Systemd/bootctl"
+  echo -e "\nGRUB PACKAGES:\n->Arch/Gentoo: grub\n->Fedora/Suse: grub2\n->Debian:      grub-pc grub-efi\n->Mandriva:    grub2   grub2-efi"
+  echo -e "\nSYSLINUX PACKAGES:\n->Arch/Suse/Gentoo: syslinux\n->Debian/Mandriva:  syslinux extlinux\n->Fedora:           syslinux syslinux-extlinux"
+  echo -e "\nOTHER PACKAGES:\nefibootmgr dosfstools systemd\n\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
 clean_files() {
@@ -705,7 +698,7 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   exec 3>&1
-  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
+  unset_colors
 
   if [ -z "$BRFOLDER" ]; then
     dialog --no-collapse --title "$BR_VERSION" --msgbox "$(info_screen)" 30 70

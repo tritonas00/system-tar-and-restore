@@ -195,7 +195,7 @@ export MAIN_DIALOG='
        configurations.
 
 ==>The following bootloaders are supported:
-       Grub Syslinux EFISTUB/efibootmgr Systemd/bootctl.
+       Grub Syslinux EFISTUB/efibootmgr Systemd/bootctl
 
 GRUB PACKAGES:
 **Arch/Gentoo:

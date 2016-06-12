@@ -15,6 +15,10 @@ color_variables() {
   BR_BOLD='\033[1m'
 }
 
+unset_colors() {
+  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
+}
+
 BR_HIDE='\033[?25l'
 BR_SHOW='\033[?25h'
 
@@ -22,8 +26,7 @@ info_screen() {
   echo -e "\n${BR_YELLOW}This script will restore a backup image or transfer this system in user\ndefined partitions. In the first case, you should run it from a LiveCD\nof the target (backed up) distro."
   echo -e "\n==>Make sure you have created one target root (/) partition. Optionally\n   you can create or use any other partition (/boot /home /var etc)."
   echo -e "\n==>Make sure that target LVM volume groups are activated, target RAID arrays\n   are properly assembled and target encrypted partitions are opened."
-  echo -e "\n==>If you plan to transfer in lvm/mdadm/dm-crypt, make sure that\n   this system is capable to boot from those configurations."
-  echo -e "\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
+  echo -e "\n==>If you plan to transfer in lvm/mdadm/dm-crypt, make sure that\n   this system is capable to boot from those configurations.\n\n${BR_CYAN}Press ENTER to continue.${BR_NORM}"
 }
 
 clean_files() {
@@ -38,12 +41,9 @@ exit_screen() {
   elif [ -n "$BRbootloader" ]; then
     echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log\n\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${BR_NORM}"
   else
-    echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log"
-    echo -e "\n${BR_YELLOW}You didn't choose a bootloader, so this is the right time to install and\nupdate one. To do so:"
+    echo -e "\n${BR_CYAN}Completed. Log: /tmp/restore.log\n\n${BR_YELLOW}You didn't choose a bootloader, so this is the right time to install and\nupdate one. To do so:"
     echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
-    echo -e "\n==>Then chroot into the target system: chroot /mnt/target"
-    echo -e "\n==>Install and update a bootloader"
-    echo -e "\n==>When done, leave chroot: exit"
+    echo -e "\n==>Then chroot into the target system: chroot /mnt/target\n\n==>Install and update a bootloader\n\n==>When done, leave chroot: exit"
     echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices.${BR_NORM}"
   fi
 }
@@ -93,7 +93,6 @@ detect_root_fs_size() {
   BRfsystem=$(blkid -s TYPE -o value $BRroot)
   BRfsize=$(lsblk -d -n -o size 2>/dev/null $BRroot | sed -e 's/ *//')
   if [ -z "$BRfsystem" ]; then
-    if [ -z "$BRnocolor" ]; then color_variables; fi
     echo -e "[${BR_RED}ERROR${BR_NORM}] Unknown root file system" >&2
     exit
   fi
@@ -1337,7 +1336,6 @@ rm_work_dir() {
 
 clean_unmount_in() {
   if [ -n "$BRwrap" ]; then echo "Unmounting..." > /tmp/wr_proc; fi
-  if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   rm "$BRmaxsize/downloaded_backup" 2>/dev/null
@@ -1383,7 +1381,6 @@ clean_unmount_in() {
 
 clean_unmount_out() {
   if [ -n "$BRwrap" ]; then echo "Unmounting..." > /tmp/wr_proc; fi
-  if [ -z "$BRnocolor" ]; then color_variables; fi
   echo -e "\n${BR_SEP}CLEANING AND UNMOUNTING"
   cd ~
   rm "$BRmaxsize/downloaded_backup" 2>/dev/null
@@ -2310,12 +2307,13 @@ elif [ "$BRinterface" = "dialog" ]; then
     exit
   fi
 
-  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
+  unset_colors
 
   if [ ! "$BRmode" = "Transfer" ] && [ -z "$BRuri" ]; then
     dialog --yes-label "Continue" --title "$BR_VERSION" --msgbox "$(info_screen)" 19 80
   fi
 
+  if [ -z "$BRnocolor" ]; then color_variables; fi
   exec 3>&1
 
   update_list() {
@@ -2489,7 +2487,6 @@ elif [ "$BRinterface" = "dialog" ]; then
   fi
 
   IFS=$'\n'
-  if [ -z "$BRnocolor" ]; then color_variables; fi
   unset_vars
   check_input >&2
   mount_all
@@ -2574,7 +2571,6 @@ elif [ "$BRinterface" = "dialog" ]; then
 
   detect_distro
   set_bootloader
-  unset BR_NORM BR_RED BR_GREEN BR_YELLOW BR_MAGENTA BR_CYAN BR_BOLD
 
   if [ "$BRmode" = "Restore" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
     dialog --yes-label "Disable initramfs building" --no-label "Abort" --title Warning --yesno "Genkernel not found in the archived system. (you can disable this check with -D)" 5 85
@@ -2638,7 +2634,7 @@ elif [ "$BRinterface" = "dialog" ]; then
    sleep 2) 1> >(tee -a /tmp/restore.log) 2>&1 | dialog --title "PROCESSING" --progressbox 30 100
 
   if [ -f /tmp/bl_error ]; then diag_tl="Error"; else diag_tl="Info"; fi
-
+  unset_colors
   if [ -z "$BRquiet" ]; then
     dialog --yes-label "OK" --no-label "View Log" --title "$diag_tl" --yesno "$(exit_screen)" 0 0
     if [ "$?" = "1" ]; then dialog --title "Log (Up/Dn:Scroll)" --textbox /tmp/restore.log 0 0; fi
@@ -2646,6 +2642,7 @@ elif [ "$BRinterface" = "dialog" ]; then
     dialog --title "$diag_tl" --infobox "$(exit_screen_quiet)" 0 0
   fi
 
+  if [ -z "$BRnocolor" ]; then color_variables; fi
   sleep 1
   clean_unmount_out
 fi

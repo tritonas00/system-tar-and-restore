@@ -1,5 +1,10 @@
 Changelog:
 
+5.2
+    wrapper: always go to log
+    wrapper: fixed some width inconsistencies
+    code cleanups
+
 5.1
     wrapper: if error occurred go to log tab
     wrapper: if genkernel not found and -D is not given abort

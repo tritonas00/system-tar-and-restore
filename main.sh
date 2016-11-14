@@ -641,11 +641,11 @@ if [ "$BRmode" = "0" ]; then
 
 # Restore / Transfer Mode
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
+
   # Delete temporary files if exist
   clean_tmp_files() {
     if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
     if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
-    if [ -f /tmp/r_errs ]; then rm /tmp/r_errs; fi
   }
 
   # Show the exit screen
@@ -2189,7 +2189,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       done
       break
     elif [ "$an" = "n" ] || [ "$an" = "N" ]; then
-        break
+      break
     else
       echo -e "${RED}Please select a valid option${NORM}"
     fi

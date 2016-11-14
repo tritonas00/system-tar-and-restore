@@ -746,7 +746,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     else
       detect_encryption
       if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ]; then
-        echo -e "${BOLD}"
+        echo -ne "${BOLD}"
         read -p "Enter Passphrase: " BRencpass
         echo -ne "${NORM}"
       fi

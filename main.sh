@@ -2022,13 +2022,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Check if root partition is given
   if [ -z "$BRroot" ]; then
-    echo -e "[${RED}ERROR${NORM}] You must specify a target root partition"
+    echo -e "[${RED}ERROR${NORM}] You must specify a target root partition" >&2
     exit
   fi
 
   # Check if backup archive is given in Restore Mode
   if [ "$BRmode" = "1" ] && [ -z "$BRuri" ]; then
-    echo -e "[${RED}ERROR${NORM}] You must specify a backup archive"
+    echo -e "[${RED}ERROR${NORM}] You must specify a backup archive" >&2
     exit
   fi
 

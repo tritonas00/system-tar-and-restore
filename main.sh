@@ -173,8 +173,8 @@ while true; do
     -m|--mount-opts)
       BR_MOUNT_OPTS=$2
       shift 2
-   ;;
-   -k|--kernel-opts)
+    ;;
+    -k|--kernel-opts)
       BR_KERNEL_OPTS=$2
       shift 2
     ;;

@@ -2,13 +2,13 @@
 
 cd $(dirname $0)
 
-clean_files() {
+clean_tmp_files() {
   if [ -f /tmp/wr_proc ]; then rm /tmp/wr_proc; fi
   if [ -f /tmp/wr_log ]; then rm /tmp/wr_log; fi
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
 }
 
-clean_files
+clean_tmp_files
 
 echo > /tmp/wr_log
 echo > /tmp/wr_proc
@@ -589,4 +589,4 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 
 gtkdialog --program=MAIN_DIALOG
 
-clean_files
+clean_tmp_files

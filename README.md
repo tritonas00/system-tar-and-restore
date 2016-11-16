@@ -166,7 +166,7 @@ genkernel check and initramfs building.
 - syslinux 
 - remote file in protected http server
 
-<code>main.sh -i 1 -r /dev/sdb -S /dev/sdb -f http://server/backup.tar.gz -y username -p password</code>
+<code>main.sh -i 1 -r /dev/sdb1 -S /dev/sdb -f http://server/backup.tar.gz -y username -p password</code>
 
 - root: /dev/sda2, esp: /dev/sda1
 - local archive  

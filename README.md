@@ -34,7 +34,7 @@ The package is provided by the <code>gentoo-el</code> overlay. You can install i
 
 ###REQUIREMENTS###
 
-- gtkdialog 0.8.3 or later
+- gtkdialog 0.8.3 or later (for the gui)
 - rsync (for Transfer Mode)
 - wget   (for downloading backup archives)
 - gptfdisk/gdisk (for GPT and Syslinux)

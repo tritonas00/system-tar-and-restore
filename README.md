@@ -162,11 +162,11 @@ genkernel check and initramfs building.
 
 <code>main.sh -i 1 -r /dev/md1 -b /dev/md0 -f /home/john/backup.tar.gz -S /dev/md0</code>  
 
-- root: /dev/sdb2, /boot: /dev/sdb1
+- root: /dev/sdb1
 - syslinux 
 - remote file in protected http server
 
-<code>main.sh -i 1 -r /dev/sdb2 -b /dev/sdb1 -S /dev/sdb -f http://server/backup.tar.gz -y username -p password</code>
+<code>main.sh -i 1 -r /dev/sdb -S /dev/sdb -f http://server/backup.tar.gz -y username -p password</code>
 
 - root: /dev/sda2, esp: /dev/sda1
 - local archive  

@@ -205,7 +205,7 @@ while true; do
     --help)
       echo "Usage: $0 -i mode [options]
 
-General:
+General Options:
   -i, --mode                  Select mode: 0 (Backup) 1 (Restore) 2 (Transfer)
   -j, --no-color              Disable colors
   -q, --quiet                 Dont ask, just run

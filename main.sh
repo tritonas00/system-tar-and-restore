@@ -384,7 +384,7 @@ if [ "$BRmode" = "0" ]; then
       elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
         lastper=$per
         if [ -n "$BRwrap" ]; then
-          echo "Archiving $total Files: $per%" > /tmp/wr_proc
+          echo "Archiving: $per% ($b / $total Files)" > /tmp/wr_proc
         else
           echo -ne "\rArchiving: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
         fi
@@ -1965,7 +1965,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
         lastper=$per
         if [ -n "$BRwrap" ]; then
-          echo "Extracting $total Files: $per%" > /tmp/wr_proc
+          echo "Extracting: $per% ($a / $total Files)" > /tmp/wr_proc
         else
           echo -ne "\rExtracting: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
         fi
@@ -1984,7 +1984,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
         lastper=$per
         if [ -n "$BRwrap" ]; then
-          echo "Transferring $total Files: $per%" > /tmp/wr_proc
+          echo "Transferring: $per% ($b / $total Files)" > /tmp/wr_proc
         else
           echo -ne "\rTransferring: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
         fi

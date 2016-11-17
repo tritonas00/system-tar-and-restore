@@ -15,7 +15,8 @@ System Tar & Restore
 
 ###ABOUT###
 
-System tar & restore contains two bash scripts, the main program **main.sh** and a gui wrapper **gui.sh**. Three modes are available: Backup, Restore and Transfer.
+System tar & restore contains two bash scripts, the main program **main.sh** and a gui wrapper **gui.sh**.  
+Three modes are available: Backup, Restore and Transfer.
 
 Supported distributions: Arch, Debian/Ubuntu, Fedora, openSUSE, Gentoo, Mandriva/Mageia          
 

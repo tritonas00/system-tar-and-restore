@@ -644,16 +644,16 @@ if [ "$BRmode" = "0" ]; then
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 
   # Calculate elapsed time
-  elapsed="Elapsed time: $(($(($(date +%s)-start))/3600)) hours $((($(($(date +%s)-start))%3600)/60)) min $(($(($(date +%s)-start))%60)) sec"
+  elapsed="$(($(($(date +%s)-start))/3600)) hours $((($(($(date +%s)-start))%3600)/60)) min $(($(($(date +%s)-start))%60)) sec"
   # Complete the log
   if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
-  echo "$elapsed" >> "$BRFOLDER"/backup.log
+  echo "Elapsed time: $elapsed" >> "$BRFOLDER"/backup.log
 
   # Inform the user if error occurred or not
   if [ -f /tmp/b_error ]; then
-    echo -e "${RED}\nAn error occurred.\n\nCheck $BRFOLDER/backup.log for details.\n$elapsed${NORM}"
+    echo -e "${RED}\nAn error occurred.\n\nCheck $BRFOLDER/backup.log for details.\nElapsed time: $elapsed${NORM}"
   else
-    echo -e "${CYAN}\nBackup archive and log saved in $BRFOLDER\n$elapsed${NORM}"
+    echo -e "${CYAN}\nBackup archive and log saved in $BRFOLDER\nElapsed time: $elapsed${NORM}"
   fi
 
   # Generate configuration file if -g is given and no error occurred

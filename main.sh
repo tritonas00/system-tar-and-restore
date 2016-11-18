@@ -1204,7 +1204,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo -ne "${WRK}Mounting $BRrootsubvolname"
       OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
       if [ -n "$BRSTOP" ]; then
-        echo -e "\n[${BR_RED}ERROR${BR_NORM}] Error while making subvolumes" >&2
+        echo -e "\n[${RED}ERROR${NORM}] Error while making subvolumes" >&2
         unset BRSTOP
         clean_unmount_in
       fi

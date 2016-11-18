@@ -342,18 +342,24 @@ if [ "$BRmode" = "0" ]; then
     fi
 
     echo -e "\nFOUND BOOTLOADERS"
-    if which grub-mkconfig &>/dev/null || which grub2-mkconfig &>/dev/null; then echo "Grub"; else BRgrub="n"; fi # If grub(2)-mkconfig found, probably grub is installed
-    if which extlinux &>/dev/null && which syslinux &>/dev/null; then echo "Syslinux"; else BRsyslinux="n"; fi # If sys/extlinux found, probably syslinux is installed
-    if which efibootmgr &>/dev/null; then echo "EFISTUB/efibootmgr"; else BRefibootmgr="n"; fi # Check if efibootmgr is installed
-    if which bootctl &>/dev/null; then echo "Systemd/bootctl"; else BRbootctl="n"; fi # If bootctl found, probably systemd-boot is available
+    # If grub(2)-mkconfig found, probably grub is installed
+    if which grub-mkconfig &>/dev/null || which grub2-mkconfig &>/dev/null; then echo "Grub"; else BRgrub="n"; fi
+    # If sys/extlinux found, probably syslinux is installed
+    if which extlinux &>/dev/null && which syslinux &>/dev/null; then echo "Syslinux"; else BRsyslinux="n"; fi
+    # Check if efibootmgr is installed
+    if which efibootmgr &>/dev/null; then echo "EFISTUB/efibootmgr"; else BRefibootmgr="n"; fi
+    # If bootctl found, probably systemd-boot is available
+    if which bootctl &>/dev/null; then echo "Systemd/bootctl"; else BRbootctl="n"; fi
 
-    if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ] && [ -n "$BRefibootmgr" ] && [ -n "$BRbootctl" ]; then # In case none of the above found
+    # In case none of the above found
+    if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ] && [ -n "$BRefibootmgr" ] && [ -n "$BRbootctl" ]; then
       echo "None or not supported"
     fi
 
+    # Show older backup directories that we remove later if -a is given
     if [ -n "$BRoldbackups" ] && [ -n "$BRclean" ]; then
       echo -e "\nREMOVE BACKUPS"
-      for item in "${BRoldbackups[@]}"; do echo "$item"; done # Show older backup directories that we remove later if -a is given
+      for item in "${BRoldbackups[@]}"; do echo "$item"; done
     fi
   }
 
@@ -365,11 +371,14 @@ if [ "$BRmode" = "0" ]; then
   # Run tar with given input
   run_tar() {
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      tar ${BR_MAINOPTS} >( openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log ) "${BR_TAROPTS[@]}" / # In case of openssl encryption
+      # In case of openssl encryption
+      tar ${BR_MAINOPTS} >( openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log ) "${BR_TAROPTS[@]}" /
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      tar ${BR_MAINOPTS} >( gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log ) "${BR_TAROPTS[@]}" / # In case of gpg encryption
+      # In case of gpg encryption
+      tar ${BR_MAINOPTS} >( gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log ) "${BR_TAROPTS[@]}" /
     else
-      tar ${BR_MAINOPTS} "$BRFOLDER/$BRNAME.$BR_EXT" "${BR_TAROPTS[@]}" / # Without encryption
+      # Without encryption
+      tar ${BR_MAINOPTS} "$BRFOLDER/$BRNAME.$BR_EXT" "${BR_TAROPTS[@]}" /
     fi
   }
 
@@ -379,14 +388,17 @@ if [ "$BRmode" = "0" ]; then
     while read ln; do
       b=$((b + 1))
       per=$(($b*100/$total))
-      if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then # If -v is given print percentage and full output from run_tar
+      # If -v is given print percentage and full output from run_tar
+      if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
         echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
       elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
         lastper=$per
-        if [ -n "$BRwrap" ]; then # Give progress info to gui wrapper if -w is given
+        # Give progress info to gui wrapper if -w is given
+        if [ -n "$BRwrap" ]; then
           echo "Archiving: $per% ($b / $total Files)" > /tmp/wr_proc
         else
-          echo -ne "\rArchiving: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%" # The main progress bar
+          # The main progress bar
+          echo -ne "\rArchiving: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
         fi
       fi
     done
@@ -396,7 +408,8 @@ if [ "$BRmode" = "0" ]; then
   generate_conf() {
     echo -e "#Auto-generated configuration file\n#Place it in /etc/backup.conf\n\n"
     echo -e "BRFOLDER='$(dirname "$BRFOLDER")'"
-    if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then echo "BRNAME='$BRNAME'"; fi # Strictly check the default filename format
+    # Strictly check the default filename format
+    if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then echo "BRNAME='$BRNAME'"; fi
     echo -e "BRcompression=$BRcompression"
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then echo "BRhome=No"; fi
     if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then echo -e "BRhome=No\nBRhidden=No"; fi
@@ -418,7 +431,8 @@ if [ "$BRmode" = "0" ]; then
     echo -e "[${RED}ERROR${NORM}] File does not exist: $BRconf" >&2
     exit
   fi
-  if [ -f "$BRconf" ] && [ -z "$BRwrap" ]; then # If -w is given dont source, the gui wrapper will source it
+  # If -w is given dont source, the gui wrapper will source it
+  if [ -f "$BRconf" ] && [ -z "$BRwrap" ]; then
     source "$BRconf"
   fi
 
@@ -536,7 +550,8 @@ if [ "$BRmode" = "0" ]; then
   if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
     BR_TAROPTS+=(--exclude=/home/*)
   elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
-    for x in $(find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print); do # Find everything that doesn't start with dot and exclude it
+    # Find everything that doesn't start with dot and exclude it
+    for x in $(find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print); do
       BR_TAROPTS+=(--exclude="$x")
     done
   fi
@@ -544,9 +559,9 @@ if [ "$BRmode" = "0" ]; then
   # Add tar user options to the main array, replace any // with space
   for i in ${BR_USER_OPTS[@]}; do BR_TAROPTS+=("${i///\//\ }"); done
 
-  # Check destination for backup directories with older date
+  # Check destination for backup directories with older date, strictly check directory name format
   IFS=$'\n'
-  for i in $(find $(dirname "$BRFOLDER") -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]"); do # Strictly check directory format
+  for i in $(find $(dirname "$BRFOLDER") -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]"); do
     if [ "${i//[^0-9]/}" -lt "${BRFOLDER//[^0-9]/}" ]; then # Compare the date numbers
       BRoldbackups+=("$i")
     fi
@@ -597,23 +612,29 @@ if [ "$BRmode" = "0" ]; then
     for item in "${BRoldbackups[@]}"; do rm -r "$item"; done
   fi
 
-  # Prepare
   echo -e "\n${BOLD}[PROCESSING]${NORM}"
-  if [ -n "$BRwrap" ]; then echo "Preparing..." > /tmp/wr_proc; fi # Inform the gui wrapper if -w is given
-  touch /target_architecture.$(uname -m) # Restore mode will check and read this file
-  mkdir -p "$BRFOLDER" # Create the destination directory
+  # Inform the gui wrapper if -w is given
+  if [ -n "$BRwrap" ]; then echo "Preparing..." > /tmp/wr_proc; fi
+  # Restore mode will check and read this file
+  touch /target_architecture.$(uname -m)
+  # Create the destination directory
+  mkdir -p "$BRFOLDER"
   sleep 1
-  echo -e "$BR_VERSION [Backup $(date +%Y-%m-%d-%T)]\n" > "$BRFOLDER"/backup.log # Start the log
+  # Start the log
+  echo -e "$BR_VERSION [Backup $(date +%Y-%m-%d-%T)]\n" > "$BRFOLDER"/backup.log
   ( echo "[SUMMARY]"; show_summary; echo -e "\n[ARCHIVER]" ) >> "$BRFOLDER"/backup.log
-  start=$(date +%s) # Store start time
+  # Store start time
+  start=$(date +%s)
 
   # Hide the cursor if -z is given
   if [ -n "$BRhide" ]; then echo -en "${HIDE}"; fi
 
+  # Inform the gui wrapper if -w is given
+  if [ -n "$BRwrap" ]; then echo "Please wait while calculating files..." > /tmp/wr_proc; fi
   # Calculate the number of files and store it
-  if [ -n "$BRwrap" ]; then echo "Please wait while calculating files..." > /tmp/wr_proc; fi # Inform the gui wrapper if -w is given
   run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
-  total=$(cat /tmp/b_filelist | wc -l) # Store the number of files we found from run_calc
+  # Store the number of files we found from run_calc
+  total=$(cat /tmp/b_filelist | wc -l)
   sleep 1
   echo
 
@@ -623,8 +644,9 @@ if [ "$BRmode" = "0" ]; then
   # Give destination directory full permissions with some nice messages
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 
-  # Complete the log, calculate and show elapsed time
+  # Complete the log
   if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
+  # Calculate and show elapsed time
   elapsed="Elapsed time: $(($(($(date +%s)-start))/3600)) hours $((($(($(date +%s)-start))%3600)/60)) min $(($(($(date +%s)-start))%60)) sec"
   echo "$elapsed" >> "$BRFOLDER"/backup.log
 
@@ -635,9 +657,12 @@ if [ "$BRmode" = "0" ]; then
     echo -e "${CYAN}\nBackup archive and log saved in $BRFOLDER\n$elapsed${NORM}"
   fi
 
-  if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then generate_conf > "$BRFOLDER"/backup.conf; fi # Generate configuration file if -g is given and no error occurred
-  if [ -n "$BRhide" ]; then echo -en "${SHOW}"; fi # Unhide the cursor if -z is given
-  if [ -n "$BRwrap" ]; then cat "$BRFOLDER"/backup.log > /tmp/wr_log; fi # Give log to wrapper if -w is given
+  # Generate configuration file if -g is given and no error occurred
+  if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then generate_conf > "$BRFOLDER"/backup.conf; fi
+  # Unhide the cursor if -z is given
+  if [ -n "$BRhide" ]; then echo -en "${SHOW}"; fi
+  # Give log to wrapper if -w is given
+  if [ -n "$BRwrap" ]; then cat "$BRFOLDER"/backup.log > /tmp/wr_log; fi
 
   clean_tmp_files
 

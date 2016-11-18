@@ -615,7 +615,7 @@ if [ "$BRmode" = "0" ]; then
   echo -e "\n${BOLD}[PROCESSING]${NORM}"
   # Inform the gui wrapper if -w is given
   if [ -n "$BRwrap" ]; then echo "Preparing..." > /tmp/wr_proc; fi
-  # Restore mode will check and read this file
+  # Restore mode will check and read this file in the archive
   touch /target_architecture.$(uname -m)
   # Create the destination directory
   mkdir -p "$BRFOLDER"

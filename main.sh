@@ -373,7 +373,7 @@ if [ "$BRmode" = "0" ]; then
     fi
   }
 
-  # Calculate  percentage and compose a simple progress bar
+  # Calculate percentage and compose a simple progress bar
   pgrs_bar() {
     lastper=-1
     while read ln; do
@@ -440,7 +440,7 @@ if [ "$BRmode" = "0" ]; then
     exit
   fi
 
-  if [ -z "$BRencmethod" ] ||  [ "$BRencmethod" = "none" ] && [ -n "$BRencpass" ]; then
+  if [ -z "$BRencmethod" ] || [ "$BRencmethod" = "none" ] && [ -n "$BRencpass" ]; then
     echo -e "[${YELLOW}WARNING${NORM}] You must specify an encryption method" >&2
     exit
   fi
@@ -1410,7 +1410,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ -n "$BRencdev" ] && [ ! "$BRdistro" = "Arch" ] && [ ! "$BRdistro" = "Gentoo" ]; then
-      if [ -f  /mnt/target/etc/crypttab ]; then
+      if [ -f /mnt/target/etc/crypttab ]; then
         mv /mnt/target/etc/crypttab /mnt/target/etc/crypttab-old
       fi
       echo "Generating basic crypttab..."
@@ -1724,7 +1724,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ -f /mnt/target$BRespmpoint/loader/loader.conf ]; then
         mv /mnt/target$BRespmpoint/loader/loader.conf /mnt/target$BRespmpoint/loader/loader.conf-old
       fi
-      echo "timeout  5" > /mnt/target$BRespmpoint/loader/loader.conf
+      echo "timeout 5" > /mnt/target$BRespmpoint/loader/loader.conf
       echo "Generating configuration entries"
 
       for FILE in /mnt/target$BRespmpoint/*; do
@@ -1746,7 +1746,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           elif [ "$BRdistro" = "Gentoo" ]; then
             echo -e "title $BRdistro $cn\nlinux /$kn\noptions root=$BRroot $BR_KERNEL_OPTS" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
           fi
-          ( echo -e "\nGenerated $BRdistro-$cn.conf:"; cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf )  >> /tmp/restore.log
+          ( echo -e "\nGenerated $BRdistro-$cn.conf:"; cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf ) >> /tmp/restore.log
           if [ "$BRdistro" = "Arch" ]; then
             ( echo -e "\nGenerated $BRdistro-$cn-fallback.conf:"; cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn-fallback.conf ) >> /tmp/restore.log
           fi

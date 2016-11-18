@@ -630,7 +630,7 @@ if [ "$BRmode" = "0" ]; then
 
   # Inform the gui wrapper if -w is given
   if [ -n "$BRwrap" ]; then echo "Please wait while calculating files..." > /tmp/wr_proc; fi
-  # Calculate the number of files and store it
+  # Calculate the number of files
   run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
   # Store the number of files we found from run_calc
   total=$(cat /tmp/b_filelist | wc -l)

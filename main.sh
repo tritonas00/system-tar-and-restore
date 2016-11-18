@@ -774,7 +774,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       clean_unmount_in
     else
       detect_encryption
-      # If archive is encrypted prompt the user for passphrase
+      # If the downloaded archive is encrypted prompt the user for passphrase
       if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ]; then
         echo -ne "${BOLD}"
         read -p "Enter Passphrase: " BRencpass

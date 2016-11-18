@@ -645,7 +645,7 @@ if [ "$BRmode" = "0" ]; then
 
   # Complete the log
   if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
-  # Calculate and show elapsed time
+  # Calculate elapsed time
   elapsed="Elapsed time: $(($(($(date +%s)-start))/3600)) hours $((($(($(date +%s)-start))%3600)/60)) min $(($(($(date +%s)-start))%60)) sec"
   echo "$elapsed" >> "$BRFOLDER"/backup.log
 

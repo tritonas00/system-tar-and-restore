@@ -418,7 +418,7 @@ if [ "$BRmode" = "0" ]; then
     echo -e "[${RED}ERROR${NORM}] File does not exist: $BRconf" >&2
     exit
   fi
-  if [ -f "$BRconf" ] && [ -z "$BRwrap" ]; then
+  if [ -f "$BRconf" ] && [ -z "$BRwrap" ]; then # If -w is given dont source, the gui wrapper will source it
     source "$BRconf"
   fi
 

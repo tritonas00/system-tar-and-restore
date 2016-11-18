@@ -285,7 +285,7 @@ Restore / Transfer Mode:
   esac
 done
 
-# Give PID to wrapper
+# Give PID to wrapper if -w is given
 if [ -n "$BRwrap" ]; then
   echo $$ > /tmp/wr_pid
 fi
@@ -423,14 +423,14 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRgenkernel" ]; then echo "BRgenkernel=No"; fi
   }
 
-  # Check for configuration file and source it
+  # Set default configuration file, check if alternative specified by the user
   if [ -z "$BRconf" ]; then
     BRconf="/etc/backup.conf"
   elif [ -n "$BRconf" ] && [ ! -f "$BRconf" ]; then
     echo -e "[${RED}ERROR${NORM}] File does not exist: $BRconf" >&2
     exit
   fi
-  # If -w is given dont source, the gui wrapper will source it
+  # Source the configuration file. If -w is given dont source, the gui wrapper will source it
   if [ -f "$BRconf" ] && [ -z "$BRwrap" ]; then
     source "$BRconf"
   fi
@@ -567,7 +567,7 @@ if [ "$BRmode" = "0" ]; then
   done
   IFS=$DEFAULTIFS
 
-  # Check if backup file already exists and prompt the user to overwrite
+  # Check if backup file already exists and prompt the user to overwrite. If -q is given overwrite automatically
   if [ -z "$BRquiet" ]; then
     while [ -f "$BRFOLDER/$BRNAME.$BR_EXT" ]; do
       echo -e "${BOLD}"
@@ -585,7 +585,7 @@ if [ "$BRmode" = "0" ]; then
     done
   fi
 
-  # Show summary and prompt the user to continue
+  # Show summary and prompt the user to continue. If -q is given continue automatically
   echo -e "\n${BOLD}[SUMMARY]${CYAN}"
   show_summary
   echo -ne "${NORM}"
@@ -616,7 +616,7 @@ if [ "$BRmode" = "0" ]; then
   if [ -n "$BRwrap" ]; then echo "Preparing..." > /tmp/wr_proc; fi
   # Restore mode will check and read this file in the archive
   touch /target_architecture.$(uname -m)
-  # Create the destination directory
+  # Create the destination subdirectory
   mkdir -p "$BRFOLDER"
   sleep 1
   # Start the log
@@ -640,7 +640,7 @@ if [ "$BRmode" = "0" ]; then
   # Run tar and pipe it through the progress calculation, give errors to log
   ( run_tar 2>> "$BRFOLDER"/backup.log || touch /tmp/b_error ) | pgrs_bar
 
-  # Give destination directory full permissions with some nice messages
+  # Give destination subdirectory full permissions with some nice messages
   OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
 
   # Calculate elapsed time

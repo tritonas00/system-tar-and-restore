@@ -285,7 +285,7 @@ Restore / Transfer Mode:
   esac
 done
 
-# Give PID to wrapper if -w is given
+# Give PID to gui wrapper if -w is given
 if [ -n "$BRwrap" ]; then
   echo $$ > /tmp/wr_pid
 fi
@@ -612,7 +612,7 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   echo -e "\n${BOLD}[PROCESSING]${NORM}"
-  # Inform the gui wrapper if -w is given
+  # Update the gui wrapper statusbar if -w is given
   if [ -n "$BRwrap" ]; then echo "Preparing..." > /tmp/wr_proc; fi
   # Restore mode will check and read this file in the archive
   touch /target_architecture.$(uname -m)
@@ -628,7 +628,7 @@ if [ "$BRmode" = "0" ]; then
   # Hide the cursor if -z is given
   if [ -n "$BRhide" ]; then echo -en "${HIDE}"; fi
 
-  # Inform the gui wrapper if -w is given
+  # Update the gui wrapper statusbar if -w is given
   if [ -n "$BRwrap" ]; then echo "Please wait while calculating files..." > /tmp/wr_proc; fi
   # Calculate the number of files
   run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
@@ -660,7 +660,7 @@ if [ "$BRmode" = "0" ]; then
   if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then generate_conf > "$BRFOLDER"/backup.conf; fi
   # Unhide the cursor if -z is given
   if [ -n "$BRhide" ]; then echo -en "${SHOW}"; fi
-  # Give log to wrapper if -w is given
+  # Give log to gui wrapper if -w is given
   if [ -n "$BRwrap" ]; then cat "$BRFOLDER"/backup.log > /tmp/wr_log; fi
 
   clean_tmp_files
@@ -733,12 +733,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Detect backup archive filetype and set tar options accordingly
   detect_filetype() {
     echo "Checking archive type..."
+    # Update the gui wrapper statusbar if -w is given
     if [ -n "$BRwrap" ]; then echo "Checking archive type..." > /tmp/wr_proc; fi
+    # If archive is encrypted decrypt first, pipe output to 'file'
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
       BRtype=$(openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b -)
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
       BRtype=$(gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b -)
     else
+      # Check archive directly
       BRtype=$(file -b "$BRsource")
     fi
 
@@ -771,6 +774,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       clean_unmount_in
     else
       detect_encryption
+      # If archive is encrypted prompt the user for passphrase
       if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ]; then
         echo -ne "${BOLD}"
         read -p "Enter Passphrase: " BRencpass
@@ -784,11 +788,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Detect the distro by checking for known package manager conf files
+  # Detect the distro by checking for known package manager files
   detect_distro() {
+    # In Restore mode check the archive contents
     if [ "$BRmode" = "1" ]; then
       if grep -Fxq "etc/yum.conf" /tmp/filelist || grep -Fxq "etc/dnf/dnf.conf" /tmp/filelist; then
         BRdistro="Fedora"
+        # Also add extra tar options needed by Fedora
         USER_OPTS+=(--selinux --acls "--xattrs-include='*'")
       elif grep -Fxq "etc/pacman.conf" /tmp/filelist; then
         BRdistro="Arch"
@@ -804,6 +810,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         BRdistro="Unsupported"
       fi
 
+    # In Transfer mode check the running system
     elif [ "$BRmode" = "2" ]; then
       if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
         BRdistro="Fedora"
@@ -823,7 +830,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Set the root in Syslinux, EFISTUB and Bootctl configuration entries
+  # Set the root partition in Syslinux, EFISTUB and Bootctl configuration entries. If root is on lvm use the full name, otherwise use UUID
   detect_bl_root() {
     if [[ "$BRroot" == *mapper* ]]; then
       echo "root=$BRroot"
@@ -832,7 +839,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Set the root in fstab
+  # Set the root partition in fstab. If root is on mdadm use the full name, otherwise use UUID
   detect_fstab_root() {
     if [[ "$BRroot" == *dev/md* ]]; then
       echo "$BRroot"

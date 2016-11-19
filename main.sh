@@ -1303,8 +1303,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Show a nice summary
   show_summary() {
     echo "TARGET PARTITION SCHEME:"
-    BRpartitions="Partition|Mountpoint|Filesystem|Size|Options"
-    BRpartitions="$BRpartitions\n$BRroot $BRmap|/|$BRfsystem|$BRfsize|$BR_MOUNT_OPTS"
+    BRpartitions="Partition|Mountpoint|Filesystem|Size|Options\n$BRroot $BRmap|/|$BRfsystem|$BRfsize|$BR_MOUNT_OPTS"
     if [ -n "$BRcustomparts" ]; then
       for i in ${BRsorted[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
@@ -1318,6 +1317,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRswap" ]; then
       BRpartitions="$BRpartitions\n$BRswap|swap"
     fi
+    # Create columns
     echo -e "$BRpartitions" | column -t -s '|'
 
     if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then

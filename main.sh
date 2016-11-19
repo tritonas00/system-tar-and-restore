@@ -1537,7 +1537,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Find and copy Grub efi bootloader executable. Usually we need it in EFI/boot and as bootx64/32.efi
+  # Find and copy Grub efi bootloader executable. Usually we need it in EFI/boot/ and as bootx64/32.efi
   cp_grub_efi() {
     if [ ! -d /mnt/target$BRespmpoint/EFI/boot ]; then
       mkdir /mnt/target$BRespmpoint/EFI/boot

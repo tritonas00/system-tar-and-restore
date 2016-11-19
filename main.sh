@@ -329,12 +329,12 @@ if [ "$BRmode" = "0" ]; then
     for i in "${BR_TAROPTS[@]}"; do echo "$i"; done
 
     echo -e "\nHOME DIRECTORY"
-    if [ -z "$BRnohome" ] && [ -z "$BRonlyhidden" ]; then
-      echo "Include"
-    elif [ -n "$BRonlyhidden" ]; then
+    if [ -n "$BRonlyhidden" ]; then
       echo "Only hidden files and folders"
     elif [ -n "$BRnohome" ]; then
       echo "Exclude"
+    else
+      echo "Include"
     fi
 
     echo -e "\nFOUND BOOTLOADERS"

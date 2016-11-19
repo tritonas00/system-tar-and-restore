@@ -1267,7 +1267,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       # Sort target partitions array by their mountpoint so we can mount in order
       BRsorted=(`for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =`)
       unset custom_ok
-      # We read a sorted partitions array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter 
+      # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter 
       for i in ${BRsorted[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
         BRmpoint=$(echo $i | cut -f1 -d"=")

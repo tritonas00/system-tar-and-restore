@@ -407,7 +407,7 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then echo "BRNAME='$BRNAME'"; fi # Strictly check the default filename format
     echo -e "BRcompression=$BRcompression"
     if [ -n "$BRnohome" ]; then echo "BRnohome=Yes"; fi
-    if [ -n "$BRonlyhidden" ]; then echo -e "BRonlyhidden=Yes"; fi
+    if [ -n "$BRonlyhidden" ]; then echo "BRonlyhidden=Yes"; fi
     if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'"; fi
     if [ -n "$BRnocolor" ]; then echo "BRnocolor=Yes"; fi
     if [ -n "$BRverb" ]; then echo "BRverb=Yes"; fi

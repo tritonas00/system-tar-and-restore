@@ -1203,13 +1203,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   mount_all() {
     # Update the gui wrapper statusbar if -w is given
     if [ -n "$BRwrap" ]; then echo "Mounting..." > /tmp/wr_proc; fi
+    # Create directory to mount the target root partition
     echo -e "\n${BOLD}[MOUNTING]${NORM}"
     echo -ne "${WRK}Making working directory"
-    # Create directory to mount the target root partition
     OUTPUT=$(mkdir /mnt/target 2>&1) && ok_status || error_status
 
-    echo -ne "${WRK}Mounting $BRroot"
     # Mount the target root partition
+    echo -ne "${WRK}Mounting $BRroot"
     OUTPUT=$(mount -o $BR_MOUNT_OPTS $BRroot /mnt/target 2>&1) && ok_status || error_status
     # Store it's size
     BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)

@@ -1345,7 +1345,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     elif [ -n "$BRsyslinux" ]; then
       echo "$BRbootloader ($BRpartitiontable)"
-      # # If the target Syslinux device is a mdadm array, show all disks the array contains
+      # If the target Syslinux device is a mdadm array, show all disks the array contains
       if [[ "$BRsyslinux" == *md* ]]; then
         echo Locations: $(grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
       else

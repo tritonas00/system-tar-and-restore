@@ -902,8 +902,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Search target system for kernels
     for FILE in /mnt/target/boot/*; do
       if file -b -k "$FILE" | grep -qw "bzImage"; then
-        cn=$(echo "$FILE" | sed -n 's/[^-]*-//p') # Cutted kernel name without any prefix (eg vmlinuz-)
-        kn=$(basename "$FILE") # # Full kernel name (eg vmlinuz-linux)
+        cn=$(echo "$FILE" | sed -n 's/[^-]*-//p') # Cutted kernel name without any prefix (eg cut vmlinuz-)
+        kn=$(basename "$FILE") # Full kernel name (eg vmlinuz-linux)
 
         # Create entries. We set ipn in detect_initramfs_prefix
         if [ "$BRdistro" = "Arch" ]; then

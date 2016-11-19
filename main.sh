@@ -1305,9 +1305,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo "TARGET PARTITION SCHEME:"
     BRpartitions="Partition|Mountpoint|Filesystem|Size|Options\n$BRroot $BRmap|/|$BRfsystem|$BRfsize|$BR_MOUNT_OPTS"
     if [ -n "$BRcustomparts" ]; then
+      # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter 
       for i in ${BRsorted[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
         BRmpoint=$(echo $i | cut -f1 -d"=")
+        # Replace any // with space
         BRmpoint="${BRmpoint///\//\ }"
         BRcustomfs=$(blkid -s TYPE -o value $BRdevice)
         BRcustomsize=$(lsblk -d -n -o size 2>/dev/null $BRdevice | sed -e 's/ *//')

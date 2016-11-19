@@ -167,7 +167,7 @@ while true; do
       shift 2
     ;;
     -O|--only-hidden)
-      BRhid="y"
+      BRonlyhidden="y"
       shift
     ;;
     -m|--mount-opts)
@@ -850,11 +850,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Detect the partition table for Syslinux so we can use the corresponding bin files
   detect_partition_table_syslinux() {
+    # Check if the target Syslinux device is a mdadm array first
     if [[ "$BRsyslinux" == *md* ]]; then
-      BRsyslinuxdisk="$BRdev"
+      BRsyslinuxdisk="$BRdev" # We set BRdev in install_bootloader
     else
       BRsyslinuxdisk="$BRsyslinux"
     fi
+    # Check the first 8 bytes for EFI PART
     if dd if="$BRsyslinuxdisk" skip=64 bs=8 count=1 2>/dev/null | grep -qw "EFI PART"; then
       BRpartitiontable="gpt"
     else
@@ -862,14 +864,16 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Apply appropriate partition flags for Syslinux and search known locations for bin and com32 Syslinux files
+  # Apply appropriate partition flags for Syslinux and search known locations for bin and com32 Syslinux files.
   set_syslinux_flags_and_paths() {
     if [ "$BRpartitiontable" = "gpt" ]; then
-      echo "Setting legacy_boot flag on partition $BRpart of $BRdev"
+      # Set legacy_boot flag in GPT, use gptmbr.bin
+      echo "Setting legacy_boot flag on partition $BRpart of $BRdev" # We set BRpart in install_bootloader
       sgdisk $BRdev --attributes=$BRpart:set:2 &>> /tmp/restore.log || touch /tmp/bl_error
       BRsyslinuxmbr="gptmbr.bin"
     else
-      echo "Setting boot flag on partition $BRpart of $BRdev"
+      # Set boot flag in MBR, use mbr.bin
+      echo "Setting boot flag on partition $BRpart of $BRdev" # We set BRpart in install_bootloader
       sfdisk $BRdev -A $BRpart &>> /tmp/restore.log || touch /tmp/bl_error
       BRsyslinuxmbr="mbr.bin"
     fi
@@ -895,11 +899,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   generate_syslinux_cfg() {
     echo -e "UI menu.c32\nPROMPT 0\nMENU TITLE Boot Menu\nTIMEOUT 50"
 
+    # Search target system for kernels
     for FILE in /mnt/target/boot/*; do
       if file -b -k "$FILE" | grep -qw "bzImage"; then
-        cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
-        kn=$(basename "$FILE")
+        cn=$(echo "$FILE" | sed -n 's/[^-]*-//p') # Cutted kernel name without any prefix (eg vmlinuz-)
+        kn=$(basename "$FILE") # # Full kernel name (eg vmlinuz-linux)
 
+        # Create entries. We set ipn in detect_initramfs_prefix
         if [ "$BRdistro" = "Arch" ]; then
           echo -e "LABEL arch\n\tMENU LABEL $BRdistro $cn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BR_KERNEL_OPTS\n\tINITRD ../$ipn-$cn.img"
           echo -e "LABEL archfallback\n\tMENU LABEL $BRdistro $cn fallback\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BR_KERNEL_OPTS\n\tINITRD ../$ipn-$cn-fallback.img"
@@ -930,11 +936,14 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Run tar with given input
   run_tar() {
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+      # In case of openssl encryption
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+      # In case of gpg encryption
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target
     else
-      tar ${BR_MAINOPTS} "$BRsource" "${USER_OPTS[@]}" -C /mnt/target && (echo "System extracted successfully" >> /tmp/restore.log)
+      # Without encryption
+      tar ${BR_MAINOPTS} "$BRsource" "${USER_OPTS[@]}" -C /mnt/target
     fi
   }
 
@@ -943,20 +952,20 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -z "$BRoverride" ]; then
       BR_RSYNCOPTS=(--exclude=/run/* --exclude=/dev/* --exclude=/sys/* --exclude=/tmp/* --exclude=/mnt/* --exclude=/proc/* --exclude=/media/* --exclude=/var/run/* --exclude=/var/lock/* --exclude=/home/*/.gvfs --exclude=lost+found)
     fi
-    if [ -n "$BRhid" ]; then
+    if [ -n "$BRonlyhidden" ]; then
       BR_RSYNCOPTS+=(--exclude=/home/*/[^.]*)
     fi
     BR_RSYNCOPTS+=("${USER_OPTS[@]}")
   }
 
-  # Calculate files to create percentage and progress bar
+  # Calculate files to create percentage and progress bar in Transfer mode
   run_calc() {
     rsync -av / /mnt/target "${BR_RSYNCOPTS[@]}" --dry-run 2>/dev/null | tee /tmp/filelist
   }
 
   # Run rsync with given input
   run_rsync() {
-    rsync -aAXv / /mnt/target "${BR_RSYNCOPTS[@]}" && (echo "System transferred successfully" >> /tmp/restore.log)
+    rsync -aAXv / /mnt/target "${BR_RSYNCOPTS[@]}"
   }
 
   # Scan normal partitions, lvm, md arrays and sd card partitions
@@ -1190,15 +1199,19 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Mount root partition and check if it's empty, create brtfs subvolumes and re-mount if specified, mount other partitions, find partition sizes, exit on errors
+  # Main mount function. Exit and clean on errors
   mount_all() {
+    # Update the gui wrapper statusbar if -w is given
     if [ -n "$BRwrap" ]; then echo "Mounting..." > /tmp/wr_proc; fi
     echo -e "\n${BOLD}[MOUNTING]${NORM}"
     echo -ne "${WRK}Making working directory"
+    # Create directory to mount the target root partition
     OUTPUT=$(mkdir /mnt/target 2>&1) && ok_status || error_status
 
     echo -ne "${WRK}Mounting $BRroot"
+    # Mount the target root partition
     OUTPUT=$(mount -o $BR_MOUNT_OPTS $BRroot /mnt/target 2>&1) && ok_status || error_status
+    # Store it's size
     BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
     if [ -n "$BRSTOP" ]; then
       echo -e "\n[${RED}ERROR${NORM}] Error while mounting partitions" >&2
@@ -1207,6 +1220,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       exit
     fi
 
+    # Check if the target root partition is not empty
     if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
       if [ -z "$BRdontckroot" ]; then
         echo -e "[${RED}ERROR${NORM}] Root partition not empty, refusing to use it" >&2
@@ -1216,14 +1230,17 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
         exit
       else
+        # Just warn if -x is given
         echo -e "[${YELLOW}WARNING${NORM}] Root partition not empty"
       fi
     fi
 
+    # Create btrfs root subvolume if specified by the user
     if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
       echo -ne "${WRK}Creating $BRrootsubvolname"
       OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
 
+      # Create other btrfs subvolumes if specified by the user
       if [ -n "$BRsubvols" ]; then
         while read ln; do
           echo -ne "${WRK}Creating $BRrootsubvolname$ln"
@@ -1231,9 +1248,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         done< <(for a in "${BRsubvols[@]}"; do echo "$a"; done | sort)
       fi
 
+     # Unmount the target root partition
       echo -ne "${WRK}Unmounting $BRroot"
       OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
 
+     # Mount the root btrfs subvolume
       echo -ne "${WRK}Mounting $BRrootsubvolname"
       OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
       if [ -n "$BRSTOP" ]; then
@@ -1243,22 +1262,31 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
 
+    # Mount any other target patition if given by the user
     if [ -n "$BRcustomparts" ]; then
+      # Sort target partitions array by their mountpoint so we can mount in order
       BRsorted=(`for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =`)
       unset custom_ok
+      # We read a sorted partitions array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter 
       for i in ${BRsorted[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
         BRmpoint=$(echo $i | cut -f1 -d"=")
-        BRmpoint="${BRmpoint///\//\ }" # Replace any // with space
+        # Replace any // with space
+        BRmpoint="${BRmpoint///\//\ }"
         echo -ne "${WRK}Mounting $BRdevice"
+        # Create the corresponding mounting directory
         mkdir -p /mnt/target$BRmpoint
+        # Mount it
         OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
+        # Store sizes
         BRsizes+=(`lsblk -n -b -o size "$BRdevice" 2>/dev/null`=/mnt/target$BRmpoint)
         if [ -n "$custom_ok" ]; then
           unset custom_ok
+          # Store successfully mounted partitions so we can unmount them later
           BRumountparts+=($BRmpoint=$BRdevice)
+          # Check if partitions are not empty and warn
           if [ "$(ls -A /mnt/target$BRmpoint | grep -vw "lost+found")" ]; then
-            echo -e "[${CYAN}INFO${NORM}] $BRmpoint partition not empty"
+            echo -e "[${CYAN}INFO${NORM}] $BRmpoint partition not empty" 
           fi
         fi
       done
@@ -1343,7 +1371,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     if [ "$BRmode" = "1" ]; then
       echo "Archive:  $BRfiletype $enc_info"
-    elif [ "$BRmode" = "2" ] && [ -n "$BRhid" ]; then
+    elif [ "$BRmode" = "2" ] && [ -n "$BRonlyhidden" ]; then
       echo "Home:     Only hidden files and folders"
     elif [ "$BRmode" = "2" ]; then
       echo "Home:     Include"
@@ -1878,6 +1906,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -f /tmp/tar_error ]; then
       rm /tmp/tar_error
       echo -e "[${RED}ERROR${NORM}] Error reading archive" >&2
+      clean_unmount_in
     else
       target_arch=$(grep -F 'target_architecture.' /tmp/filelist | cut -f2 -d".")
       if [ -z "$target_arch" ]; then
@@ -2181,7 +2210,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   if [ "$BRmode" = "1" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
-    run_tar 2>>/tmp/restore.log | tar_pgrs
+    ( run_tar 2>>/tmp/restore.log && echo "System extracted successfully" >> /tmp/restore.log ) | tar_pgrs
     echo
 
   elif [ "$BRmode" = "2" ]; then
@@ -2190,7 +2219,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     sleep 1
     total=$(cat /tmp/filelist | wc -l)
     echo
-    run_rsync 2>>/tmp/restore.log | rsync_pgrs
+    ( run_rsync 2>>/tmp/restore.log && echo "System transferred successfully" >> /tmp/restore.log ) | rsync_pgrs
     echo
   fi
 

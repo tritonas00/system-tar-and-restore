@@ -1487,7 +1487,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ -f /mnt/target/etc/crypttab ]; then
         mv /mnt/target/etc/crypttab /mnt/target/etc/crypttab-old
       fi
-      # Generate a basic crypttab file to unlock the root
+      # Generate a basic crypttab file for the root partition
       echo "Generating basic crypttab..."
       echo "$crypttab_root UUID=$(blkid -s UUID -o value $BRencdev) none luks" > /mnt/target/etc/crypttab
       cat /mnt/target/etc/crypttab

@@ -1556,7 +1556,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Find and copy kernels and initramfs images in case of ESP on /boot/efi. 
+  # Find and copy kernels and initramfs images in case of ESP in /boot/efi
   cp_kernels() {
     # Search target system for kernels
     for FILE in /mnt/target/boot/*; do
@@ -1566,7 +1566,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     done
 
-    # Search target system for initramfs images.
+    # Search target system for initramfs images
     for FILE in /mnt/target/boot/*; do
       if [[ "$FILE" == *initramfs* ]] || [[ "$FILE" == *initrd* ]]; then
         echo "Copying $FILE in /mnt/target/boot/efi/"

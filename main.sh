@@ -1516,13 +1516,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     done
 
+    # Use genkernel in Gentoo if -D is not given
     if [ "$BRdistro" = "Gentoo" ]; then
       if [ -n "$BRgenkernel" ]; then
         echo "Skipping..."
       else
         # Update the gui wrapper statusbar if -w is given
         if [ -n "$BRwrap" ]; then echo "Building initramfs images..." > /tmp/wr_proc; fi
-        # Use genkernel in Gentoo if -D is not given
         chroot /mnt/target genkernel --no-color --install initramfs
       fi
     fi

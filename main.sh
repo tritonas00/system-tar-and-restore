@@ -1337,6 +1337,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       else
         echo "$BRbootloader (i386-pc)"
       fi
+      # If the target Grub device is a mdadm array, show all disks the array contains
       if [[ "$BRgrub" == *md* ]]; then
         echo Locations: $(grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
       else
@@ -1344,6 +1345,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     elif [ -n "$BRsyslinux" ]; then
       echo "$BRbootloader ($BRpartitiontable)"
+      # # If the target Syslinux device is a mdadm array, show all disks the array contains
       if [[ "$BRsyslinux" == *md* ]]; then
         echo Locations: $(grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
       else
@@ -1419,7 +1421,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Generate target system's fstab
   generate_fstab() {
-    if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ] && [ ! "$BRdistro" = "Suse" ]; then
+    # Root partition
+    if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ] && [ ! "$BRdistro" = "Suse" ]; then # Suse seems to boot without defining subvol= option
       echo -e "# $BRroot\n$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS,subvol=$BRrootsubvolname  0  0"
     elif [ "$BRfsystem" = "btrfs" ]; then
       echo -e "# $BRroot\n$(detect_fstab_root)  /  btrfs  $BR_MOUNT_OPTS  0  0"
@@ -1427,11 +1430,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo -e "# $BRroot\n$(detect_fstab_root)  /  $BRfsystem  $BR_MOUNT_OPTS  0  1"
     fi
 
+    # Other partitions
     if [ -n "$BRcustomparts" ]; then
       for i in ${BRsorted[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
         BRmpoint=$(echo $i | cut -f1 -d"=")
-        BRmpoint="${BRmpoint///\//\\040}" # Convert // with 040, needed for paths with spaces
+        # Convert // with 040, needed for paths with spaces
+        BRmpoint="${BRmpoint///\//\\040}"
         BRcustomfs=$(blkid -s TYPE -o value $BRdevice)
         echo -e "\n# $BRdevice"
         if [[ "$BRdevice" == *dev/md* ]]; then
@@ -1442,6 +1447,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       done
     fi
 
+    # Swap partition
     if [ -n "$BRswap" ]; then
       if [[ "$BRswap" == *dev/md* ]]; then
         echo -e "\n# $BRswap\n$BRswap  none  swap  defaults  0  0"
@@ -1449,44 +1455,55 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         echo -e "\n# $BRswap\nUUID=$(blkid -s UUID -o value $BRswap)  none  swap  defaults  0  0"
       fi
     fi
+    # Write fstab to log also
     ( echo -e "\nGenerated fstab:"; cat /mnt/target/etc/fstab ) >> /tmp/restore.log
   }
 
   # Generate a basic mdadm.conf and crypttab, rebuild initramfs images for all available kernels
   build_initramfs() {
     echo -e "\nRebuilding initramfs images"
+    # If mdadm devices found in fstab or by detect_root_map
     if grep -q dev/md /mnt/target/etc/fstab || [[ "$BRmap" == *raid* ]]; then
       echo "Generating mdadm.conf..."
+      # Set mdadm.conf path
       if [ "$BRdistro" = "Debian" ]; then
         BR_MDADM_PATH="/mnt/target/etc/mdadm"
       else
         BR_MDADM_PATH="/mnt/target/etc"
       fi
+      # Save old mdadm.conf if found
       if [ -f "$BR_MDADM_PATH/mdadm.conf" ]; then
         mv "$BR_MDADM_PATH/mdadm.conf" "$BR_MDADM_PATH/mdadm.conf-old"
       fi
+      # Generate mdadm.conf
       mdadm --examine --scan > "$BR_MDADM_PATH/mdadm.conf"
       cat "$BR_MDADM_PATH/mdadm.conf"
       echo
     fi
 
-    if [ -n "$BRencdev" ] && [ ! "$BRdistro" = "Arch" ] && [ ! "$BRdistro" = "Gentoo" ]; then
+    # If encrypted root found by detect_root_map
+    if [ -n "$BRencdev" ] && [ ! "$BRdistro" = "Arch" ] && [ ! "$BRdistro" = "Gentoo" ]; then # Arch and Gentoo don't need it apparently
+      # Save old crypttab file if found
       if [ -f /mnt/target/etc/crypttab ]; then
         mv /mnt/target/etc/crypttab /mnt/target/etc/crypttab-old
       fi
+      # Generate a basic crypttab file to unlock the root
       echo "Generating basic crypttab..."
       echo "$crypttab_root UUID=$(blkid -s UUID -o value $BRencdev) none luks" > /mnt/target/etc/crypttab
       cat /mnt/target/etc/crypttab
       echo
     fi
 
+   # Search target system for kernels
     for FILE in /mnt/target/boot/*; do
       if file -b -k "$FILE" | grep -qw "bzImage"; then
-        cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
+        cn=$(echo "$FILE" | sed -n 's/[^-]*-//p') # Cutted kernel name without any prefix (eg without vmlinuz-)
+        # Update the gui wrapper statusbar if -w is given
         if [ -n "$BRwrap" ] && [ ! "$BRdistro" = "Gentoo" ] && [ ! "$BRdistro" = "Unsupported" ]; then
           echo "Building initramfs image for $cn..." > /tmp/wr_proc
         fi
 
+        # Use distro tools to rebuild initramfs images
         if [ "$BRdistro" = "Arch" ]; then
           chroot /mnt/target mkinitcpio -p $cn
         elif [ "$BRdistro" = "Debian" ]; then
@@ -1503,13 +1520,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ -n "$BRgenkernel" ]; then
         echo "Skipping..."
       else
+        # Update the gui wrapper statusbar if -w is given
         if [ -n "$BRwrap" ]; then echo "Building initramfs images..." > /tmp/wr_proc; fi
+        # Use genkernel in Gentoo if -D is not given
         chroot /mnt/target genkernel --no-color --install initramfs
       fi
     fi
   }
 
-  # Check the initramfs name prefix
+  # Check the initramfs name prefix. Other distros use initramfs-* other initrd-*
   detect_initramfs_prefix() {
     if ls /mnt/target/boot/ | grep -q "initramfs-"; then
       ipn="initramfs"
@@ -1518,12 +1537,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Find and copy Grub efi bootloader executable
+  # Find and copy Grub efi bootloader executable. Usually we need it in EFI/boot and as bootx64/32.efi
   cp_grub_efi() {
     if [ ! -d /mnt/target$BRespmpoint/EFI/boot ]; then
       mkdir /mnt/target$BRespmpoint/EFI/boot
     fi
 
+    # Check for both architectures
     BR_GRUBX64_EFI="$(find /mnt/target$BRespmpoint/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubx64.efi" 2>/dev/null)"
     BR_GRUBIA32_EFI="$(find /mnt/target$BRespmpoint/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubia32.efi" 2>/dev/null)"
 
@@ -1536,8 +1556,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Find and copy kernels in case of ESP on /boot/efi
+  # Find and copy kernels and initramfs images in case of ESP on /boot/efi. 
   cp_kernels() {
+    # Search target system for kernels
     for FILE in /mnt/target/boot/*; do
       if file -b -k "$FILE" | grep -qw "bzImage"; then
         echo "Copying $FILE in /mnt/target/boot/efi/"
@@ -1545,6 +1566,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     done
 
+    # Search target system for initramfs images.
     for FILE in /mnt/target/boot/*; do
       if [[ "$FILE" == *initramfs* ]] || [[ "$FILE" == *initrd* ]]; then
         echo "Copying $FILE in /mnt/target/boot/efi/"

@@ -27,7 +27,7 @@ DEFAULTIFS=$IFS
 echo -e "\n$BR_VERSION"
 
 # Set arguments and help page
-BRargs=$(getopt -o "i:d:n:c:u:HNjqvgDzP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:Om:k:t:B:xWFL" -l "mode:,directory:,filename:,compression:,user-opts:,exclude-home,no-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,only-hidden,mount-opts:,kernel-opts:,custom-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,help" -n "$1" -- "$@")
+BRargs=$(getopt -o "i:d:n:c:u:HOjqvgDzP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFL" -l "mode:,directory:,filename:,compression:,user-opts:,exclude-home,only-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,custom-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,help" -n "$1" -- "$@")
 
 if [ "$?" -ne "0" ]; then
   echo "See $0 --help"
@@ -59,11 +59,11 @@ while true; do
       shift 2
     ;;
     -H|--exclude-home)
-      BRhome="No"
+      BRnohome="y"
       shift
     ;;
-    -N|--no-hidden)
-      BRhidden="No"
+    -O|--only-hidden)
+      BRonlyhidden="y"
       shift
     ;;
     -j|--no-color)
@@ -135,11 +135,11 @@ while true; do
       shift 2
     ;;
     -b|--boot)
-      BRbootpart=$2
+      BRboot=$2
       shift 2
     ;;
     -h|--home)
-      BRhomepart=$2
+      BRhome=$2
       shift 2
     ;;
     -G|--grub)
@@ -165,10 +165,6 @@ while true; do
     -R|--rootsubvol)
       BRrootsubvolname=$2
       shift 2
-    ;;
-    -O|--only-hidden)
-      BRonlyhidden="y"
-      shift
     ;;
     -m|--mount-opts)
       BR_MOUNT_OPTS=$2
@@ -224,8 +220,8 @@ Backup Mode:
     -n, --filename            Backup filename (without extension)
 
   Home Directory:
-    -H, --exclude-home	      Exclude /home directory (keep hidden files and folders)
-    -N, --no-hidden           Dont keep home's hidden files and folders (use with -H)
+    -H, --exclude-home	      Exclude /home directory
+    -O, --only-hidden         Keep /home's hidden files and folders only
 
   Archiver Options:
     -c, --compression         Compression type: gzip bzip2 xz none
@@ -333,11 +329,11 @@ if [ "$BRmode" = "0" ]; then
     for i in "${BR_TAROPTS[@]}"; do echo "$i"; done
 
     echo -e "\nHOME DIRECTORY"
-    if [ "$BRhome" = "Yes" ]; then
+    if [ -z "$BRnohome" ] && [ -z "$BRonlyhidden" ]; then
       echo "Include"
-    elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
+    elif [ -n "$BRonlyhidden" ]; then
       echo "Only hidden files and folders"
-    elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
+    elif [ -n "$BRnohome" ]; then
       echo "Exclude"
     fi
 
@@ -410,8 +406,8 @@ if [ "$BRmode" = "0" ]; then
     echo -e "BRFOLDER='$(dirname "$BRFOLDER")'"
     if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then echo "BRNAME='$BRNAME'"; fi # Strictly check the default filename format
     echo -e "BRcompression=$BRcompression"
-    if [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then echo "BRhome=No"; fi
-    if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then echo -e "BRhome=No\nBRhidden=No"; fi
+    if [ -n "$BRnohome" ]; then echo "BRnohome=Yes"; fi
+    if [ -n "$BRonlyhidden" ]; then echo -e "BRonlyhidden=Yes"; fi
     if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'"; fi
     if [ -n "$BRnocolor" ]; then echo "BRnocolor=Yes"; fi
     if [ -n "$BRverb" ]; then echo "BRverb=Yes"; fi
@@ -482,6 +478,11 @@ if [ "$BRmode" = "0" ]; then
     exit
   fi
 
+  if [ -n "$BRnohome" ] && [ -n "$BRonlyhidden" ]; then
+    echo -e "[${YELLOW}WARNING${NORM}] Choose only one option for the /home directory" >&2
+    exit
+  fi
+
   if [ -n "$BRwrap" ] && [ -z "$BRFOLDER" ]; then
     echo -e "[${YELLOW}WARNING${NORM}] You must specify destination directory" >&2
     exit
@@ -490,8 +491,6 @@ if [ "$BRmode" = "0" ]; then
   # Set some defaults if not given by the user
   if [ -z "$BRFOLDER" ]; then BRFOLDER="/"; fi
   if [ -z "$BRNAME" ]; then BRNAME="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"; fi
-  if [ -z "$BRhidden" ]; then BRhidden="Yes"; fi
-  if [ -z "$BRhome" ]; then BRhome="Yes"; fi
   if [ -z "$BRcompression" ]; then BRcompression="gzip"; fi
   if [ -z "$BRencmethod" ]; then BRencmethod="none"; fi
 
@@ -546,9 +545,9 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Set /home directory options
-  if [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
+  if [ -n "$BRnohome" ]; then
     BR_TAROPTS+=(--exclude=/home/*)
-  elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "Yes" ]; then
+  elif [ -n "$BRonlyhidden" ]; then
     # Find everything that doesn't start with dot and exclude it
     for x in $(find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print); do
       BR_TAROPTS+=(--exclude="$x")
@@ -1757,8 +1756,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         else
           chroot /mnt/target extlinux -i /boot/syslinux || touch /tmp/bl_error
           BRdev="$BRsyslinux"
-          if [ -n "$BRbootpart" ]; then
-            BRpart="${BRbootpart##*[[:alpha:]]}"
+          if [ -n "$BRboot" ]; then
+            BRpart="${BRboot##*[[:alpha:]]}"
           else
             BRpart="${BRroot##*[[:alpha:]]}"
           fi
@@ -2149,11 +2148,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   if [ -n "$BResp" ] && [ -n "$BRespmpoint" ]; then
     BRcustomparts+=("$BRespmpoint"="$BResp")
   fi
-  if [ -n "$BRhomepart" ]; then
-    BRcustomparts+=(/home="$BRhomepart")
+  if [ -n "$BRhome" ]; then
+    BRcustomparts+=(/home="$BRhome")
   fi
-  if [ -n "$BRbootpart" ]; then
-    BRcustomparts+=(/boot="$BRbootpart")
+  if [ -n "$BRboot" ]; then
+    BRcustomparts+=(/boot="$BRboot")
   fi
 
   # Set default root mount options

@@ -133,14 +133,14 @@ genkernel check and initramfs building.
 - Compression: xz  
 - Exclude /home directory  
 
-<code>main.sh -i 0 -d /home/john/ -c xz -HN</code>   
+<code>main.sh -i 0 -d /home/john/ -c xz -H</code>   
 
 - Destination: /home/john/
 - Compression: bzip2  
 - Keep only /home's hidden files and folders
 - Encryption
 
-<code>main.sh -i 0 -d /home/john/ -c bzip2 -E openssl -P 1234 -H</code>   
+<code>main.sh -i 0 -d /home/john/ -c bzip2 -E openssl -P 1234 -O</code>   
 
 **Restore Mode:**
 

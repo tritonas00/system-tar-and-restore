@@ -19,18 +19,18 @@ fi
 
 if [ -n "$BRNAME" ]; then export BRNAME; else export BRNAME="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"; fi
 if [ -n "$BRFOLDER" ]; then export BRFOLDER; else export BRFOLDER="/"; fi
+if [ -n "$BR_USER_OPTS" ]; then export BR_USER_OPTS; fi
 if [ -n "$BRcompression" ]; then export BRcompression; else export BRcompression="gzip"; fi
 if [ -n "$BRencmethod" ]; then export BRencmethod; else export BRencmethod="none"; fi
 if [ -n "$BRencpass" ]; then export BRencpass; fi
-if [ -n "$BR_USER_OPTS" ]; then export BR_USER_OPTS; fi
 if [ -n "$BRmcore" ]; then export ENTRY2="true"; else export ENTRY2="false"; fi
 if [ -n "$BRclean" ]; then export ENTRY4="true"; else export ENTRY4="false"; fi
 if [ -n "$BRoverride" ]; then export ENTRY5="true"; else export ENTRY5="false"; fi
 if [ -n "$BRgenkernel" ]; then export ENTRY6="true"; else export ENTRY6="false"; fi
 
-if [ "$BRhome" = "No" ] && [ -z "$BRhidden" ]; then
+if [ -n "$BRonlyhidden" ]; then
   export ENTRY1="Only hidden files and folders"
-elif [ "$BRhome" = "No" ] && [ "$BRhidden" = "No" ]; then
+elif [ -n "$BRnohome" ]; then
   export ENTRY1="Exclude"
 else
   export ENTRY1="Include"
@@ -86,9 +86,9 @@ set_args() {
     fi
 
     if [ "$ENTRY1" = "Only hidden files and folders" ]; then
-      SCR_ARGS+=(-H)
+      SCR_ARGS+=(-O)
     elif [ "$ENTRY1" = "Exclude" ]; then
-      SCR_ARGS+=(-HN)
+      SCR_ARGS+=(-H)
     fi
 
     if [ ! "$BRencmethod" = "none" ]; then

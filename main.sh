@@ -1311,8 +1311,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         BRmpoint=$(echo $i | cut -f1 -d"=")
         # Replace any // with space
         BRmpoint="${BRmpoint///\//\ }"
+        # Find filesystem type
         BRcustomfs=$(blkid -s TYPE -o value $BRdevice)
-        BRcustomsize=$(lsblk -d -n -o size 2>/dev/null $BRdevice | sed -e 's/ *//')
+        # Find partition size
+        BRcustomsize=$(lsblk -d -n -o size 2>/dev/null $BRdevice | sed -e 's/ *//') # Remove leading spaces
         BRpartitions="$BRpartitions\n$BRdevice|$BRmpoint|$BRcustomfs|$BRcustomsize"
       done
     fi

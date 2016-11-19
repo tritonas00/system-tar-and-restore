@@ -1579,40 +1579,53 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     done
   }
 
-  # Detect luks/lvm/raid combinations
+  # Detect root luks/lvm/raid combinations
   detect_root_map() {
+    # If given root partition contains mapper and cryptsetup status succeeds on it then find the underlying block device (BRencdev)
     if [[ "$BRroot" == *mapper* ]] && cryptsetup status "$BRroot" &>/dev/null; then
       BRencdev=$(cryptsetup status $BRroot 2>/dev/null | grep device | sed -e "s/ *device:[ \t]*//")
 
+      # If the underlying block device contains mapper and lvdisplay succeeds on it then find the physical volume (BRphysical)
       if [[ "$BRencdev" == *mapper* ]] && lvdisplay "$BRencdev" &>/dev/null; then
         BRphysical=$(lvdisplay --maps $BRencdev 2>/dev/null | grep "Physical volume" | sed -e "s/ *Physical volume[ \t]*//")
+        # If the physical volume is in the form of /dev/md* then probably we have LUKS on LVM on RAID
         if [[ "$BRphysical" == *dev/md* ]]; then
           BRmap="luks->lvm->raid"
+        # Else probably we have LUKS on LVM
         else
           BRmap="luks->lvm"
         fi
+      # If the underlying block device is in the form of /dev/md* then we probably have LUKS on RAID
       elif [[ "$BRencdev" == *dev/md* ]]; then
         BRmap="luks->raid"
+      # Else we have simple LUKS
       else
         BRmap="luks"
       fi
 
+   # If given root partition contains mapper and cryptsetup status succeeds on it then find the physical volume (BRphysical) and the volume group (BRvgname)
     elif [[ "$BRroot" == *mapper* ]] && lvdisplay "$BRroot" &>/dev/null; then
       BRphysical=$(lvdisplay --maps $BRroot 2>/dev/null | grep "Physical volume" | sed -e "s/ *Physical volume[ \t]*//")
       BRvgname=$(lvdisplay $BRroot 2>/dev/null | grep "VG Name" | sed -e "s/ *VG Name[ \t]*//")
 
+      # If the physical volume contains mapper and cryptsetup status succeeds on it then find the underlying block device (BRencdev)
       if [[ "$BRphysical" == *mapper* ]] && cryptsetup status "$BRphysical" &>/dev/null; then
         BRencdev=$(cryptsetup status $BRphysical 2>/dev/null | grep device | sed -e "s/ *device:[ \t]*//")
+        # If the underlying block device is in the form of /dev/md* then we probably have LVM on LUKS on RAID
         if [[ "$BRencdev" == *dev/md* ]]; then
           BRmap="lvm->luks->raid"
+        # Else we have simple LVM on LUKS
         else
           BRmap="lvm->luks"
         fi
+      # If the physical volume is in the form of /dev/md* then probably we have LVM on RAID
       elif [[ "$BRphysical" == *dev/md* ]]; then
         BRmap="lvm->raid"
+      # Else we have simple LVM
       else
         BRmap="lvm"
       fi
+    # If given root partition is in the form of /dev/md* then we have RAID
     elif [[ "$BRroot" == *dev/md* ]]; then
       BRmap="raid"
     fi

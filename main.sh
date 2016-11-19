@@ -1603,7 +1603,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         BRmap="luks"
       fi
 
-    # If the target root partition contains mapper and cryptsetup status succeeds on it then find the physical volume (BRphysical) and the volume group (BRvgname)
+    # If the target root partition contains mapper and lvdisplay succeeds on it then find the physical volume (BRphysical) and the volume group (BRvgname)
     elif [[ "$BRroot" == *mapper* ]] && lvdisplay "$BRroot" &>/dev/null; then
       BRphysical=$(lvdisplay --maps $BRroot 2>/dev/null | grep "Physical volume" | sed -e "s/ *Physical volume[ \t]*//")
       BRvgname=$(lvdisplay $BRroot 2>/dev/null | grep "VG Name" | sed -e "s/ *VG Name[ \t]*//")

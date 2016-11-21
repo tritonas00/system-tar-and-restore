@@ -2313,7 +2313,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ -n "$BRhide" ]; then echo -en "${HIDE}"; fi
       # Update the gui wrapper statusbar if -w is given
       if [ -n "$BRwrap" ]; then echo "Please wait while checking and reading archive..." > /tmp/wr_proc; fi
-      # Give list of files in /tmp/filelist also
+      # Read the backup archive and give list of files in /tmp/filelist also
       read_archive | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
       IFS=$'\n'
       check_archive

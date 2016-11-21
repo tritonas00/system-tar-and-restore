@@ -421,13 +421,13 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                                 <expander label="Btrfs subvolumes">
                                                         <vbox>
                                                                 <hbox>
-                                                                        <text width-request="40" space-expand="false"><label>Root:</label></text>
+                                                                        <text width-request="55" space-expand="false"><label>Root:</label></text>
                                                                         <entry tooltip-text="Set subvolume name for /">
                                                                                 <variable>BR_ROOT_SUBVOL</variable>
                                                                         </entry>
                                                                 </hbox>
                                                                 <hbox>
-                                                                        <text width-request="40" space-expand="false"><label>Other:</label></text>
+                                                                        <text width-request="55" space-expand="false"><label>Other:</label></text>
                                                                         <entry tooltip-text="Set other subvolumes (subvolume path e.g /home /var /usr ...)">
                                                                                 <variable>BR_OTHER_SUBVOLS</variable>
                                                                         </entry>

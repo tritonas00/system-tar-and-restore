@@ -1942,7 +1942,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
  
     if [ -n "$BRsyslinux" ]; then
-      # If the target Syslinux device is a mdadm array detect the partition table of one of the underlying partitions. Probably all have the same partition table
+      # If the target Syslinux device is a mdadm array detect the partition table of one of the underlying disks. Probably all have the same partition table
       if [[ "$BRsyslinux" == *md* ]]; then
         for f in `grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]'`; do
           BRdev="/dev/$f"
@@ -2079,7 +2079,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       done < <(for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac)
     fi
     
-    # In case of btrfs subvolumes, unmount it and mount the defined root partition again
+    # In case of btrfs subvolumes, unmount the root subvolume and mount the defined root partition again
     if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
       echo -ne "${WRK}Unmounting $BRrootsubvolname"
       OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status

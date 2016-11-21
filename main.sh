@@ -2324,7 +2324,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   set_bootloader
   detect_root_map
 
-  # Check for genkernel availability in Restore mode in case of Gentoo
+  # Check archive for genkernel in case of Gentoo if -D is not given
   if [ "$BRmode" = "1" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
     echo -e "[${YELLOW}WARNING${NORM}] Genkernel not found in the archived system. (you can disable this check with -D)" >&2
     clean_unmount_in

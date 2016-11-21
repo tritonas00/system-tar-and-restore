@@ -168,7 +168,7 @@ run_main() {
   if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
     setsid ./main.sh -i ${SCR_MODE} -jwq "${SCR_ARGS[@]}" 2> /tmp/wr_log
   fi
-  
+
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
   echo true > /tmp/wr_proc
 }

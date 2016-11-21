@@ -1288,7 +1288,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       # Sort target partitions array by their mountpoint so we can mount in order
       BRsorted=(`for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =`)
       unset custom_ok
-      # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter
+      # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter 
       for i in ${BRsorted[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
         BRmpoint=$(echo $i | cut -f1 -d"=")
@@ -1307,7 +1307,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           BRumountparts+=($BRmpoint=$BRdevice)
           # Check if partitions are not empty and warn
           if [ "$(ls -A /mnt/target$BRmpoint | grep -vw "lost+found")" ]; then
-            echo -e "[${CYAN}INFO${NORM}] $BRmpoint partition not empty"
+            echo -e "[${CYAN}INFO${NORM}] $BRmpoint partition not empty" 
           fi
         fi
       done
@@ -1326,7 +1326,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo "TARGET PARTITION SCHEME:"
     BRpartitions="Partition|Mountpoint|Filesystem|Size|Options\n$BRroot $BRmap|/|$BRfsystem|$BRfsize|$BR_MOUNT_OPTS"
     if [ -n "$BRcustomparts" ]; then
-      # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter
+      # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter 
       for i in ${BRsorted[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
         BRmpoint=$(echo $i | cut -f1 -d"=")
@@ -1940,7 +1940,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     elif [ -n "$BRbootctl" ]; then
       BRbootloader="Systemd/bootctl"
     fi
-
+ 
     if [ -n "$BRsyslinux" ]; then
       # If the target Syslinux device is a mdadm array detect the partition table of one of the underlying disks. Probably all have the same partition table
       if [[ "$BRsyslinux" == *md* ]]; then
@@ -1996,7 +1996,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         BRabort="y"
       fi
       # Set the EFI Grub architecture in Restore Mode
-      if [ "$target_arch" = "x86_64" ]; then
+      if [ "$target_arch" = "x86_64" ]; then 
         BRgrubefiarch="x86_64-efi"
       elif [ "$target_arch" = "i686" ]; then
         BRgrubefiarch="i386-efi"
@@ -2078,7 +2078,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
       done < <(for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac)
     fi
-
+    
     # In case of btrfs subvolumes, unmount the root subvolume and mount the defined root partition again
     if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
       echo -ne "${WRK}Unmounting $BRrootsubvolname"
@@ -2247,7 +2247,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     BRurl="$BRuri"
   fi
 
-  # A nice info
+  # A nice working info
   WRK="[${CYAN}WORKING${NORM}] "
 
   IFS=$'\n'

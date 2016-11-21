@@ -346,7 +346,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 <vbox>
                                         <frame Target partitions:>
                                                 <hbox>
-                                                        <text width-request="30" space-expand="false"><label>Root:</label></text>
+                                                        <text width-request="55" space-expand="false"><label>Root:</label></text>
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
 	                                                        <variable>BR_ROOT</variable>
                                                                 <input>echo "$BR_ROOT"</input>

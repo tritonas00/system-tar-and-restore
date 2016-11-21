@@ -2283,6 +2283,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   PATH="$PATH:/usr/sbin:/bin:/sbin"
 
+  # Inform in case of UEFI environment
   if [ -d "$BR_EFI_DETECT_DIR" ]; then
     echo -e "[${CYAN}INFO${NORM}] UEFI environment detected. (use -W to ignore)"
   fi
@@ -2292,11 +2293,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   mount_all
   set_user_options
 
+  # In Restore mode download the backup archive if url is given, read it and check it
   if [ "$BRmode" = "1" ]; then
     echo -e "\n${BOLD}[BACKUP ARCHIVE]${NORM}"
 
     if [ -n "$BRurl" ]; then
       BRsource="$BRmaxsize/downloaded_backup"
+      # Give progress info to gui wrapper if -w is given
       if [ -n "$BRwrap" ]; then
         run_wget 2>&1 | while read ln; do if [ -n "$ln" ]; then echo "Downloading: ${ln//.....}" > /tmp/wr_proc; fi; done
       else
@@ -2308,9 +2311,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${HIDE}"; fi
+      # Update the gui wrapper statusbar if -w is given
       if [ -n "$BRwrap" ]; then echo "Please wait while checking and reading archive..." > /tmp/wr_proc; fi
+      # Give list of files in /tmp/filelist also
       read_archive | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
-
       IFS=$'\n'
       check_archive
     fi
@@ -2320,6 +2324,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   set_bootloader
   detect_root_map
 
+  # Check for genkernel availability in Restore mode in case of Gentoo
   if [ "$BRmode" = "1" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
     echo -e "[${YELLOW}WARNING${NORM}] Genkernel not found in the archived system. (you can disable this check with -D)" >&2
     clean_unmount_in
@@ -2328,6 +2333,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   if [ "$BRmode" = "2" ]; then set_rsync_opts; fi
   if [ -n "$BRbootloader" ]; then set_kern_opts; fi
 
+  # Show summary and prompt the user to continue. If -q is given continue automatically
   echo -e "\n${BOLD}[SUMMARY]${CYAN}"
   show_summary
   echo -ne "${NORM}"
@@ -2348,34 +2354,47 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   done
 
   start_log > /tmp/restore.log
+  # Hide the cursor if -z is given
   if [ -n "$BRhide" ]; then echo -en "${HIDE}"; fi
+
   echo -e "\n${BOLD}[PROCESSING]${NORM}"
   IFS=$DEFAULTIFS
 
+  # Restore mode
   if [ "$BRmode" = "1" ]; then
+    # Store the number of files we found from read_archive
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
+    # Run tar and pipe it through the progress calculation, give errors to log
     ( run_tar 2>>/tmp/restore.log && echo "System extracted successfully" >> /tmp/restore.log ) | tar_pgrs
     echo
 
+  # Transfer mode
   elif [ "$BRmode" = "2" ]; then
+    # Update the gui wrapper statusbar if -w is given
     if [ -n "$BRwrap" ]; then echo "Please wait while calculating files..." > /tmp/wr_proc; fi
+    # Calculate the number of files
     run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
     sleep 1
+    # Store the number of files we found from run_calc
     total=$(cat /tmp/filelist | wc -l)
     echo
+    # Run rsync and pipe it through the progress calculation, give errors to log
     ( run_rsync 2>>/tmp/restore.log && echo "System transferred successfully" >> /tmp/restore.log ) | rsync_pgrs
     echo
   fi
 
+  # Unhide the cursor if -z is given
   if [ -n "$BRhide" ]; then echo -en "${SHOW}"; fi
 
   echo -e "\nGenerating fstab"
+  # Save the old fstab first
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   generate_fstab > /mnt/target/etc/fstab
   cat /mnt/target/etc/fstab
   detect_initramfs_prefix
 
+  # Prompt the user to edit the generated fstab if -q is not given
   while [ -z "$BRquiet" ]; do
     echo -e "${BOLD}"
     read -p "Edit fstab? [y/N]: " an
@@ -2388,6 +2407,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       select BReditor in "nano" "vi"; do
         if [[ "$REPLY" = [1-2] ]]; then
           $BReditor /mnt/target/etc/fstab
+          # Inform the log
           ( echo -e "\nEdited fstab:"; cat /mnt/target/etc/fstab ) >> /tmp/restore.log
           break
         else
@@ -2402,10 +2422,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   done
 
+ # Run post processing functions, update the log and pray :p
  ( prepare_chroot; build_initramfs; generate_locales; install_bootloader) 1> >(tee -a /tmp/restore.log ) 2>&1
 
    sleep 1
 
+  # Show the exit screen
   if [ -z "$BRquiet" ]; then
     exit_screen; read -s
   else

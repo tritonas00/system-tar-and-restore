@@ -179,7 +179,7 @@ export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
 export MAIN_DIALOG='
 
-<window title="System Tar & Restore" icon-name="applications-system" height-request="655" width-request="515">
+<window title="System Tar & Restore" icon-name="applications-system" height-request="640" width-request="515">
         <vbox>
                 <timer visible="false">
                         <action>refresh:BR_SB</action>
@@ -223,7 +223,7 @@ OTHER PACKAGES:
 efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup archive of this system.</span>"</label></text>
 
                                 <hbox>
-                                        <text width-request="92"><label>Filename:</label></text>
+                                        <text width-request="115"><label>Filename:</label></text>
                                         <entry tooltip-text="Set backup archive name">
                                                 <variable>BRNAME</variable>
                                                 <default>'"$BRNAME"'</default>
@@ -231,7 +231,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="92"><label>Destination:</label></text>
+                                        <text width-request="115"><label>Destination:</label></text>
                                         <entry fs-action="folder" fs-title="Select a directory" tooltip-text="Choose where to save the backup archive">
                                                 <variable>BRFOLDER</variable>
                                                 <default>'"$BRFOLDER"'</default>
@@ -243,7 +243,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="92" space-expand="false"><label>Home directory:</label></text>
+                                        <text width-request="115" space-expand="false"><label>Home directory:</label></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
                                                 <variable>ENTRY1</variable>
                                                 <default>'"$ENTRY1"'</default>
@@ -254,7 +254,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="92" space-expand="false"><label>Compression:</label></text>
+                                        <text width-request="115" space-expand="false"><label>Compression:</label></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
 	                                        <variable>BRcompression</variable>
                                                 <default>'"$BRcompression"'</default>
@@ -268,7 +268,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="92" space-expand="false"><label>Encryption:</label></text>
+                                        <text width-request="115" space-expand="false"><label>Encryption:</label></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select encryption method">
 	                                        <variable>BRencmethod</variable>
                                                 <default>'"$BRencmethod"'</default>
@@ -281,22 +281,26 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="92" space-expand="false"><label>Passphrase:</label></text>
+                                        <text width-request="115" space-expand="false"><label>Passphrase:</label></text>
                                         '"`set_default_pass`"'
                                         </entry>
                                 </hbox>
 
-                                <text xalign="0"><label>Additional options:</label></text>
-                                <comboboxentry tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
-                                        <variable>BR_USER_OPTS</variable>
-                                       '"`set_default_opts`"'
-                                        <item>--acls --xattrs</item>
-                                </comboboxentry>
+                                <hbox>
+                                        <text width-request="115" space-expand="false"><label>Additional options:</label></text>
+                                        <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
+                                                <variable>BR_USER_OPTS</variable>
+                                                '"`set_default_opts`"'
+                                                <item>--acls --xattrs</item>
+                                        </comboboxentry>
+                                </hbox>
 
-                                <text xalign="0"><label>Exclude:</label></text>
-                                <entry tooltip-text="Exclude files and directories. If you want spaces in names replace them with //">
-                                        <variable>BR_EXC</variable>
-                                </entry>
+                                <hbox>
+                                        <text width-request="115" space-expand="false"><label>Exclude:</label></text>
+                                        <entry space-expand="true" space-fill="true" tooltip-text="Exclude files and directories. If you want spaces in names replace them with //">
+                                                <variable>BR_EXC</variable>
+                                        </entry>
+                                </hbox>
 
                                 '"`set_default_multi`"'
                                         <label>Enable multi-core compression</label>
@@ -465,15 +469,16 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 
                                 <vbox>
                                         <frame Restore Mode:>
-                                                <hbox tooltip-text="Choose a local archive or enter URL">
-                                                        <entry fs-action="file" fs-title="Select a backup archive">
+                                                <hbox>
+                                                        <text width-request="86" space-expand="false"><label>Archive:</label></text>
+                                                        <entry fs-action="file" tooltip-text="Choose a local backup archive or enter URL" fs-title="Select a backup archive">
                                                                 <variable>BR_FILE</variable>
                                                                 <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_USERNAME</action>
                                                                 <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_PASSWORD</action>
                                                                 <action condition="command_is_true([[ ! $BR_FILE == /* ]] && echo true)">enable:BR_USERNAME</action>
                                                                 <action condition="command_is_true([[ ! $BR_FILE == /* ]] && echo true)">enable:BR_PASSWORD</action>
                                                         </entry>
-                                                        <button tooltip-text="Select archive">
+                                                        <button tooltip-text="Select backup archive">
                                                                 <input file stock="gtk-open"></input>
                                                                 <action>fileselect:BR_FILE</action>
                                                         </button>
@@ -525,11 +530,13 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                         </frame>
                                 </vbox>
 
-                                <text xalign="0"><label>Additional options:</label></text>
-                                <comboboxentry tooltip-text="Set extra tar/rsync options. See tar --help or rsync --help for more info. If you want spaces in names replace them with //">
-                                        <variable>BR_TR_OPTIONS</variable>
-                                        <item>--acls --xattrs</item>
-                                </comboboxentry>
+                                <hbox>
+                                        <text width-request="115" space-expand="false"><label>Additional options:</label></text>
+                                        <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar/rsync options. See tar --help or rsync --help for more info. If you want spaces in names replace them with //">
+                                                <variable>BR_TR_OPTIONS</variable>
+                                                <item>--acls --xattrs</item>
+                                        </comboboxentry>
+                                </hbox>
 
                                 <checkbox tooltip-text="Disable genkernel check and initramfs building in gentoo">
                                         <label>Disable genkernel</label>

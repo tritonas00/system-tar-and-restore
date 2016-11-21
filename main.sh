@@ -1514,7 +1514,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
       # Generate a basic crypttab file for the root partition
       echo "Generating basic crypttab..."
-      echo "$crypttab_root UUID=$(blkid -s UUID -o value $BRencdev) none luks" > /mnt/target/etc/crypttab
+      echo "$crypttab_root UUID=$(blkid -s UUID -o value $BRencdev) none luks" > /mnt/target/etc/crypttab # We set crypttab_root in set_kern_opts
       cat /mnt/target/etc/crypttab
       echo
     fi
@@ -1663,10 +1663,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
         BR_KERNEL_OPTS="rootflags=subvol=$BRrootsubvolname ${BR_KERNEL_OPTS}"
       fi
+    # We need a clean configuration to boot Fedora with grub
     elif [ -n "$BRgrub" ] && [ "$BRdistro" = "Fedora" ]; then
       BR_KERNEL_OPTS="quiet rhgb ${BR_KERNEL_OPTS}"
     fi
 
+    # In case of Gentoo add dolvm and domdadm if we have root on LVM/RAID
     if [ "$BRdistro" = "Gentoo" ] && [[ "$BRmap" == *lvm* ]]; then
       BR_KERNEL_OPTS="dolvm ${BR_KERNEL_OPTS}"
     fi
@@ -1679,6 +1681,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         BR_KERNEL_OPTS="crypt_root=UUID=$(blkid -s UUID -o value $BRencdev) ${BR_KERNEL_OPTS}"
       elif [ -n "$BRencdev" ]; then
         BR_KERNEL_OPTS="cryptdevice=UUID=$(blkid -s UUID -o value $BRencdev):${BRroot##*/} ${BR_KERNEL_OPTS}"
+        # Also set root for crypttab file
         crypttab_root="${BRroot##*/}"
       fi
     elif [ "$BRmap" = "lvm->luks" ] || [ "$BRmap" = "lvm->luks->raid" ]; then
@@ -1686,6 +1689,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         BR_KERNEL_OPTS="crypt_root=UUID=$(blkid -s UUID -o value $BRencdev) ${BR_KERNEL_OPTS}"
       elif [ -n "$BRencdev" ]; then
         BR_KERNEL_OPTS="cryptdevice=UUID=$(blkid -s UUID -o value $BRencdev):$BRvgname ${BR_KERNEL_OPTS}"
+        # Also set root for crypttab file
         crypttab_root="${BRphysical##*/}"
       fi
     fi
@@ -1693,15 +1697,20 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Install the selected bootloader
   install_bootloader() {
+    # GRUB
     if [ -n "$BRgrub" ]; then
+      # Update the gui wrapper statusbar if -w is given
       if [ -n "$BRwrap" ]; then echo "Installing Grub in $BRgrub..." > /tmp/wr_proc; fi
       echo -e "\nInstalling and updating Grub in $BRgrub"
+      # In case of ESP on /boot, if target boot/efi exists move it as boot/efi-old so we have a clean directory to work
       if [ -d "$BR_EFI_DETECT_DIR" ] && [ "$BRespmpoint" = "/boot" ] && [ -d /mnt/target/boot/efi ]; then
+        # Also if boot/efi-old already exists remove it
         if [ -d /mnt/target/boot/efi-old ]; then rm -r /mnt/target/boot/efi-old; fi
         mv /mnt/target/boot/efi /mnt/target/boot/efi-old
       fi
 
-      if [[ "$BRgrub" == *md* ]]; then # If raid array selected, install in all disks the array contains
+      # If raid array selected, install in all disks the array contains
+      if [[ "$BRgrub" == *md* ]]; then
         for f in `grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]'`; do
           if [ "$BRdistro" = "Arch" ]; then
             chroot /mnt/target grub-install --target=i386-pc --recheck /dev/$f || touch /tmp/bl_error
@@ -1711,6 +1720,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
             chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/bl_error
           fi
         done
+      # Normal install
       elif [ "$BRdistro" = "Arch" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
         chroot /mnt/target grub-install --target=$BRgrubefiarch --efi-directory=$BRgrub --bootloader-id=grub --recheck || touch /tmp/bl_error
       elif [ "$BRdistro" = "Arch" ]; then
@@ -1725,23 +1735,30 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
       fi
 
+      # Fedora already does this
       if [ ! "$BRdistro" = "Fedora" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then cp_grub_efi; fi
+      # In case of ESP in /boot we do it for Fedora
       if [ "$BRdistro" = "Fedora" ] && [ -d "$BR_EFI_DETECT_DIR" ] && [ "$BRespmpoint" = "/boot" ]; then cp_grub_efi; fi
 
+      # Save old grub configuration
       if [ -n "$BR_KERNEL_OPTS" ]; then
         if [ -f /mnt/target/etc/default/grub ]; then
           cp /mnt/target/etc/default/grub /mnt/target/etc/default/grub-old
         fi
 
+        # Apply grub options. If GRUB_CMDLINE_LINUX already exists replace the line
         if grep -q "^GRUB_CMDLINE_LINUX=" /mnt/target/etc/default/grub; then
           sed -i 's\GRUB_CMDLINE_LINUX=.*\GRUB_CMDLINE_LINUX="'"$BR_KERNEL_OPTS"'"\' /mnt/target/etc/default/grub
         else
+          # Else write new line
           echo GRUB_CMDLINE_LINUX='"'$BR_KERNEL_OPTS'"' >> /mnt/target/etc/default/grub
         fi
 
+        # Inform the log
         ( echo -e "\nModified grub config:"; cat /mnt/target/etc/default/grub; echo ) >> /tmp/restore.log
       fi
 
+      # Run also mkconfig (update-grub equivalent)
       if [ "$BRdistro" = "Gentoo" ]; then
         chroot /mnt/target grub2-mkconfig -o /boot/grub/grub.cfg
       elif [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ]; then
@@ -1750,54 +1767,78 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         chroot /mnt/target grub2-mkconfig -o /boot/grub2/grub.cfg
       fi
 
+    # SYSLINUX
     elif [ -n "$BRsyslinux" ]; then
+      # Update the gui wrapper statusbar if -w is given
       if [ -n "$BRwrap" ]; then echo "Installing Syslinux in $BRsyslinux..." > /tmp/wr_proc; fi
       echo -e "\nInstalling and configuring Syslinux in $BRsyslinux"
+      # If target boot/syslinux exists remove it so we have a clean directory to work
       if [ -d /mnt/target/boot/syslinux ]; then
+        # Save the configuration file first
         mv /mnt/target/boot/syslinux/syslinux.cfg /mnt/target/boot/syslinux.cfg-old
         chattr -i /mnt/target/boot/syslinux/* 2>/dev/null
         rm -r /mnt/target/boot/syslinux/* 2>/dev/null
+      # Else create the directory and the configuration file
       else
         mkdir -p /mnt/target/boot/syslinux
       fi
       touch /mnt/target/boot/syslinux/syslinux.cfg
 
+      # In case of Arch syslinux-install_update does all the job
       if [ "$BRdistro" = "Arch" ]; then
         chroot /mnt/target syslinux-install_update -i -a -m || touch /tmp/bl_error
+      # For other distros
       else
+        # If raid array selected, install in all disks the array contains
         if [[ "$BRsyslinux" == *md* ]]; then
           chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
+          # Search for raid disks for the selected array
           for f in `grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z][0-9]'`; do
+            # Seperate the device
             BRdev=`echo /dev/$f | cut -c -8`
+            # Seperate the partition number
             BRpart=`echo /dev/$f | cut -c 9-`
             detect_partition_table_syslinux
             set_syslinux_flags_and_paths
+            # Install the corresponding bin file
             echo "Installing $BRsyslinuxmbr in $BRdev ($BRpartitiontable)"
             dd bs=440 count=1 conv=notrunc if=$BRsyslinuxmbrpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/bl_error
           done
+        # Normal install
         else
+          # install extlinux
           chroot /mnt/target extlinux -i /boot/syslinux || touch /tmp/bl_error
+          # Device already given by the user
           BRdev="$BRsyslinux"
+          # If target /boot partition defined use that partition number
           if [ -n "$BRboot" ]; then
             BRpart="${BRboot##*[[:alpha:]]}"
+          # Else use target root partition number
           else
             BRpart="${BRroot##*[[:alpha:]]}"
           fi
           detect_partition_table_syslinux
           set_syslinux_flags_and_paths
           echo "Installing $BRsyslinuxmbr in $BRsyslinux ($BRpartitiontable)"
+          # Install the corresponding bin file
           dd bs=440 count=1 conv=notrunc if=$BRsyslinuxmbrpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/bl_error
         fi
+        # Copy com32 files we found in set_syslinux_flags_and_paths
         echo "Copying com32 modules"
         cp "$BRsyslinuxcompath"/*.c32 /mnt/target/boot/syslinux/
       fi
+      # Generate syslinux configuration file
       echo "Generating syslinux.cfg"
       generate_syslinux_cfg >> /mnt/target/boot/syslinux/syslinux.cfg
+      # Inform the log
       ( echo -e "\nGenerated syslinux config:"; cat /mnt/target/boot/syslinux/syslinux.cfg ) >> /tmp/restore.log
 
+   # EFISTUB
     elif [ -n "$BRefistub" ]; then
+      # Update the gui wrapper statusbar if -w is given
       if [ -n "$BRwrap" ]; then echo "Setting boot entries using efibootmgr..." > /tmp/wr_proc; fi
       echo -e "\nSetting boot entries"
+      # Seperate device and partition number
       if [[ "$BResp" == *mmcblk* ]]; then
         BRespdev="${BResp%[[:alpha:]]*}"
       else
@@ -1807,11 +1848,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
       if [ "$BRespmpoint" = "/boot/efi" ]; then cp_kernels; fi
 
+      # Search target ESP for kernels
       for FILE in /mnt/target$BRespmpoint/*; do
         if file -b -k "$FILE" | grep -qw "bzImage"; then
-          cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
-          kn=$(basename "$FILE")
+          cn=$(echo "$FILE" | sed -n 's/[^-]*-//p') # Cutted kernel name without any prefix (eg without vmlinuz-)
+          kn=$(basename "$FILE") # Full kernel name (eg vmlinuz-linux)
 
+          # Create boot entries using efibootmgr. We set ipn in detect_initramfs_prefix
           if [ "$BRdistro" = "Arch" ]; then
             chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro $cn fallback" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn-fallback.img" || touch /tmp/bl_error
             chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro $cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn.img" || touch /tmp/bl_error
@@ -1828,11 +1871,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           fi
         fi
       done
+      # Print entries and info
       chroot /mnt/target efibootmgr -v
 
+    # BOOTCTL
     elif [ -n "$BRbootctl" ]; then
+      # Update the gui wrapper statusbar if -w is given
       if [ -n "$BRwrap" ]; then echo "Installing Bootctl in $BRespmpoint..." > /tmp/wr_proc; fi
       echo -e "\n$Installing Bootctl in $BRespmpoint"
+      # Save old configuration entries first
       if [ -d /mnt/target$BRespmpoint/loader/entries ]; then
         for CONF in /mnt/target$BRespmpoint/loader/entries/*; do
           mv "$CONF" "$CONF"-old
@@ -1840,19 +1887,24 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
       if [ "$BRespmpoint" = "/boot/efi" ]; then cp_kernels; fi
 
+      # Install systemd-boot
       chroot /mnt/target bootctl --path=$BRespmpoint install || touch /tmp/bl_error
 
+      # Save old loader.conf if found
       if [ -f /mnt/target$BRespmpoint/loader/loader.conf ]; then
         mv /mnt/target$BRespmpoint/loader/loader.conf /mnt/target$BRespmpoint/loader/loader.conf-old
       fi
+      # Generate loader.conf
       echo "timeout 5" > /mnt/target$BRespmpoint/loader/loader.conf
       echo "Generating configuration entries"
 
+      # Search target ESP for kernels
       for FILE in /mnt/target$BRespmpoint/*; do
         if file -b -k "$FILE" | grep -qw "bzImage"; then
-          cn=$(echo "$FILE" | sed -n 's/[^-]*-//p')
-          kn=$(basename "$FILE")
+          cn=$(echo "$FILE" | sed -n 's/[^-]*-//p') # Cutted kernel name without any prefix (eg without vmlinuz-)
+          kn=$(basename "$FILE") # Full kernel name (eg vmlinuz-linux)
 
+          # Generate loader.conf entries. We set ipn in detect_initramfs_prefix
           if [ "$BRdistro" = "Arch" ]; then
             echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $(detect_bl_root) $BR_KERNEL_OPTS" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
             echo -e "title $BRdistro $cn fallback\nlinux /$kn\ninitrd /$ipn-$cn-fallback.img\noptions $(detect_bl_root) $BR_KERNEL_OPTS" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn-fallback.conf
@@ -1867,6 +1919,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           elif [ "$BRdistro" = "Gentoo" ]; then
             echo -e "title $BRdistro $cn\nlinux /$kn\noptions root=$BRroot $BR_KERNEL_OPTS" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
           fi
+          # Inform the log
           ( echo -e "\nGenerated $BRdistro-$cn.conf:"; cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf ) >> /tmp/restore.log
           if [ "$BRdistro" = "Arch" ]; then
             ( echo -e "\nGenerated $BRdistro-$cn-fallback.conf:"; cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn-fallback.conf ) >> /tmp/restore.log

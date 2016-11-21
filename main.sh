@@ -366,14 +366,14 @@ if [ "$BRmode" = "0" ]; then
 
   # Run tar with given input
   run_tar() {
+    # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      # In case of openssl encryption
       tar ${BR_MAINOPTS} >( openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log ) "${BR_TAROPTS[@]}" /
+    # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      # In case of gpg encryption
       tar ${BR_MAINOPTS} >( gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log ) "${BR_TAROPTS[@]}" /
+    # Without encryption
     else
-      # Without encryption
       tar ${BR_MAINOPTS} "$BRFOLDER/$BRNAME.$BR_EXT" "${BR_TAROPTS[@]}" /
     fi
   }
@@ -946,14 +946,14 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Run tar with given input
   run_tar() {
+    # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      # In case of openssl encryption
       openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target
+    # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      # In case of gpg encryption
       gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target
+    # Without encryption
     else
-      # Without encryption
       tar ${BR_MAINOPTS} "$BRsource" "${USER_OPTS[@]}" -C /mnt/target
     fi
   }
@@ -1288,7 +1288,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       # Sort target partitions array by their mountpoint so we can mount in order
       BRsorted=(`for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =`)
       unset custom_ok
-      # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter
+      # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter 
       for i in ${BRsorted[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
         BRmpoint=$(echo $i | cut -f1 -d"=")
@@ -1307,7 +1307,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           BRumountparts+=($BRmpoint=$BRdevice)
           # Check if partitions are not empty and warn
           if [ "$(ls -A /mnt/target$BRmpoint | grep -vw "lost+found")" ]; then
-            echo -e "[${CYAN}INFO${NORM}] $BRmpoint partition not empty"
+            echo -e "[${CYAN}INFO${NORM}] $BRmpoint partition not empty" 
           fi
         fi
       done
@@ -1326,7 +1326,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo "TARGET PARTITION SCHEME:"
     BRpartitions="Partition|Mountpoint|Filesystem|Size|Options\n$BRroot $BRmap|/|$BRfsystem|$BRfsize|$BR_MOUNT_OPTS"
     if [ -n "$BRcustomparts" ]; then
-      # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter
+      # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter 
       for i in ${BRsorted[@]}; do
         BRdevice=$(echo $i | cut -f2 -d"=")
         BRmpoint=$(echo $i | cut -f1 -d"=")
@@ -1940,7 +1940,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     elif [ -n "$BRbootctl" ]; then
       BRbootloader="Systemd/bootctl"
     fi
-
+ 
     if [ -n "$BRsyslinux" ]; then
       # If the target Syslinux device is a mdadm array detect the partition table of one of the underlying disks. Probably all have the same partition table
       if [[ "$BRsyslinux" == *md* ]]; then
@@ -1996,7 +1996,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         BRabort="y"
       fi
       # Set the EFI Grub architecture in Restore Mode
-      if [ "$target_arch" = "x86_64" ]; then
+      if [ "$target_arch" = "x86_64" ]; then 
         BRgrubefiarch="x86_64-efi"
       elif [ "$target_arch" = "i686" ]; then
         BRgrubefiarch="i386-efi"
@@ -2078,7 +2078,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
       done < <(for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac)
     fi
-
+    
     # In case of btrfs subvolumes, unmount the root subvolume and mount the defined root partition again
     if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
       echo -ne "${WRK}Unmounting $BRrootsubvolname"
@@ -2159,13 +2159,16 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     while read ln; do
       a=$((a + 1))
       per=$(($a*100/$total))
+      # If -v is given print percentage and full output from run_tar
       if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
         echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
       elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
         lastper=$per
+        # Give progress info to gui wrapper if -w is given
         if [ -n "$BRwrap" ]; then
           echo "Extracting: $per% ($a / $total Files)" > /tmp/wr_proc
         else
+          # The main progress bar
           echo -ne "\rExtracting: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
         fi
       fi
@@ -2178,13 +2181,16 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     while read ln; do
       b=$((b + 1))
       per=$(($b*100/$total))
+      # If -v is given print percentage and full output from run_rsync
       if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
         echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
       elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
         lastper=$per
+        # Give progress info to gui wrapper if -w is given
         if [ -n "$BRwrap" ]; then
           echo "Transferring: $per% ($b / $total Files)" > /tmp/wr_proc
         else
+          # The main progress bar
           echo -ne "\rTransferring: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
         fi
       fi
@@ -2193,16 +2199,19 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Quick read backup archive
   read_archive() {
+    # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
       openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/tar_error
+    # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
       gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/tar_error
+    # Without encryption
     else
       tar tf "$BRsource" "${USER_OPTS[@]}" || touch /tmp/tar_error
     fi
   }
 
-  # Download backup archive
+  # Download the backup archive
   run_wget() {
     if [ -n "$BRusername" ] || [ -n "$BRpassword" ]; then
       wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error

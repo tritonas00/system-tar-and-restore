@@ -1480,7 +1480,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         echo -e "\n# $BRswap\nUUID=$(blkid -s UUID -o value $BRswap)  none  swap  defaults  0  0"
       fi
     fi
-    # Write fstab to log also
+    # Inform the log
     ( echo -e "\nGenerated fstab:"; cat /mnt/target/etc/fstab ) >> /tmp/restore.log
   }
 
@@ -1940,20 +1940,23 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     elif [ -n "$BRbootctl" ]; then
       BRbootloader="Systemd/bootctl"
     fi
-
+ 
     if [ -n "$BRsyslinux" ]; then
+      # If the target Syslinux device is a mdadm array detect the partition table of one of the underlying partitions. Probably all have the same partition table
       if [[ "$BRsyslinux" == *md* ]]; then
         for f in `grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]'`; do
           BRdev="/dev/$f"
         done
       fi
       detect_partition_table_syslinux
+      # Search for sgdisk in case of GPT
       if [ ! "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
         echo -e "[${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" >&2
         BRabort="y"
       elif [ "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ "$BRmode" = "2" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
         echo -e "[${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" >&2
         BRabort="y"
+      # In case of Arch we run syslinux-install_update from chroot so it calls sgdisk from chroot also. Thats why in Restore mode sgdisk has to be in the archive
       elif [ "$BRdistro" = "Arch" ] && [ "$BRpartitiontable" = "gpt" ] && [ "$BRmode" = "1" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist; then
         echo -e "[${RED}ERROR${NORM}] sgdisk not found in the archived system" >&2
         BRabort="y"
@@ -1961,9 +1964,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ "$BRmode" = "1" ]; then
+      # Search archive contents for grub(2)-mkconfig
       if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist; then
         echo -e "[${RED}ERROR${NORM}] Grub not found in the archived system" >&2
         BRabort="y"
+      # Search archive contents for sys/extlinux
       elif [ -n "$BRsyslinux" ]; then
         if ! grep -Fq "bin/extlinux" /tmp/filelist; then
           echo -e "[${RED}ERROR${NORM}] Extlinux not found in the archived system" >&2
@@ -1975,19 +1980,23 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         fi
       fi
 
+      # Search archive contents for efibootmgr
       if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] && [ -d "$BR_EFI_DETECT_DIR" ] && ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
         echo -e "[${RED}ERROR${NORM}] efibootmgr not found in the archived system" >&2
         BRabort="y"
       fi
+      # Search archive contents for mkfs.vfat
       if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DETECT_DIR" ] && ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
         echo -e "[${RED}ERROR${NORM}] dosfstools not found in the archived system" >&2
         BRabort="y"
       fi
+      # Search archive contents for bootctl
       if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DETECT_DIR" ] && ! grep -Fq "bin/bootctl" /tmp/filelist; then
         echo -e "[${RED}ERROR${NORM}] Bootctl not found in the archived system" >&2
         BRabort="y"
       fi
-      if [ "$target_arch" = "x86_64" ]; then # Set the EFI Grub architecture in Restore Mode
+      # Set the EFI Grub architecture in Restore Mode
+      if [ "$target_arch" = "x86_64" ]; then 
         BRgrubefiarch="x86_64-efi"
       elif [ "$target_arch" = "i686" ]; then
         BRgrubefiarch="i386-efi"
@@ -2003,6 +2012,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
 
+    # In case of EFI and Grub, set the defined ESP mountpoint as --efi-directory
     if [ -n "$BRgrub" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
       BRgrub="$BRespmpoint"
     fi
@@ -2052,10 +2062,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Early clean and unmount
   clean_unmount_in() {
+    # Update the gui wrapper statusbar if -w is given
     if [ -n "$BRwrap" ]; then echo "Unmounting..." > /tmp/wr_proc; fi
     echo -e "\n${BOLD}CLEANING AND UNMOUNTING${NORM}"
+    # Make sure we are outside of /mnt/target
     cd ~
+    # Delete the downloaded backup archive
     rm "$BRmaxsize/downloaded_backup" 2>/dev/null
+
+    # Read BRumountparts we created in mount_all and unmount backwards
     if [ -n "$BRcustomparts" ]; then
       while read ln; do
         sleep 1
@@ -2063,7 +2078,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
       done < <(for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac)
     fi
-
+    
+    # In case of btrfs subvolumes, unmount it and mount the defined root partition again
     if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
       echo -ne "${WRK}Unmounting $BRrootsubvolname"
       OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
@@ -2071,6 +2087,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo -ne "${WRK}Mounting $BRroot"
       OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
 
+      # Delete the created subvolumes
       if [ -n "$BRsubvols" ]; then
         while read ln; do
           sleep 1
@@ -2083,13 +2100,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
     fi
 
-    if [ -z "$BRSTOP" ]; then
-      if [ -z "$BRdontckroot" ]; then
+    # If no errors occured above and -x is not given clear the working directory from created mountpoints
+    if [ -z "$BRSTOP" ] && [ -z "$BRdontckroot" ]; then
         rm -r /mnt/target/* 2>/dev/null
-      fi
     fi
     clean_tmp_files
 
+    # Unmount the target root partition
     echo -ne "${WRK}Unmounting $BRroot"
     sleep 1
     OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
@@ -2098,10 +2115,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Post clean and unmount
   clean_unmount_out() {
+    # Update the gui wrapper statusbar if -w is given
     if [ -n "$BRwrap" ]; then echo "Unmounting..." > /tmp/wr_proc; fi
     echo -e "\n${BOLD}CLEANING AND UNMOUNTING${NORM}"
+    # Make sure we are outside of /mnt/target
     cd ~
+    # Delete the downloaded backup archive
     rm "$BRmaxsize/downloaded_backup" 2>/dev/null
+
+    # Unmount everything we mounted in prepare_chroot
     umount /mnt/target/dev/pts
     umount /mnt/target/proc
     umount /mnt/target/dev
@@ -2111,6 +2133,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     umount /mnt/target/sys
     umount /mnt/target/run
 
+    # Read BRumountparts we created in mount_all and unmount backwards
     if [ -n "$BRcustomparts" ]; then
       while read ln; do
         sleep 1
@@ -2119,6 +2142,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       done < <(for i in ${BRsorted[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac)
     fi
 
+    # Remove leftovers and unmount the target root partition
     echo -ne "${WRK}Unmounting $BRroot"
     if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
     sleep 1

@@ -353,7 +353,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 	                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
                                                                 <action>refresh:BR_BOOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
 			                                </comboboxtext>
-                                                        <entry tooltip-text="Set comma-separated list of mount options for the root partition">
+                                                        <entry tooltip-text="Set comma-separated list of mount options">
                                                                 <variable>BR_MN_OPTS</variable>
                                                                 <input>echo "defaults,noatime"</input>
                                                         </entry>
@@ -535,7 +535,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                         <variable>ENTRY11</variable>
                                 </checkbox>
 
-                                <checkbox tooltip-text="Dont check if root partition is empty (dangerous)">
+                                <checkbox tooltip-text="Dont check if the target root partition is empty (dangerous)">
                                         <label>Dont check root</label>
                                         <variable>ENTRY12</variable>
                                 </checkbox>

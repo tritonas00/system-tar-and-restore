@@ -468,10 +468,6 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                                         <text width-request="86" space-expand="false"><label>Archive:</label></text>
                                                         <entry fs-action="file" tooltip-text="Choose a local backup archive or enter URL" fs-title="Select a backup archive">
                                                                 <variable>BR_FILE</variable>
-                                                                <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_USERNAME</action>
-                                                                <action condition="command_is_true([[ $BR_FILE == /* ]] && echo true)">disable:BR_PASSWORD</action>
-                                                                <action condition="command_is_true([[ ! $BR_FILE == /* ]] && echo true)">enable:BR_USERNAME</action>
-                                                                <action condition="command_is_true([[ ! $BR_FILE == /* ]] && echo true)">enable:BR_PASSWORD</action>
                                                         </entry>
                                                         <button tooltip-text="Select backup archive">
                                                                 <input file stock="gtk-open"></input>

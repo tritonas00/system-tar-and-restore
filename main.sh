@@ -653,7 +653,7 @@ if [ "$BRmode" = "0" ]; then
   echo
 
   # Generate configuration file if -g is given and no error occurred
-  if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then 
+  if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
     echo "Generating backup.conf..."
     generate_conf > "$BRFOLDER"/backup.conf
   fi

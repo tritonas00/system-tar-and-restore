@@ -650,9 +650,16 @@ if [ "$BRmode" = "0" ]; then
 
   # Run tar and pipe it through the progress calculation, give errors to log
   ( run_tar 2>> "$BRFOLDER"/backup.log || touch /tmp/b_error ) | pgrs_bar
+  echo
+
+  # Generate configuration file if -g is given and no error occurred
+  if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then 
+    echo "Generating backup.conf..."
+    generate_conf > "$BRFOLDER"/backup.conf
+  fi
 
   # Give destination subdirectory full permissions with some nice messages
-  OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "\nSetting permissions: Done\n" || echo -ne "\nSetting permissions: Failed\n$OUTPUT\n"
+  OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "Setting permissions: Done\n" || echo -ne "Setting permissions: Failed\n$OUTPUT\n"
 
   # Calculate elapsed time
   elapsed="$(($(($(date +%s)-start))/3600)) hours $((($(($(date +%s)-start))%3600)/60)) min $(($(($(date +%s)-start))%60)) sec"
@@ -667,8 +674,6 @@ if [ "$BRmode" = "0" ]; then
     echo -e "${CYAN}\nBackup archive and log saved in $BRFOLDER\nElapsed time: $elapsed${NORM}"
   fi
 
-  # Generate configuration file if -g is given and no error occurred
-  if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then generate_conf > "$BRFOLDER"/backup.conf; fi
   # Unhide the cursor if -z is given
   if [ -n "$BRhide" ]; then echo -en "${SHOW}"; fi
   # Give log to gui wrapper if -w is given

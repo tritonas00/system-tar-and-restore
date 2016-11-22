@@ -157,16 +157,6 @@ set_args() {
   fi
 }
 
-status_bar() {
-  if [ $(id -u) -gt 0 ]; then
-    echo "Script must run as root"
-  elif [ -f /tmp/wr_pid ]; then
-    cat /tmp/wr_proc
-  else
-    echo "Idle"
-  fi
-}
-
 run_main() {
   if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
     setsid ./main.sh -i ${SCR_MODE} -jwq "${SCR_ARGS[@]}" 2> /tmp/wr_log
@@ -595,7 +585,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 
                 <statusbar has-resize-grip="false">
 			<variable>BR_SB</variable>
-			<input>bash -c "source /tmp/wr_functions; status_bar"</input>
+			<input>bash -c "if [ -f /tmp/wr_pid ]; then cat /tmp/wr_proc; else echo Idle; fi"</input>
 		</statusbar>
         </vbox>
 </window>

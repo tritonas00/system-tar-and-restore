@@ -6,6 +6,7 @@ clean_tmp_files() {
   if [ -f /tmp/wr_proc ]; then rm /tmp/wr_proc; fi
   if [ -f /tmp/wr_log ]; then rm /tmp/wr_log; fi
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
+  if [ -f /tmp/wr_functions ]; then rm /tmp/wr_functions; fi
 }
 
 clean_tmp_files
@@ -36,24 +37,26 @@ else
   export ENTRY1="Include"
 fi
 
+# Echo all the functions to a temporary file so we can source it inside gtkdialog. This ensures compatibility with Ubuntu 16.04
+echo '
 set_default_pass() {
   if [ ! "$BRencmethod" = "none" ]; then
-    echo '<entry tooltip-text="Set passphrase for encryption"><variable>BRencpass</variable>'
+    echo '\''<entry tooltip-text="Set passphrase for encryption"><variable>BRencpass</variable>'\''
   else
-    echo '<entry tooltip-text="Set passphrase for encryption" sensitive="false"><variable>BRencpass</variable>'
+    echo '\''<entry tooltip-text="Set passphrase for encryption" sensitive="false"><variable>BRencpass</variable>'\''
   fi
-  if [ -n "$BRencpass" ]; then echo '<default>'"$BRencpass"'</default>';fi
+  if [ -n "$BRencpass" ]; then echo '\''<default>'\''"$BRencpass"'\''</default>'\'';fi
 }
 
 set_default_opts() {
-  if [ -n "$BR_USER_OPTS" ]; then echo '<default>'"$BR_USER_OPTS"'</default>'; fi
+  if [ -n "$BR_USER_OPTS" ]; then echo '\''<default>'\''"$BR_USER_OPTS"'\''</default>'\''; fi
 }
 
 set_default_multi() {
   if [ ! "$BRcompression" = "none" ]; then
-    echo '<checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">'
+    echo '\''<checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">'\''
   else
-    echo '<checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz" sensitive="false">'
+    echo '\''<checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz" sensitive="false">'\''
   fi
 }
 
@@ -172,8 +175,10 @@ run_main() {
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
   echo true > /tmp/wr_proc
 }
+' > /tmp/wr_functions
 
-export -f scan_disks hide_used_parts set_default_pass set_default_opts set_default_multi set_args status_bar run_main
+
+source /tmp/wr_functions
 export BR_PARTS=$(scan_parts)
 export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
@@ -282,7 +287,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 
                                 <hbox>
                                         <text width-request="115" space-expand="false"><label>Passphrase:</label></text>
-                                        '"`set_default_pass`"'
+                                        '"`bash -c "source /tmp/wr_functions; set_default_pass"`"'
                                         </entry>
                                 </hbox>
 
@@ -290,7 +295,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                         <text width-request="115" space-expand="false"><label>Additional options:</label></text>
                                         <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
                                                 <variable>BR_USER_OPTS</variable>
-                                                '"`set_default_opts`"'
+                                                '"`bash -c "source /tmp/wr_functions; set_default_opts"`"'
                                                 <item>--acls --xattrs</item>
                                         </comboboxentry>
                                 </hbox>
@@ -302,7 +307,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                         </entry>
                                 </hbox>
 
-                                '"`set_default_multi`"'
+                                '"`bash -c "source /tmp/wr_functions; set_default_multi"`"'
                                         <label>Enable multi-core compression</label>
                                         <variable>ENTRY2</variable>
                                         <default>'"$ENTRY2"'</default>
@@ -354,7 +359,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
 	                                                        <variable>BR_ROOT</variable>
                                                                 <input>echo "$BR_ROOT"</input>
-	                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
+	                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
                                                                 <action>refresh:BR_BOOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
 			                                </comboboxtext>
                                                         <entry tooltip-text="Set comma-separated list of mount options for the root partition">
@@ -370,7 +375,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
 	                                                                        <variable>BR_ESP</variable>
                                                                                 <input>echo "$BR_ESP"</input>
-	                                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
+	                                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
                                                                                 <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
                                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_SWAP</action>
 			                                                </comboboxtext>
@@ -385,7 +390,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
 	                                                                        <variable>BR_BOOT</variable>
                                                                                 <input>echo "$BR_BOOT"</input>
-	                                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
+	                                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
                                                                                 <input>if [ -n "$BR_BOOT" ]; then echo ""; fi</input>
                                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
 			                                                </comboboxtext>
@@ -395,7 +400,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
 	                                                                        <variable>BR_HOME</variable>
                                                                                 <input>echo "$BR_HOME"</input>
-	                                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
+	                                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
                                                                                 <input>if [ -n "$BR_HOME" ]; then echo ""; fi</input>
                                                                                 <action>refresh:BR_BOOT</action><action>refresh:BR_ROOT</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
                                                                         </comboboxtext>
@@ -405,7 +410,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
 	                                                                        <variable>BR_SWAP</variable>
                                                                                 <input>echo "$BR_SWAP"</input>
-	                                                                        <input>echo "$BR_PARTS" | bash -c hide_used_parts</input>
+	                                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
                                                                                 <input>if [ -n "$BR_SWAP" ]; then echo ""; fi</input>
                                                                                 <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_ESP</action>
 			                                                </comboboxtext>
@@ -458,7 +463,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                                         </comboboxtext>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk for bootloader" sensitive="false">
 	                                                        <variable>BR_DISK</variable>
-	                                                        <input>bash -c scan_disks</input>
+	                                                        <input>bash -c "source /tmp/wr_functions; scan_disks"</input>
 	                                                </comboboxtext>
                                                         <entry tooltip-text="Set additional kernel options" sensitive="false">
                                                                 <variable>BR_KL_OPTS</variable>
@@ -568,7 +573,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 <input file icon="gtk-ok"></input>
                                 <label>RUN</label>
                                 <variable>BTN_RUN</variable>
-                                <action>bash -c "set_args && run_main &"</action>
+                                <action>bash -c "source /tmp/wr_functions; set_args && run_main &"</action>
                                 <action>disable:BTN_RUN</action>
                                 <action>disable:BTN_EXIT</action>
                                 <action>disable:BR_TAB</action>
@@ -590,7 +595,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 
                 <statusbar has-resize-grip="false">
 			<variable>BR_SB</variable>
-			<input>bash -c status_bar</input>
+			<input>bash -c "source /tmp/wr_functions; status_bar"</input>
 		</statusbar>
         </vbox>
 </window>

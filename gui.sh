@@ -37,7 +37,7 @@ else
   export ENTRY1="Include"
 fi
 
-# Echo all the functions to a temporary file so we can source it inside gtkdialog
+# Echo all functions to a temporary file so we can source it inside gtkdialog
 # This ensures compatibility with Ubuntu 16.04 and variants
 echo '
 set_default_pass() {

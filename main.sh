@@ -269,7 +269,7 @@ Restore / Transfer Mode:
     -O,  --only-hidden        Transfer /home's hidden files and folders only
 
   Misc Options:
-    -x,  --dont-check-root    Dont check if root partition is empty (dangerous)
+    -x,  --dont-check-root    Dont check if the target root partition is empty (dangerous)
     -W,  --bios               Ignore UEFI environment"
       exit
       shift

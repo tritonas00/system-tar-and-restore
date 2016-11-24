@@ -631,7 +631,7 @@ if [ "$BRmode" = "0" ]; then
   mkdir -p "$BRFOLDER"
   sleep 1
   # Start the log
-  echo -e "$BR_VERSION [Backup $(date +%Y-%m-%d-%T)]\n" > "$BRFOLDER"/backup.log
+  echo -e "$BR_VERSION\n" > "$BRFOLDER"/backup.log
   ( echo "[SUMMARY]"; show_summary; echo -e "\n[ARCHIVER]" ) >> "$BRFOLDER"/backup.log
   # Store start time
   start=$(date +%s)
@@ -2226,7 +2226,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Start the log
   start_log() {
-    echo -e "$BR_VERSION [$(date +%Y-%m-%d-%T)]\n"
+    echo -e "$BR_VERSION\n"
     echo "[SUMMARY]"
     show_summary
     echo -e "\n[PROCESSING]"

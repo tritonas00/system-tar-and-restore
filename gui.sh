@@ -138,8 +138,8 @@ set_args() {
     if [ "$ENTRY8" = "false" ]; then
       SCR_MODE=1
       SCR_ARGS+=(-f "$BR_FILE")
-      if [ -n "$BR_USERNAME" ] && [[ ! "$BR_FILE" == /* ]]; then SCR_ARGS+=(-y "$BR_USERNAME"); fi
-      if [ -n "$BR_PASSWORD" ] && [[ ! "$BR_FILE" == /* ]]; then SCR_ARGS+=(-p "$BR_PASSWORD"); fi
+      if [ -n "$BR_USERNAME" ]; then SCR_ARGS+=(-y "$BR_USERNAME"); fi
+      if [ -n "$BR_PASSWORD" ]; then SCR_ARGS+=(-p "$BR_PASSWORD"); fi
       if [ -n "$BR_PASSPHRASE" ]; then SCR_ARGS+=(-P "$BR_PASSPHRASE"); fi
     elif [ "$ENTRY8" = "true" ]; then
       SCR_MODE=2

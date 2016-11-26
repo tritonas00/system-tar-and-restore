@@ -90,9 +90,7 @@ See <code>main.sh --help</code> for all available options.
 
 - In case of Gentoo and simple luks it is recommended to open the device as */dev/mapper/root* ([reference](http://www.gentoo-wiki.info/Initramfs)). Otherwise add *root=/dev/ram0* in kernel options.
 
-- In the target system, in case of Syslinux, old */boot/syslinux/syslinux.cfg* is saved as */boot/syslinux.cfg-old*.  
-
-- In the target system, if any kernel options are defined with Grub, old */etc/default/grub* is saved as */etc/default/grub-old*.  
+- In the target system, the script saves configuration files before generate/modify them with *-old* suffix.  
 
 - In case of UEFI, you must boot in UEFI enviroment to restore a system. The script will check if */sys/firmware/efi* exists and act accordingly.
    You must create an [ESP (EFI System Partition)](https://wiki.archlinux.org/index.php/Unified_Extensible_Firmware_Interface#EFI_System_Partition).  

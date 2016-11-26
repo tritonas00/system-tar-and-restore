@@ -86,7 +86,7 @@ See <code>main.sh --help</code> for all available options.
 
 - With GNU Tar 1.27+ you can add *--xattrs --acls* (and *--selinux* if available) in backup and restore mode additional tar options. In case of Fedora, those options are added automatically.
 
-- In case of Gentoo package genkernel is required to build initramfs. If you dont want to use initramfs image you can use -D to disable genkernel check and initramfs building.
+- In case of Gentoo package genkernel is required to build initramfs. If you dont want initramfs image you can use -D to disable genkernel check and initramfs building.
 
 - In case of Gentoo and simple luks it is recommended to open the device as */dev/mapper/root* ([reference](http://www.gentoo-wiki.info/Initramfs)). Otherwise add *root=/dev/ram0* in kernel options.
 

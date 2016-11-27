@@ -88,8 +88,6 @@ See <code>main.sh --help</code> for all available options.
 
 - In case of Gentoo package genkernel is required to build initramfs. If you dont want initramfs image you can use -D to disable genkernel check and initramfs building.
 
-- In case of Gentoo and simple luks it is recommended to open the device as */dev/mapper/root* ([reference](http://www.gentoo-wiki.info/Initramfs)). Otherwise add *root=/dev/ram0* in kernel options.
-
 - In the target system, the script saves configuration files before generate/modify them with *-old* suffix.  
 
 - In case of UEFI, you must boot in UEFI enviroment to restore a system. The script will check if */sys/firmware/efi* exists and act accordingly.

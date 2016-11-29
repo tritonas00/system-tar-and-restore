@@ -278,7 +278,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 
                                 <hbox>
                                         <text width-request="115" space-expand="false"><label>Passphrase:</label></text>
-                                        '"`bash -c "source /tmp/wr_functions; set_default_pass"`"'
+                                        '"$(bash -c "source /tmp/wr_functions; set_default_pass")"'
                                         </entry>
                                 </hbox>
 
@@ -286,7 +286,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                         <text width-request="115" space-expand="false"><label>Additional options:</label></text>
                                         <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
                                                 <variable>BR_USER_OPTS</variable>
-                                                '"`bash -c "source /tmp/wr_functions; set_default_opts"`"'
+                                                '"$(bash -c "source /tmp/wr_functions; set_default_opts")"'
                                                 <item>--acls --xattrs</item>
                                         </comboboxentry>
                                 </hbox>
@@ -298,7 +298,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                         </entry>
                                 </hbox>
 
-                                '"`bash -c "source /tmp/wr_functions; set_default_multi"`"'
+                                '"$(bash -c "source /tmp/wr_functions; set_default_multi")"'
                                         <label>Enable multi-core compression</label>
                                         <variable>ENTRY2</variable>
                                         <default>'"$ENTRY2"'</default>

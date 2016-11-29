@@ -16,6 +16,15 @@ color_variables() {
   BOLD='\033[1m'
 }
 
+# Delete temporary files if exist
+clean_tmp_files() {
+  if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
+  if [ -f /tmp/s_error ]; then rm /tmp/s_error; fi
+  if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi
+}
+
+clean_tmp_files
+
 # Set hide/unhide cursor vars
 HIDE='\033[?25l'
 SHOW='\033[?25h'
@@ -313,13 +322,6 @@ dstr="                        "
 # Backup mode
 if [ "$BRmode" = "0" ]; then
 
-  # Delete temporary files if exist
-  clean_tmp_files() {
-    if [ -f /tmp/b_error ]; then rm /tmp/b_error; fi
-    if [ -f /tmp/b_filelist ]; then rm /tmp/b_filelist; fi
-    if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi
-  }
-
   # Show a nice summary
   show_summary() {
     echo "ARCHIVE"
@@ -361,7 +363,7 @@ if [ "$BRmode" = "0" ]; then
 
   # Calculate files to create percentage and progress bar
   run_calc() {
-    tar cvf /dev/null "${BR_TAROPTS[@]}" / 2>/dev/null | tee /tmp/b_filelist
+    tar cvf /dev/null "${BR_TAROPTS[@]}" / 2>/dev/null | tee /tmp/filelist
   }
 
   # Run tar with given input
@@ -430,8 +432,6 @@ if [ "$BRmode" = "0" ]; then
   if [ -f "$BRconf" ] && [ -z "$BRwrap" ]; then
     source "$BRconf"
   fi
-
-  clean_tmp_files
 
   # Check user input, exit on error
   if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
@@ -610,7 +610,6 @@ if [ "$BRmode" = "0" ]; then
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
       break
     elif [ "$an" = "n" ] || [ "$an" = "N" ]; then
-      clean_tmp_files
       exit
     else
       echo -e "${RED}Please enter a valid option${NORM}"
@@ -644,16 +643,16 @@ if [ "$BRmode" = "0" ]; then
   # Calculate the number of files
   run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
   # Store the number of files we found from run_calc
-  total=$(cat /tmp/b_filelist | wc -l)
+  total=$(cat /tmp/filelist | wc -l)
   sleep 1
   echo
 
   # Run tar and pipe it through the progress calculation, give errors to log
-  ( run_tar 2>> "$BRFOLDER"/backup.log || touch /tmp/b_error ) | pgrs_bar
+  ( run_tar 2>> "$BRFOLDER"/backup.log || touch /tmp/s_error ) | pgrs_bar
   echo
 
   # Generate configuration file if -g is given and no error occurred
-  if [ -n "$BRgen" ] && [ ! -f /tmp/b_error ]; then
+  if [ -n "$BRgen" ] && [ ! -f /tmp/s_error ]; then
     echo "Generating backup.conf..."
     generate_conf > "$BRFOLDER"/backup.conf
   fi
@@ -664,11 +663,11 @@ if [ "$BRmode" = "0" ]; then
   # Calculate elapsed time
   elapsed="$(($(($(date +%s)-start))/3600)) hours $((($(($(date +%s)-start))%3600)/60)) min $(($(($(date +%s)-start))%60)) sec"
   # Complete the log
-  if [ ! -f /tmp/b_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
+  if [ ! -f /tmp/s_error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
   echo "Elapsed time: $elapsed" >> "$BRFOLDER"/backup.log
 
   # Inform the user if error occurred or not
-  if [ -f /tmp/b_error ]; then
+  if [ -f /tmp/s_error ]; then
     echo -e "${RED}\nAn error occurred.\n\nCheck $BRFOLDER/backup.log for details.\nElapsed time: $elapsed${NORM}"
   else
     echo -e "${CYAN}\nBackup archive and log saved in $BRFOLDER\nElapsed time: $elapsed${NORM}"
@@ -684,15 +683,9 @@ if [ "$BRmode" = "0" ]; then
 # Restore / Transfer Mode
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
-  # Delete temporary files if exist
-  clean_tmp_files() {
-    if [ -f /tmp/filelist ]; then rm /tmp/filelist; fi
-    if [ -f /tmp/bl_error ]; then rm /tmp/bl_error; fi
-  }
-
   # Show the exit screen
   exit_screen() {
-    if [ -f /tmp/bl_error ]; then
+    if [ -f /tmp/s_error ]; then
       echo -e "\n${RED}Error installing $BRbootloader. Check /tmp/restore.log for details.\n\n${CYAN}Press ENTER to unmount all remaining (engaged) devices.${NORM}"
     elif [ -n "$BRbootloader" ]; then
       echo -e "\n${CYAN}Completed. Log: /tmp/restore.log\n\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${NORM}"
@@ -706,7 +699,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Show alternative exit screen if -q is given
   exit_screen_quiet() {
-    if [ -f /tmp/bl_error ]; then
+    if [ -f /tmp/s_error ]; then
       echo -e "\n${RED}Error installing $BRbootloader.\nCheck /tmp/restore.log for details.${NORM}"
     else
       echo -e "\n${CYAN}Completed. Log: /tmp/restore.log${NORM}"
@@ -784,8 +777,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Check wget exit status, exit on error, process the downloaded backup archive if otherwise
   check_wget() {
-    if [ -f /tmp/wget_error ]; then
-      rm /tmp/wget_error
+    if [ -f /tmp/s_error ]; then
       echo -e "[${RED}ERROR${NORM}] Error downloading file. Wrong URL, wrong authentication, network is down or package wget is not installed." >&2
       clean_unmount_in
     else
@@ -885,12 +877,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ "$BRpartitiontable" = "gpt" ]; then
       # Set legacy_boot flag in GPT, use gptmbr.bin
       echo "Setting legacy_boot flag on partition $BRpart of $BRdev" # We set BRpart in install_bootloader
-      sgdisk $BRdev --attributes=$BRpart:set:2 &>> /tmp/restore.log || touch /tmp/bl_error
+      sgdisk $BRdev --attributes=$BRpart:set:2 &>> /tmp/restore.log || touch /tmp/s_error
       BRsyslinuxmbr="gptmbr.bin"
     else
       # Set boot flag in MBR, use mbr.bin
       echo "Setting boot flag on partition $BRpart of $BRdev" # We set BRpart in install_bootloader
-      sfdisk $BRdev -A $BRpart &>> /tmp/restore.log || touch /tmp/bl_error
+      sfdisk $BRdev -A $BRpart &>> /tmp/restore.log || touch /tmp/s_error
       BRsyslinuxmbr="mbr.bin"
     fi
 
@@ -1241,7 +1233,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
     if [ -n "$BRSTOP" ]; then
       echo -e "\n[${RED}ERROR${NORM}] Error while mounting partitions" >&2
-      clean_tmp_files
       rm -r /mnt/target
       exit
     fi
@@ -1718,26 +1709,26 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [[ "$BRgrub" == *md* ]]; then
         for f in `grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]'`; do
           if [ "$BRdistro" = "Arch" ]; then
-            chroot /mnt/target grub-install --target=i386-pc --recheck /dev/$f || touch /tmp/bl_error
+            chroot /mnt/target grub-install --target=i386-pc --recheck /dev/$f || touch /tmp/s_error
           elif [ "$BRdistro" = "Debian" ]; then
-            chroot /mnt/target grub-install --recheck /dev/$f || touch /tmp/bl_error
+            chroot /mnt/target grub-install --recheck /dev/$f || touch /tmp/s_error
           else
-            chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/bl_error
+            chroot /mnt/target grub2-install --recheck /dev/$f || touch /tmp/s_error
           fi
         done
       # Normal install
       elif [ "$BRdistro" = "Arch" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
-        chroot /mnt/target grub-install --target=$BRgrubefiarch --efi-directory=$BRgrub --bootloader-id=grub --recheck || touch /tmp/bl_error
+        chroot /mnt/target grub-install --target=$BRgrubefiarch --efi-directory=$BRgrub --bootloader-id=grub --recheck || touch /tmp/s_error
       elif [ "$BRdistro" = "Arch" ]; then
-        chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/bl_error
+        chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/s_error
       elif [ "$BRdistro" = "Debian" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
         chroot /mnt/target grub-install --efi-directory=$BRgrub --recheck
       elif [ "$BRdistro" = "Debian" ]; then
-        chroot /mnt/target grub-install --recheck $BRgrub || touch /tmp/bl_error
+        chroot /mnt/target grub-install --recheck $BRgrub || touch /tmp/s_error
       elif [ -d "$BR_EFI_DETECT_DIR" ]; then
         chroot /mnt/target grub2-install --efi-directory=$BRgrub --recheck
       else
-        chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/bl_error
+        chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/s_error
       fi
 
       # Fedora already does this
@@ -1791,12 +1782,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
       # In case of Arch syslinux-install_update does all the job
       if [ "$BRdistro" = "Arch" ]; then
-        chroot /mnt/target syslinux-install_update -i -a -m || touch /tmp/bl_error
+        chroot /mnt/target syslinux-install_update -i -a -m || touch /tmp/s_error
       # For other distros
       else
         # If raid array selected, install in all disks the array contains
         if [[ "$BRsyslinux" == *md* ]]; then
-          chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/bl_error
+          chroot /mnt/target extlinux --raid -i /boot/syslinux || touch /tmp/s_error
           # Search for raid disks for the selected array
           for f in `grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z][0-9]'`; do
             # Seperate the device
@@ -1807,12 +1798,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
             set_syslinux_flags_and_paths
             # Install the corresponding bin file
             echo "Installing $BRsyslinuxmbr in $BRdev ($BRpartitiontable)"
-            dd bs=440 count=1 conv=notrunc if=$BRsyslinuxmbrpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/bl_error
+            dd bs=440 count=1 conv=notrunc if=$BRsyslinuxmbrpath/$BRsyslinuxmbr of=$BRdev &>> /tmp/restore.log || touch /tmp/s_error
           done
         # Normal install
         else
           # install extlinux
-          chroot /mnt/target extlinux -i /boot/syslinux || touch /tmp/bl_error
+          chroot /mnt/target extlinux -i /boot/syslinux || touch /tmp/s_error
           # Device already given by the user
           BRdev="$BRsyslinux"
           # If target /boot partition defined use that partition number
@@ -1826,7 +1817,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           set_syslinux_flags_and_paths
           echo "Installing $BRsyslinuxmbr in $BRsyslinux ($BRpartitiontable)"
           # Install the corresponding bin file
-          dd bs=440 count=1 conv=notrunc if=$BRsyslinuxmbrpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/bl_error
+          dd bs=440 count=1 conv=notrunc if=$BRsyslinuxmbrpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/s_error
         fi
         # Copy com32 files we found in set_syslinux_flags_and_paths
         echo "Copying com32 modules"
@@ -1861,18 +1852,18 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
           # Create boot entries using efibootmgr. We set ipn in detect_initramfs_prefix
           if [ "$BRdistro" = "Arch" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro $cn fallback" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn-fallback.img" || touch /tmp/bl_error
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro $cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn.img" || touch /tmp/bl_error
+            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro $cn fallback" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn-fallback.img" || touch /tmp/s_error
+            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro $cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn.img" || touch /tmp/s_error
           elif [ "$BRdistro" = "Debian" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn.img-$cn" || touch /tmp/bl_error
+            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn.img-$cn" || touch /tmp/s_error
           elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Mandriva" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn.img" || touch /tmp/bl_error
+            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn.img" || touch /tmp/s_error
           elif [ "$BRdistro" = "Suse" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn" || touch /tmp/bl_error
+            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn" || touch /tmp/s_error
           elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$kn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn" || touch /tmp/bl_error
+            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$kn" -l /$kn -u "$(detect_bl_root) $BR_KERNEL_OPTS initrd=/$ipn-$cn" || touch /tmp/s_error
           elif [ "$BRdistro" = "Gentoo" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$kn" -l /$kn -u "root=$BRroot $BR_KERNEL_OPTS" || touch /tmp/bl_error
+            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$kn" -l /$kn -u "root=$BRroot $BR_KERNEL_OPTS" || touch /tmp/s_error
           fi
         fi
       done
@@ -1893,7 +1884,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ "$BRespmpoint" = "/boot/efi" ]; then cp_kernels; fi
 
       # Install systemd-boot
-      chroot /mnt/target bootctl --path=$BRespmpoint install || touch /tmp/bl_error
+      chroot /mnt/target bootctl --path=$BRespmpoint install || touch /tmp/s_error
 
       # Save old loader.conf if found
       if [ -f /mnt/target$BRespmpoint/loader/loader.conf ]; then
@@ -2031,8 +2022,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   check_archive() {
     if [ -n "$BRhide" ]; then echo -en "${BR_SHOW}"; fi
     echo
-    if [ -f /tmp/tar_error ]; then
-      rm /tmp/tar_error
+    if [ -f /tmp/s_error ]; then
       echo -e "[${RED}ERROR${NORM}] Error reading archive" >&2
       clean_unmount_in
     else
@@ -2205,22 +2195,22 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   read_archive() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/tar_error
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/s_error
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/tar_error
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/s_error
     # Without encryption
     else
-      tar tf "$BRsource" "${USER_OPTS[@]}" || touch /tmp/tar_error
+      tar tf "$BRsource" "${USER_OPTS[@]}" || touch /tmp/s_error
     fi
   }
 
   # Download the backup archive
   run_wget() {
     if [ -n "$BRusername" ] || [ -n "$BRpassword" ]; then
-      wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
+      wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/s_error
     else
-      wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/wget_error
+      wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/s_error
     fi
   }
 
@@ -2283,8 +2273,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo -e "[${RED}ERROR${NORM}] /mnt/target exists, aborting" >&2
     exit
   fi
-
-  clean_tmp_files
 
   PATH="$PATH:/usr/sbin:/bin:/sbin"
 

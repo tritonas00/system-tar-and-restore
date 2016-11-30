@@ -25,6 +25,31 @@ clean_tmp_files() {
 
 clean_tmp_files
 
+# Calculate percentage and compose a simple progress bar
+pstr="========================"
+dstr="                        "
+lastper=-1
+
+pgrs_bar() {
+  while read ln; do
+    x=$((x + 1))
+    per=$(($x*100/$total))
+    # If -v is given print percentage and full output from run_tar
+    if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
+      echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
+    elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
+      lastper=$per
+      # Give progress info to gui wrapper if -w is given
+      if [ -n "$BRwrap" ]; then
+        echo "$mode_job: $per% ($x / $total Files)" > /tmp/wr_proc
+      else
+        # The main progress bar
+        echo -ne "\r$mode_job: [${pstr:0:$(($x*24/$total))}${dstr:0:24-$((x*24/$total))}] $per%"
+      fi
+    fi
+  done
+}
+
 # Set hide/unhide cursor vars
 HIDE='\033[?25l'
 SHOW='\033[?25h'
@@ -315,10 +340,6 @@ elif  [ -n "$BRmode" ] && [ ! "$BRmode" = "0" ] && [ ! "$BRmode" = "1" ] && [ ! 
   exit
 fi
 
-# Set progress bar characters
-pstr="========================"
-dstr="                        "
-
 # Backup mode
 if [ "$BRmode" = "0" ]; then
 
@@ -378,28 +399,6 @@ if [ "$BRmode" = "0" ]; then
     else
       tar ${BR_MAINOPTS} "$BRFOLDER/$BRNAME.$BR_EXT" "${BR_TAROPTS[@]}" /
     fi
-  }
-
-  # Calculate percentage and compose a simple progress bar
-  pgrs_bar() {
-    lastper=-1
-    while read ln; do
-      b=$((b + 1))
-      per=$(($b*100/$total))
-      # If -v is given print percentage and full output from run_tar
-      if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
-        echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
-      elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
-        lastper=$per
-        # Give progress info to gui wrapper if -w is given
-        if [ -n "$BRwrap" ]; then
-          echo "Archiving: $per% ($b / $total Files)" > /tmp/wr_proc
-        else
-          # The main progress bar
-          echo -ne "\rArchiving: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
-        fi
-      fi
-    done
   }
 
  # Generate configuration file
@@ -648,6 +647,7 @@ if [ "$BRmode" = "0" ]; then
   echo
 
   # Run tar and pipe it through the progress calculation, give errors to log
+  mode_job="Archiving"
   ( run_tar 2>> "$BRFOLDER"/backup.log || touch /tmp/s_error ) | pgrs_bar
   echo
 
@@ -2147,50 +2147,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     exit
   }
 
-  # Create tar progress
-  tar_pgrs() {
-    lastper=-1
-    while read ln; do
-      a=$((a + 1))
-      per=$(($a*100/$total))
-      # If -v is given print percentage and full output from run_tar
-      if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
-        echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
-      elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
-        lastper=$per
-        # Give progress info to gui wrapper if -w is given
-        if [ -n "$BRwrap" ]; then
-          echo "Extracting: $per% ($a / $total Files)" > /tmp/wr_proc
-        else
-          # The main progress bar
-          echo -ne "\rExtracting: [${pstr:0:$(($a*24/$total))}${dstr:0:24-$(($a*24/$total))}] $per%"
-        fi
-      fi
-    done
-  }
-
-  # Create rsync progress
-  rsync_pgrs() {
-    lastper=-1
-    while read ln; do
-      b=$((b + 1))
-      per=$(($b*100/$total))
-      # If -v is given print percentage and full output from run_rsync
-      if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
-        echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
-      elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
-        lastper=$per
-        # Give progress info to gui wrapper if -w is given
-        if [ -n "$BRwrap" ]; then
-          echo "Transferring: $per% ($b / $total Files)" > /tmp/wr_proc
-        else
-          # The main progress bar
-          echo -ne "\rTransferring: [${pstr:0:$(($b*24/$total))}${dstr:0:24-$(($b*24/$total))}] $per%"
-        fi
-      fi
-    done
-  }
-
   # Quick read backup archive
   read_archive() {
     # In case of openssl encryption
@@ -2359,7 +2315,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     total=$(cat /tmp/filelist | wc -l)
     sleep 1
     # Run tar and pipe it through the progress calculation, give errors to log
-    ( run_tar 2>>/tmp/restore.log && echo "System extracted successfully" >> /tmp/restore.log ) | tar_pgrs
+    mode_job="Extracting"
+    ( run_tar 2>>/tmp/restore.log && echo "System extracted successfully" >> /tmp/restore.log ) | pgrs_bar
     echo
 
   # Transfer mode
@@ -2373,7 +2330,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     total=$(cat /tmp/filelist | wc -l)
     echo
     # Run rsync and pipe it through the progress calculation, give errors to log
-    ( run_rsync 2>>/tmp/restore.log && echo "System transferred successfully" >> /tmp/restore.log ) | rsync_pgrs
+    mode_job="Transferring"
+    ( run_rsync 2>>/tmp/restore.log && echo "System transferred successfully" >> /tmp/restore.log ) | pgrs_bar
     echo
   fi
 

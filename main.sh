@@ -34,7 +34,7 @@ pgrs_bar() {
   while read ln; do
     x=$((x + 1))
     per=$(($x*100/$total))
-    # If -v is given print percentage and full output from run_tar
+    # If -v is given print percentage and full output
     if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
       echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
     elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then

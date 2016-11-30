@@ -32,8 +32,8 @@ lastper=-1
 
 pgrs_bar() {
   while read ln; do
-    x=$((x + 1))
-    per=$(($x*100/$total))
+    z=$((z + 1))
+    per=$(($z*100/$total))
     # If -v is given print percentage and full output
     if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
       echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
@@ -41,10 +41,10 @@ pgrs_bar() {
       lastper=$per
       # Give progress info to gui wrapper if -w is given
       if [ -n "$BRwrap" ]; then
-        echo "$mode_job: $per% ($x / $total Files)" > /tmp/wr_proc
+        echo "$mode_job: $per% ($z / $total Files)" > /tmp/wr_proc
       else
         # The main progress bar
-        echo -ne "\r$mode_job: [${pstr:0:$(($x*24/$total))}${dstr:0:24-$((x*24/$total))}] $per%"
+        echo -ne "\r$mode_job: [${pstr:0:$(($z*24/$total))}${dstr:0:24-$((z*24/$total))}] $per%"
       fi
     fi
   done

@@ -15,7 +15,7 @@ System Tar & Restore
 
 ###ABOUT###
 
-System tar & restore contains two bash scripts, the main program **main.sh** and a gui wrapper **gui.sh**.  
+System tar & restore contains two bash scripts, the main program **star.sh** and a gui wrapper **star-gui.sh**.  
 Three modes are available: Backup, Restore and Transfer.
 
 Supported distributions: Arch, Debian/Ubuntu, Fedora, openSUSE, Gentoo, Mandriva/Mageia          
@@ -80,7 +80,7 @@ Boot from a livecd - preferably one of the target (backed up) distro - or anothe
  
 When the process completes check */tmp/restore.log*. 
 
-See <code>main.sh --help</code> for all available options.
+See <code>star.sh --help</code> for all available options.
 
 ###NOTES###
 
@@ -122,20 +122,20 @@ See <code>main.sh --help</code> for all available options.
 - Compression: gzip  
 - Additional options: --acls --xattrs 
 
-<code>main.sh -i 0 -d /home/john/ -c gzip -u "--acls --xattrs"</code>  
+<code>star.sh -i 0 -d /home/john/ -c gzip -u "--acls --xattrs"</code>  
 
 - Destination: /home/john/
 - Compression: xz  
 - Exclude /home directory  
 
-<code>main.sh -i 0 -d /home/john/ -c xz -H</code>   
+<code>star.sh -i 0 -d /home/john/ -c xz -H</code>   
 
 - Destination: /home/john/
 - Compression: bzip2  
 - Keep only /home's hidden files and folders
 - Encryption
 
-<code>main.sh -i 0 -d /home/john/ -c bzip2 -E openssl -P 1234 -O</code>   
+<code>star.sh -i 0 -d /home/john/ -c bzip2 -E openssl -P 1234 -O</code>   
 
 **Restore Mode:**
 
@@ -144,31 +144,31 @@ See <code>main.sh --help</code> for all available options.
 - local archive
 - tar options: --acls --xattrs 
 
-<code>main.sh -i 1 -r /dev/sdb1 -G /dev/sdb -f /home/john/backup.tar.gz -u "--acls --xattrs"</code>  
+<code>star.sh -i 1 -r /dev/sdb1 -G /dev/sdb -f /home/john/backup.tar.gz -u "--acls --xattrs"</code>  
 
 - root: /dev/sdb1, /home: /dev/sdb2, swap: /dev/sdb3
 - syslinux 
 - remote archive on ftp server
 
-<code>main.sh -i 1 -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -f ftp://server/backup.tar.xz</code>
+<code>star.sh -i 1 -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -f ftp://server/backup.tar.xz</code>
 
 - root: /dev/md1, /boot: /dev/md0
 - local archive  
 - syslinux  
 
-<code>main.sh -i 1 -r /dev/md1 -b /dev/md0 -f /home/john/backup.tar.gz -S /dev/md0</code>  
+<code>star.sh -i 1 -r /dev/md1 -b /dev/md0 -f /home/john/backup.tar.gz -S /dev/md0</code>  
 
 - root: /dev/sdb1
 - syslinux 
 - remote file in protected http server
 
-<code>main.sh -i 1 -r /dev/sdb1 -S /dev/sdb -f http://server/backup.tar.gz -y username -p password</code>
+<code>star.sh -i 1 -r /dev/sdb1 -S /dev/sdb -f http://server/backup.tar.gz -y username -p password</code>
 
 - root: /dev/sda2, esp: /dev/sda1
 - local archive  
 - grub
 
-<code>main.sh -i 1 -r /dev/sda2 -e /dev/sda1 -l /boot/efi -G auto -f /home/john/backup.tar.gz</code>   
+<code>star.sh -i 1 -r /dev/sda2 -e /dev/sda1 -l /boot/efi -G auto -f /home/john/backup.tar.gz</code>   
 
 **Transfer Mode:**
 
@@ -176,22 +176,22 @@ See <code>main.sh --help</code> for all available options.
 - syslinux  
 - kernel options: nomodeset
 
-<code>main.sh -i 2 -r /dev/sda1 -m discard,errors=remount-ro -S /dev/sda -k nomodeset</code>  
+<code>star.sh -i 2 -r /dev/sda1 -m discard,errors=remount-ro -S /dev/sda -k nomodeset</code>  
 
 - root: /dev/mapper/debian-root, /boot: /dev/sdb1  
 - grub  
 
-<code>main.sh -i 2 -r /dev/mapper/debian-root -b /dev/sdb1 -G /dev/sdb</code>  
+<code>star.sh -i 2 -r /dev/mapper/debian-root -b /dev/sdb1 -G /dev/sdb</code>  
 
 - root: /dev/sda2 (btrfs with compression), /boot: /dev/sda1
 - root subvolume: __active
 - /var, /usr and /home subvolumes
 - syslinux  
 
-<code>main.sh -i 2 -r /dev/sda2 -m compress=lzo -b /dev/sda1 -S /dev/sda -R __active -B "/var /usr /home"</code>  
+<code>star.sh -i 2 -r /dev/sda2 -m compress=lzo -b /dev/sda1 -S /dev/sda -R __active -B "/var /usr /home"</code>  
 
 - root: /dev/sdb2, /boot: /dev/sdb1, /var: /dev/sdb4, /usr: /dev/sdb3
 - transfer /home's hidden files and folders only
 - grub
 
-<code>main.sh -i 2 -r /dev/sdb2 -b /dev/sdb1 -t "/var=/dev/sdb4 /usr=/dev/sdb3" -G /dev/sdb -O</code>
+<code>star.sh -i 2 -r /dev/sdb2 -b /dev/sdb1 -t "/var=/dev/sdb4 /usr=/dev/sdb3" -G /dev/sdb -O</code>

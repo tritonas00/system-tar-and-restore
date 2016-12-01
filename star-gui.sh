@@ -306,7 +306,7 @@ Excluded by default:
 /var/run/*
 /var/lock/*
 .gvfs
-lost+found ">
+lost+found">
                                                 <variable>BR_EXC</variable>
                                         </entry>
                                 </hbox>
@@ -550,7 +550,7 @@ Excluded by default in Transfer mode:
 /var/run/*
 /var/lock/*
 /home/*/.gvfs
-lost+found ">
+lost+found">
                                                 <variable>BR_TR_OPTIONS</variable>
                                                 <item>--acls --xattrs</item>
                                         </comboboxentry>

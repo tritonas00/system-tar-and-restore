@@ -293,7 +293,20 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 
                                 <hbox>
                                         <text width-request="115" space-expand="false"><label>Exclude:</label></text>
-                                        <entry space-expand="true" space-fill="true" tooltip-text="Exclude files and directories. If you want spaces in names replace them with //">
+                                        <entry space-expand="true" space-fill="true" tooltip-text="Exclude files and directories. If you want spaces in names replace them with //
+
+Excluded by default:
+/run/*
+/dev/*
+/sys/*
+/tmp/*
+/mnt/*
+/proc/*
+/media/*
+/var/run/*
+/var/lock/*
+.gvfs
+lost+found ">
                                                 <variable>BR_EXC</variable>
                                         </entry>
                                 </hbox>
@@ -524,7 +537,20 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 
                                 <hbox>
                                         <text width-request="115" space-expand="false"><label>Additional options:</label></text>
-                                        <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar/rsync options. See tar --help or rsync --help for more info. If you want spaces in names replace them with //">
+                                        <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar/rsync options. See tar --help or rsync --help for more info. If you want spaces in names replace them with //
+
+Excluded by default in Transfer mode:
+/run/*
+/dev/*
+/sys/*
+/tmp/*
+/mnt/*
+/proc/*
+/media/*
+/var/run/*
+/var/lock/*
+/home/*/.gvfs
+lost+found ">
                                                 <variable>BR_TR_OPTIONS</variable>
                                                 <item>--acls --xattrs</item>
                                         </comboboxentry>

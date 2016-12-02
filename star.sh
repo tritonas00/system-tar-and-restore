@@ -491,7 +491,6 @@ if [ "$BRmode" = "0" ]; then
   if [ -z "$BRFOLDER" ]; then BRFOLDER="/"; fi
   if [ -z "$BRNAME" ]; then BRNAME="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"; fi
   if [ -z "$BRcompression" ]; then BRcompression="gzip"; fi
-  if [ -z "$BRencmethod" ]; then BRencmethod="none"; fi
 
  # Set backup subdirectory
   BRFOLDER=$(echo "$BRFOLDER"/Backup-$(date +%Y-%m-%d) | sed 's://*:/:g') # Also eliminate multiple forward slashes in the path
@@ -734,8 +733,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRencmethod="openssl"
     elif file -b "$BRsource" | grep -qw GPG; then
       BRencmethod="gpg"
-    else
-      unset BRencmethod
     fi
   }
 

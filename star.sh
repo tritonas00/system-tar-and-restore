@@ -1078,19 +1078,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ -n "$BRcustomparts" ]; then
-      BRdevused=(`for i in ${BRcustomparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"=") && echo $BRdevice; done | sort | uniq -d`)
-      BRmpointused=(`for i in ${BRcustomparts[@]}; do BRmpoint=$(echo $i | cut -f1 -d"=") && echo $BRmpoint; done | sort | uniq -d`)
+      BRdevused=(`for BRdevice in ${BRcustomparts[@]}; do echo $BRdevice | cut -f2 -d"="; done | sort | uniq -d`)
+      BRmpointused=(`for BRmpoint in ${BRcustomparts[@]}; do echo $BRmpoint | cut -f1 -d"="; done | sort | uniq -d`)
       if [ -n "$BRdevused" ]; then
-        for a in ${BRdevused[@]}; do
-          echo -e "[${YELLOW}WARNING${NORM}] $a already used"
-          exit
-        done
+        echo -e "[${YELLOW}WARNING${NORM}] $BRdevused already used"
+        exit
       fi
       if [ -n "$BRmpointused" ]; then
-        for a in ${BRmpointused[@]}; do
-          echo -e "[${YELLOW}WARNING${NORM}] Duplicate mountpoint: $a"
-          exit
-        done
+        echo -e "[${YELLOW}WARNING${NORM}] Duplicate mountpoint: $BRmpointused"
+        exit
       fi
 
       for k in ${BRcustomparts[@]}; do
@@ -1282,7 +1278,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
 
-    # Mount any other target patition if given by the user
+    # Mount any other target partition if given by the user
     if [ -n "$BRcustomparts" ]; then
       # Sort target partitions array by their mountpoint so we can mount in order
       BRsorted=(`for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =`)
@@ -2073,7 +2069,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         sleep 1
         echo -ne "${WRK}Unmounting $ln"
         OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-      done < <(for i in ${BRumountparts[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac)
+      done < <(for BRdevice in ${BRumountparts[@]}; do echo $BRdevice | cut -f2 -d"="; done | tac)
     fi
 
     # In case of btrfs subvolumes, unmount the root subvolume and mount the defined root partition again
@@ -2136,7 +2132,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         sleep 1
         echo -ne "${WRK}Unmounting $ln"
         OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-      done < <(for i in ${BRsorted[@]}; do BRdevice=$(echo $i | cut -f2 -d"="); echo $BRdevice; done | tac)
+      done < <(for BRdevice in ${BRsorted[@]}; do echo $BRdevice | cut -f2 -d"="; done | tac)
     fi
 
     # Remove leftovers and unmount the target root partition

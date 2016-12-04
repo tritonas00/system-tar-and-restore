@@ -343,6 +343,9 @@ fi
 # Backup mode
 if [ "$BRmode" = "0" ]; then
 
+  # Unset Restore/Transfer mode vars
+  unset BRroot BResp BRespmpoint BRswap BRboot BRhome BRgrub BRsyslinux BRuri BRusername BRpassword BRrootsubvolname BR_MOUNT_OPTS BR_KERNEL_OPTS BRcustomparts BRsubvols BRdontckroot BRefistub BRbootctl
+
   # Show a nice summary
   show_summary() {
     echo "ARCHIVE"
@@ -682,6 +685,9 @@ if [ "$BRmode" = "0" ]; then
 # Restore / Transfer Mode
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
+  # Unset Backup mode vars
+  unset BRFOLDER BRNAME BRcompression BRnohome BRgen BRencmethod BRclean BRconf BRmcore
+ 
   # Show the exit screen
   exit_screen() {
     if [ -f /tmp/s_error ]; then

@@ -782,7 +782,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   check_wget() {
     if [ -f /tmp/s_error ]; then
       echo -e "[${RED}ERROR${NORM}] Error downloading file. Wrong URL, wrong authentication, network is down or package wget is not installed." >&2
-      clean_unmount_in
+      clean_unmount
     else
       detect_encryption
       # If the downloaded archive is encrypted prompt the user for passphrase
@@ -794,7 +794,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       detect_filetype
       if [ "$BRfiletype" = "wrong" ]; then
         echo -e "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase" >&2
-        clean_unmount_in
+        clean_unmount
       fi
     fi
   }
@@ -1274,7 +1274,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ -n "$BRSTOP" ]; then
         echo -e "\n[${RED}ERROR${NORM}] Error while making subvolumes" >&2
         unset BRSTOP
-        clean_unmount_in
+        clean_unmount
       fi
     fi
 
@@ -1309,7 +1309,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ -n "$BRSTOP" ]; then
         echo -e "\n[${RED}ERROR${NORM}] Error while mounting partitions" >&2
         unset BRSTOP
-        clean_unmount_in
+        clean_unmount
       fi
     fi
     # Find the bigger partition to save the downloaded backup archive
@@ -2013,7 +2013,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ -n "$BRabort" ]; then
-      clean_unmount_in
+      clean_unmount
     fi
   }
 
@@ -2023,7 +2023,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo
     if [ -f /tmp/s_error ]; then
       echo -e "[${RED}ERROR${NORM}] Error reading archive" >&2
-      clean_unmount_in
+      clean_unmount
     else
       target_arch=$(grep -F 'target_architecture.' /tmp/filelist | cut -f2 -d".")
       if [ -z "$target_arch" ]; then
@@ -2033,7 +2033,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         echo -e "[${RED}ERROR${NORM}] Running and target system architecture mismatch or invalid archive" >&2
         echo -e "[${CYAN}INFO${NORM}] Target  system: $target_arch" >&2
         echo -e "[${CYAN}INFO${NORM}] Running system: $(uname -m)" >&2
-        clean_unmount_in
+        clean_unmount
       fi
     fi
   }
@@ -2053,8 +2053,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     rm -r /mnt/target
   }
 
-  # Early clean and unmount
-  clean_unmount_in() {
+  # Clean and unmount
+  clean_unmount() {
     # Update the gui wrapper statusbar if -w is given
     if [ -n "$BRwrap" ]; then echo "Unmounting..." > /tmp/wr_proc; fi
     echo -e "\n${BOLD}CLEANING AND UNMOUNTING${NORM}"
@@ -2062,6 +2062,18 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     cd ~
     # Delete the downloaded backup archive
     rm "$BRmaxsize/downloaded_backup" 2>/dev/null
+
+    if [ -n "$post_umt" ]; then
+      # Unmount everything we mounted in prepare_chroot
+      umount /mnt/target/dev/pts
+      umount /mnt/target/proc
+      umount /mnt/target/dev
+      if [ -d "$BR_EFI_DETECT_DIR" ]; then
+        umount /mnt/target/sys/firmware/efi/efivars
+      fi
+      umount /mnt/target/sys
+      umount /mnt/target/run
+    fi
 
     # Read BRumountparts we created in mount_all and unmount backwards
     if [ -n "$BRcustomparts" ]; then
@@ -2072,67 +2084,31 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       done < <(for BRdevice in ${BRumountparts[@]}; do echo $BRdevice | cut -f2 -d"="; done | tac)
     fi
 
-    # In case of btrfs subvolumes, unmount the root subvolume and mount the defined root partition again
-    if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
-      echo -ne "${WRK}Unmounting $BRrootsubvolname"
-      OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
-      sleep 1
-      echo -ne "${WRK}Mounting $BRroot"
-      OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
+    if [ -z "$post_umt" ]; then
+      # In case of btrfs subvolumes, unmount the root subvolume and mount the defined root partition again
+      if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
+        echo -ne "${WRK}Unmounting $BRrootsubvolname"
+        OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
+        sleep 1
+        echo -ne "${WRK}Mounting $BRroot"
+        OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
 
-      # Delete the created subvolumes
-      if [ -n "$BRsubvols" ]; then
-        while read ln; do
-          sleep 1
-          echo -ne "${WRK}Deleting $BRrootsubvolname$ln"
-          OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname$ln 2>&1 1>/dev/null) && ok_status || error_status
-        done < <(for i in ${BRsubvols[@]}; do echo $i; done | sort -r)
+        # Delete the created subvolumes
+        if [ -n "$BRsubvols" ]; then
+          while read ln; do
+            sleep 1
+            echo -ne "${WRK}Deleting $BRrootsubvolname$ln"
+            OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname$ln 2>&1 1>/dev/null) && ok_status || error_status
+          done < <(for i in ${BRsubvols[@]}; do echo $i; done | sort -r)
+        fi
+        echo -ne "${WRK}Deleting $BRrootsubvolname"
+        OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
       fi
 
-      echo -ne "${WRK}Deleting $BRrootsubvolname"
-      OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
-    fi
-
-    # If no errors occured above and -x is not given clear the working directory from created mountpoints
-    if [ -z "$BRSTOP" ] && [ -z "$BRdontckroot" ]; then
-      rm -r /mnt/target/* 2>/dev/null
-    fi
-    clean_tmp_files
-
-    # Unmount the target root partition
-    echo -ne "${WRK}Unmounting $BRroot"
-    sleep 1
-    OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
-    exit
-  }
-
-  # Post clean and unmount
-  clean_unmount_out() {
-    # Update the gui wrapper statusbar if -w is given
-    if [ -n "$BRwrap" ]; then echo "Unmounting..." > /tmp/wr_proc; fi
-    echo -e "\n${BOLD}CLEANING AND UNMOUNTING${NORM}"
-    # Make sure we are outside of /mnt/target
-    cd ~
-    # Delete the downloaded backup archive
-    rm "$BRmaxsize/downloaded_backup" 2>/dev/null
-
-    # Unmount everything we mounted in prepare_chroot
-    umount /mnt/target/dev/pts
-    umount /mnt/target/proc
-    umount /mnt/target/dev
-    if [ -d "$BR_EFI_DETECT_DIR" ]; then
-      umount /mnt/target/sys/firmware/efi/efivars
-    fi
-    umount /mnt/target/sys
-    umount /mnt/target/run
-
-    # Read BRumountparts we created in mount_all and unmount backwards
-    if [ -n "$BRcustomparts" ]; then
-      while read ln; do
-        sleep 1
-        echo -ne "${WRK}Unmounting $ln"
-        OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-      done < <(for BRdevice in ${BRumountparts[@]}; do echo $BRdevice | cut -f2 -d"="; done | tac)
+      # If no errors occured above and -x is not given clear the working directory from created mountpoints
+      if [ -z "$BRSTOP" ] && [ -z "$BRdontckroot" ]; then
+        rm -r /mnt/target/* 2>/dev/null
+      fi
     fi
 
     # Remove leftovers and unmount the target root partition
@@ -2141,7 +2117,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     sleep 1
     OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
 
-    if [ -n "$BRwrap" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
+    if [ -n "$BRwrap" ] && [ -n "$post_umt" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
     clean_tmp_files
     exit
   }
@@ -2275,7 +2251,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Check archive for genkernel in case of Gentoo if -D is not given
   if [ "$BRmode" = "1" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
     echo -e "[${YELLOW}WARNING${NORM}] Genkernel not found in the archived system. (you can disable this check with -D)" >&2
-    clean_unmount_in
+    clean_unmount
   fi
 
   if [ "$BRmode" = "2" ]; then set_rsync_opts; fi
@@ -2295,7 +2271,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
       break
     elif [ "$an" = "n" ] || [ "$an" = "N" ]; then
-      clean_unmount_in
+      clean_unmount
     else
       echo -e "${RED}Please enter a valid option${NORM}"
     fi
@@ -2384,5 +2360,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     exit_screen_quiet
   fi
   sleep 1
-  clean_unmount_out
+  post_umt="y"
+  clean_unmount
 fi

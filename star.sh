@@ -2057,7 +2057,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   clean_unmount() {
     # Update the gui wrapper statusbar if -w is given
     if [ -n "$BRwrap" ]; then echo "Unmounting..." > /tmp/wr_proc; fi
-    echo -e "\n${BOLD}CLEANING AND UNMOUNTING${NORM}"
+    echo -e "\n${BOLD}[CLEANING AND UNMOUNTING]${NORM}"
     # Make sure we are outside of /mnt/target
     cd ~
     # Delete the downloaded backup archive

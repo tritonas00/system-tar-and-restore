@@ -2112,9 +2112,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     # Remove leftovers and unmount the target root partition
-    echo -ne "${WRK}Unmounting $BRroot"
-    if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
+    rm /mnt/target/target_architecture.$(uname -m) 2>/dev/null
     sleep 1
+    echo -ne "${WRK}Unmounting $BRroot"
     OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
 
     if [ -n "$BRwrap" ] && [ -n "$post_umt" ]; then cat /tmp/restore.log > /tmp/wr_log; fi

@@ -2105,7 +2105,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
       fi
 
-      # If no errors occured above and -x is not given clear the working directory from created mountpoints
+      # If no error occured above and -x is not given clear the working directory from created mountpoints
       if [ -z "$BRSTOP" ] && [ -z "$BRdontckroot" ]; then
         rm -r /mnt/target/* 2>/dev/null
       fi

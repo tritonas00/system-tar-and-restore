@@ -2132,7 +2132,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         sleep 1
         echo -ne "${WRK}Unmounting $ln"
         OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-      done < <(for BRdevice in ${BRsorted[@]}; do echo $BRdevice | cut -f2 -d"="; done | tac)
+      done < <(for BRdevice in ${BRumountparts[@]}; do echo $BRdevice | cut -f2 -d"="; done | tac)
     fi
 
     # Remove leftovers and unmount the target root partition

@@ -2085,7 +2085,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ -z "$post_umt" ]; then
-      # In case of btrfs subvolumes, unmount the root subvolume and mount the defined root partition again
+      # In case of btrfs subvolumes, unmount the root subvolume and mount the target root partition again
       if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
         echo -ne "${WRK}Unmounting $BRrootsubvolname"
         OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
@@ -2105,7 +2105,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
       fi
 
-      # If no error occured above and -x is not given clear the working directory from created mountpoints
+      # If no error occured above and -x is not given clean the target root partition from created mountpoints
       if [ -z "$BRSTOP" ] && [ -z "$BRdontckroot" ]; then
         rm -r /mnt/target/* 2>/dev/null
       fi

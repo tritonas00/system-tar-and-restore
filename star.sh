@@ -23,8 +23,6 @@ clean_tmp_files() {
   if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi
 }
 
-clean_tmp_files
-
 # Calculate percentage and compose a simple progress bar
 pstr="========================"
 dstr="                        "
@@ -339,6 +337,8 @@ elif  [ -n "$BRmode" ] && [ ! "$BRmode" = "0" ] && [ ! "$BRmode" = "1" ] && [ ! 
   echo -e "[${RED}ERROR${NORM}] Wrong mode: $BRmode. Available options: 0 (Backup) 1 (Restore) 2 (Transfer)" >&2
   exit
 fi
+
+clean_tmp_files
 
 # Backup mode
 if [ "$BRmode" = "0" ]; then

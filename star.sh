@@ -2292,7 +2292,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Run tar and pipe it through the progress calculation, give errors to log
     mode_job="Extracting"
     ( run_tar 2>>/tmp/restore.log && echo "System extracted successfully" >> /tmp/restore.log ) | pgrs_bar
-    echo
 
   # Transfer mode
   elif [ "$BRmode" = "2" ]; then
@@ -2307,9 +2306,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Run rsync and pipe it through the progress calculation, give errors to log
     mode_job="Transferring"
     ( run_rsync 2>>/tmp/restore.log && echo "System transferred successfully" >> /tmp/restore.log ) | pgrs_bar
-    echo
   fi
 
+  if [ -z "$BRverb" ]; then echo; fi
   # Unhide the cursor if -z is given
   if [ -n "$BRhide" ]; then echo -en "${SHOW}"; fi
 
@@ -2350,8 +2349,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
  # Run post processing functions, update the log and pray :p
  ( prepare_chroot; build_initramfs; generate_locales; install_bootloader) 1> >(tee -a /tmp/restore.log ) 2>&1
-
-   sleep 1
 
   # Show the exit screen
   if [ -z "$BRquiet" ]; then

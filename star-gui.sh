@@ -279,6 +279,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 <hbox>
                                         <text width-request="115" space-expand="false"><label>Passphrase:</label></text>
                                         '"$(bash -c "source /tmp/wr_functions; set_default_pass")"'
+                                                <visible>password</visible>
                                         </entry>
                                 </hbox>
 
@@ -497,12 +498,14 @@ lost+found">
                                                                 </hbox>
                                                                 <hbox><text width-request="86" space-expand="false"><label>Password:</label></text>
                                                                         <entry tooltip-text="Set ftp/http password">
+                                                                                <visible>password</visible>
                                                                                 <variable>BR_PASSWORD</variable>
                                                                         </entry>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="86" space-expand="false"><label>Passphrase:</label></text>
                                                                         <entry tooltip-text="Set passphrase for decryption">
+                                                                                <visible>password</visible>
                                                                                 <variable>BR_PASSPHRASE</variable>
                                                                         </entry>
                                                                 </hbox>

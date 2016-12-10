@@ -6,7 +6,7 @@ clean_tmp_files() {
   if [ -f /tmp/wr_proc ]; then rm /tmp/wr_proc; fi
   if [ -f /tmp/wr_log ]; then rm /tmp/wr_log; fi
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
-  if [ -f /tmp/wr_pid ]; then rm /tmp/wr_tab; fi
+  if [ -f /tmp/wr_tab ]; then rm /tmp/wr_tab; fi
   if [ -f /tmp/wr_functions ]; then rm /tmp/wr_functions; fi
 }
 

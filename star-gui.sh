@@ -6,13 +6,15 @@ clean_tmp_files() {
   if [ -f /tmp/wr_proc ]; then rm /tmp/wr_proc; fi
   if [ -f /tmp/wr_log ]; then rm /tmp/wr_log; fi
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
+  if [ -f /tmp/wr_pid ]; then rm /tmp/wr_tab; fi
   if [ -f /tmp/wr_functions ]; then rm /tmp/wr_functions; fi
 }
 
 clean_tmp_files
 
 echo > /tmp/wr_log
-echo > /tmp/wr_proc
+echo > /tmp/wr_tab
+echo Idle > /tmp/wr_proc
 
 if [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
@@ -164,7 +166,8 @@ run_main() {
   fi
 
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
-  echo true > /tmp/wr_proc
+  echo 2 > /tmp/wr_tab
+  echo Idle > /tmp/wr_proc
 }
 ' > /tmp/wr_functions
 
@@ -179,15 +182,16 @@ export MAIN_DIALOG='
         <vbox>
                 <timer visible="false">
                         <action>refresh:BR_SB</action>
+			<action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">disable:BTN_RUN</action>
+			<action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">disable:BTN_EXIT</action>
+			<action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">enable:BTN_CANCEL</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_RUN</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_EXIT</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BR_TAB_0</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BR_TAB_1</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_CANCEL</action>
-                        <action condition="file_is_true(/tmp/wr_proc)">refresh:BR_TAB</action>
-                        <action condition="file_is_true(/tmp/wr_proc)">echo > /tmp/wr_proc</action>
 		</timer>
-                <notebook labels="Backup|Restore/Transfer|Log" space-expand="true" space-fill="true">
+                <notebook labels="Backup|Restore/Transfer|Log" space-expand="true" space-fill="true" auto-refresh="true">
                         <vbox scrollable="true" shadow-type="0">
                                 <text height-request="30" use-markup="true" tooltip-text="==>Make sure you have enough free space.
 
@@ -584,38 +588,35 @@ lost+found">
                                 </text>
                         </vbox>
                         <variable>BR_TAB</variable>
-                        <input>echo 2</input>
+                        <input file>/tmp/wr_tab</input>
 		</notebook>
 
-                <hbox homogeneous="true" space-expand="false" space-fill="false">
+                <hbox space-expand="false" space-fill="false">
                         <button tooltip-text="Run">
                                 <input file icon="gtk-ok"></input>
-                                <label>RUN</label>
+                                <label>Run</label>
                                 <variable>BTN_RUN</variable>
-                                <action>bash -c "source /tmp/wr_functions; set_args && run_main &"</action>
-                                <action>disable:BTN_RUN</action>
-                                <action>disable:BTN_EXIT</action>
                                 <action condition="command_is_true([ $BR_TAB = 0 ] && echo true)">disable:BR_TAB_0</action>
                                 <action condition="command_is_true([ $BR_TAB = 1 ] && echo true)">disable:BR_TAB_1</action>
-                                <action>enable:BTN_CANCEL</action>
+                                <action>bash -c "source /tmp/wr_functions; set_args && run_main &"</action>
                         </button>
                         <button tooltip-text="Kill the process" sensitive="false">
                                 <input file icon="gtk-cancel"></input>
                                 <variable>BTN_CANCEL</variable>
-                                <label>CANCEL</label>
+                                <label>Cancel</label>
                                 <action>kill -9 -$(cat /tmp/wr_pid)</action>
                                 <action>echo "Aborted by User" > /tmp/wr_log</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>
                                 <input file icon="gtk-close"></input>
-                                <label>EXIT</label>
+                                <label>Exit</label>
                         </button>
                 </hbox>
 
                 <statusbar has-resize-grip="false">
 			<variable>BR_SB</variable>
-			<input>bash -c "if [ -f /tmp/wr_pid ]; then cat /tmp/wr_proc; else echo Idle; fi"</input>
+			<input file>/tmp/wr_proc</input>
 		</statusbar>
         </vbox>
 </window>

@@ -181,7 +181,8 @@ export MAIN_DIALOG='
                         <action>refresh:BR_SB</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_RUN</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_EXIT</action>
-			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BR_TAB</action>
+			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BR_TAB_0</action>
+			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BR_TAB_1</action>
 			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_CANCEL</action>
                         <action condition="file_is_true(/tmp/wr_proc)">refresh:BR_TAB</action>
                         <action condition="file_is_true(/tmp/wr_proc)">echo > /tmp/wr_proc</action>
@@ -340,6 +341,7 @@ lost+found">
                                         <variable>ENTRY6</variable>
                                         <default>'"$ENTRY6"'</default>
                                 </checkbox>
+                                <variable>BR_TAB_0</variable>
                         </vbox>
 
                         <vbox scrollable="true" shadow-type="0">
@@ -573,6 +575,7 @@ lost+found">
                                         <label>Bios</label>
                                         <variable>ENTRY13</variable>
                                 </checkbox>
+                                <variable>BR_TAB_1</variable>
 			</vbox>
 
                         <vbox scrollable="true" shadow-type="0">
@@ -592,7 +595,8 @@ lost+found">
                                 <action>bash -c "source /tmp/wr_functions; set_args && run_main &"</action>
                                 <action>disable:BTN_RUN</action>
                                 <action>disable:BTN_EXIT</action>
-                                <action>disable:BR_TAB</action>
+                                <action condition="command_is_true([ $BR_TAB = 0 ] && echo true)">disable:BR_TAB_0</action>
+                                <action condition="command_is_true([ $BR_TAB = 1 ] && echo true)">disable:BR_TAB_1</action>
                                 <action>enable:BTN_CANCEL</action>
                         </button>
                         <button tooltip-text="Kill the process" sensitive="false">

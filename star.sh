@@ -744,7 +744,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Detect backup archive filetype and set tar options accordingly
   detect_filetype() {
-    echo "Checking archive type..."
+    if [ -z "$BRwrap" ]; then echo "Checking archive type..."; fi
     # Update the gui wrapper statusbar if -w is given
     if [ -n "$BRwrap" ]; then echo "Checking archive type..." > /tmp/wr_proc; fi
     # If archive is encrypted decrypt first, pipe output to 'file'

@@ -187,7 +187,6 @@ export MAIN_DIALOG='
                         <action condition="file_is_true(/tmp/wr_upt)">enable:BR_TAB</action>
                         <action condition="file_is_true(/tmp/wr_upt)">disable:BTN_CANCEL</action>
                         <action condition="file_is_true(/tmp/wr_upt)">refresh:BR_TAB</action>
-                        <action condition="file_is_true(/tmp/wr_upt)">refresh:BR_SB</action>
                         <action condition="file_is_false(/tmp/wr_upt)">disable:BTN_RUN</action>
                         <action condition="file_is_false(/tmp/wr_upt)">disable:BTN_EXIT</action>
                         <action condition="file_is_false(/tmp/wr_upt)">enable:BTN_CANCEL</action>

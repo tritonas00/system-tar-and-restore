@@ -4,16 +4,16 @@ cd $(dirname $0)
 
 clean_tmp_files() {
   if [ -f /tmp/wr_proc ]; then rm /tmp/wr_proc; fi
+  if [ -f /tmp/wr_upt ]; then rm /tmp/wr_upt; fi
   if [ -f /tmp/wr_log ]; then rm /tmp/wr_log; fi
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
-  if [ -f /tmp/wr_tab ]; then rm /tmp/wr_tab; fi
   if [ -f /tmp/wr_functions ]; then rm /tmp/wr_functions; fi
 }
 
 clean_tmp_files
 
 echo > /tmp/wr_log
-echo > /tmp/wr_tab
+echo true > /tmp/wr_upt
 echo Idle > /tmp/wr_proc
 
 if [ -f /etc/backup.conf ]; then
@@ -162,12 +162,13 @@ set_args() {
 
 run_main() {
   if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
+    echo false > /tmp/wr_upt
     setsid ./star.sh -i ${SCR_MODE} -jwq "${SCR_ARGS[@]}" 2> /tmp/wr_log
   fi
 
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
-  echo 2 > /tmp/wr_tab
   echo Idle > /tmp/wr_proc
+  echo true > /tmp/wr_upt
 }
 ' > /tmp/wr_functions
 
@@ -180,18 +181,23 @@ export MAIN_DIALOG='
 
 <window title="System Tar & Restore" icon-name="applications-system" height-request="640" width-request="515">
         <vbox>
+                <checkbox visible="false" auto-refresh="true">
+                        <input file>/tmp/wr_upt</input>
+                        <action condition="file_is_true(/tmp/wr_upt)">enable:BTN_RUN</action>
+                        <action condition="file_is_true(/tmp/wr_upt)">enable:BTN_EXIT</action>
+                        <action condition="file_is_true(/tmp/wr_upt)">enable:BR_TAB</action>
+                        <action condition="file_is_true(/tmp/wr_upt)">disable:BTN_CANCEL</action>
+                        <action condition="file_is_true(/tmp/wr_upt)">refresh:BR_TAB</action>
+                        <action condition="file_is_true(/tmp/wr_upt)">refresh:BR_SB</action>
+                        <action condition="file_is_false(/tmp/wr_upt)">disable:BTN_RUN</action>
+                        <action condition="file_is_false(/tmp/wr_upt)">disable:BTN_EXIT</action>
+                        <action condition="file_is_false(/tmp/wr_upt)">enable:BTN_CANCEL</action>
+                </checkbox>
                 <timer visible="false">
                         <action>refresh:BR_SB</action>
-			<action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">disable:BTN_RUN</action>
-			<action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">disable:BTN_EXIT</action>
-			<action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">enable:BTN_CANCEL</action>
-			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_RUN</action>
-			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BTN_EXIT</action>
-			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BR_TAB_0</action>
-			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">enable:BR_TAB_1</action>
-			<action condition="command_is_true([ ! -f /tmp/wr_pid ] && echo true)">disable:BTN_CANCEL</action>
+                        <action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">disable:BR_TAB</action>
 		</timer>
-                <notebook labels="Backup|Restore/Transfer|Log" space-expand="true" space-fill="true" auto-refresh="true">
+                <notebook labels="Backup|Restore/Transfer|Log" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">
                                 <text height-request="30" use-markup="true" tooltip-text="==>Make sure you have enough free space.
 
@@ -345,7 +351,6 @@ lost+found">
                                         <variable>ENTRY6</variable>
                                         <default>'"$ENTRY6"'</default>
                                 </checkbox>
-                                <variable>BR_TAB_0</variable>
                         </vbox>
 
                         <vbox scrollable="true" shadow-type="0">
@@ -579,16 +584,15 @@ lost+found">
                                         <label>Bios</label>
                                         <variable>ENTRY13</variable>
                                 </checkbox>
-                                <variable>BR_TAB_1</variable>
 			</vbox>
 
                         <vbox scrollable="true" shadow-type="0">
-                                <text xalign="0" wrap="false" auto-refresh="true">
+                                <edit xalign="0" wrap="false" auto-refresh="true" editable="no">
                                         <input file>/tmp/wr_log</input>
-                                </text>
+                                </edit>
                         </vbox>
                         <variable>BR_TAB</variable>
-                        <input file>/tmp/wr_tab</input>
+                        <input>echo 2</input>
 		</notebook>
 
                 <hbox space-expand="false" space-fill="false">
@@ -596,8 +600,6 @@ lost+found">
                                 <input file icon="gtk-ok"></input>
                                 <label>Run</label>
                                 <variable>BTN_RUN</variable>
-                                <action condition="command_is_true([ $BR_TAB = 0 ] && echo true)">disable:BR_TAB_0</action>
-                                <action condition="command_is_true([ $BR_TAB = 1 ] && echo true)">disable:BR_TAB_1</action>
                                 <action>bash -c "source /tmp/wr_functions; set_args && run_main &"</action>
                         </button>
                         <button tooltip-text="Kill the process" sensitive="false">

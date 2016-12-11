@@ -178,7 +178,7 @@ export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
 export MAIN_DIALOG='
 
-<window title="System Tar & Restore" icon-name="applications-system" height-request="660" width-request="540">
+<window title="System Tar & Restore" icon-name="applications-system" height-request="640" width-request="515">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_upt</input>
@@ -230,7 +230,7 @@ OTHER PACKAGES:
 efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup archive of this system.</span>"</label></text>
 
                                 <hbox>
-                                        <text width-request="121"><label>Filename:</label></text>
+                                        <text width-request="115"><label>Filename:</label></text>
                                         <entry tooltip-text="Set backup archive name">
                                                 <variable>BRNAME</variable>
                                                 <default>'"$BRNAME"'</default>
@@ -238,7 +238,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="121"><label>Destination:</label></text>
+                                        <text width-request="115"><label>Destination:</label></text>
                                         <entry fs-action="folder" fs-title="Select a directory" tooltip-text="Choose where to save the backup archive">
                                                 <variable>BRFOLDER</variable>
                                                 <default>'"$BRFOLDER"'</default>
@@ -250,7 +250,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="121" space-expand="false"><label>Home directory:</label></text>
+                                        <text width-request="115" space-expand="false"><label>Home directory:</label></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
                                                 <variable>ENTRY1</variable>
                                                 <default>'"$ENTRY1"'</default>
@@ -261,7 +261,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="121" space-expand="false"><label>Compression:</label></text>
+                                        <text width-request="115" space-expand="false"><label>Compression:</label></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
 	                                        <variable>BRcompression</variable>
                                                 <default>'"$BRcompression"'</default>
@@ -275,7 +275,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="121" space-expand="false"><label>Encryption:</label></text>
+                                        <text width-request="115" space-expand="false"><label>Encryption:</label></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select encryption method">
 	                                        <variable>BRencmethod</variable>
                                                 <default>'"$BRencmethod"'</default>
@@ -288,14 +288,14 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="121" space-expand="false"><label>Passphrase:</label></text>
+                                        <text width-request="115" space-expand="false"><label>Passphrase:</label></text>
                                         '"$(bash -c "source /tmp/wr_functions; set_default_pass")"'
                                                 <visible>password</visible>
                                         </entry>
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="121" space-expand="false"><label>Additional options:</label></text>
+                                        <text width-request="115" space-expand="false"><label>Additional options:</label></text>
                                         <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
                                                 <variable>BR_USER_OPTS</variable>
                                                 '"$(bash -c "source /tmp/wr_functions; set_default_opts")"'
@@ -304,7 +304,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 </hbox>
 
                                 <hbox>
-                                        <text width-request="121" space-expand="false"><label>Exclude:</label></text>
+                                        <text width-request="115" space-expand="false"><label>Exclude:</label></text>
                                         <entry space-expand="true" space-fill="true" tooltip-text="Exclude files and directories. If you want spaces in names replace them with //
 
 Excluded by default:
@@ -550,7 +550,7 @@ lost+found">
                                 </vbox>
 
                                 <hbox>
-                                        <text width-request="121" space-expand="false"><label>Additional options:</label></text>
+                                        <text width-request="115" space-expand="false"><label>Additional options:</label></text>
                                         <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar/rsync options. See tar --help or rsync --help for more info. If you want spaces in names replace them with //
 
 Excluded by default in Transfer mode:

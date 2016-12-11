@@ -166,7 +166,6 @@ run_main() {
     setsid ./star.sh -i ${SCR_MODE} -jwq "${SCR_ARGS[@]}" 2> /tmp/wr_log
   fi
 
-  if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
   echo Idle > /tmp/wr_proc
   echo true > /tmp/wr_upt
 }
@@ -195,7 +194,7 @@ export MAIN_DIALOG='
                 </checkbox>
                 <timer visible="false">
                         <action>refresh:BR_SB</action>
-                        <action condition="command_is_true([ -f /tmp/wr_pid ] && echo true)">disable:BR_TAB</action>
+                        <action condition="file_is_false(/tmp/wr_upt)">disable:BR_TAB</action>
 		</timer>
                 <notebook labels="Backup|Restore/Transfer|Log" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">

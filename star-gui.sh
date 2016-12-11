@@ -195,7 +195,7 @@ export MAIN_DIALOG='
                 <entry visible="false" auto-refresh="true">
                         <input file>/tmp/wr_proc</input>
                         <action>refresh:BR_SB</action>
-                        <action condition="file_is_false(/tmp/wr_upt)">disable:BR_TAB</action>  
+                        <action condition="file_is_false(/tmp/wr_upt)">disable:BR_TAB</action>
                 </entry>
                 <notebook labels="Backup|Restore/Transfer|Log" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">

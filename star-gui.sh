@@ -606,7 +606,7 @@ lost+found">
                                 <variable>BTN_CANCEL</variable>
                                 <label>Cancel</label>
                                 <action>kill -9 -$(cat /tmp/wr_pid)</action>
-                                <action>echo "Aborted by User" > /tmp/wr_log</action>
+                                <action>echo "PID $(cat /tmp/wr_pid) Killed" > /tmp/wr_log</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>

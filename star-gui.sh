@@ -185,7 +185,7 @@ export MAIN_DIALOG='
                         <action>refresh:BR_SB</action>
                         <action condition="file_is_false(/tmp/wr_upt)">disable:BR_TAB</action>
                 </entry>
-                <notebook labels="Backup|Restore/Transfer|Log" space-expand="true" space-fill="true">
+                <notebook labels="Backup|Restore/Transfer|Log|About" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">
                                 <text height-request="30" use-markup="true" tooltip-text="==>Make sure you have enough free space.
 
@@ -580,6 +580,25 @@ lost+found">
                                 <edit xalign="0" wrap="false" auto-refresh="true" editable="no">
                                         <input file>/tmp/wr_log</input>
                                 </edit>
+                        </vbox>
+
+                        <vbox>
+                                <text use-markup="true">
+				        <label>"<b><big><big>System Tar &amp; Restore</big></big></b>"</label>
+                                </text>
+                                <text use-markup="true" wrap="false">
+				        <label>"Backup and Restore your system using tar or Transfer it with rsync"</label>
+                                </text>
+
+                                <text use-markup="true">
+				        <label>"<i><small>Version 6.0 tritonas00@gmail.com 2012-2016</small></i>"</label>
+                                </text>
+                                <hseparator></hseparator>
+                                <vbox scrollable="true" shadow-type="0">
+                                        <text xalign="0" wrap="false">
+				                <input file>changelog</input>
+                                        </text>
+                                </vbox>
                         </vbox>
                         <variable>BR_TAB</variable>
                         <input>echo 2</input>

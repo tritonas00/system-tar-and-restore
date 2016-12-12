@@ -59,19 +59,6 @@ set_multi_sens() {
   if [ "$BRcompression" = "none" ]; then echo '\''<sensitive>false</sensitive>'\''; fi
 }
 
-scan_parts() {
-  for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
-  for f in $(find /dev/mapper/ -maxdepth 1 -mindepth 1 ! -name "control"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
-  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
-  for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
-}
-
-scan_disks() {
-  for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done
-  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done
-  for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done
-}
-
 hide_used_parts() {
   grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"
 }
@@ -167,9 +154,15 @@ run_main() {
 }
 ' > /tmp/wr_functions
 
+export BR_PARTS=$(for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
+                  for f in $(find /dev/mapper/ -maxdepth 1 -mindepth 1 ! -name "control"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
+                  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
+                  for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done)
 
-source /tmp/wr_functions
-export BR_PARTS=$(scan_parts)
+export BR_DISKS=$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done
+                  for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done
+                  for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done)
+
 export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
 export MAIN_DIALOG='
@@ -476,7 +469,7 @@ lost+found">
                                                         </comboboxtext>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk" sensitive="false">
 	                                                        <variable>BR_DISK</variable>
-	                                                        <input>bash -c "source /tmp/wr_functions; scan_disks"</input>
+	                                                        <input>echo "$BR_DISKS"</input>
 	                                                </comboboxtext>
                                                         <entry tooltip-text="Set additional kernel options" sensitive="false">
                                                                 <variable>BR_KL_OPTS</variable>

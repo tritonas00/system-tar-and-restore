@@ -320,7 +320,7 @@ lost+found">
                                 </hbox>
 
                                 <checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
-                                '"$(bash -c "source /tmp/wr_functions; set_multi_sens")"'
+                                        '"$(bash -c "source /tmp/wr_functions; set_multi_sens")"'
                                         <label>Enable multi-core compression</label>
                                         <variable>ENTRY2</variable>
                                         <default>'"$ENTRY2"'</default>

@@ -16,6 +16,12 @@ echo > /tmp/wr_log
 echo true > /tmp/wr_upt
 echo Idle > /tmp/wr_proc
 
+if [ -f changelog ]; then
+  export BRchangelog="changelog"
+else
+  export BRchangelog="/usr/share/system-tar-and-restore/changelog"
+fi
+
 if [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
 fi
@@ -584,19 +590,18 @@ lost+found">
 
                         <vbox>
                                 <text use-markup="true">
-				        <label>"<b><big><big>System Tar &amp; Restore</big></big></b>"</label>
+				        <label>"<b><big>System Tar &amp; Restore</big></b>"</label>
                                 </text>
                                 <text use-markup="true" wrap="false">
 				        <label>"Backup and Restore your system using tar or Transfer it with rsync"</label>
                                 </text>
-
                                 <text use-markup="true">
 				        <label>"<i><small>Version 6.0 tritonas00@gmail.com 2012-2016</small></i>"</label>
                                 </text>
                                 <hseparator></hseparator>
                                 <vbox scrollable="true" shadow-type="0">
                                         <text xalign="0" wrap="false">
-				                <input file>changelog</input>
+				                <input>if [ -f "$BRchangelog" ]; then cat "$BRchangelog"; else echo "Changelog file not found"; fi</input>
                                         </text>
                                 </vbox>
                         </vbox>

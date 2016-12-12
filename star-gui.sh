@@ -44,9 +44,9 @@ fi
 echo '
 set_default_pass() {
   if [ ! "$BRencmethod" = "none" ]; then
-    echo '\''<entry tooltip-text="Set passphrase for encryption"><variable>BRencpass</variable>'\''
+    echo '\''<entry tooltip-text="Set passphrase for encryption">'\''
   else
-    echo '\''<entry tooltip-text="Set passphrase for encryption" sensitive="false"><variable>BRencpass</variable>'\''
+    echo '\''<entry tooltip-text="Set passphrase for encryption" sensitive="false">'\''
   fi
   if [ -n "$BRencpass" ]; then echo '\''<default>'\''"$BRencpass"'\''</default>'\'';fi
 }
@@ -55,12 +55,8 @@ set_default_opts() {
   if [ -n "$BR_USER_OPTS" ]; then echo '\''<default>'\''"$BR_USER_OPTS"'\''</default>'\''; fi
 }
 
-set_default_multi() {
-  if [ ! "$BRcompression" = "none" ]; then
-    echo '\''<checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">'\''
-  else
-    echo '\''<checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz" sensitive="false">'\''
-  fi
+set_multi_sens() {
+  if [ "$BRcompression" = "none" ]; then echo '\''<sensitive>false</sensitive>'\''; fi
 }
 
 scan_parts() {
@@ -289,6 +285,7 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
                                 <hbox>
                                         <text width-request="135" space-expand="false"><label>Passphrase:</label></text>
                                         '"$(bash -c "source /tmp/wr_functions; set_default_pass")"'
+                                                <variable>BRencpass</variable>
                                                 <visible>password</visible>
                                         </entry>
                                 </hbox>
@@ -322,7 +319,8 @@ lost+found">
                                         </entry>
                                 </hbox>
 
-                                '"$(bash -c "source /tmp/wr_functions; set_default_multi")"'
+                                <checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
+                                '"$(bash -c "source /tmp/wr_functions; set_multi_sens")"'
                                         <label>Enable multi-core compression</label>
                                         <variable>ENTRY2</variable>
                                         <default>'"$ENTRY2"'</default>

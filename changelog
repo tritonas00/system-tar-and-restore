@@ -188,7 +188,7 @@ Changelog:
     changed verbose tar/rsync output
     renamed downloaded backup
     code cleaning
- 
+
 3.9.5
     various refinements in cli interface
     cleaner verbose tar/rsync output layout
@@ -212,7 +212,7 @@ Changelog:
     show archive read errors in dialog interface
     dont symlink local archive, use it directly
     download archive in the biggest partition
-    
+
 3.9.2
     added bzip2 compression support
     added verbose tar/rsync output argument
@@ -237,7 +237,7 @@ Changelog:
     show more info in logs
     moved bootloader dependencies checks in set_bootloader
     fixed gptfdisk detection in Archlinux
-    
+
 3.8.4
     better handling of fedora's grub config file
 
@@ -264,7 +264,7 @@ Changelog:
     check if root partition is given from arguments under certain scenarios
     fixed kernel options warning
     -f now accepts both local file path and url (-u is also kept for compatibility)
-    code cleaning 
+    code cleaning
 
 3.7.4
     fixed a warning message
@@ -326,7 +326,7 @@ Changelog:
 
 3.6.8
     code cleaning/optimising
-    dont hide used partitions in restore wrapper    
+    dont hide used partitions in restore wrapper
 
 3.6.7
     fixed download gauge dialog speed
@@ -363,7 +363,7 @@ Changelog:
 
 3.5.4
     better handling of not mounted partitions
-    updated backup.sh error messages 
+    updated backup.sh error messages
     code cleaning
 
 3.5.3
@@ -373,7 +373,7 @@ Changelog:
 3.5.2
     smarter mounting process/better error handling-cleaning
     clean_unmount_in is now aware of not mounted partitions
-    code cleaning 
+    code cleaning
 
 3.5.1
     fixed cleaning tmp file if root is not empty
@@ -391,7 +391,7 @@ Changelog:
     if not empty root partition dont mount anything else, unmount and abort immediately
     if /mnt/target exists abort
     dont allow partitions inside btrfs subvolumes
-  
+
 3.4.3
     changed backup destination dialogs
     better raid detection
@@ -411,7 +411,7 @@ Changelog:
     if tar/rsync completed successfully show it in the log
     if empty /home and /boot dirrectories exist in non-empty root partition dont touch them
     fixed last dialog in backup.sh when destination has spaces
-    code cleaning 
+    code cleaning
 
 3.3.1
     added simple file/directory browser in dialog interface
@@ -420,7 +420,7 @@ Changelog:
     corrected syntax in some dialogs
     changed summary dialog labels
     colorized summary
-    code cleaning 
+    code cleaning
 
 3.3
     added additional root mount/fstab options
@@ -434,7 +434,7 @@ Changelog:
     bind /run - fixed grub /var/lock/dmraid warnings
     new help pages
     updated wrappers
-    code cleaning 
+    code cleaning
 
 3.2
     symlink local archive
@@ -445,7 +445,7 @@ Changelog:
     functions in CLI interface are now a bit faster
     added manpage
     cosmetic changes
-    new backup summary 
+    new backup summary
 
 3.1
     added tar/rsync progress counter
@@ -454,18 +454,18 @@ Changelog:
     functions prepare_chroot build_initramfs generate_locales show in one dialog box
     better rsync syntax for /home's hidden files and folders
     dont generate locales in fedora
-    various cosmetic changes 
+    various cosmetic changes
 
 3.0
     allow non-empty /boot and /home partitions
     changed backup folder name
     wait user input to exit backup script in CLI interface
     changed /home options in backup wrapper
-    wrappers use sudo if installed 
+    wrappers use sudo if installed
 
 2.9.2
     fixed raid arrays detection
-    fixes in check_input 
+    fixes in check_input
 
 2.9
     raid support
@@ -473,7 +473,7 @@ Changelog:
     option to symlink archive
     added -N, --no-color argument
     wrappers now find full script's path
-    error reporting in backup script 
+    error reporting in backup script
 
 2.8
     fixed booting lvm root with syslinux
@@ -481,15 +481,15 @@ Changelog:
     wrappers call main scripts with su -c
     wrappers show the generated command
     wrappers remember user input
-    added xterm titles 
+    added xterm titles
 
 2.7.1
-    fixed grub detection 
+    fixed grub detection
 
 2.7
     remaned scripts
     added zenity wrappers
-    better syslinux directory handling 
+    better syslinux directory handling
 
 2.6
     xz support
@@ -501,11 +501,11 @@ Changelog:
     added hostname in backup filename
     fixed file path with spaces in dialog interface
     autosize dialogs
-    removed trailing spaces 
+    removed trailing spaces
 
 2.5.1
     write uuids in syslinux.cfg
-    fixed typos 
+    fixed typos
 
 2.5
     lvm support
@@ -518,18 +518,18 @@ Changelog:
     better fstab generator
     better chroot enviroment preperation
     summary shows partition sizes
-    if fedora+grub, save old /etc/default/grub and re-generate it 
+    if fedora+grub, save old /etc/default/grub and re-generate it
 
 2.4
     added transfer mode
     build initramfs for every available kernel
     add syslinux.cfg entries for every available kernel
-    removed url ping check 
+    removed url ping check
 
 2.3
     better backup tar syntax
     fixed backing up files with spaces when only /home's hidden files and folders selected
-    changed dialog sizes and syntax 
+    changed dialog sizes and syntax
 
 2.2
     check user input
@@ -545,14 +545,14 @@ Changelog:
     hidden password
     added info in restore script
     code cleaning
-    small fixes 
+    small fixes
 
 2.1
     option for /home's hidden files and folder in backup
     added -i, --interface argument
     support for paths with spaces
     code re-arranging
-    various fixes 
+    various fixes
 
 2.0
-    initial commit 
+    initial commit

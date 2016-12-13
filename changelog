@@ -1,5 +1,34 @@
 Changelog:
 
+6.0
+  Major project rewrite. Backend-Frontend  template is now used
+
+  star.sh
+    backup.sh and restore.sh are now merged in one script which operates with arguments
+    three modes are available: Backup Restore and Transfer
+    full code review and major cleanup (~1130 lines less)
+    script is now commented and faster
+    refreshed and cleaned script output
+
+  star-gui.sh
+    refreshed layout
+    removed the timer and reduced Idle cpu usage
+    instant tab auto-change
+    instant status bar update
+    password/passphrase entries are now hidden
+    added About tab
+    the Log tab is now copyable
+    fixed Ubuntu 16.04 "can't find functions" error (thanks lolo120916 for reporting)
+
+  backup.conf
+    BRinterface option removed
+    /home directory options simplified
+    BRnosockets option removed. It was nasty code and sockets are already excluded
+    Add --warning=no-file-ignored in additional options if you want to suppress those tar warnings
+
+  Manpage dropped, i dont have time to maintain. Everything you need is in the Readme and star.sh --help
+  In case you miss the old scripts with the cli/dialog interfaces i will keep 5.2 release in downloads
+
 5.2
     wrapper: always go to log
     wrapper: fixed some width inconsistencies

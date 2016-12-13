@@ -62,7 +62,7 @@ echo -e "\n$BR_VERSION"
 BRargs=$(getopt -o "i:d:n:c:u:HOjqvgDzP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFL" -l "mode:,directory:,filename:,compression:,user-opts:,exclude-home,only-hidden,no-color,quiet,verbose,generate,disable-genkernel,hide-cursor,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,custom-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,help" -n "$1" -- "$@")
 
 if [ "$?" -ne "0" ]; then
-  echo "See $0 --help"
+  echo "See star.sh --help"
   exit
 fi
 
@@ -231,7 +231,7 @@ while true; do
       shift
     ;;
     --help)
-      echo "Usage: $0 -i mode [options]
+      echo "Usage: star.sh -i mode [options]
 
 General Options:
   -i, --mode                  Select mode: 0 (Backup) 1 (Restore) 2 (Transfer)

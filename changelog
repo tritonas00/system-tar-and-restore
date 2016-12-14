@@ -1,7 +1,7 @@
 Changelog:
 
 6.0
-  Major project rewrite. Backend-Frontend  template is now used
+  Major project rewrite. Backend-Frontend template is now used
 
   star.sh
     backup.sh and restore.sh are now merged in one script which operates with arguments

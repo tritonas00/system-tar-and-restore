@@ -2225,7 +2225,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRsource="$BRmaxsize/downloaded_backup"
       # Give progress info to gui wrapper if -w is given
       if [ -n "$BRwrap" ]; then
-        run_wget 2>&1 | while read ln; do if [ -n "$ln" ]; then echo "Downloading: ${ln//.....}" > /tmp/wr_proc; fi; done
+        run_wget 2>&1 | while read ln; do if [ -n "$ln" ]; then echo "Downloading in $BRmaxsize: ${ln//.....}" > /tmp/wr_proc; fi; done
       else
         run_wget
       fi

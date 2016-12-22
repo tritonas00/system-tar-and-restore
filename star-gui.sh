@@ -12,9 +12,11 @@ clean_tmp_files() {
 
 clean_tmp_files
 
+export BR_TITLE="System Tar & Restore"
+
 echo > /tmp/wr_log
 echo true > /tmp/wr_upt
-echo Idle > /tmp/wr_proc
+echo "$BR_TITLE" > /tmp/wr_proc
 
 if [ -f changelog ]; then
   export BRchangelog="changelog"
@@ -126,16 +128,16 @@ set_args() {
 
     if [ ! "$ENTRY7" = "none" ] && [ -n "$BR_KL_OPTS" ]; then SCR_ARGS+=(-k "$BR_KL_OPTS"); fi
 
-    if [ "$ENTRY8" = "false" ]; then
+    if [ "$RT_TAB" = "0" ]; then
       SCR_MODE=1
       SCR_ARGS+=(-f "$BR_FILE")
       if [ -n "$BR_USERNAME" ]; then SCR_ARGS+=(-y "$BR_USERNAME"); fi
       if [ -n "$BR_PASSWORD" ]; then SCR_ARGS+=(-p "$BR_PASSWORD"); fi
       if [ -n "$BR_PASSPHRASE" ]; then SCR_ARGS+=(-P "$BR_PASSPHRASE"); fi
-    elif [ "$ENTRY8" = "true" ]; then
+    elif [ "$RT_TAB" = "1" ]; then
       SCR_MODE=2
-      if [ "$ENTRY9" = "true" ]; then SCR_ARGS+=(-O); fi
-      if [ "$ENTRY10" = "true" ]; then SCR_ARGS+=(-o); fi
+      if [ "$ENTRY8" = "true" ]; then SCR_ARGS+=(-O); fi
+      if [ "$ENTRY9" = "true" ]; then SCR_ARGS+=(-o); fi
     fi
 
     if [ -n "$BR_MN_OPTS" ]; then SCR_ARGS+=(-m "$BR_MN_OPTS"); fi
@@ -143,9 +145,9 @@ set_args() {
     if [ -n "$BR_ROOT_SUBVOL" ]; then SCR_ARGS+=(-R "$BR_ROOT_SUBVOL"); fi
     if [ -n "$BR_OTHER_SUBVOLS" ]; then SCR_ARGS+=(-B "$BR_OTHER_SUBVOLS"); fi
 
-    if [ "$ENTRY11" = "true" ]; then SCR_ARGS+=(-D); fi
-    if [ "$ENTRY12" = "true" ]; then SCR_ARGS+=(-x); fi
-    if [ "$ENTRY13" = "true" ]; then SCR_ARGS+=(-W); fi
+    if [ "$ENTRY10" = "true" ]; then SCR_ARGS+=(-D); fi
+    if [ "$ENTRY11" = "true" ]; then SCR_ARGS+=(-x); fi
+    if [ "$ENTRY12" = "true" ]; then SCR_ARGS+=(-W); fi
   fi
 }
 
@@ -155,7 +157,8 @@ run_main() {
     setsid ./star.sh -i ${SCR_MODE} -jwq "${SCR_ARGS[@]}" 2> /tmp/wr_log
   fi
 
-  echo Idle > /tmp/wr_proc
+  sleep 0.1
+  echo "$BR_TITLE" > /tmp/wr_proc
   echo true > /tmp/wr_upt
 }
 ' > /tmp/wr_functions
@@ -188,7 +191,7 @@ export MAIN_DIALOG='
                 </checkbox>
                 <entry visible="false" auto-refresh="true">
                         <input file>/tmp/wr_proc</input>
-                        <action>refresh:BR_SB</action>
+                        <action>refresh:BR_TL</action>
                         <action condition="file_is_false(/tmp/wr_upt)">disable:BR_TAB</action>
                 </entry>
                 <notebook labels="Backup|Restore/Transfer|Log|About" space-expand="true" space-fill="true">
@@ -484,10 +487,10 @@ lost+found">
                                         </frame>
                                 </vbox>
 
-                                <vbox>
-                                        <frame Restore Mode:>
+                                <notebook labels="Restore Mode|Transfer Mode">
+                                        <vbox>
                                                 <hbox>
-                                                        <text width-request="86" space-expand="false"><label>Archive:</label></text>
+                                                        <text width-request="130" space-expand="false"><label>Backup archive:</label></text>
                                                         <entry fs-action="file" tooltip-text="Choose a local backup archive or enter URL" fs-title="Select a backup archive">
                                                                 <variable>BR_FILE</variable>
                                                         </entry>
@@ -498,19 +501,19 @@ lost+found">
                                                 </hbox>
                                                 <expander label="Authentication">
                                                         <vbox>
-                                                                <hbox><text width-request="86" space-expand="false"><label>Username:</label></text>
+                                                                <hbox><text width-request="130" space-expand="false"><label>Username:</label></text>
                                                                         <entry tooltip-text="Set ftp/http username">
                                                                                 <variable>BR_USERNAME</variable>
                                                                         </entry>
                                                                 </hbox>
-                                                                <hbox><text width-request="86" space-expand="false"><label>Password:</label></text>
+                                                                <hbox><text width-request="130" space-expand="false"><label>Password:</label></text>
                                                                         <entry tooltip-text="Set ftp/http password">
                                                                                 <visible>password</visible>
                                                                                 <variable>BR_PASSWORD</variable>
                                                                         </entry>
                                                                 </hbox>
                                                                 <hbox>
-                                                                        <text width-request="86" space-expand="false"><label>Passphrase:</label></text>
+                                                                        <text width-request="130" space-expand="false"><label>Passphrase:</label></text>
                                                                         <entry tooltip-text="Set passphrase for decryption">
                                                                                 <visible>password</visible>
                                                                                 <variable>BR_PASSPHRASE</variable>
@@ -518,32 +521,19 @@ lost+found">
                                                                 </hbox>
                                                         </vbox>
                                                 </expander>
-                                                <variable>FRM</variable>
-                                        </frame>
-                                </vbox>
-
-                                <vbox>
-                                        <frame Transfer Mode:>
-                                                <checkbox tooltip-text="Enable Tranfer Mode">
-                                                        <label>Enable</label>
-                                                        <variable>ENTRY8</variable>
-                                                        <action>if true disable:FRM</action>
-                                                        <action>if false enable:FRM</action>
-                                                        <action>if true enable:ENTRY9</action>
-                                                        <action>if true enable:ENTRY10</action>
-                                                        <action>if false disable:ENTRY9</action>
-                                                        <action>if false disable:ENTRY10</action>
-                                                </checkbox>
-                                                <checkbox sensitive="false" tooltip-text="Transfer only hidden files and folders from /home">
+                                        </vbox>
+                                        <vbox>
+                                                <checkbox tooltip-text="Transfer only hidden files and folders from /home">
                                                         <label>"Only hidden files and folders from /home"</label>
+                                                        <variable>ENTRY8</variable>
+                                                </checkbox>
+                                                <checkbox tooltip-text="Override the default rsync options with user options">
+                                                        <label>Override</label>
                                                         <variable>ENTRY9</variable>
                                                 </checkbox>
-                                                <checkbox sensitive="false" tooltip-text="Override the default rsync options with user options">
-                                                        <label>Override</label>
-                                                        <variable>ENTRY10</variable>
-                                                </checkbox>
-                                        </frame>
-                                </vbox>
+                                        </vbox>
+                                        <variable>RT_TAB</variable>
+                                </notebook>
 
                                 <hbox>
                                         <text width-request="135" space-expand="false"><label>Additional options:</label></text>
@@ -568,17 +558,17 @@ lost+found">
 
                                 <checkbox tooltip-text="Disable genkernel check and initramfs building in gentoo">
                                         <label>Disable genkernel</label>
-                                        <variable>ENTRY11</variable>
+                                        <variable>ENTRY10</variable>
                                 </checkbox>
 
                                 <checkbox tooltip-text="Dont check if the target root partition is empty (dangerous)">
                                         <label>Dont check root</label>
-                                        <variable>ENTRY12</variable>
+                                        <variable>ENTRY11</variable>
                                 </checkbox>
 
                                 <checkbox tooltip-text="Ignore UEFI environment">
                                         <label>Bios</label>
-                                        <variable>ENTRY13</variable>
+                                        <variable>ENTRY12</variable>
                                 </checkbox>
 			</vbox>
 
@@ -596,7 +586,7 @@ lost+found">
 				        <label>"Backup and Restore your system using tar or Transfer it with rsync"</label>
                                 </text>
                                 <text use-markup="true">
-				        <label>"<i><small>Version 6.0 tritonas00@gmail.com 2012-2016</small></i>"</label>
+				        <label>"<i><small>Version 6.1 tritonas00@gmail.com 2012-2016</small></i>"</label>
                                 </text>
                                 <hseparator></hseparator>
                                 <vbox scrollable="true" shadow-type="0">
@@ -629,12 +619,9 @@ lost+found">
                                 <label>Exit</label>
                         </button>
                 </hbox>
-
-                <statusbar has-resize-grip="false">
-			<variable>BR_SB</variable>
-			<input file>/tmp/wr_proc</input>
-		</statusbar>
         </vbox>
+	<variable>BR_TL</variable>
+	<input file>/tmp/wr_proc</input>
 </window>
 '
 

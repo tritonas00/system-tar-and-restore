@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 6.0"
+BR_VERSION="System Tar & Restore 6.1"
 
 # Set EFI detection directory
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
@@ -46,6 +46,13 @@ pgrs_bar() {
       fi
     fi
   done
+}
+
+# Update the gui wrapper if -w is given
+update_wrp() {
+  if [ -n "$BRwrap" ]; then
+    echo "$1" > /tmp/wr_proc
+  fi
 }
 
 # Set hide/unhide cursor vars
@@ -623,8 +630,7 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   echo -e "\n${BOLD}[PROCESSING]${NORM}"
-  # Update the gui wrapper statusbar if -w is given
-  if [ -n "$BRwrap" ]; then echo "Preparing..." > /tmp/wr_proc; fi
+  update_wrp "Preparing"
   # Restore mode will check and read this file in the archive
   touch /target_architecture.$(uname -m)
   # Create the destination subdirectory
@@ -638,9 +644,7 @@ if [ "$BRmode" = "0" ]; then
 
   # Hide the cursor if -z is given
   if [ -n "$BRhide" ]; then echo -en "${HIDE}"; fi
-
-  # Update the gui wrapper statusbar if -w is given
-  if [ -n "$BRwrap" ]; then echo "Please wait while calculating files..." > /tmp/wr_proc; fi
+  update_wrp "Please wait while calculating files"
   # Calculate the number of files
   run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
   # Store the number of files we found from run_calc
@@ -745,8 +749,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Detect backup archive filetype and set tar options accordingly
   detect_filetype() {
     if [ -z "$BRwrap" ]; then echo "Checking archive type..."; fi
-    # Update the gui wrapper statusbar if -w is given
-    if [ -n "$BRwrap" ]; then echo "Checking archive type..." > /tmp/wr_proc; fi
+    update_wrp "Checking archive type"
     # If archive is encrypted decrypt first, pipe output to 'file'
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
       BRtype=$(openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b -)
@@ -1218,14 +1221,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Main mount function. Exit and clean on errors
   mount_all() {
-    # Update the gui wrapper statusbar if -w is given
-    if [ -n "$BRwrap" ]; then echo "Mounting..." > /tmp/wr_proc; fi
     # Create directory to mount the target root partition
     echo -e "\n${BOLD}[MOUNTING]${NORM}"
     echo -ne "${WRK}Making working directory"
     OUTPUT=$(mkdir /mnt/target 2>&1) && ok_status || error_status
 
     # Mount the target root partition
+    update_wrp "Mounting $BRroot"
     echo -ne "${WRK}Mounting $BRroot"
     OUTPUT=$(mount -o $BR_MOUNT_OPTS $BRroot /mnt/target 2>&1) && ok_status || error_status
     # Store it's size
@@ -1243,6 +1245,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         echo -e "[${CYAN}INFO${NORM}] Root partition must be formatted and cleaned" >&2
         echo -ne "${WRK}Unmounting $BRroot"
         sleep 1
+        update_wrp "Unmounting $BRroot"
         OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
         exit
       else
@@ -1253,22 +1256,26 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # Create btrfs root subvolume if specified by the user
     if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
+      update_wrp "Creating $BRrootsubvolname"
       echo -ne "${WRK}Creating $BRrootsubvolname"
       OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
 
       # Create other btrfs subvolumes if specified by the user
       if [ -n "$BRsubvols" ]; then
         while read ln; do
+          update_wrp "Creating $BRrootsubvolname$ln"
           echo -ne "${WRK}Creating $BRrootsubvolname$ln"
           OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname$ln 2>&1 1>/dev/null) && ok_status || error_status
         done< <(for a in "${BRsubvols[@]}"; do echo "$a"; done | sort)
       fi
 
      # Unmount the target root partition
+      update_wrp "Unmounting $BRroot"
       echo -ne "${WRK}Unmounting $BRroot"
       OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
 
      # Mount the root btrfs subvolume
+      update_wrp "Mounting $BRrootsubvolname"
       echo -ne "${WRK}Mounting $BRrootsubvolname"
       OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
       if [ -n "$BRSTOP" ]; then
@@ -1293,6 +1300,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         # Create the corresponding mounting directory
         mkdir -p /mnt/target$BRmpoint
         # Mount it
+        update_wrp "Mounting $BRdevice"
         OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
         # Store sizes
         BRsizes+=(`lsblk -n -b -o size "$BRdevice" 2>/dev/null`=/mnt/target$BRmpoint)
@@ -1422,6 +1430,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Bind needed directories so we can chroot in the target system
   prepare_chroot() {
+    update_wrp "Preparing chroot environment"
     echo -e "\nPreparing chroot environment"
     echo "Binding /run"
     mount --bind /run /mnt/target/run
@@ -1518,9 +1527,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     for FILE in /mnt/target/boot/*; do
       if file -b -k "$FILE" | grep -qw "bzImage"; then
         cn=$(echo "$FILE" | sed -n 's/[^-]*-//p') # Cutted kernel name without any prefix (eg without vmlinuz-)
-        # Update the gui wrapper statusbar if -w is given
-        if [ -n "$BRwrap" ] && [ ! "$BRdistro" = "Gentoo" ] && [ ! "$BRdistro" = "Unsupported" ]; then
-          echo "Building initramfs image for $cn..." > /tmp/wr_proc
+
+        if [ ! "$BRdistro" = "Gentoo" ] && [ ! "$BRdistro" = "Unsupported" ]; then
+          update_wrp "Building initramfs image for $cn"
         fi
 
         # Use distro tools to rebuild initramfs images
@@ -1541,8 +1550,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ -n "$BRgenkernel" ]; then
         echo "Skipping..."
       else
-        # Update the gui wrapper statusbar if -w is given
-        if [ -n "$BRwrap" ]; then echo "Building initramfs images..." > /tmp/wr_proc; fi
+        update_wrp "Building initramfs images"
         chroot /mnt/target genkernel --no-color --install initramfs
       fi
     fi
@@ -1694,8 +1702,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   install_bootloader() {
     # GRUB
     if [ -n "$BRgrub" ]; then
-      # Update the gui wrapper statusbar if -w is given
-      if [ -n "$BRwrap" ]; then echo "Installing Grub in $BRgrub..." > /tmp/wr_proc; fi
+      update_wrp "Installing Grub in $BRgrub"
       echo -e "\nInstalling and updating Grub in $BRgrub"
       # In case of ESP on /boot, if target boot/efi exists move it as boot/efi-old so we have a clean directory to work
       if [ -d "$BR_EFI_DETECT_DIR" ] && [ "$BRespmpoint" = "/boot" ] && [ -d /mnt/target/boot/efi ]; then
@@ -1764,8 +1771,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # SYSLINUX
     elif [ -n "$BRsyslinux" ]; then
-      # Update the gui wrapper statusbar if -w is given
-      if [ -n "$BRwrap" ]; then echo "Installing Syslinux in $BRsyslinux..." > /tmp/wr_proc; fi
+      update_wrp "Installing Syslinux in $BRsyslinux"
       echo -e "\nInstalling and configuring Syslinux in $BRsyslinux"
       # If target boot/syslinux exists remove it so we have a clean directory to work
       if [ -d /mnt/target/boot/syslinux ]; then
@@ -1830,8 +1836,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
    # EFISTUB
     elif [ -n "$BRefistub" ]; then
-      # Update the gui wrapper statusbar if -w is given
-      if [ -n "$BRwrap" ]; then echo "Setting boot entries using efibootmgr..." > /tmp/wr_proc; fi
+      update_wrp "Setting boot entries using efibootmgr"
       echo -e "\nSetting boot entries"
       # Seperate device and partition number
       if [[ "$BResp" == *mmcblk* ]]; then
@@ -1871,8 +1876,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # BOOTCTL
     elif [ -n "$BRbootctl" ]; then
-      # Update the gui wrapper statusbar if -w is given
-      if [ -n "$BRwrap" ]; then echo "Installing Bootctl in $BRespmpoint..." > /tmp/wr_proc; fi
+      update_wrp "Installing Bootctl in $BRespmpoint"
       echo -e "\n$Installing Bootctl in $BRespmpoint"
       # Save old configuration entries first
       if [ -d /mnt/target$BRespmpoint/loader/entries ]; then
@@ -2041,7 +2045,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Generate target system's locales
   generate_locales() {
     if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Gentoo" ]; then
-      if [ -n "$BRwrap" ]; then echo "Generating locales..." > /tmp/wr_proc; fi
+      update_wrp "Generating locales"
       echo -e "\nGenerating locales"
       chroot /mnt/target locale-gen
     fi
@@ -2055,8 +2059,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Clean and unmount
   clean_unmount() {
-    # Update the gui wrapper statusbar if -w is given
-    if [ -n "$BRwrap" ]; then echo "Unmounting..." > /tmp/wr_proc; fi
     echo -e "\n${BOLD}[CLEANING AND UNMOUNTING]${NORM}"
     # Make sure we are outside of /mnt/target
     cd ~
@@ -2079,6 +2081,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRcustomparts" ]; then
       while read ln; do
         sleep 1
+        update_wrp "Unmounting $ln"
         echo -ne "${WRK}Unmounting $ln"
         OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
       done < <(for BRdevice in ${BRumountparts[@]}; do echo $BRdevice | cut -f2 -d"="; done | tac)
@@ -2087,9 +2090,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -z "$post_umt" ]; then
       # In case of btrfs subvolumes, unmount the root subvolume and mount the target root partition again
       if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
+        update_wrp "Unmounting $BRrootsubvolname"
         echo -ne "${WRK}Unmounting $BRrootsubvolname"
         OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
         sleep 1
+        update_wrp "Mounting $BRroot"
         echo -ne "${WRK}Mounting $BRroot"
         OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
 
@@ -2097,10 +2102,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         if [ -n "$BRsubvols" ]; then
           while read ln; do
             sleep 1
+            update_wrp "Deleting $BRrootsubvolname$ln"
             echo -ne "${WRK}Deleting $BRrootsubvolname$ln"
             OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname$ln 2>&1 1>/dev/null) && ok_status || error_status
           done < <(for i in ${BRsubvols[@]}; do echo $i; done | sort -r)
         fi
+        update_wrp "Deleting $BRrootsubvolname"
         echo -ne "${WRK}Deleting $BRrootsubvolname"
         OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
       fi
@@ -2114,6 +2121,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Remove leftovers and unmount the target root partition
     rm /mnt/target/target_architecture.$(uname -m) 2>/dev/null
     sleep 1
+    update_wrp "Unmounting $BRroot"
     echo -ne "${WRK}Unmounting $BRroot"
     OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
 
@@ -2225,7 +2233,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRsource="$BRmaxsize/downloaded_backup"
       # Give progress info to gui wrapper if -w is given
       if [ -n "$BRwrap" ]; then
-        run_wget 2>&1 | while read ln; do if [ -n "$ln" ]; then echo "Downloading in $BRmaxsize: ${ln//.....}" > /tmp/wr_proc; fi; done
+        run_wget 2>&1 | while read ln; do if [[ "$ln" == *%* ]]; then echo Downloading in $BRmaxsize: $(echo $ln | grep -o "[0-9]*%.*") > /tmp/wr_proc; fi; done
       else
         run_wget
       fi
@@ -2235,8 +2243,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRsource" ]; then
       IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${HIDE}"; fi
-      # Update the gui wrapper statusbar if -w is given
-      if [ -n "$BRwrap" ]; then echo "Please wait while checking and reading archive..." > /tmp/wr_proc; fi
+      update_wrp "Please wait while checking and reading archive"
       # Read the backup archive and give list of files in /tmp/filelist also
       read_archive | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
       IFS=$'\n'
@@ -2295,8 +2302,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Transfer mode
   elif [ "$BRmode" = "2" ]; then
-    # Update the gui wrapper statusbar if -w is given
-    if [ -n "$BRwrap" ]; then echo "Please wait while calculating files..." > /tmp/wr_proc; fi
+    update_wrp "Please wait while calculating files"
     # Calculate the number of files
     run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
     sleep 1
@@ -2312,6 +2318,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Unhide the cursor if -z is given
   if [ -n "$BRhide" ]; then echo -en "${SHOW}"; fi
 
+  update_wrp "Generating fstab"
   echo -e "\nGenerating fstab"
   # Save the old fstab first
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old

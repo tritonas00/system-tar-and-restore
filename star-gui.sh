@@ -176,7 +176,7 @@ export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
 export MAIN_DIALOG='
 
-<window title="System Tar & Restore" icon-name="applications-system" height-request="640" width-request="515">
+<window icon-name="applications-system" height-request="640" width-request="515">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_upt</input>

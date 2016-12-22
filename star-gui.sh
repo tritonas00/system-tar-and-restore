@@ -14,7 +14,7 @@ clean_tmp_files
 
 export BR_TITLE="System Tar & Restore"
 
-echo > /tmp/wr_log
+echo -n > /tmp/wr_log
 echo true > /tmp/wr_upt
 echo "$BR_TITLE" > /tmp/wr_proc
 

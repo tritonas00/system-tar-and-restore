@@ -323,35 +323,39 @@ lost+found">
                                         </entry>
                                 </hbox>
 
-                                <checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
-                                        '"$(bash -c "source /tmp/wr_functions; set_multi_sens")"'
-                                        <label>Enable multi-core compression</label>
-                                        <variable>ENTRY2</variable>
-                                        <default>'"$ENTRY2"'</default>
-                                </checkbox>
+                                <vbox>
+                                        <frame Misc options:>
+                                                <checkbox tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
+                                                        '"$(bash -c "source /tmp/wr_functions; set_multi_sens")"'
+                                                        <label>Enable multi-core compression</label>
+                                                        <variable>ENTRY2</variable>
+                                                        <default>'"$ENTRY2"'</default>
+                                                </checkbox>
 
-                                <checkbox tooltip-text="Generate configuration file in case of successful backup">
-                                        <label>Generate backup.conf</label>
-                                        <variable>ENTRY3</variable>
-                                </checkbox>
+                                                <checkbox tooltip-text="Generate configuration file in case of successful backup">
+                                                        <label>Generate backup.conf</label>
+                                                        <variable>ENTRY3</variable>
+                                                </checkbox>
 
-                                <checkbox tooltip-text="Remove older backups in the destination directory">
-                                        <label>Remove older backups</label>
-                                        <variable>ENTRY4</variable>
-                                        <default>'"$ENTRY4"'</default>
-                                </checkbox>
+                                                <checkbox tooltip-text="Remove older backups in the destination directory">
+                                                        <label>Remove older backups</label>
+                                                        <variable>ENTRY4</variable>
+                                                        <default>'"$ENTRY4"'</default>
+                                                </checkbox>
 
-                                <checkbox tooltip-text="Override the default tar options with user options">
-                                        <label>Override</label>
-                                        <variable>ENTRY5</variable>
-                                        <default>'"$ENTRY5"'</default>
-                                </checkbox>
+                                                <checkbox tooltip-text="Override the default tar options with user options">
+                                                        <label>Override</label>
+                                                        <variable>ENTRY5</variable>
+                                                        <default>'"$ENTRY5"'</default>
+                                                </checkbox>
 
-                                <checkbox tooltip-text="Disable genkernel check in gentoo">
-                                        <label>Disable genkernel</label>
-                                        <variable>ENTRY6</variable>
-                                        <default>'"$ENTRY6"'</default>
-                                </checkbox>
+                                                <checkbox tooltip-text="Disable genkernel check in gentoo">
+                                                        <label>Disable genkernel</label>
+                                                        <variable>ENTRY6</variable>
+                                                        <default>'"$ENTRY6"'</default>
+                                                </checkbox>
+                                        </frame>
+                                </vbox>
                         </vbox>
 
                         <vbox scrollable="true" shadow-type="0">
@@ -569,20 +573,24 @@ lost+found">
                                         <variable>RT_TAB</variable>
                                 </notebook>
 
-                                <checkbox tooltip-text="Disable genkernel check and initramfs building in gentoo">
-                                        <label>Disable genkernel</label>
-                                        <variable>ENTRY10</variable>
-                                </checkbox>
+                                <vbox>
+                                        <frame Misc options:>
+                                                <checkbox tooltip-text="Disable genkernel check and initramfs building in gentoo">
+                                                        <label>Disable genkernel</label>
+                                                        <variable>ENTRY10</variable>
+                                                </checkbox>
 
-                                <checkbox tooltip-text="Dont check if the target root partition is empty (dangerous)">
-                                        <label>Dont check root</label>
-                                        <variable>ENTRY11</variable>
-                                </checkbox>
+                                                <checkbox tooltip-text="Dont check if the target root partition is empty (dangerous)">
+                                                        <label>Dont check root</label>
+                                                        <variable>ENTRY11</variable>
+                                                </checkbox>
 
-                                <checkbox tooltip-text="Ignore UEFI environment">
-                                        <label>Bios</label>
-                                        <variable>ENTRY12</variable>
-                                </checkbox>
+                                                <checkbox tooltip-text="Ignore UEFI environment">
+                                                        <label>Bios</label>
+                                                        <variable>ENTRY12</variable>
+                                                </checkbox>
+                                        </frame>
+                                </vbox>
 			</vbox>
 
                         <vbox scrollable="true" shadow-type="0">

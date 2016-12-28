@@ -154,14 +154,15 @@ set_args() {
 }
 
 run_main() {
-  if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
+  if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ] && [ "$BR_DEBUG" = "true" ]; then
+    echo star.sh -i ${SCR_MODE} -jwq "${SCR_ARGS[@]}" > /tmp/wr_proc
+  elif [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
     echo false > /tmp/wr_upt
     setsid ./star.sh -i ${SCR_MODE} -jwq "${SCR_ARGS[@]}" 2> /tmp/wr_log
+    sleep 0.1
+    echo "$BR_TITLE" > /tmp/wr_proc
+    echo true > /tmp/wr_upt
   fi
-
-  sleep 0.1
-  echo "$BR_TITLE" > /tmp/wr_proc
-  echo true > /tmp/wr_upt
 }
 ' > /tmp/wr_functions
 
@@ -615,6 +616,11 @@ lost+found">
 				                <input>if [ -f "$BRchangelog" ]; then cat "$BRchangelog"; else echo "Changelog file not found"; fi</input>
                                         </text>
                                 </vbox>
+                                <hseparator></hseparator>
+                                <checkbox tooltip-text="Show the generated command instead of run it">
+                                        <label>Debug</label>
+                                        <variable>BR_DEBUG</variable>
+                                </checkbox>
                         </vbox>
                         <variable>BR_TAB</variable>
                         <input>echo 2</input>

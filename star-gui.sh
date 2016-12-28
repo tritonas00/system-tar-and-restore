@@ -95,7 +95,7 @@ set_args() {
       unset BRencpass
     fi
 
-    for i in ${BR_EXC[@]}; do BR_USER_OPTS="$BR_USER_OPTS --exclude=$i"; done # Add excludes to main options array
+    for i in ${BR_B_EXC[@]}; do BR_USER_OPTS="$BR_USER_OPTS --exclude=$i"; done # Add excludes to main options array
     if [ -n "$BR_USER_OPTS" ]; then SCR_ARGS+=(-u "$BR_USER_OPTS"); fi
 
     if [ "$ENTRY2" = "true" ] && [ ! "$BRcompression" = "none" ]; then SCR_ARGS+=(-M); fi
@@ -134,14 +134,16 @@ set_args() {
       if [ -n "$BR_USERNAME" ]; then SCR_ARGS+=(-y "$BR_USERNAME"); fi
       if [ -n "$BR_PASSWORD" ]; then SCR_ARGS+=(-p "$BR_PASSWORD"); fi
       if [ -n "$BR_PASSPHRASE" ]; then SCR_ARGS+=(-P "$BR_PASSPHRASE"); fi
+      if [ -n "$BR_TR_OPTS" ]; then SCR_ARGS+=(-u "$BR_TR_OPTS"); fi
     elif [ "$RT_TAB" = "1" ]; then
       SCR_MODE=2
       if [ "$ENTRY8" = "true" ]; then SCR_ARGS+=(-O); fi
       if [ "$ENTRY9" = "true" ]; then SCR_ARGS+=(-o); fi
+      for i in ${BR_T_EXC[@]}; do BR_RS_OPTS="$BR_RS_OPTS --exclude=$i"; done
+      if [ -n "$BR_RS_OPTS" ]; then SCR_ARGS+=(-u "$BR_RS_OPTS"); fi
     fi
 
     if [ -n "$BR_MN_OPTS" ]; then SCR_ARGS+=(-m "$BR_MN_OPTS"); fi
-    if [ -n "$BR_TR_OPTIONS" ]; then SCR_ARGS+=(-u "$BR_TR_OPTIONS"); fi
     if [ -n "$BR_ROOT_SUBVOL" ]; then SCR_ARGS+=(-R "$BR_ROOT_SUBVOL"); fi
     if [ -n "$BR_OTHER_SUBVOLS" ]; then SCR_ARGS+=(-B "$BR_OTHER_SUBVOLS"); fi
 
@@ -317,7 +319,7 @@ Excluded by default:
 /var/lock/*
 .gvfs
 lost+found">
-                                                <variable>BR_EXC</variable>
+                                                <variable>BR_B_EXC</variable>
                                         </entry>
                                 </hbox>
 
@@ -490,7 +492,7 @@ lost+found">
                                 <notebook labels="Restore Mode|Transfer Mode">
                                         <vbox>
                                                 <hbox>
-                                                        <text width-request="130" space-expand="false"><label>Backup archive:</label></text>
+                                                        <text width-request="135" space-expand="false"><label>Backup archive:</label></text>
                                                         <entry fs-action="file" tooltip-text="Choose a local backup archive or enter URL" fs-title="Select a backup archive">
                                                                 <variable>BR_FILE</variable>
                                                         </entry>
@@ -499,21 +501,28 @@ lost+found">
                                                                 <action>fileselect:BR_FILE</action>
                                                         </button>
                                                 </hbox>
+                                                <hbox>
+                                                        <text width-request="135" space-expand="false"><label>Additional options:</label></text>
+                                                        <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
+                                                                <variable>BR_TR_OPTS</variable>
+                                                                <item>--acls --xattrs</item>
+                                                        </comboboxentry>
+                                                </hbox>
                                                 <expander label="Authentication">
                                                         <vbox>
-                                                                <hbox><text width-request="130" space-expand="false"><label>Username:</label></text>
+                                                                <hbox><text width-request="135" space-expand="false"><label>Username:</label></text>
                                                                         <entry tooltip-text="Set ftp/http username">
                                                                                 <variable>BR_USERNAME</variable>
                                                                         </entry>
                                                                 </hbox>
-                                                                <hbox><text width-request="130" space-expand="false"><label>Password:</label></text>
+                                                                <hbox><text width-request="135" space-expand="false"><label>Password:</label></text>
                                                                         <entry tooltip-text="Set ftp/http password">
                                                                                 <visible>password</visible>
                                                                                 <variable>BR_PASSWORD</variable>
                                                                         </entry>
                                                                 </hbox>
                                                                 <hbox>
-                                                                        <text width-request="130" space-expand="false"><label>Passphrase:</label></text>
+                                                                        <text width-request="135" space-expand="false"><label>Passphrase:</label></text>
                                                                         <entry tooltip-text="Set passphrase for decryption">
                                                                                 <visible>password</visible>
                                                                                 <variable>BR_PASSPHRASE</variable>
@@ -523,23 +532,17 @@ lost+found">
                                                 </expander>
                                         </vbox>
                                         <vbox>
-                                                <checkbox tooltip-text="Transfer only hidden files and folders from /home">
-                                                        <label>"Only hidden files and folders from /home"</label>
-                                                        <variable>ENTRY8</variable>
-                                                </checkbox>
-                                                <checkbox tooltip-text="Override the default rsync options with user options">
-                                                        <label>Override</label>
-                                                        <variable>ENTRY9</variable>
-                                                </checkbox>
-                                        </vbox>
-                                        <variable>RT_TAB</variable>
-                                </notebook>
+                                                <hbox>
+                                                        <text width-request="135" space-expand="false"><label>Additional options:</label></text>
+                                                        <entry space-expand="true" space-fill="true" tooltip-text="Set extra rsync options. See rsync --help for more info. If you want spaces in names replace them with //">
+                                                                <variable>BR_RS_OPTS</variable>
+                                                        </entry>
+                                                </hbox>
+                                                <hbox>
+                                                        <text width-request="135" space-expand="false"><label>Exclude:</label></text>
+                                                        <entry space-expand="true" space-fill="true" tooltip-text="Exclude files and directories. If you want spaces in names replace them with //
 
-                                <hbox>
-                                        <text width-request="135" space-expand="false"><label>Additional options:</label></text>
-                                        <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar/rsync options. See tar --help or rsync --help for more info. If you want spaces in names replace them with //
-
-Excluded by default in Transfer mode:
+Excluded by default:
 /run/*
 /dev/*
 /sys/*
@@ -551,10 +554,20 @@ Excluded by default in Transfer mode:
 /var/lock/*
 /home/*/.gvfs
 lost+found">
-                                                <variable>BR_TR_OPTIONS</variable>
-                                                <item>--acls --xattrs</item>
-                                        </comboboxentry>
-                                </hbox>
+                                                                <variable>BR_T_EXC</variable>
+                                                        </entry>
+                                                </hbox>
+                                                <checkbox tooltip-text="Transfer only hidden files and folders from /home">
+                                                        <label>"Only hidden files and folders from /home"</label>
+                                                        <variable>ENTRY8</variable>
+                                                </checkbox>
+                                                <checkbox tooltip-text="Override the default rsync options with user options">
+                                                        <label>Override</label>
+                                                        <variable>ENTRY9</variable>
+                                                </checkbox>
+                                        </vbox>
+                                        <variable>RT_TAB</variable>
+                                </notebook>
 
                                 <checkbox tooltip-text="Disable genkernel check and initramfs building in gentoo">
                                         <label>Disable genkernel</label>

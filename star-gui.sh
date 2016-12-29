@@ -158,14 +158,16 @@ set_args() {
 }
 
 run_main() {
-  if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ] && [ "$BR_DEBUG" = "true" ]; then
-    echo star.sh "${SCR_ARGS[@]}" > /tmp/wr_proc
-  elif [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
-    echo false > /tmp/wr_upt
-    setsid ./star.sh "${SCR_ARGS[@]}" 2> /tmp/wr_log
-    sleep 0.1
-    echo "$BR_TITLE" > /tmp/wr_proc
-    echo true > /tmp/wr_upt
+  if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
+    if [ "$BR_DEBUG" = "true" ]; then
+      echo star.sh "${SCR_ARGS[@]}" > /tmp/wr_proc
+    else
+      echo false > /tmp/wr_upt
+      setsid ./star.sh "${SCR_ARGS[@]}" 2> /tmp/wr_log
+      sleep 0.1
+      echo "$BR_TITLE" > /tmp/wr_proc
+      echo true > /tmp/wr_upt
+    fi
   fi
 }
 ' > /tmp/wr_functions

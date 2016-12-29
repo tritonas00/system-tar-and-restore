@@ -73,9 +73,15 @@ hide_used_parts() {
 
 set_args() {
   if [ "$BR_TAB" = "0" ]; then
-    SCR_MODE=0
+    SCR_ARGS=(-i 0 -jwq)
+  elif [ "$RT_TAB" = "0" ]; then
+    SCR_ARGS=(-i 1 -jwq)
+  elif [ "$RT_TAB" = "1" ]; then
+    SCR_ARGS=(-i 2 -jwq)
+  fi
 
-    if [ -n "$BRFOLDER" ]; then SCR_ARGS=(-d "$BRFOLDER"); fi
+  if [ "$BR_TAB" = "0" ]; then
+    if [ -n "$BRFOLDER" ]; then SCR_ARGS+=(-d "$BRFOLDER"); fi
     if [ -n "$BRcompression" ]; then SCR_ARGS+=(-c "$BRcompression"); fi
 
     if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
@@ -106,7 +112,7 @@ set_args() {
 
   elif [ "$BR_TAB" = "1" ]; then
     unset BRencmethod BRencpass BR_USER_OPTS # Dont use exported vars from backup.conf
-    SCR_ARGS=(-r ${BR_ROOT%% *})
+    SCR_ARGS+=(-r ${BR_ROOT%% *})
 
     if [ ! "$BR_BOOT" = "" ]; then SCR_ARGS+=(-b ${BR_BOOT%% *}); fi
     if [ ! "$BR_HOME" = "" ]; then SCR_ARGS+=(-h ${BR_HOME%% *}); fi
@@ -129,14 +135,12 @@ set_args() {
     if [ ! "$ENTRY7" = "none" ] && [ -n "$BR_KL_OPTS" ]; then SCR_ARGS+=(-k "$BR_KL_OPTS"); fi
 
     if [ "$RT_TAB" = "0" ]; then
-      SCR_MODE=1
       SCR_ARGS+=(-f "$BR_FILE")
       if [ -n "$BR_USERNAME" ]; then SCR_ARGS+=(-y "$BR_USERNAME"); fi
       if [ -n "$BR_PASSWORD" ]; then SCR_ARGS+=(-p "$BR_PASSWORD"); fi
       if [ -n "$BR_PASSPHRASE" ]; then SCR_ARGS+=(-P "$BR_PASSPHRASE"); fi
       if [ -n "$BR_TR_OPTS" ]; then SCR_ARGS+=(-u "$BR_TR_OPTS"); fi
     elif [ "$RT_TAB" = "1" ]; then
-      SCR_MODE=2
       if [ "$ENTRY8" = "true" ]; then SCR_ARGS+=(-O); fi
       if [ "$ENTRY9" = "true" ]; then SCR_ARGS+=(-o); fi
       for i in ${BR_T_EXC[@]}; do BR_RS_OPTS="$BR_RS_OPTS --exclude=$i"; done
@@ -155,10 +159,10 @@ set_args() {
 
 run_main() {
   if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ] && [ "$BR_DEBUG" = "true" ]; then
-    echo star.sh -i ${SCR_MODE} -jwq "${SCR_ARGS[@]}" > /tmp/wr_proc
+    echo star.sh "${SCR_ARGS[@]}" > /tmp/wr_proc
   elif [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
     echo false > /tmp/wr_upt
-    setsid ./star.sh -i ${SCR_MODE} -jwq "${SCR_ARGS[@]}" 2> /tmp/wr_log
+    setsid ./star.sh "${SCR_ARGS[@]}" 2> /tmp/wr_log
     sleep 0.1
     echo "$BR_TITLE" > /tmp/wr_proc
     echo true > /tmp/wr_upt

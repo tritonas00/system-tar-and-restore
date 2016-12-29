@@ -384,9 +384,8 @@ lost+found">
 	                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
                                                                 <action>refresh:BR_BOOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
 			                                </comboboxtext>
-                                                        <entry tooltip-text="Set comma-separated list of mount options">
+                                                        <entry tooltip-text="Set comma-separated list of mount options. Default options: defaults,noatime">
                                                                 <variable>BR_MN_OPTS</variable>
-                                                                <input>echo "defaults,noatime"</input>
                                                         </entry>
                                                 </hbox>
 

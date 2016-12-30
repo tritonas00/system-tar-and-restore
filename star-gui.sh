@@ -232,17 +232,15 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 
                                 <hbox>
                                         <text width-request="135"><label>Filename:</label></text>
-                                        <entry tooltip-text="Set backup archive name">
+                                        <entry text="'"$BRNAME"'" tooltip-text="Set backup archive name">
                                                 <variable>BRNAME</variable>
-                                                <default>'"$BRNAME"'</default>
                                         </entry>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135"><label>Destination:</label></text>
-                                        <entry fs-action="folder" fs-title="Select a directory" tooltip-text="Choose where to save the backup archive">
+                                        <entry text="'"$BRFOLDER"'" fs-action="folder" fs-title="Select a directory" tooltip-text="Choose where to save the backup archive">
                                                 <variable>BRFOLDER</variable>
-                                                <default>'"$BRFOLDER"'</default>
                                         </entry>
                                         <button tooltip-text="Select directory">
                                                 <input file stock="gtk-open"></input>

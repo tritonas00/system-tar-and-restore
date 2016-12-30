@@ -508,12 +508,14 @@ lost+found">
                                                 </hbox>
                                                 <expander label="Authentication">
                                                         <vbox>
-                                                                <hbox><text width-request="135" space-expand="false" label="Username:"></text>
+                                                                <hbox>
+                                                                        <text width-request="135" space-expand="false" label="Username:"></text>
                                                                         <entry tooltip-text="Set ftp/http username">
                                                                                 <variable>BR_USERNAME</variable>
                                                                         </entry>
                                                                 </hbox>
-                                                                <hbox><text width-request="135" space-expand="false" label="Password:"></text>
+                                                                <hbox>
+                                                                        <text width-request="135" space-expand="false" label="Password:"></text>
                                                                         <entry tooltip-text="Set ftp/http password" visibility="false">
                                                                                 <variable>BR_PASSWORD</variable>
                                                                         </entry>

@@ -50,13 +50,8 @@ fi
 # Echo all functions to a temporary file so we can source it inside gtkdialog
 # This ensures compatibility with Ubuntu 16.04 and variants
 echo '
-set_default_pass() {
-  if [ ! "$BRencmethod" = "none" ]; then
-    echo '\''<entry tooltip-text="Set passphrase for encryption">'\''
-  else
-    echo '\''<entry tooltip-text="Set passphrase for encryption" sensitive="false">'\''
-  fi
-  if [ -n "$BRencpass" ]; then echo '\''<default>'\''"$BRencpass"'\''</default>'\'';fi
+set_pass_sens() {
+  if [ "$BRencmethod" = "none" ]; then echo '\''<sensitive>false</sensitive>'\''; fi
 }
 
 set_default_opts() {
@@ -295,9 +290,9 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 
                                 <hbox>
                                         <text width-request="135" space-expand="false"><label>Passphrase:</label></text>
-                                        '"$(bash -c "source /tmp/wr_functions; set_default_pass")"'
+                                        <entry text="'"$BRencpass"'" visibility="false" tooltip-text="Set passphrase for encryption">
+                                                '"$(bash -c "source /tmp/wr_functions; set_pass_sens")"'
                                                 <variable>BRencpass</variable>
-                                                <visible>password</visible>
                                         </entry>
                                 </hbox>
 
@@ -526,15 +521,13 @@ lost+found">
                                                                         </entry>
                                                                 </hbox>
                                                                 <hbox><text width-request="135" space-expand="false"><label>Password:</label></text>
-                                                                        <entry tooltip-text="Set ftp/http password">
-                                                                                <visible>password</visible>
+                                                                        <entry tooltip-text="Set ftp/http password" visibility="false">
                                                                                 <variable>BR_PASSWORD</variable>
                                                                         </entry>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="135" space-expand="false"><label>Passphrase:</label></text>
-                                                                        <entry tooltip-text="Set passphrase for decryption">
-                                                                                <visible>password</visible>
+                                                                        <entry tooltip-text="Set passphrase for decryption" visibility="false">
                                                                                 <variable>BR_PASSPHRASE</variable>
                                                                         </entry>
                                                                 </hbox>

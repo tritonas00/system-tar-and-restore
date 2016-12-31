@@ -1,5 +1,16 @@
 Changelog:
 
+6.1
+  show progress info in window title bar
+  separate restore/transfer mode in tabs
+  added exclude entry in transfer mode
+  added debug checkbox
+  added tiny sleep after running the main script to avoid race condition
+  removed unnecessary mount options in wrapper, show defaults in tooltip
+  wrapper now shows more detailed progress info
+  better wget output to wrapper
+  code cleanups
+
 6.0
   Major project rewrite. Backend-Frontend template is now used
 

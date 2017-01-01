@@ -421,7 +421,7 @@ lost+found">
                                                                         </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>
-                                                                        <text width-request="55" space-expand="false" label="/swap:"></text>
+                                                                        <text width-request="55" space-expand="false" label="Swap:"></text>
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
 	                                                                        <variable>BR_SWAP</variable>
                                                                                 <input>echo "$BR_SWAP"</input>

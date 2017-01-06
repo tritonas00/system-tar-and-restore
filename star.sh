@@ -968,16 +968,16 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   set_rsync_opts() {
     if [ -z "$BRoverride" ]; then
       TR_OPTS+=(--exclude=/run/*         \
-                    --exclude=/dev/*         \
-                    --exclude=/sys/*         \
-                    --exclude=/tmp/*         \
-                    --exclude=/mnt/*         \
-                    --exclude=/proc/*        \
-                    --exclude=/media/*       \
-                    --exclude=/var/run/*     \
-                    --exclude=/var/lock/*    \
-                    --exclude=/home/*/.gvfs  \
-                    --exclude=lost+found)
+                --exclude=/dev/*         \
+                --exclude=/sys/*         \
+                --exclude=/tmp/*         \
+                --exclude=/mnt/*         \
+                --exclude=/proc/*        \
+                --exclude=/media/*       \
+                --exclude=/var/run/*     \
+                --exclude=/var/lock/*    \
+                --exclude=/home/*/.gvfs  \
+                --exclude=lost+found)
     fi
     if [ -n "$BRonlyhidden" ]; then
       TR_OPTS+=(--exclude=/home/*/[^.]*)

@@ -542,6 +542,8 @@ if [ "$BRmode" = "0" ]; then
 
   # Set tar default options
   BR_TAROPTS=(--sparse               \
+              --acls                 \
+              --xattrs               \
               --exclude=/run/*       \
               --exclude=/dev/*       \
               --exclude=/sys/*       \
@@ -562,7 +564,7 @@ if [ "$BRmode" = "0" ]; then
 
   # Needed by Fedora
   if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
-    BR_TAROPTS+=(--acls --xattrs --selinux)
+    BR_TAROPTS+=(--selinux)
   fi
 
   # Set /home directory options
@@ -809,8 +811,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ "$BRmode" = "1" ]; then
       if grep -Fxq "etc/yum.conf" /tmp/filelist || grep -Fxq "etc/dnf/dnf.conf" /tmp/filelist; then
         BRdistro="Fedora"
-        # Also add extra tar options needed by Fedora
-        USER_OPTS+=(--selinux --acls "--xattrs-include='*'")
       elif grep -Fxq "etc/pacman.conf" /tmp/filelist; then
         BRdistro="Arch"
       elif grep -Fxq "etc/apt/sources.list" /tmp/filelist; then
@@ -941,31 +941,33 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     done
   }
 
-  # Set tar/rsync user options, replace any // with space
-  set_user_options() {
-    IFS=$DEFAULTIFS
-    for i in ${BR_USER_OPTS[@]}; do USER_OPTS+=("${i///\//\ }"); done
-    IFS=$'\n'
+  # Set tar default options
+  set_tar_opts() {
+   if [ "$BRdistro" = "Fedora" ]; then
+     TR_OPTS=(--selinux --acls "--xattrs-include='*'")
+   else
+     TR_OPTS=(--acls --xattrs)
+   fi
   }
 
   # Run tar with given input
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${TR_OPTS[@]}" -C /mnt/target
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${USER_OPTS[@]}" -C /mnt/target
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar ${BR_MAINOPTS} - "${TR_OPTS[@]}" -C /mnt/target
     # Without encryption
     else
-      tar ${BR_MAINOPTS} "$BRsource" "${USER_OPTS[@]}" -C /mnt/target
+      tar ${BR_MAINOPTS} "$BRsource" "${TR_OPTS[@]}" -C /mnt/target
     fi
   }
 
-  # Set default rsync options if -o is not given, add user options to the main array
+  # Set default rsync options if -o is not given
   set_rsync_opts() {
     if [ -z "$BRoverride" ]; then
-      BR_RSYNCOPTS=(--exclude=/run/*         \
+      TR_OPTS=(--exclude=/run/*         \
                     --exclude=/dev/*         \
                     --exclude=/sys/*         \
                     --exclude=/tmp/*         \
@@ -978,21 +980,27 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
                     --exclude=lost+found)
     fi
     if [ -n "$BRonlyhidden" ]; then
-      BR_RSYNCOPTS+=(--exclude=/home/*/[^.]*)
+      TR_OPTS+=(--exclude=/home/*/[^.]*)
     elif [ -n "$BRnohome" ]; then
-      BR_RSYNCOPTS+=(--exclude=/home/*)
+      TR_OPTS+=(--exclude=/home/*)
     fi
-    BR_RSYNCOPTS+=("${USER_OPTS[@]}")
+  }
+
+  # Set tar/rsync user options, replace any // with space
+  set_user_options() {
+    IFS=$DEFAULTIFS
+    for i in ${BR_USER_OPTS[@]}; do TR_OPTS+=("${i///\//\ }"); done
+    IFS=$'\n'
   }
 
   # Calculate files to create percentage and progress bar in Transfer mode
   run_calc() {
-    rsync -av / /mnt/target "${BR_RSYNCOPTS[@]}" --dry-run 2>/dev/null | tee /tmp/filelist
+    rsync -av / /mnt/target "${TR_OPTS[@]}" --dry-run 2>/dev/null | tee /tmp/filelist
   }
 
   # Run rsync with given input
   run_rsync() {
-    rsync -aAXv / /mnt/target "${BR_RSYNCOPTS[@]}"
+    rsync -aAXv / /mnt/target "${TR_OPTS[@]}"
   }
 
   # Scan normal partitions, lvm, md arrays and sd card partitions
@@ -1428,13 +1436,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo "Info:     Skip initramfs building"
     fi
 
-    if [ "$BRmode" = "2" ] && [ -n "$BR_RSYNCOPTS" ]; then
+    if [ "$BRmode" = "2" ] && [ -n "$TR_OPTS" ]; then
       echo -e "\nRSYNC OPTIONS:"
-      for i in "${BR_RSYNCOPTS[@]}"; do echo "$i"; done
-    elif [ "$BRmode" = "1" ] && [ -n "$USER_OPTS" ]; then
+    elif [ "$BRmode" = "1" ] && [ -n "$TR_OPTS" ]; then
       echo -e "\nARCHIVER OPTIONS:"
-      for i in "${USER_OPTS[@]}"; do echo "$i"; done
     fi
+    for i in "${TR_OPTS[@]}"; do echo "$i"; done
   }
 
   # Bind needed directories so we can chroot in the target system
@@ -2143,13 +2150,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   read_archive() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/s_error
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar "$BRreadopts" - "${TR_OPTS[@]}" || touch /tmp/s_error
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "$BRreadopts" - "${USER_OPTS[@]}" || touch /tmp/s_error
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "$BRreadopts" - "${TR_OPTS[@]}" || touch /tmp/s_error
     # Without encryption
     else
-      tar tf "$BRsource" "${USER_OPTS[@]}" || touch /tmp/s_error
+      tar tf "$BRsource" "${TR_OPTS[@]}" || touch /tmp/s_error
     fi
   }
 
@@ -2232,6 +2239,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   check_input >&2
   detect_root_fs_size
   mount_all
+
+  if [ "$BRmode" = "1" ]; then 
+    set_tar_opts
+  elif [ "$BRmode" = "2" ]; then 
+    set_rsync_opts
+  fi
   set_user_options
 
   # In Restore mode download the backup archive if url is given, read it and check it
@@ -2270,8 +2283,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     clean_unmount
   fi
 
-  if [ "$BRmode" = "2" ]; then set_rsync_opts; fi
-  if [ -n "$BRbootloader" ]; then set_kern_opts; fi
+  if [ -n "$BRbootloader" ]; then 
+    set_kern_opts
+  fi
 
   # Show summary and prompt the user to continue. If -q is given continue automatically
   echo -e "\n${BOLD}[SUMMARY]${CYAN}"

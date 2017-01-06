@@ -54,10 +54,6 @@ set_pass_sens() {
   if [ "$BRencmethod" = "none" ]; then echo '\''<sensitive>false</sensitive>'\''; fi
 }
 
-set_default_opts() {
-  if [ -n "$BR_USER_OPTS" ]; then echo '\''<default>'\''"$BR_USER_OPTS"'\''</default>'\''; fi
-}
-
 set_multi_sens() {
   if [ "$BRcompression" = "none" ]; then echo '\''<sensitive>false</sensitive>'\''; fi
 }
@@ -300,11 +296,9 @@ efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup arc
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
-                                        <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
+                                        <entry text="'"$BR_USER_OPTS"'" space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
                                                 <variable>BR_USER_OPTS</variable>
-                                                '"$(bash -c "source /tmp/wr_functions; set_default_opts")"'
-                                                <item>--acls --xattrs</item>
-                                        </comboboxentry>
+                                        </entry>
                                 </hbox>
 
                                 <hbox>
@@ -511,10 +505,9 @@ lost+found">
                                                 </hbox>
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
-                                                        <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
+                                                        <entry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
                                                                 <variable>BR_TR_OPTS</variable>
-                                                                <item>--acls --xattrs</item>
-                                                        </comboboxentry>
+                                                        </entry>
                                                 </hbox>
                                                 <expander label="Server authentication">
                                                         <vbox>

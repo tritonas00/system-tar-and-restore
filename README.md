@@ -36,6 +36,7 @@ The package is provided by the <code>gentoo-el</code> overlay. You can install i
 ###REQUIREMENTS###
 
 - gtkdialog 0.8.3 or later (for the gui)
+- tar 1.27+ (acls and xattrs support)
 - rsync (for Transfer Mode)
 - wget   (for downloading backup archives)
 - gptfdisk/gdisk (for GPT and Syslinux)
@@ -83,8 +84,6 @@ When the process completes check */tmp/restore.log*.
 See <code>star.sh --help</code> for all available options.
 
 ###NOTES###
-
-- With GNU Tar 1.27+ you can add *--xattrs --acls* (and *--selinux* if available) in backup and restore mode additional tar options. In case of Fedora, those options are added automatically.
 
 - In case of Gentoo package genkernel is required to build initramfs. If you dont want initramfs image you can use -D to disable genkernel check and initramfs building.
 

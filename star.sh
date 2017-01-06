@@ -2240,9 +2240,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   detect_root_fs_size
   mount_all
 
-  if [ "$BRmode" = "1" ]; then 
+  if [ "$BRmode" = "1" ]; then
     set_tar_opts
-  elif [ "$BRmode" = "2" ]; then 
+  elif [ "$BRmode" = "2" ]; then
     set_rsync_opts
   fi
   set_user_options
@@ -2283,7 +2283,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     clean_unmount
   fi
 
-  if [ -n "$BRbootloader" ]; then 
+  if [ -n "$BRbootloader" ]; then
     set_kern_opts
   fi
 

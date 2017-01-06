@@ -944,9 +944,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Set tar default options
   set_tar_opts() {
    if [ "$BRdistro" = "Fedora" ]; then
-     TR_OPTS=(--selinux --acls "--xattrs-include='*'")
+     TR_OPTS+=(--selinux --acls "--xattrs-include='*'")
    else
-     TR_OPTS=(--acls --xattrs)
+     TR_OPTS+=(--acls --xattrs)
    fi
   }
 
@@ -967,7 +967,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Set default rsync options if -o is not given
   set_rsync_opts() {
     if [ -z "$BRoverride" ]; then
-      TR_OPTS=(--exclude=/run/*         \
+      TR_OPTS+=(--exclude=/run/*         \
                     --exclude=/dev/*         \
                     --exclude=/sys/*         \
                     --exclude=/tmp/*         \
@@ -2239,12 +2239,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   check_input >&2
   detect_root_fs_size
   mount_all
-
-  if [ "$BRmode" = "1" ]; then
-    set_tar_opts
-  elif [ "$BRmode" = "2" ]; then
-    set_rsync_opts
-  fi
   set_user_options
 
   # In Restore mode download the backup archive if url is given, read it and check it
@@ -2283,6 +2277,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     clean_unmount
   fi
 
+  if [ "$BRmode" = "1" ]; then
+    set_tar_opts
+  elif [ "$BRmode" = "2" ]; then
+    set_rsync_opts
+  fi
   if [ -n "$BRbootloader" ]; then
     set_kern_opts
   fi

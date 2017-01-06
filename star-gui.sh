@@ -136,7 +136,11 @@ set_args() {
       if [ -n "$BR_PASSPHRASE" ]; then SCR_ARGS+=(-P "$BR_PASSPHRASE"); fi
       if [ -n "$BR_TR_OPTS" ]; then SCR_ARGS+=(-u "$BR_TR_OPTS"); fi
     elif [ "$RT_TAB" = "1" ]; then
-      if [ "$ENTRY8" = "true" ]; then SCR_ARGS+=(-O); fi
+      if [ "$ENTRY8" = "Only hidden files and folders" ]; then
+        SCR_ARGS+=(-O)
+      elif [ "$ENTRY8" = "Exclude" ]; then
+        SCR_ARGS+=(-H)
+      fi
       if [ "$ENTRY9" = "true" ]; then SCR_ARGS+=(-o); fi
       for i in ${BR_T_EXC[@]}; do BR_RS_OPTS="$BR_RS_OPTS --exclude=$i"; done
       if [ -n "$BR_RS_OPTS" ]; then SCR_ARGS+=(-u "$BR_RS_OPTS"); fi
@@ -500,13 +504,19 @@ lost+found">
                                                         </button>
                                                 </hbox>
                                                 <hbox>
+                                                        <text width-request="135" space-expand="false" label="Passphrase:"></text>
+                                                        <entry tooltip-text="Set passphrase for decryption" visibility="false">
+                                                                <variable>BR_PASSPHRASE</variable>
+                                                        </entry>
+                                                </hbox>
+                                                <hbox>
                                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
                                                         <comboboxentry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
                                                                 <variable>BR_TR_OPTS</variable>
                                                                 <item>--acls --xattrs</item>
                                                         </comboboxentry>
                                                 </hbox>
-                                                <expander label="Authentication">
+                                                <expander label="Server authentication">
                                                         <vbox>
                                                                 <hbox>
                                                                         <text width-request="135" space-expand="false" label="Username:"></text>
@@ -520,16 +530,20 @@ lost+found">
                                                                                 <variable>BR_PASSWORD</variable>
                                                                         </entry>
                                                                 </hbox>
-                                                                <hbox>
-                                                                        <text width-request="135" space-expand="false" label="Passphrase:"></text>
-                                                                        <entry tooltip-text="Set passphrase for decryption" visibility="false">
-                                                                                <variable>BR_PASSPHRASE</variable>
-                                                                        </entry>
-                                                                </hbox>
+
                                                         </vbox>
                                                 </expander>
                                         </vbox>
                                         <vbox>
+                                                <hbox>
+                                                        <text width-request="135" space-expand="false" label="Home directory:"></text>
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
+                                                                <variable>ENTRY8</variable>
+                                                                <item>Include</item>
+	                                                        <item>Only hidden files and folders</item>
+	                                                        <item>Exclude</item>
+                                                        </comboboxtext>
+                                                </hbox>
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
                                                         <entry space-expand="true" space-fill="true" tooltip-text="Set extra rsync options. See rsync --help for more info. If you want spaces in names replace them with //">
@@ -555,9 +569,6 @@ lost+found">
                                                                 <variable>BR_T_EXC</variable>
                                                         </entry>
                                                 </hbox>
-                                                <checkbox label="Only hidden files and folders from /home" tooltip-text="Transfer only hidden files and folders from /home">
-                                                        <variable>ENTRY8</variable>
-                                                </checkbox>
 
                                                 <checkbox label="Override" tooltip-text="Override the default rsync options with user options">
                                                         <variable>ENTRY9</variable>
@@ -592,7 +603,7 @@ lost+found">
                         <vbox>
                                 <text use-markup="true" label="<b><big>System Tar &amp; Restore</big></b>"></text>
                                 <text use-markup="true" wrap="false" label="Backup and Restore your system using tar or Transfer it with rsync"></text>
-                                <text use-markup="true" label="<i><small>Version 6.1 tritonas00@gmail.com 2012-2017</small></i>"></text>
+                                <text use-markup="true" label="<i><small>Version 6.2 tritonas00@gmail.com 2012-2017</small></i>"></text>
                                 <hseparator></hseparator>
                                 <vbox scrollable="true" shadow-type="0">
                                         <text xalign="0" wrap="false">
@@ -602,6 +613,8 @@ lost+found">
                                 <hseparator></hseparator>
                                 <checkbox label="Debug" tooltip-text="Show the generated command instead of run it">
                                         <variable>BR_DEBUG</variable>
+                                        <action> if true echo "$BR_TITLE (debug)" > /tmp/wr_proc</action>
+                                        <action> if false echo "$BR_TITLE" > /tmp/wr_proc</action>
                                 </checkbox>
                         </vbox>
                         <variable>BR_TAB</variable>

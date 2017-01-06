@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 6.1"
+BR_VERSION="System Tar & Restore 6.2"
 
 # Set EFI detection directory
 BR_EFI_DETECT_DIR="/sys/firmware/efi"
@@ -243,7 +243,7 @@ while true; do
 General Options:
   -i, --mode                  Select mode: 0 (Backup) 1 (Restore) 2 (Transfer)
   -j, --no-color              Disable colors
-  -q, --quiet                 Dont ask, just run
+  -q, --quiet                 Don't ask, just run
   -v, --verbose               Enable verbose archiver output
   -z, --hide-cursor           Hide the cursor when running archiver (useful for some terminal emulators)
   -w, --wrapper               Make the script wrapper-friendly
@@ -306,9 +306,10 @@ Restore / Transfer Mode:
 
   Transfer Mode:
     -O,  --only-hidden        Transfer /home's hidden files and folders only
+    -H,  --exclude-home	      Don't transfer /home directory
 
   Misc Options:
-    -x,  --dont-check-root    Dont check if the target root partition is empty (dangerous)
+    -x,  --dont-check-root    Don't check if the target root partition is empty (dangerous)
     -W,  --bios               Ignore UEFI environment"
       exit
       shift
@@ -437,7 +438,7 @@ if [ "$BRmode" = "0" ]; then
     echo -e "[${RED}ERROR${NORM}] File does not exist: $BRconf" >&2
     exit
   fi
-  # Source the configuration file. If -w is given dont source, the gui wrapper will source it
+  # Source the configuration file. If -w is given don't source, the gui wrapper will source it
   if [ -f "$BRconf" ] && [ -z "$BRwrap" ]; then
     source "$BRconf"
   fi
@@ -690,7 +691,7 @@ if [ "$BRmode" = "0" ]; then
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
-  unset BRFOLDER BRNAME BRcompression BRnohome BRgen BRencmethod BRclean BRconf BRmcore
+  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRmcore
 
   # Show the exit screen
   exit_screen() {
@@ -978,6 +979,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
     if [ -n "$BRonlyhidden" ]; then
       BR_RSYNCOPTS+=(--exclude=/home/*/[^.]*)
+    elif [ -n "$BRnohome" ]; then
+      BR_RSYNCOPTS+=(--exclude=/home/*)
     fi
     BR_RSYNCOPTS+=("${USER_OPTS[@]}")
   }
@@ -1055,6 +1058,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         echo -e "[${RED}ERROR${NORM}] Bootctl not found"
         exit
       fi
+      if [ -n "$BRnohome" ] && [ -n "$BRonlyhidden" ]; then
+        echo -e "[${YELLOW}WARNING${NORM}] Choose only one option for the /home directory" >&2
+        exit
+      fi
     fi
 
     if [ -n "$BRroot" ]; then
@@ -1109,7 +1116,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           exit
         fi
         if [ "$BRmpoint" = "/" ]; then
-          echo -e "[${YELLOW}WARNING${NORM}] Dont assign root partition as custom"
+          echo -e "[${YELLOW}WARNING${NORM}] Don't assign root partition as custom"
           exit
         fi
         if [[ ! "$BRmpoint" == /* ]]; then
@@ -1177,21 +1184,21 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Dont use multiple bootloaders"
+      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders"
       exit
     elif [ -n "$BRgrub" ] && [ -n "$BRefistub" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Dont use multiple bootloaders"
+      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders"
       exit
     elif [ -n "$BRgrub" ] && [ -n "$BRbootctl" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Dont use multiple bootloaders"
+      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders"
       exit
     elif [ -n "$BRefistub" ] && [ -n "$BRbootctl" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Dont use multiple bootloaders"
+      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders"
       exit
     fi
 
     if [ ! -d "$BR_EFI_DETECT_DIR" ] && [ -n "$BResp" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Dont use EFI system partition in bios mode"
+      echo -e "[${YELLOW}WARNING${NORM}] Don't use EFI system partition in bios mode"
       exit
     fi
 
@@ -1403,6 +1410,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo "Archive:  $BRfiletype $enc_info"
     elif [ "$BRmode" = "2" ] && [ -n "$BRonlyhidden" ]; then
       echo "Home:     Only hidden files and folders"
+    elif [ "$BRmode" = "2" ] && [ -n "$BRnohome" ]; then
+      echo "Home:     Exclude"
     elif [ "$BRmode" = "2" ]; then
       echo "Home:     Include"
     fi

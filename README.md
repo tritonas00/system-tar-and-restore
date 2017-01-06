@@ -75,7 +75,7 @@ Boot from a livecd - preferably one of the target (backed up) distro - or anothe
 - **Mount options:** You can specify alternative comma-seperated mount options for the target root partition. Defaults are: *defaults,noatime*.
 - **Btrfs subvolumes:** If the target root filesystem is Btrfs, you can create subvolumes. Set the root subvolume name and also you can specify other subvolumes. Just enter the paths (/home /var /usr etc.) seperated by space. Recommended root subvolume name is: *__active*.
 - **Bootloader:** In BIOS systems you can choose Grub (version 2) or Syslinux and the target disk. If you select a raid array as bootloader disk, the script will install the bootloader in all disks that the array contains. In case of UEFI you can choose Grub, EFISTUB/efibootmgr or Systemd/bootctl. Also you can define additional kernel options.
-- **Modes:** In *Restore mode* you have to specify the backup archive (local path or remote url). If the archive is encrypted you must specify the passphrase. In *Transfer mode* you can choose if you want to transfer your entire /home directory or only it's hidden files and folders (which are necessary to login and keep basic settings).
+- **Modes:** In *Restore mode* you have to specify the backup archive (local path or remote url). If the archive is encrypted you must specify the passphrase. In *Transfer mode* you can choose if you want to transfer your entire /home directory, only it's hidden files and folders (which are necessary to login and keep basic settings) or exclude it.
 - **Tar/Rsync options:** You may want to specify any additional options. See <code>tar --help</code> or <code>rsync --help</code> for more info.
  
 When the process completes check */tmp/restore.log*. 

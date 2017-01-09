@@ -732,8 +732,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Detect root partition filesystem and size, exit if filesystem not found
   detect_root_fs_size() {
-    BRfsystem=$(blkid -s TYPE -o value $BRroot)
-    BRfsize=$(lsblk -d -n -o size 2>/dev/null $BRroot | sed -e 's/ *//')
+    BRfsystem=$(blkid -s TYPE -o value "$BRroot")
+    BRfsize=$(lsblk -d -n -o size 2>/dev/null "$BRroot" | sed -e 's/ *//')
     if [ -z "$BRfsystem" ]; then
       echo -e "[${RED}ERROR${NORM}] Unknown root file system" >&2
       exit
@@ -988,9 +988,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Set tar/rsync user options, replace any // with space
   set_user_options() {
-    IFS=$DEFAULTIFS
-    for i in ${BR_USER_OPTS[@]}; do TR_OPTS+=("${i///\//\ }"); done
-    IFS=$'\n'
+    for i in "${BR_USER_OPTS[@]}"; do TR_OPTS+=("${i///\//\ }"); done
   }
 
   # Calculate files to create percentage and progress bar in Transfer mode
@@ -1096,8 +1094,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ -n "$BRcustomparts" ]; then
-      BRdevused=(`for BRdevice in ${BRcustomparts[@]}; do echo $BRdevice | cut -f2 -d"="; done | sort | uniq -d`)
-      BRmpointused=(`for BRmpoint in ${BRcustomparts[@]}; do echo $BRmpoint | cut -f1 -d"="; done | sort | uniq -d`)
+      BRdevused=(`for BRdevice in "${BRcustomparts[@]}"; do echo "$BRdevice" | cut -f2 -d"="; done | sort | uniq -d`)
+      BRmpointused=(`for BRmpoint in "${BRcustomparts[@]}"; do echo "$BRmpoint" | cut -f1 -d"="; done | sort | uniq -d`)
       if [ -n "$BRdevused" ]; then
         echo -e "[${YELLOW}WARNING${NORM}] $BRdevused already used"
         exit
@@ -1107,15 +1105,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         exit
       fi
 
-      for k in ${BRcustomparts[@]}; do
-        BRmpoint=$(echo $k | cut -f1 -d"=")
-        BRdevice=$(echo $k | cut -f2 -d"=")
+      for k in "${BRcustomparts[@]}"; do
+        BRmpoint=$(echo "$k" | cut -f1 -d"=")
+        BRdevice=$(echo "$k" | cut -f2 -d"=")
 
         for i in $(scan_parts); do if [ "$i" = "$BRdevice" ]; then BRcustomcheck="true"; fi; done
         if [ ! "$BRcustomcheck" = "true" ]; then
           echo -e "[${RED}ERROR${NORM}] Wrong $BRmpoint partition: $BRdevice"
           exit
-        elif [ ! -z $(lsblk -d -n -o mountpoint 2>/dev/null $BRdevice) ]; then
+        elif [ ! -z $(lsblk -d -n -o mountpoint 2>/dev/null "$BRdevice") ]; then
           echo -e "[${YELLOW}WARNING${NORM}] $BRdevice is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null $BRdevice), refusing to use it"
           exit
         fi
@@ -1141,15 +1139,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ -n "$BRsubvols" ]; then
-      BRsubvolused=(`for i in ${BRsubvols[@]}; do echo $i; done | sort | uniq -d`)
+      BRsubvolused=(`for i in "${BRsubvols[@]}"; do echo "$i"; done | sort | uniq -d`)
       if [ -n "$BRsubvolused" ]; then
-        for a in ${BRsubvolused[@]}; do
+        for a in "${BRsubvolused[@]}"; do
           echo -e "[${YELLOW}WARNING${NORM}] Duplicate subvolume: $a"
           exit
         done
       fi
 
-      for k in ${BRsubvols[@]}; do
+      for k in "${BRsubvols[@]}"; do
         if [[ ! "$k" == /* ]]; then
           echo -e "[${RED}ERROR${NORM}] Wrong subvolume syntax: $k"
           exit
@@ -1244,7 +1242,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Mount the target root partition
     update_wrp "Mounting $BRroot"
     echo -ne "${WRK}Mounting $BRroot"
-    OUTPUT=$(mount -o $BR_MOUNT_OPTS $BRroot /mnt/target 2>&1) && ok_status || error_status
+    OUTPUT=$(mount -o $BR_MOUNT_OPTS "$BRroot" /mnt/target 2>&1) && ok_status || error_status
     # Store it's size
     BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
     if [ -n "$BRSTOP" ]; then
@@ -1261,7 +1259,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         echo -ne "${WRK}Unmounting $BRroot"
         sleep 1
         update_wrp "Unmounting $BRroot"
-        OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
+        OUTPUT=$(umount "$BRroot" 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
         exit
       else
         # Just warn if -x is given
@@ -1273,26 +1271,26 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
       update_wrp "Creating $BRrootsubvolname"
       echo -ne "${WRK}Creating $BRrootsubvolname"
-      OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
+      OUTPUT=$(btrfs subvolume create /mnt/target/"$BRrootsubvolname" 2>&1 1>/dev/null) && ok_status || error_status
 
       # Create other btrfs subvolumes if specified by the user
       if [ -n "$BRsubvols" ]; then
         while read ln; do
           update_wrp "Creating $BRrootsubvolname$ln"
           echo -ne "${WRK}Creating $BRrootsubvolname$ln"
-          OUTPUT=$(btrfs subvolume create /mnt/target/$BRrootsubvolname$ln 2>&1 1>/dev/null) && ok_status || error_status
+          OUTPUT=$(btrfs subvolume create /mnt/target/"$BRrootsubvolname$ln" 2>&1 1>/dev/null) && ok_status || error_status
         done< <(for a in "${BRsubvols[@]}"; do echo "$a"; done | sort)
       fi
 
      # Unmount the target root partition
       update_wrp "Unmounting $BRroot"
       echo -ne "${WRK}Unmounting $BRroot"
-      OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
+      OUTPUT=$(umount "$BRroot" 2>&1) && ok_status || error_status
 
      # Mount the root btrfs subvolume
       update_wrp "Mounting $BRrootsubvolname"
       echo -ne "${WRK}Mounting $BRrootsubvolname"
-      OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol=$BRrootsubvolname $BRroot /mnt/target 2>&1) && ok_status || error_status
+      OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol="$BRrootsubvolname" "$BRroot" /mnt/target 2>&1) && ok_status || error_status
       if [ -n "$BRSTOP" ]; then
         echo -e "\n[${RED}ERROR${NORM}] Error while making subvolumes" >&2
         unset BRSTOP
@@ -1303,28 +1301,28 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Mount any other target partition if given by the user
     if [ -n "$BRcustomparts" ]; then
       # Sort target partitions array by their mountpoint so we can mount in order
-      BRsorted=(`for i in ${BRcustomparts[@]}; do echo $i; done | sort -k 1,1 -t =`)
+      BRsorted=(`for i in "${BRcustomparts[@]}"; do echo "$i"; done | sort -k 1,1 -t =`)
       unset custom_ok
       # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter
-      for i in ${BRsorted[@]}; do
-        BRdevice=$(echo $i | cut -f2 -d"=")
-        BRmpoint=$(echo $i | cut -f1 -d"=")
+      for i in "${BRsorted[@]}"; do
+        BRdevice=$(echo "$i" | cut -f2 -d"=")
+        BRmpoint=$(echo "$i" | cut -f1 -d"=")
         # Replace any // with space
         BRmpoint="${BRmpoint///\//\ }"
         echo -ne "${WRK}Mounting $BRdevice"
         # Create the corresponding mounting directory
-        mkdir -p /mnt/target$BRmpoint
+        mkdir -p /mnt/target"$BRmpoint"
         # Mount it
         update_wrp "Mounting $BRdevice"
-        OUTPUT=$(mount $BRdevice /mnt/target$BRmpoint 2>&1) && ok_status || error_status
+        OUTPUT=$(mount "$BRdevice" /mnt/target"$BRmpoint" 2>&1) && ok_status || error_status
         # Store sizes
-        BRsizes+=(`lsblk -n -b -o size "$BRdevice" 2>/dev/null`=/mnt/target$BRmpoint)
+        BRsizes+=(`lsblk -n -b -o size "$BRdevice" 2>/dev/null`=/mnt/target"$BRmpoint")
         if [ -n "$custom_ok" ]; then
           unset custom_ok
           # Store successfully mounted partitions so we can unmount them later
-          BRumountparts+=($BRmpoint=$BRdevice)
+          BRumountparts+=("$BRmpoint"="$BRdevice")
           # Check if partitions are not empty and warn
-          if [ "$(ls -A /mnt/target$BRmpoint | grep -vw "lost+found")" ]; then
+          if [ "$(ls -A /mnt/target"$BRmpoint" | grep -vw "lost+found")" ]; then
             echo -e "[${CYAN}INFO${NORM}] $BRmpoint partition not empty"
           fi
         fi
@@ -1336,7 +1334,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
     # Find the bigger partition to save the downloaded backup archive
-    BRmaxsize=$(for i in ${BRsizes[@]}; do echo $i; done | sort -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")
+    BRmaxsize=$(for i in "${BRsizes[@]}"; do echo "$i"; done | sort -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")
   }
 
   # Show a nice summary
@@ -1345,15 +1343,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     BRpartitions="Partition|Mountpoint|Filesystem|Size|Options\n$BRroot $BRmap|/|$BRfsystem|$BRfsize|$BR_MOUNT_OPTS"
     if [ -n "$BRcustomparts" ]; then
       # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter
-      for i in ${BRsorted[@]}; do
-        BRdevice=$(echo $i | cut -f2 -d"=")
-        BRmpoint=$(echo $i | cut -f1 -d"=")
+      for i in "${BRsorted[@]}"; do
+        BRdevice=$(echo "$i" | cut -f2 -d"=")
+        BRmpoint=$(echo "$i" | cut -f1 -d"=")
         # Replace any // with space
         BRmpoint="${BRmpoint///\//\ }"
         # Find filesystem type
-        BRcustomfs=$(blkid -s TYPE -o value $BRdevice)
+        BRcustomfs=$(blkid -s TYPE -o value "$BRdevice")
         # Find partition size
-        BRcustomsize=$(lsblk -d -n -o size 2>/dev/null $BRdevice | sed -e 's/ *//') # Remove leading spaces
+        BRcustomsize=$(lsblk -d -n -o size 2>/dev/null "$BRdevice" | sed -e 's/ *//') # Remove leading spaces
         BRpartitions="$BRpartitions\n$BRdevice|$BRmpoint|$BRcustomfs|$BRcustomsize"
       done
     fi
@@ -2099,8 +2097,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         sleep 1
         update_wrp "Unmounting $ln"
         echo -ne "${WRK}Unmounting $ln"
-        OUTPUT=$(umount $ln 2>&1) && ok_status || error_status
-      done < <(for BRdevice in ${BRumountparts[@]}; do echo $BRdevice | cut -f2 -d"="; done | tac)
+        OUTPUT=$(umount "$ln" 2>&1) && ok_status || error_status
+      done < <(for BRdevice in "${BRumountparts[@]}"; do echo "$BRdevice" | cut -f2 -d"="; done | tac)
     fi
 
     if [ -z "$post_umt" ]; then
@@ -2108,11 +2106,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
         update_wrp "Unmounting $BRrootsubvolname"
         echo -ne "${WRK}Unmounting $BRrootsubvolname"
-        OUTPUT=$(umount $BRroot 2>&1) && ok_status || error_status
+        OUTPUT=$(umount "$BRroot" 2>&1) && ok_status || error_status
         sleep 1
         update_wrp "Mounting $BRroot"
         echo -ne "${WRK}Mounting $BRroot"
-        OUTPUT=$(mount $BRroot /mnt/target 2>&1) && ok_status || error_status
+        OUTPUT=$(mount "$BRroot" /mnt/target 2>&1) && ok_status || error_status
 
         # Delete the created subvolumes
         if [ -n "$BRsubvols" ]; then
@@ -2120,12 +2118,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
             sleep 1
             update_wrp "Deleting $BRrootsubvolname$ln"
             echo -ne "${WRK}Deleting $BRrootsubvolname$ln"
-            OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname$ln 2>&1 1>/dev/null) && ok_status || error_status
-          done < <(for i in ${BRsubvols[@]}; do echo $i; done | sort -r)
+            OUTPUT=$(btrfs subvolume delete /mnt/target/"$BRrootsubvolname$ln" 2>&1 1>/dev/null) && ok_status || error_status
+          done < <(for i in "${BRsubvols[@]}"; do echo "$i"; done | sort -r)
         fi
         update_wrp "Deleting $BRrootsubvolname"
         echo -ne "${WRK}Deleting $BRrootsubvolname"
-        OUTPUT=$(btrfs subvolume delete /mnt/target/$BRrootsubvolname 2>&1 1>/dev/null) && ok_status || error_status
+        OUTPUT=$(btrfs subvolume delete /mnt/target/"$BRrootsubvolname" 2>&1 1>/dev/null) && ok_status || error_status
       fi
 
       # If no error occured above and -x is not given clean the target root partition from created mountpoints
@@ -2139,7 +2137,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     sleep 1
     update_wrp "Unmounting $BRroot"
     echo -ne "${WRK}Unmounting $BRroot"
-    OUTPUT=$(umount $BRroot 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
+    OUTPUT=$(umount "$BRroot" 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
 
     if [ -n "$BRwrap" ] && [ -n "$post_umt" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
     clean_tmp_files
@@ -2199,8 +2197,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # A nice working info
   WRK="[${CYAN}WORKING${NORM}] "
 
-  IFS=$'\n'
-
   # Add ESP, /home and /boot partitions in custom partitions array
   if [ -n "$BResp" ] && [ -n "$BRespmpoint" ]; then
     BRcustomparts+=("$BRespmpoint"="$BResp")
@@ -2257,12 +2253,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ -n "$BRsource" ]; then
-      IFS=$DEFAULTIFS
       if [ -n "$BRhide" ]; then echo -en "${HIDE}"; fi
       update_wrp "Please wait while checking and reading archive"
       # Read the backup archive and give list of files in /tmp/filelist also
       read_archive | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
-      IFS=$'\n'
       check_archive
     fi
   fi
@@ -2311,7 +2305,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   if [ -n "$BRhide" ]; then echo -en "${HIDE}"; fi
 
   echo -e "\n${BOLD}[PROCESSING]${NORM}"
-  IFS=$DEFAULTIFS
 
   # Restore mode
   if [ "$BRmode" = "1" ]; then

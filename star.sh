@@ -1241,7 +1241,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Store it's size
     BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
     if [ -n "$BRSTOP" ]; then
-      echo -e "\n[${RED}ERROR${NORM}] Error while mounting partitions" >&2
+      echo -e "[${RED}ERROR${NORM}] Error while mounting partitions" >&2
       rm -r /mnt/target
       exit
     fi
@@ -1287,7 +1287,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo -ne "${WRK}Mounting $BRrootsubvolname"
       OUTPUT=$(mount -t btrfs -o $BR_MOUNT_OPTS,subvol="$BRrootsubvolname" "$BRroot" /mnt/target 2>&1) && ok_status || error_status
       if [ -n "$BRSTOP" ]; then
-        echo -e "\n[${RED}ERROR${NORM}] Error while making subvolumes" >&2
+        echo -e "[${RED}ERROR${NORM}] Error while making subvolumes" >&2
         unset BRSTOP
         clean_unmount
       fi
@@ -1323,7 +1323,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         fi
       done
       if [ -n "$BRSTOP" ]; then
-        echo -e "\n[${RED}ERROR${NORM}] Error while mounting partitions" >&2
+        echo -e "[${RED}ERROR${NORM}] Error while mounting partitions" >&2
         unset BRSTOP
         clean_unmount
       fi

@@ -59,9 +59,6 @@ update_wrp() {
 HIDE='\033[?25l'
 SHOW='\033[?25h'
 
-# Store default IFS
-DEFAULTIFS=$IFS
-
 # Show version
 echo -e "\n$BR_VERSION"
 
@@ -581,13 +578,11 @@ if [ "$BRmode" = "0" ]; then
   for i in ${BR_USER_OPTS[@]}; do BR_TAROPTS+=("${i///\//\ }"); done
 
   # Check destination for backup directories with older date, strictly check directory name format
-  IFS=$'\n'
-  for i in $(find $(dirname "$BRFOLDER") -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]"); do
-    if [ "${i//[^0-9]/}" -lt "${BRFOLDER//[^0-9]/}" ]; then # Compare the date numbers
-      BRoldbackups+=("$i")
+  while read dir; do
+    if [ "${dir//[^0-9]/}" -lt "${BRFOLDER//[^0-9]/}" ]; then # Compare the date numbers
+      BRoldbackups+=("$dir")
     fi
-  done
-  IFS=$DEFAULTIFS
+  done < <(find "$(dirname "$BRFOLDER")" -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
 
   # Check if backup file already exists and prompt the user to overwrite. If -q is given overwrite automatically
   if [ -z "$BRquiet" ]; then

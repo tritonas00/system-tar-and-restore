@@ -983,7 +983,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Set tar/rsync user options, replace any // with space
   set_user_options() {
-    for i in "${BR_USER_OPTS[@]}"; do TR_OPTS+=("${i///\//\ }"); done
+    for i in ${BR_USER_OPTS[@]}; do TR_OPTS+=("${i///\//\ }"); done
   }
 
   # Calculate files to create percentage and progress bar in Transfer mode

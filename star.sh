@@ -693,23 +693,19 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Show the exit screen
   exit_screen() {
     if [ -f /tmp/s_error ]; then
-      echo -e "\n${RED}Error installing $BRbootloader. Check /tmp/restore.log for details.\n\n${CYAN}Press ENTER to unmount all remaining (engaged) devices.${NORM}"
-    elif [ -n "$BRbootloader" ]; then
-      echo -e "\n${CYAN}Completed. Log: /tmp/restore.log\n\nPress ENTER to unmount all remaining (engaged) devices, then reboot your system.${NORM}"
-    else
-      echo -e "\n${CYAN}Completed. Log: /tmp/restore.log\n\n${YELLOW}You didn't choose a bootloader, so this is the right time to install and\nupdate one. To do so:"
-      echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
-      echo -e "\n==>Then chroot into the target system: chroot /mnt/target\n\n==>Install and update a bootloader\n\n==>When done, leave chroot: exit"
-      echo -e "\n==>Finally, return to this window and press ENTER to unmount\n   all remaining (engaged) devices.${NORM}"
-    fi
-  }
-
-  # Show alternative exit screen if -q is given
-  exit_screen_quiet() {
-    if [ -f /tmp/s_error ]; then
-      echo -e "\n${RED}Error installing $BRbootloader.\nCheck /tmp/restore.log for details.${NORM}"
+      echo -e "\n${RED}Error installing $BRbootloader. Check /tmp/restore.log for details.${NORM}"
     else
       echo -e "\n${CYAN}Completed. Log: /tmp/restore.log${NORM}"
+      if [ -z "$BRbootloader" ] && [ -z "$BRquiet" ]; then
+        echo -e "\n${YELLOW}You didn't choose a bootloader, so this is the right time to install and\nupdate one. To do so:"
+        echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
+        echo -e "\n==>Then chroot into the target system: chroot /mnt/target"
+        echo -e "\n==>Install and update a bootloader"
+        echo -e "\n==>When done exit chroot, return here and press ENTER"
+      fi
+    fi
+    if [ -z "$BRquiet" ]; then
+      echo -e "\n${CYAN}Press ENTER to unmount all remaining (engaged) devices.${NORM}"
     fi
   }
 
@@ -2368,11 +2364,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
  ( prepare_chroot; build_initramfs; generate_locales; install_bootloader) 1> >(tee -a /tmp/restore.log ) 2>&1
 
   # Show the exit screen
-  if [ -z "$BRquiet" ]; then
-    exit_screen; read -s
-  else
-    exit_screen_quiet
-  fi
+  exit_screen
+  if [ -z "$BRquiet" ]; then read -s; fi
+
   sleep 1
   post_umt="y"
   clean_unmount

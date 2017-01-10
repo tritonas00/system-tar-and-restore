@@ -706,6 +706,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
     if [ -z "$BRquiet" ]; then
       echo -e "\n${CYAN}Press ENTER to unmount all remaining (engaged) devices.${NORM}"
+      read -s
     fi
   }
 
@@ -2363,10 +2364,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
  # Run post processing functions, update the log and pray :p
  ( prepare_chroot; build_initramfs; generate_locales; install_bootloader) 1> >(tee -a /tmp/restore.log ) 2>&1
 
-  # Show the exit screen
   exit_screen
-  if [ -z "$BRquiet" ]; then read -s; fi
-
   sleep 1
   post_umt="y"
   clean_unmount

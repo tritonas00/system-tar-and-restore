@@ -772,7 +772,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRreadopts="tf"
       BR_MAINOPTS="xvpf"
     else
-       BRfiletype="wrong"
+      BRfiletype="wrong"
     fi
   }
 

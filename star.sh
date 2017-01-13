@@ -1181,13 +1181,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
 
-    if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders"
-      exit
-    elif [ -n "$BRgrub" ] && [ -n "$BRefistub" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders"
-      exit
-    elif [ -n "$BRgrub" ] && [ -n "$BRbootctl" ]; then
+    if [ -n "$BRsyslinux" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -n "$BRgrub" ]; then
       echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders"
       exit
     elif [ -n "$BRefistub" ] && [ -n "$BRbootctl" ]; then

@@ -200,9 +200,10 @@ export MAIN_DIALOG='
                 </entry>
                 <notebook labels="Backup|Restore/Transfer|Log|About" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">
-                                <text height-request="25" use-markup="true"><label>"<b>Make a backup archive of this system</b>"</label></text>
-                                <text xalign="0" wrap="false" use-markup="true" label="-<i>Make sure destination has enough space</i>"></text>
-                                <text xalign="0" wrap="false" use-markup="true" label="-<i>If you plan to restore in lvm/mdadm/luks, configure this system accordingly</i>"></text>
+                                <text height-request="35" use-markup="true" tooltip-text="==>Make sure destination has enough space
+
+==>If you plan to restore in lvm/mdadm/luks,
+       configure this system accordingly"><label>"<b>Make a backup archive of this system</b>"</label></text>
                                 <hseparator></hseparator>
                                 <hbox>
                                         <text width-request="135" label="Filename:"></text>
@@ -326,9 +327,11 @@ lost+found">
                         </vbox>
 
                         <vbox scrollable="true" shadow-type="0">
-                                <text height-request="25" wrap="false" use-markup="true"><label>"<b>Restore a backup archive or transfer this system in user defined partitions</b>"</label></text>
-                                <text xalign="0" wrap="false" use-markup="true" label="-<i>In the first case, you should use a LiveCD of the backed up distro</i>"></text>
-                                <text xalign="0" wrap="false" use-markup="true" label="-<i>If you plan to transfer in lvm/mdadm/luks, configure this system accordingly</i>"></text>
+                                <text height-request="35" wrap="false" use-markup="true" tooltip-text="==>In the first case, you should use a LiveCD of the 
+       backed up distro
+
+==>If you plan to transfer in lvm/mdadm/luks,
+       configure this system accordingly"><label>"<b>Restore a backup archive or transfer this system in user defined partitions</b>"</label></text>
                                 <hseparator></hseparator>
                                 <vbox>
                                         <frame Target partitions:>

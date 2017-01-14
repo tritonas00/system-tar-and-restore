@@ -180,7 +180,7 @@ export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
 export MAIN_DIALOG='
 
-<window icon-name="applications-system" height-request="640" width-request="540">
+<window icon-name="applications-system" height-request="640" width-request="515">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_upt</input>
@@ -200,10 +200,10 @@ export MAIN_DIALOG='
                 </entry>
                 <notebook labels="Backup|Restore/Transfer|Log|About" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">
-                                <text height-request="35" use-markup="true" tooltip-text="==>Make sure destination has enough space
+                                <text height-request="35" tooltip-text="==>Make sure destination has enough space
 
 ==>If you plan to restore in lvm/mdadm/luks,
-       configure this system accordingly"><label>"<b>Make a backup archive of this system</b>"</label></text>
+       configure this system accordingly"><label>"Make a backup archive of this system"</label></text>
                                 <hseparator></hseparator>
                                 <hbox>
                                         <text width-request="135" label="Filename:"></text>
@@ -327,11 +327,11 @@ lost+found">
                         </vbox>
 
                         <vbox scrollable="true" shadow-type="0">
-                                <text height-request="35" wrap="false" use-markup="true" tooltip-text="==>In the first case, you should use a LiveCD of the
+                                <text height-request="35" wrap="false" tooltip-text="==>In the first case, you should use a LiveCD of the
        backed up distro
 
 ==>If you plan to transfer in lvm/mdadm/luks,
-       configure this system accordingly"><label>"<b>Restore a backup archive or transfer this system in user defined partitions</b>"</label></text>
+       configure this system accordingly"><label>"Restore a backup archive or transfer this system in user defined partitions"</label></text>
                                 <hseparator></hseparator>
                                 <vbox>
                                         <frame Target partitions:>

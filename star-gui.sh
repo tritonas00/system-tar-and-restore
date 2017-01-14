@@ -180,7 +180,7 @@ export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
 export MAIN_DIALOG='
 
-<window icon-name="applications-system" height-request="640" width-request="560">
+<window icon-name="applications-system" height-request="640" width-request="540">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_upt</input>
@@ -202,7 +202,7 @@ export MAIN_DIALOG='
                         <vbox scrollable="true" shadow-type="0">
                                 <text height-request="25" use-markup="true"><label>"<b>Make a backup archive of this system</b>"</label></text>
                                 <text xalign="0" wrap="false" use-markup="true" label="-<i>Make sure destination has enough space</i>"></text>
-                                <text xalign="0" wrap="false" use-markup="true" label="-<i>If you plan to restore in lvm/mdadm/luks, this system must be configured accordingly</i>"></text>
+                                <text xalign="0" wrap="false" use-markup="true" label="-<i>If you plan to restore in lvm/mdadm/luks, configure this system accordingly</i>"></text>
                                 <hseparator></hseparator>
                                 <hbox>
                                         <text width-request="135" label="Filename:"></text>
@@ -328,7 +328,7 @@ lost+found">
                         <vbox scrollable="true" shadow-type="0">
                                 <text height-request="25" wrap="false" use-markup="true"><label>"<b>Restore a backup archive or transfer this system in user defined partitions</b>"</label></text>
                                 <text xalign="0" wrap="false" use-markup="true" label="-<i>In the first case, you should use a LiveCD of the backed up distro</i>"></text>
-                                <text xalign="0" wrap="false" use-markup="true" label="-<i>If you plan to transfer in lvm/mdadm/luks, this system must be configured accordingly</i>"></text>
+                                <text xalign="0" wrap="false" use-markup="true" label="-<i>If you plan to transfer in lvm/mdadm/luks, configure this system accordingly</i>"></text>
                                 <hseparator></hseparator>
                                 <vbox>
                                         <frame Target partitions:>

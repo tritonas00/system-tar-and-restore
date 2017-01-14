@@ -327,7 +327,7 @@ lost+found">
                         </vbox>
 
                         <vbox scrollable="true" shadow-type="0">
-                                <text height-request="35" wrap="false" use-markup="true" tooltip-text="==>In the first case, you should use a LiveCD of the 
+                                <text height-request="35" wrap="false" use-markup="true" tooltip-text="==>In the first case, you should use a LiveCD of the
        backed up distro
 
 ==>If you plan to transfer in lvm/mdadm/luks,

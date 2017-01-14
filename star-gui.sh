@@ -180,7 +180,7 @@ export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
 
 export MAIN_DIALOG='
 
-<window icon-name="applications-system" height-request="640" width-request="515">
+<window icon-name="applications-system" height-request="640" width-request="560">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_upt</input>
@@ -200,36 +200,10 @@ export MAIN_DIALOG='
                 </entry>
                 <notebook labels="Backup|Restore/Transfer|Log|About" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">
-                                <text height-request="30" use-markup="true" tooltip-text="==>Make sure you have enough free space.
-
-==>If you plan to restore in lvm/mdadm/dm-crypt, make
-       sure that this system is capable to boot from those
-       configurations.
-
-==>The following bootloaders are supported:
-       Grub Syslinux EFISTUB/efibootmgr Systemd/bootctl
-
-GRUB PACKAGES:
-**Arch/Gentoo:
-    grub
-**Fedora/Suse:
-    grub2
-**Debian:
-    grub-pc grub-efi
-**Mandriva:
-    grub2 grub2-efi
-
-SYSLINUX PACKAGES:
-**Arch/Suse/Gentoo:
-    syslinux
-**Debian/Mandriva:
-    syslinux extlinux
-**Fedora:
-    syslinux syslinux-extlinux
-
-OTHER PACKAGES:
-efibootmgr dosfstools systemd"><label>"<span color='"'brown'"'>Make a backup archive of this system.</span>"</label></text>
-
+                                <text height-request="25" use-markup="true"><label>"<b>Make a backup archive of this system</b>"</label></text>
+                                <text xalign="0" wrap="false" use-markup="true" label="-<i>Make sure destination has enough space</i>"></text>
+                                <text xalign="0" wrap="false" use-markup="true" label="-<i>If you plan to restore in lvm/mdadm/luks, this system must be configured accordingly</i>"></text>
+                                <hseparator></hseparator>
                                 <hbox>
                                         <text width-request="135" label="Filename:"></text>
                                         <entry text="'"$BRNAME"'" tooltip-text="Set backup archive name">
@@ -352,20 +326,10 @@ lost+found">
                         </vbox>
 
                         <vbox scrollable="true" shadow-type="0">
-                                <text wrap="false" height-request="30" use-markup="true" tooltip-text="In the first case, you should run it from a LiveCD of the target (backed up) distro.
-
-==>Make sure you have created one target root (/) partition.
-       Optionally you can create or use any other partition
-       (/boot /home /var etc).
-
-==>Make sure that target LVM volume groups are activated,
-       target RAID arrays are properly assembled and target
-       encrypted partitions are opened.
-
-==>If you plan to transfer in lvm/mdadm/dm-crypt, make
-       sure that this system is capable to boot from those
-       configurations."><label>"<span color='"'brown'"'>Restore a backup archive or transfer this system in user defined partitions.</span>"</label></text>
-
+                                <text height-request="25" wrap="false" use-markup="true"><label>"<b>Restore a backup archive or transfer this system in user defined partitions</b>"</label></text>
+                                <text xalign="0" wrap="false" use-markup="true" label="-<i>In the first case, you should use a LiveCD of the backed up distro</i>"></text>
+                                <text xalign="0" wrap="false" use-markup="true" label="-<i>If you plan to transfer in lvm/mdadm/luks, this system must be configured accordingly</i>"></text>
+                                <hseparator></hseparator>
                                 <vbox>
                                         <frame Target partitions:>
                                                 <hbox>

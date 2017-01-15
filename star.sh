@@ -1241,7 +1241,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
       if [ -z "$BRdontckroot" ]; then
         echo -e "[${RED}ERROR${NORM}] Root partition not empty, refusing to use it" >&2
-        echo -e "[${CYAN}INFO${NORM}] Root partition must be formatted and cleaned" >&2
         echo -ne "${WRK}Unmounting $BRroot"
         sleep 1
         update_wrp "Unmounting $BRroot"

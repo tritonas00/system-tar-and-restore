@@ -2029,13 +2029,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       clean_unmount
     else
       target_arch=$(grep -F 'target_architecture.' /tmp/filelist | cut -f2 -d".")
-      if [ -z "$target_arch" ]; then
-        target_arch="unknown"
-      fi
       if [ ! "$(uname -m)" = "$target_arch" ]; then
         echo -e "[${RED}ERROR${NORM}] Running and target system architecture mismatch or invalid archive" >&2
-        echo -e "[${CYAN}INFO${NORM}] Target  system: $target_arch" >&2
-        echo -e "[${CYAN}INFO${NORM}] Running system: $(uname -m)" >&2
         clean_unmount
       fi
     fi

@@ -701,7 +701,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
         echo -e "\n==>Then chroot into the target system: chroot /mnt/target"
         echo -e "\n==>Install and update a bootloader"
-        echo -e "\n==>When done exit chroot, return here and press ENTER"
+        echo -e "\n==>When done exit chroot, return here and press ENTER${NORM}"
       fi
     fi
     if [ -z "$BRquiet" ]; then

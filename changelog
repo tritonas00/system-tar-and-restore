@@ -1,5 +1,12 @@
 Changelog:
 
+6.2
+  added exclude /home option in transfer mode
+  --acls and --xattrs are now default tar options
+  debug checkbox now updates the title bar
+  gui improvements/cleanups
+  code cleanups in star.sh
+
 6.1
   show progress info in window title bar
   separate restore/transfer mode in tabs

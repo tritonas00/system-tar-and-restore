@@ -37,13 +37,9 @@ pgrs_bar() {
       echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
     elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
       lastper=$per
-      # Give progress info to gui wrapper if -w is given
-      if [ -n "$BRwrap" ]; then
-        echo "$mode_job: $per% ($z / $total Files)" > /tmp/wr_proc
-      else
-        # The main progress bar
-        echo -ne "\r$mode_job: [${pstr:0:$(($z*24/$total))}${dstr:0:24-$((z*24/$total))}] $per%"
-      fi
+      update_wrp "$mode_job: $per% ($z / $total Files)"
+      # The main progress bar
+      echo -ne "\r$mode_job: [${pstr:0:$(($z*24/$total))}${dstr:0:24-$((z*24/$total))}] $per%"
     fi
   done
 }

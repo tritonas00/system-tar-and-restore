@@ -50,14 +50,6 @@ fi
 # Echo all functions to a temporary file so we can source it inside gtkdialog
 # This ensures compatibility with Ubuntu 16.04 and variants
 echo '
-set_pass_sens() {
-  if [ "$BRencmethod" = "none" ]; then echo '\''<sensitive>false</sensitive>'\''; fi
-}
-
-set_multi_sens() {
-  if [ "$BRcompression" = "none" ]; then echo '\''<sensitive>false</sensitive>'\''; fi
-}
-
 hide_used_parts() {
   grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"
 }
@@ -264,7 +256,7 @@ export MAIN_DIALOG='
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Passphrase:"></text>
                                         <entry text="'"$BRencpass"'" visibility="false" tooltip-text="Set passphrase for encryption">
-                                                '"$(bash -c "source /tmp/wr_functions; set_pass_sens")"'
+                                                '"$(if [ "$BRencmethod" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                 <variable>BRencpass</variable>
                                         </entry>
                                 </hbox>
@@ -299,7 +291,7 @@ lost+found">
                                 <vbox>
                                         <frame Misc options:>
                                                 <checkbox label="Enable multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
-                                                        '"$(bash -c "source /tmp/wr_functions; set_multi_sens")"'
+                                                        '"$(if [ "$BRcompression" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                         <variable>ENTRY2</variable>
                                                         <default>'"$ENTRY2"'</default>
                                                 </checkbox>

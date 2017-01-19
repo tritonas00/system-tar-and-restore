@@ -28,12 +28,12 @@ if [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
 fi
 
-if [ -n "$BRNAME" ]; then export BRNAME; else export BRNAME="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"; fi
-if [ -n "$BRFOLDER" ]; then export BRFOLDER; else export BRFOLDER="/"; fi
-if [ -n "$BR_USER_OPTS" ]; then export BR_USER_OPTS; fi
-if [ -n "$BRcompression" ]; then export BRcompression; else export BRcompression="gzip"; fi
-if [ -n "$BRencmethod" ]; then export BRencmethod; else export BRencmethod="none"; fi
-if [ -n "$BRencpass" ]; then export BRencpass; fi
+if [ -n "$BRNAME" ]; then export BR_NAME="$BRNAME"; else export BR_NAME="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"; fi
+if [ -n "$BRFOLDER" ]; then export BR_FOLDER="$BRFOLDER"; else export BR_FOLDER="/"; fi
+if [ -n "$BR_USER_OPTS" ]; then export BR_B_OPTS="$BR_USER_OPTS"; fi
+if [ -n "$BRcompression" ]; then export BR_COMP="$BRcompression"; else export BR_COMP="gzip"; fi
+if [ -n "$BRencmethod" ]; then export BR_ENC="$BRencmethod"; else export BR_ENC="none"; fi
+if [ -n "$BRencpass" ]; then export BR_PASS="$BRencpass"; fi
 if [ -n "$BRmcore" ]; then export ENTRY2="true"; else export ENTRY2="false"; fi
 if [ -n "$BRclean" ]; then export ENTRY4="true"; else export ENTRY4="false"; fi
 if [ -n "$BRoverride" ]; then export ENTRY5="true"; else export ENTRY5="false"; fi
@@ -64,11 +64,10 @@ set_args() {
   fi
 
   if [ "$BR_TAB" = "0" ]; then
-    if [ -n "$BRFOLDER" ]; then SCR_ARGS+=(-d "$BRFOLDER"); fi
-    if [ -n "$BRcompression" ]; then SCR_ARGS+=(-c "$BRcompression"); fi
+    SCR_ARGS+=(-d "$BR_FOLDER" -c "$BR_COMP")
 
-    if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
-      SCR_ARGS+=(-n "$BRNAME")
+    if [ -n "$BR_NAME" ] && [[ ! "$BR_NAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
+      SCR_ARGS+=(-n "$BR_NAME")
     fi
 
     if [ "$ENTRY1" = "Only hidden files and folders" ]; then
@@ -77,24 +76,18 @@ set_args() {
       SCR_ARGS+=(-H)
     fi
 
-    if [ ! "$BRencmethod" = "none" ]; then
-      SCR_ARGS+=(-E "$BRencmethod")
-      if [ -n "$BRencpass" ]; then SCR_ARGS+=(-P "$BRencpass"); fi
-    else
-      unset BRencpass
-    fi
+    if [ ! "$BR_ENC" = "none" ]; then SCR_ARGS+=(-E "$BR_ENC" -P "$BR_PASS"); fi
 
-    for i in ${BR_B_EXC[@]}; do BR_USER_OPTS="$BR_USER_OPTS --exclude=$i"; done # Add excludes to main options array
-    if [ -n "$BR_USER_OPTS" ]; then SCR_ARGS+=(-u "$BR_USER_OPTS"); fi
+    for i in ${BR_B_EXC[@]}; do BR_B_OPTS="$BR_B_OPTS --exclude=$i"; done
+    if [ -n "$BR_B_OPTS" ]; then SCR_ARGS+=(-u "$BR_B_OPTS"); fi
 
-    if [ "$ENTRY2" = "true" ] && [ ! "$BRcompression" = "none" ]; then SCR_ARGS+=(-M); fi
+    if [ "$ENTRY2" = "true" ] && [ ! "$BR_COMP" = "none" ]; then SCR_ARGS+=(-M); fi
     if [ "$ENTRY3" = "true" ]; then SCR_ARGS+=(-g); fi
     if [ "$ENTRY4" = "true" ]; then SCR_ARGS+=(-a); fi
     if [ "$ENTRY5" = "true" ]; then SCR_ARGS+=(-o); fi
     if [ "$ENTRY6" = "true" ]; then SCR_ARGS+=(-D); fi
 
   elif [ "$BR_TAB" = "1" ]; then
-    unset BRencmethod BRencpass BR_USER_OPTS # Dont use exported vars from backup.conf
     SCR_ARGS+=(-r ${BR_ROOT%% *})
 
     if [ ! "$BR_BOOT" = "" ]; then SCR_ARGS+=(-b ${BR_BOOT%% *}); fi
@@ -199,19 +192,19 @@ export MAIN_DIALOG='
                                 <hseparator></hseparator>
                                 <hbox>
                                         <text width-request="135" label="Filename:"></text>
-                                        <entry text="'"$BRNAME"'" tooltip-text="Set backup archive name">
-                                                <variable>BRNAME</variable>
+                                        <entry text="'"$BR_NAME"'" tooltip-text="Set backup archive name">
+                                                <variable>BR_NAME</variable>
                                         </entry>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135" label="Destination:"></text>
-                                        <entry text="'"$BRFOLDER"'" fs-action="folder" fs-title="Select a directory" tooltip-text="Choose where to save the backup archive">
-                                                <variable>BRFOLDER</variable>
+                                        <entry text="'"$BR_FOLDER"'" fs-action="folder" fs-title="Select a directory" tooltip-text="Choose where to save the backup archive">
+                                                <variable>BR_FOLDER</variable>
                                         </entry>
                                         <button tooltip-text="Select directory">
                                                 <input file stock="gtk-open"></input>
-                                                <action>fileselect:BRFOLDER</action>
+                                                <action>fileselect:BR_FOLDER</action>
                                         </button>
                                 </hbox>
 
@@ -229,42 +222,42 @@ export MAIN_DIALOG='
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Compression:"></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
-	                                        <variable>BRcompression</variable>
-                                                <default>'"$BRcompression"'</default>
+	                                        <variable>BR_COMP</variable>
+                                                <default>'"$BR_COMP"'</default>
 	                                        <item>gzip</item>
 	                                        <item>bzip2</item>
 	                                        <item>xz</item>
                                                 <item>none</item>
-                                                <action condition="command_is_true([ $BRcompression = none ] && echo true)">disable:ENTRY2</action>
-                                                <action condition="command_is_true([ ! $BRcompression = none ] && echo true)">enable:ENTRY2</action>
+                                                <action condition="command_is_true([ $BR_COMP = none ] && echo true)">disable:ENTRY2</action>
+                                                <action condition="command_is_true([ ! $BR_COMP = none ] && echo true)">enable:ENTRY2</action>
 	                                </comboboxtext>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Encryption:"></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select encryption method">
-	                                        <variable>BRencmethod</variable>
-                                                <default>'"$BRencmethod"'</default>
+	                                        <variable>BR_ENC</variable>
+                                                <default>'"$BR_ENC"'</default>
                                                 <item>none</item>
 	                                        <item>openssl</item>
 	                                        <item>gpg</item>
-                                                <action condition="command_is_true([ $BRencmethod = none ] && echo true)">disable:BRencpass</action>
-                                                <action condition="command_is_true([ ! $BRencmethod = none ] && echo true)">enable:BRencpass</action>
+                                                <action condition="command_is_true([ $BR_ENC = none ] && echo true)">disable:BR_PASS</action>
+                                                <action condition="command_is_true([ ! $BR_ENC = none ] && echo true)">enable:BR_PASS</action>
                                         </comboboxtext>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Passphrase:"></text>
-                                        <entry text="'"$BRencpass"'" visibility="false" tooltip-text="Set passphrase for encryption">
-                                                '"$(if [ "$BRencmethod" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                <variable>BRencpass</variable>
+                                        <entry text="'"$BR_PASS"'" visibility="false" tooltip-text="Set passphrase for encryption">
+                                                '"$(if [ "$BR_ENC" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                <variable>BR_PASS</variable>
                                         </entry>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
-                                        <entry text="'"$BR_USER_OPTS"'" space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
-                                                <variable>BR_USER_OPTS</variable>
+                                        <entry text="'"$BR_B_OPTS"'" space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
+                                                <variable>BR_B_OPTS</variable>
                                         </entry>
                                 </hbox>
 
@@ -291,7 +284,7 @@ lost+found">
                                 <vbox>
                                         <frame Misc options:>
                                                 <checkbox label="Enable multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
-                                                        '"$(if [ "$BRcompression" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                        '"$(if [ "$BR_COMP" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                         <variable>ENTRY2</variable>
                                                         <default>'"$ENTRY2"'</default>
                                                 </checkbox>

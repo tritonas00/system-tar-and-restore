@@ -50,10 +50,6 @@ fi
 # Echo all functions to a temporary file so we can source it inside gtkdialog
 # This ensures compatibility with Ubuntu 16.04 and variants
 echo '
-hide_used_parts() {
-  grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"
-}
-
 set_args() {
   if [ "$BR_TAB" = "0" ]; then
     SCR_ARGS=(-i 0 -jwq)
@@ -325,8 +321,11 @@ lost+found">
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
 	                                                        <variable>BR_ROOT</variable>
                                                                 <input>echo "$BR_ROOT"</input>
-	                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
-                                                                <action>refresh:BR_BOOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
+	                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"</input>
+                                                                <action>refresh:BR_BOOT</action>
+                                                                <action>refresh:BR_HOME</action>
+                                                                <action>refresh:BR_SWAP</action>
+                                                                <action>refresh:BR_ESP</action>
 			                                </comboboxtext>
                                                         <entry tooltip-text="Set comma-separated list of mount options. Default options: defaults,noatime">
                                                                 <variable>BR_MN_OPTS</variable>
@@ -340,9 +339,12 @@ lost+found">
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
 	                                                                        <variable>BR_ESP</variable>
                                                                                 <input>echo "$BR_ESP"</input>
-	                                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"</input>
                                                                                 <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
-                                                                                <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_SWAP</action>
+                                                                                <action>refresh:BR_ROOT</action>
+                                                                                <action>refresh:BR_HOME</action>
+                                                                                <action>refresh:BR_BOOT</action>
+                                                                                <action>refresh:BR_SWAP</action>
 			                                                </comboboxtext>
                                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select mountpoint">
 	                                                                        <variable>BR_ESP_MPOINT</variable>
@@ -355,9 +357,12 @@ lost+found">
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
 	                                                                        <variable>BR_BOOT</variable>
                                                                                 <input>echo "$BR_BOOT"</input>
-	                                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"</input>
                                                                                 <input>if [ -n "$BR_BOOT" ]; then echo ""; fi</input>
-                                                                                <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
+                                                                                <action>refresh:BR_ROOT</action>
+                                                                                <action>refresh:BR_HOME</action>
+                                                                                <action>refresh:BR_SWAP</action>
+                                                                                <action>refresh:BR_ESP</action>
 			                                                </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>
@@ -365,9 +370,12 @@ lost+found">
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
 	                                                                        <variable>BR_HOME</variable>
                                                                                 <input>echo "$BR_HOME"</input>
-	                                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"</input>
                                                                                 <input>if [ -n "$BR_HOME" ]; then echo ""; fi</input>
-                                                                                <action>refresh:BR_BOOT</action><action>refresh:BR_ROOT</action><action>refresh:BR_SWAP</action><action>refresh:BR_ESP</action>
+                                                                                <action>refresh:BR_BOOT</action>
+                                                                                <action>refresh:BR_ROOT</action>
+                                                                                <action>refresh:BR_SWAP</action>
+                                                                                <action>refresh:BR_ESP</action>
                                                                         </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>
@@ -375,9 +383,12 @@ lost+found">
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
 	                                                                        <variable>BR_SWAP</variable>
                                                                                 <input>echo "$BR_SWAP"</input>
-	                                                                        <input>echo "$BR_PARTS" | bash -c "source /tmp/wr_functions; hide_used_parts"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"</input>
                                                                                 <input>if [ -n "$BR_SWAP" ]; then echo ""; fi</input>
-                                                                                <action>refresh:BR_ROOT</action><action>refresh:BR_HOME</action><action>refresh:BR_BOOT</action><action>refresh:BR_ESP</action>
+                                                                                <action>refresh:BR_ROOT</action>
+                                                                                <action>refresh:BR_HOME</action>
+                                                                                <action>refresh:BR_BOOT</action>
+                                                                                <action>refresh:BR_ESP</action>
 			                                                </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>

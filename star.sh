@@ -1385,34 +1385,34 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     echo -e "\nPROCESS"
     if [ "$BRmode" = "1" ]; then
-      echo "Mode:     Restore"
+      echo "Mode:    Restore"
     elif [ "$BRmode" = "2" ]; then
-      echo "Mode:     Transfer"
+      echo "Mode:    Transfer"
      fi
     if [ -n "$BRencpass" ] && [ -n "$BRencmethod" ]; then
       enc_info="$BRencmethod encrypted"
     fi
 
     if [ "$BRmode" = "1" ]; then
-      echo "Archive:  $BRfiletype $enc_info"
+      echo "Archive: $BRfiletype $enc_info"
     elif [ "$BRmode" = "2" ] && [ -n "$BRonlyhidden" ]; then
-      echo "Home:     Only hidden files and folders"
+      echo "Home:    Only hidden files and folders"
     elif [ "$BRmode" = "2" ] && [ -n "$BRnohome" ]; then
-      echo "Home:     Exclude"
+      echo "Home:    Exclude"
     elif [ "$BRmode" = "2" ]; then
-      echo "Home:     Include"
+      echo "Home:    Include"
     fi
 
     if [ "$BRdistro" = "Unsupported" ]; then
-      echo "System:   $BRdistro (WARNING)"
+      echo "System:  $BRdistro (WARNING)"
     elif [ "$BRmode" = "1" ]; then
-      echo "System:   $BRdistro based $target_arch"
+      echo "System:  $BRdistro based $target_arch"
     elif [ "$BRmode" = "2" ]; then
-      echo "System:   $BRdistro based $(uname -m)"
+      echo "System:  $BRdistro based $(uname -m)"
     fi
 
     if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
-      echo "Info:     Skip initramfs building"
+      echo "Info:    Skip initramfs building"
     fi
 
     if [ "$BRmode" = "2" ] && [ -n "$TR_OPTS" ]; then

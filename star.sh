@@ -1161,7 +1161,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ] && [ -d "$BR_EFI_DETECT_DIR" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] In UEFI environment use 'auto' for grub location"
+      echo -e "[${YELLOW}WARNING${NORM}] In UEFI environment use 'auto' for grub device"
       exit
     fi
 
@@ -1320,7 +1320,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Show a nice summary
   show_summary() {
-    echo "TARGET PARTITION SCHEME:"
+    echo "TARGET PARTITION SCHEME"
     BRpartitions="Partition|Mountpoint|Filesystem|Size|Options\n$BRroot $BRmap|/|$BRfsystem|$BRfsize|$BR_MOUNT_OPTS"
     if [ -n "$BRcustomparts" ]; then
       # We read a sorted array with items of the form of device=mountpoint (eg /dev/sda2=/home) and we use = as delimiter
@@ -1343,7 +1343,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo -e "$BRpartitions" | column -t -s '|'
 
     if [ "$BRfsystem" = "btrfs" ] && [ -n "$BRrootsubvolname" ]; then
-      echo -e "\nSUBVOLUMES:"
+      echo -e "\nSUBVOLUMES"
       echo "$BRrootsubvolname"
       if [ -n "$BRsubvols" ]; then
         for k in "${BRsubvols[@]}"; do
@@ -1352,7 +1352,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
 
-    echo -e "\nBOOTLOADER:"
+    echo -e "\nBOOTLOADER"
     if [ -n "$BRgrub" ]; then
       if [ -d "$BR_EFI_DETECT_DIR" ]; then
         echo "$BRbootloader ($BRgrubefiarch)"
@@ -1361,17 +1361,17 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
       # If the target Grub device is a mdadm array, show all disks the array contains
       if [[ "$BRgrub" == *md* ]]; then
-        echo Locations: $(grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
+        echo Devices: $(grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
       else
-        echo "Location: $BRgrub"
+        echo "Device: $BRgrub"
       fi
     elif [ -n "$BRsyslinux" ]; then
       echo "$BRbootloader ($BRpartitiontable)"
       # If the target Syslinux device is a mdadm array, show all disks the array contains
       if [[ "$BRsyslinux" == *md* ]]; then
-        echo Locations: $(grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
+        echo Devices: $(grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
       else
-        echo "Location: $BRsyslinux"
+        echo "Device: $BRsyslinux"
       fi
     elif [ -n "$BRefistub" ] || [ -n "$BRbootctl" ]; then
       echo "$BRbootloader"
@@ -1383,7 +1383,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo "Kernel Options: $BR_KERNEL_OPTS"
     fi
 
-    echo -e "\nPROCESS:"
+    echo -e "\nPROCESS"
     if [ "$BRmode" = "1" ]; then
       echo "Mode:     Restore"
     elif [ "$BRmode" = "2" ]; then
@@ -1416,9 +1416,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ "$BRmode" = "2" ] && [ -n "$TR_OPTS" ]; then
-      echo -e "\nRSYNC OPTIONS:"
+      echo -e "\nRSYNC OPTIONS"
     elif [ "$BRmode" = "1" ] && [ -n "$TR_OPTS" ]; then
-      echo -e "\nARCHIVER OPTIONS:"
+      echo -e "\nARCHIVER OPTIONS"
     fi
     for i in "${TR_OPTS[@]}"; do echo "$i"; done
   }

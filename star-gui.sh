@@ -437,7 +437,7 @@ lost+found">
                                                                 <action condition="command_is_true([ $ENTRY7 = Systemd/bootctl ] && echo true)">disable:BR_DISK</action>
                                                                 <action condition="command_is_true([ $ENTRY7 = Grub-efi ] && echo true)">disable:BR_DISK</action>
                                                         </comboboxtext>
-                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target disk" sensitive="false">
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target device" sensitive="false">
 	                                                        <variable>BR_DISK</variable>
 	                                                        <input>echo "$BR_DISKS"</input>
 	                                                </comboboxtext>

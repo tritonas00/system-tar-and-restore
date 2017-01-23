@@ -111,7 +111,7 @@ set_args() {
       if [ -n "$BR_USERNAME" ]; then SCR_ARGS+=(-y "$BR_USERNAME"); fi
       if [ -n "$BR_PASSWORD" ]; then SCR_ARGS+=(-p "$BR_PASSWORD"); fi
       if [ -n "$BR_PASSPHRASE" ]; then SCR_ARGS+=(-P "$BR_PASSPHRASE"); fi
-      if [ -n "$BR_TR_OPTS" ]; then SCR_ARGS+=(-u "$BR_TR_OPTS"); fi
+      if [ -n "$BR_TR_OPTIONS" ]; then SCR_ARGS+=(-u "$BR_TR_OPTIONS"); fi
     elif [ "$RT_TAB" = "1" ]; then
       if [ "$ENTRY8" = "Only hidden files and folders" ]; then
         SCR_ARGS+=(-O)
@@ -469,7 +469,7 @@ lost+found">
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
                                                         <entry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
-                                                                <variable>BR_TR_OPTS</variable>
+                                                                <variable>BR_TR_OPTIONS</variable>
                                                         </entry>
                                                 </hbox>
                                                 <expander label="Server authentication">

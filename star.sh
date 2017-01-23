@@ -1345,7 +1345,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       # If the target Grub device is a raid array, show all devices the array contains
       if [[ "$BRgrub" == *md* ]]; then
         echo Devices: $(grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
-      else
+      elif [ ! -d "$BR_EFI_DIR" ]; then
         echo "Device: $BRgrub"
       fi
     elif [ -n "$BRsyslinux" ]; then

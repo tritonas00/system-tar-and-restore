@@ -184,7 +184,31 @@ export MAIN_DIALOG='
                                 <text height-request="35" tooltip-text="==>Make sure destination has enough space
 
 ==>If you plan to restore in lvm/mdadm/luks,
-       configure this system accordingly"><label>"Make a backup archive of this system"</label></text>
+       configure this system accordingly
+
+==>Supported bootloaders:
+       Grub Syslinux EFISTUB/efibootmgr Systemd/bootctl
+
+GRUB PACKAGES:
+**Arch/Gentoo:
+    grub
+**Fedora/openSUSE:
+    grub2
+**Debian/Ubuntu:
+    grub-pc grub-efi
+**Mandriva/Mageia:
+    grub2 grub2-efi
+
+SYSLINUX PACKAGES:
+**Arch/openSUSE/Gentoo:
+    syslinux
+**Debian/Ubuntu/Mandriva/Mageia:
+    syslinux extlinux
+**Fedora:
+    syslinux syslinux-extlinux
+
+OTHER PACKAGES:
+efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</label></text>
                                 <hseparator></hseparator>
                                 <hbox>
                                         <text width-request="135" label="Filename:"></text>

@@ -4,8 +4,9 @@ Changelog:
   added exclude /home option in transfer mode
   --acls and --xattrs are now default tar options
   debug checkbox now updates the title bar
-  gui improvements/cleanups
-  code cleanups in star.sh
+  gui layout improvements
+  removed useless hide cursor option
+  code cleanups and minor fixes in star.sh
 
 6.1
   show progress info in window title bar

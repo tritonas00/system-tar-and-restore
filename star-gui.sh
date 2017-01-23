@@ -393,7 +393,7 @@ lost+found">
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Other:"></text>
-                                                                        <entry tooltip-text="Set other partitions (mountpoint=device e.g /var=/dev/sda3). If you want spaces in mountpoints replace them with //">
+                                                                        <entry tooltip-text="Set other partitions (mountpoint=partition e.g /var=/dev/sda3). If you want spaces in mountpoints replace them with //">
                                                                                 <variable>BR_OTHER_PARTS</variable>
                                                                         </entry>
                                                                 </hbox>

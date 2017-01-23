@@ -1706,11 +1706,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       elif [ "$BRdistro" = "Arch" ]; then
         chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/error
       elif [ "$BRdistro" = "Debian" ] && [ -d "$BR_EFI_DIR" ]; then
-        chroot /mnt/target grub-install --efi-directory=$BRgrub --recheck
+        chroot /mnt/target grub-install --efi-directory=$BRgrub --recheck || touch /tmp/error
       elif [ "$BRdistro" = "Debian" ]; then
         chroot /mnt/target grub-install --recheck $BRgrub || touch /tmp/error
       elif [ -d "$BR_EFI_DIR" ]; then
-        chroot /mnt/target grub2-install --efi-directory=$BRgrub --recheck
+        chroot /mnt/target grub2-install --efi-directory=$BRgrub --recheck || touch /tmp/error
       else
         chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/error
       fi
@@ -1855,7 +1855,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # BOOTCTL
     elif [ -n "$BRbootctl" ]; then
       update_wrp "Installing Bootctl in $BRespmpoint"
-      echo -e "\n$Installing Bootctl in $BRespmpoint"
+      echo -e "\nInstalling Bootctl in $BRespmpoint"
       # Save old configuration entries first
       if [ -d /mnt/target$BRespmpoint/loader/entries ]; then
         for CONF in /mnt/target$BRespmpoint/loader/entries/*; do

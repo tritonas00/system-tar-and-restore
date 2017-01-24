@@ -189,7 +189,7 @@ export MAIN_DIALOG='
 ==>Supported bootloaders:
        Grub Syslinux EFISTUB/efibootmgr Systemd/bootctl
 
-GRUB PACKAGES:
+GRUB PACKAGES
 **Arch/Gentoo:
     grub
 **Fedora/openSUSE:
@@ -199,7 +199,7 @@ GRUB PACKAGES:
 **Mandriva/Mageia:
     grub2 grub2-efi
 
-SYSLINUX PACKAGES:
+SYSLINUX PACKAGES
 **Arch/openSUSE/Gentoo:
     syslinux
 **Debian/Ubuntu/Mandriva/Mageia:
@@ -207,7 +207,7 @@ SYSLINUX PACKAGES:
 **Fedora:
     syslinux syslinux-extlinux
 
-OTHER PACKAGES:
+OTHER PACKAGES
 efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</label></text>
                                 <hseparator></hseparator>
                                 <hbox>

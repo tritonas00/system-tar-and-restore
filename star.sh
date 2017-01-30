@@ -399,19 +399,19 @@ if [ "$BRmode" = "0" ]; then
  # Generate configuration file
   generate_conf() {
     echo -e "#Auto-generated configuration file\n#Place it in /etc/backup.conf\n\n"
-    echo -e "BRFOLDER='$(dirname "$BRFOLDER")'"
-    if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then echo "BRNAME='$BRNAME'"; fi # Strictly check the default filename format
-    echo -e "BRcompression=$BRcompression"
-    if [ -n "$BRnohome" ]; then echo "BRnohome=Yes"; fi
-    if [ -n "$BRonlyhidden" ]; then echo "BRonlyhidden=Yes"; fi
-    if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS='$BR_USER_OPTS'"; fi
-    if [ -n "$BRnocolor" ]; then echo "BRnocolor=Yes"; fi
-    if [ -n "$BRverb" ]; then echo "BRverb=Yes"; fi
-    if [ -n "$BRquiet" ]; then echo "BRquiet=Yes"; fi
-    if [ -n "$BRoverride" ]; then echo "BRoverride=Yes"; fi
-    if [ -n "$BRencpass" ]; then echo -e "BRencmethod=$BRencmethod\nBRencpass='$BRencpass'"; fi
-    if [ -n "$BRclean" ]; then echo "BRclean=Yes"; fi
-    if [ -n "$BRgenkernel" ]; then echo "BRgenkernel=No"; fi
+    echo -e "BRFOLDER=\"$(dirname "$BRFOLDER")\""
+    if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then echo "BRNAME=\"$BRNAME\""; fi # Strictly check the default filename format
+    echo -e "BRcompression=\"$BRcompression\""
+    if [ -n "$BRnohome" ]; then echo "BRnohome=\"Yes\""; fi
+    if [ -n "$BRonlyhidden" ]; then echo "BRonlyhidden=\"Yes\""; fi
+    if [ -n "$BR_USER_OPTS" ]; then echo "BR_USER_OPTS=\"$BR_USER_OPTS\""; fi
+    if [ -n "$BRnocolor" ]; then echo "BRnocolor=\"Yes\""; fi
+    if [ -n "$BRverb" ]; then echo "BRverb=\"Yes\""; fi
+    if [ -n "$BRquiet" ]; then echo "BRquiet=\"Yes\""; fi
+    if [ -n "$BRoverride" ]; then echo "BRoverride=\"Yes\""; fi
+    if [ -n "$BRencpass" ]; then echo -e "BRencmethod=\"$BRencmethod\"\nBRencpass=\"$BRencpass\""; fi
+    if [ -n "$BRclean" ]; then echo "BRclean=\"Yes\""; fi
+    if [ -n "$BRgenkernel" ]; then echo "BRgenkernel=\"No\""; fi
   }
 
   # Set default configuration file, check if alternative specified by the user

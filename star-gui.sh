@@ -30,7 +30,6 @@ fi
 
 if [ -n "$BRNAME" ]; then export BR_NAME="$BRNAME"; else export BR_NAME="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"; fi
 if [ -n "$BRFOLDER" ]; then export BR_FOLDER="$BRFOLDER"; else export BR_FOLDER="/"; fi
-if [ -n "$BR_USER_OPTS" ]; then export BR_B_OPTS="$BR_USER_OPTS"; fi
 if [ -n "$BRcompression" ]; then export BR_COMP="$BRcompression"; else export BR_COMP="gzip"; fi
 if [ -n "$BRencmethod" ]; then export BR_ENC="$BRencmethod"; else export BR_ENC="none"; fi
 if [ -n "$BRencpass" ]; then export BR_PASS="$BRencpass"; fi
@@ -45,6 +44,18 @@ elif [ -n "$BRnohome" ]; then
   export ENTRY1="Exclude"
 else
   export ENTRY1="Include"
+fi
+
+if [ -n "$BR_USER_OPTS" ]; then
+  set -f
+  for opt in $BR_USER_OPTS; do
+    if [[ "$opt" == *--exclude=* ]]; then
+      export BR_B_EXC="$(echo "$opt" | cut -f2 -d"=") $BR_B_EXC"
+    else
+      export BR_B_OPTS="$opt $BR_B_OPTS"
+    fi
+  done
+  set +f
 fi
 
 # Echo all functions to a temporary file so we can source it inside gtkdialog
@@ -73,8 +84,9 @@ set_args() {
     fi
 
     if [ ! "$BR_ENC" = "none" ]; then SCR_ARGS+=(-E "$BR_ENC" -P "$BR_PASS"); fi
-
-    for i in ${BR_B_EXC[@]}; do BR_B_OPTS="$BR_B_OPTS --exclude=$i"; done
+    set -f
+    for i in $BR_B_EXC; do BR_B_OPTS="$BR_B_OPTS --exclude=$i"; done
+    set +f
     if [ -n "$BR_B_OPTS" ]; then SCR_ARGS+=(-u "$BR_B_OPTS"); fi
 
     if [ "$ENTRY2" = "true" ] && [ ! "$BR_COMP" = "none" ]; then SCR_ARGS+=(-M); fi
@@ -119,7 +131,9 @@ set_args() {
         SCR_ARGS+=(-H)
       fi
       if [ "$ENTRY9" = "true" ]; then SCR_ARGS+=(-o); fi
-      for i in ${BR_T_EXC[@]}; do BR_RS_OPTS="$BR_RS_OPTS --exclude=$i"; done
+      set -f
+      for i in $BR_T_EXC; do BR_RS_OPTS="$BR_RS_OPTS --exclude=$i"; done
+      set +f
       if [ -n "$BR_RS_OPTS" ]; then SCR_ARGS+=(-u "$BR_RS_OPTS"); fi
     fi
 
@@ -276,14 +290,20 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
-                                        <entry text="'"$BR_B_OPTS"'" space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
+                                        <entry text="'"$BR_B_OPTS"'" space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //
+
+Default options:
+--sparse
+--acls
+--xattrs
+--selinux (Fedora)">
                                                 <variable>BR_B_OPTS</variable>
                                         </entry>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Exclude:"></text>
-                                        <entry space-expand="true" space-fill="true" tooltip-text="Exclude files and directories. If you want spaces in names replace them with //
+                                        <entry text="'"$BR_B_EXC"'" space-expand="true" space-fill="true" tooltip-text="Exclude files and directories. If you want spaces in names replace them with //
 
 Excluded by default:
 /run/*
@@ -583,7 +603,7 @@ lost+found">
                         <vbox>
                                 <text use-markup="true" label="<b><big>System Tar &amp; Restore</big></b>"></text>
                                 <text wrap="false" label="Backup and Restore your system using tar or Transfer it with rsync"></text>
-                                <text use-markup="true" label="<i><small>Version 6.2 tritonas00@gmail.com 2012-2017</small></i>"></text>
+                                <text use-markup="true" label="<i><small>Version 6.3 tritonas00@gmail.com 2012-2017</small></i>"></text>
                                 <hseparator></hseparator>
                                 <vbox scrollable="true" shadow-type="0">
                                         <text xalign="0" wrap="false">

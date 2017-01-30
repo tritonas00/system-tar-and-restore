@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 6.2"
+BR_VERSION="System Tar & Restore 6.3"
 
 # Set EFI detection directory
 BR_EFI_DIR="/sys/firmware/efi"
@@ -386,10 +386,10 @@ if [ "$BRmode" = "0" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      tar ${BR_MAIN_OPTS} >( openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log ) "${BR_TAR_OPTS[@]}" /
+      tar ${BR_MAIN_OPTS} >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      tar ${BR_MAIN_OPTS} >( gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log ) "${BR_TAR_OPTS[@]}" /
+      tar ${BR_MAIN_OPTS} >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
     # Without encryption
     else
       tar ${BR_MAIN_OPTS} "$BRFOLDER/$BRNAME.$BR_EXT" "${BR_TAR_OPTS[@]}" /
@@ -560,8 +560,10 @@ if [ "$BRmode" = "0" ]; then
     done
   fi
 
-  # Add tar user options to the main array, replace any // with space
-  for opt in ${BR_USER_OPTS[@]}; do BR_TAR_OPTS+=("${opt///\//\ }"); done
+  # Add tar user options to the main array, replace any // with space, temporarily disable globbing
+  set -f
+  for opt in $BR_USER_OPTS; do BR_TAR_OPTS+=("${opt///\//\ }"); done
+  set +f
 
   # Check destination for backup directories with older date, strictly check directory name format
   while read dir; do
@@ -622,7 +624,7 @@ if [ "$BRmode" = "0" ]; then
   sleep 1
   # Start the log
   echo -e "$BR_VERSION\n" > "$BRFOLDER"/backup.log
-  ( echo "[SUMMARY]"; show_summary; echo -e "\n[ARCHIVER]" ) >> "$BRFOLDER"/backup.log
+  (echo "[SUMMARY]"; show_summary; echo -e "\n[ARCHIVER]") >> "$BRFOLDER"/backup.log
   # Store start time
   start=$(date +%s)
 
@@ -636,7 +638,7 @@ if [ "$BRmode" = "0" ]; then
 
   # Run tar and pipe it through the progress calculation, give errors to log
   mode_job="Archiving"
-  ( run_tar 2>> "$BRFOLDER"/backup.log || touch /tmp/error ) | pgrs_bar
+  (run_tar 2>> "$BRFOLDER"/backup.log || touch /tmp/error) | pgrs_bar
   echo
 
   # Generate configuration file if -g is given and no error occurred
@@ -960,9 +962,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Set tar/rsync user options, replace any // with space
+  # Set tar/rsync user options, replace any // with space, temporarily disable globbing
   set_user_options() {
-    for opt in ${BR_USER_OPTS[@]}; do BR_TR_OPTS+=("${opt///\//\ }"); done
+    set -f
+    for opt in $BR_USER_OPTS; do BR_TR_OPTS+=("${opt///\//\ }"); done
+    set +f
   }
 
   # Calculate files to create percentage and progress bar in Transfer mode
@@ -1463,7 +1467,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
     # Inform the log
-    ( echo -e "\nGenerated fstab:"; cat /mnt/target/etc/fstab ) >> /tmp/restore.log
+    (echo -e "\nGenerated fstab:"; cat /mnt/target/etc/fstab) >> /tmp/restore.log
   }
 
   # Generate a basic mdadm.conf and crypttab, rebuild initramfs images for all available kernels
@@ -1735,7 +1739,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         fi
 
         # Inform the log
-        ( echo -e "\nModified grub config:"; cat /mnt/target/etc/default/grub; echo ) >> /tmp/restore.log
+        (echo -e "\nModified grub config:"; cat /mnt/target/etc/default/grub; echo) >> /tmp/restore.log
       fi
 
       # Run also mkconfig (update-grub equivalent)
@@ -1810,7 +1814,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo "Generating syslinux.cfg"
       generate_syslinux_cfg >> /mnt/target/boot/syslinux/syslinux.cfg
       # Inform the log
-      ( echo -e "\nGenerated syslinux config:"; cat /mnt/target/boot/syslinux/syslinux.cfg ) >> /tmp/restore.log
+      (echo -e "\nGenerated syslinux config:"; cat /mnt/target/boot/syslinux/syslinux.cfg) >> /tmp/restore.log
 
    # EFISTUB
     elif [ -n "$BRefistub" ]; then
@@ -1897,9 +1901,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
             echo -e "title $BRdistro $cn\nlinux /$kn\noptions root=$BRroot $BRkernopts" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
           fi
           # Inform the log
-          ( echo -e "\nGenerated $BRdistro-$cn.conf:"; cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf ) >> /tmp/restore.log
+          (echo -e "\nGenerated $BRdistro-$cn.conf:"; cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf) >> /tmp/restore.log
           if [ "$BRdistro" = "Arch" ]; then
-            ( echo -e "\nGenerated $BRdistro-$cn-fallback.conf:"; cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn-fallback.conf ) >> /tmp/restore.log
+            (echo -e "\nGenerated $BRdistro-$cn-fallback.conf:"; cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn-fallback.conf) >> /tmp/restore.log
           fi
         fi
       done
@@ -2268,7 +2272,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     sleep 1
     # Run tar and pipe it through the progress calculation, give errors to log
     mode_job="Extracting"
-    ( run_tar 2>>/tmp/restore.log && echo "System extracted successfully" >> /tmp/restore.log ) | pgrs_bar
+    (run_tar 2>>/tmp/restore.log && echo "System extracted successfully" >> /tmp/restore.log) | pgrs_bar
 
   # Transfer mode
   elif [ "$BRmode" = "2" ]; then
@@ -2281,7 +2285,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo
     # Run rsync and pipe it through the progress calculation, give errors to log
     mode_job="Transferring"
-    ( run_rsync 2>>/tmp/restore.log && echo "System transferred successfully" >> /tmp/restore.log ) | pgrs_bar
+    (run_rsync 2>>/tmp/restore.log && echo "System transferred successfully" >> /tmp/restore.log) | pgrs_bar
   fi
 
   if [ -z "$BRverb" ]; then echo; fi
@@ -2308,7 +2312,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         if [[ "$REPLY" = [1-2] ]]; then
           $BReditor /mnt/target/etc/fstab
           # Inform the log
-          ( echo -e "\nEdited fstab:"; cat /mnt/target/etc/fstab ) >> /tmp/restore.log
+          (echo -e "\nEdited fstab:"; cat /mnt/target/etc/fstab) >> /tmp/restore.log
           break
         else
           echo -e "${RED}Please select a valid option${NORM}"
@@ -2323,7 +2327,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   done
 
  # Run post processing functions, update the log and pray :p
- ( prepare_chroot; build_initramfs; generate_locales; install_bootloader) 1> >(tee -a /tmp/restore.log ) 2>&1
+ (prepare_chroot; build_initramfs; generate_locales; install_bootloader) 1> >(tee -a /tmp/restore.log) 2>&1
 
   exit_screen
   sleep 1

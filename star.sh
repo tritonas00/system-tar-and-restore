@@ -560,10 +560,12 @@ if [ "$BRmode" = "0" ]; then
     done
   fi
 
-  # Add tar user options to the main array, replace any // with space, temporarily disable globbing
-  set -f
-  for opt in $BR_USER_OPTS; do BR_TAR_OPTS+=("${opt///\//\ }"); done
-  set +f
+  # Add tar user options to the main array, replace any // with space, add only options starting with -
+  for opt in $BR_USER_OPTS; do 
+    if [[ "$opt" == -* ]]; then
+      BR_TAR_OPTS+=("${opt///\//\ }")
+    fi
+  done
 
   # Check destination for backup directories with older date, strictly check directory name format
   while read dir; do
@@ -962,11 +964,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Set tar/rsync user options, replace any // with space, temporarily disable globbing
+  # Set tar/rsync user options, replace any // with space, add only options starting with -
   set_user_options() {
-    set -f
-    for opt in $BR_USER_OPTS; do BR_TR_OPTS+=("${opt///\//\ }"); done
-    set +f
+    for opt in $BR_USER_OPTS; do 
+      if [[ "$opt" == -* ]]; then
+        BR_TR_OPTS+=("${opt///\//\ }")
+      fi
+    done
   }
 
   # Calculate files to create percentage and progress bar in Transfer mode

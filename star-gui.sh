@@ -47,15 +47,13 @@ else
 fi
 
 if [ -n "$BR_USER_OPTS" ]; then
-  set -f
   for opt in $BR_USER_OPTS; do
     if [[ "$opt" == *--exclude=* ]]; then
-      export BR_B_EXC="$(echo "$opt" | cut -f2 -d"=") $BR_B_EXC"
-    else
-      export BR_B_OPTS="$opt $BR_B_OPTS"
+      export BR_B_EXC+="$(echo "$opt" | cut -f2 -d"=") "
+    elif [[ "$opt" == -* ]]; then
+      export BR_B_OPTS+="$opt "
     fi
   done
-  set +f
 fi
 
 # Echo all functions to a temporary file so we can source it inside gtkdialog

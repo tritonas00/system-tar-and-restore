@@ -561,7 +561,7 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Add tar user options to the main array, replace any // with space, add only options starting with -
-  for opt in $BR_USER_OPTS; do 
+  for opt in $BR_USER_OPTS; do
     if [[ "$opt" == -* ]]; then
       BR_TAR_OPTS+=("${opt///\//\ }")
     fi
@@ -966,7 +966,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Set tar/rsync user options, replace any // with space, add only options starting with -
   set_user_options() {
-    for opt in $BR_USER_OPTS; do 
+    for opt in $BR_USER_OPTS; do
       if [[ "$opt" == -* ]]; then
         BR_TR_OPTS+=("${opt///\//\ }")
       fi

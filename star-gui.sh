@@ -48,7 +48,7 @@ fi
 
 if [ -n "$BR_USER_OPTS" ]; then
   for opt in $BR_USER_OPTS; do
-    if [[ "$opt" == *--exclude=* ]]; then
+    if [[ "$opt" == --exclude=* ]]; then
       export BR_B_EXC+="$(echo "$opt" | cut -f2 -d"=") "
     elif [[ "$opt" == -* ]]; then
       export BR_B_OPTS+="$opt "

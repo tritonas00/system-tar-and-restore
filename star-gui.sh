@@ -128,7 +128,6 @@ set_args() {
       elif [ "$ENTRY8" = "Exclude" ]; then
         SCR_ARGS+=(-H)
       fi
-      if [ "$ENTRY9" = "true" ]; then SCR_ARGS+=(-o); fi
       set -f
       for i in $BR_T_EXC; do BR_RS_OPTS="$BR_RS_OPTS --exclude=$i"; done
       set +f
@@ -139,6 +138,7 @@ set_args() {
     if [ -n "$BR_ROOT_SUBVOL" ]; then SCR_ARGS+=(-R "$BR_ROOT_SUBVOL"); fi
     if [ -n "$BR_OTHER_SUBVOLS" ]; then SCR_ARGS+=(-B "$BR_OTHER_SUBVOLS"); fi
 
+    if [ "$ENTRY9" = "true" ]; then SCR_ARGS+=(-o); fi
     if [ "$ENTRY10" = "true" ]; then SCR_ARGS+=(-D); fi
     if [ "$ENTRY11" = "true" ]; then SCR_ARGS+=(-x); fi
     if [ "$ENTRY12" = "true" ]; then SCR_ARGS+=(-W); fi
@@ -510,7 +510,13 @@ lost+found">
                                                 </hbox>
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
-                                                        <entry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //">
+                                                        <entry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //
+
+Default options:
+--acls
+--xattrs
+--selinux (Fedora)
+--xattrs-include='\''*'\'' (Fedora)">
                                                                 <variable>BR_TR_OPTIONS</variable>
                                                         </entry>
                                                 </hbox>
@@ -567,16 +573,16 @@ lost+found">
                                                                 <variable>BR_T_EXC</variable>
                                                         </entry>
                                                 </hbox>
-
-                                                <checkbox label="Override" tooltip-text="Override the default rsync options with user options">
-                                                        <variable>ENTRY9</variable>
-                                                </checkbox>
                                         </vbox>
                                         <variable>RT_TAB</variable>
                                 </notebook>
 
                                 <vbox>
                                         <frame Misc options:>
+                                                <checkbox label="Override" tooltip-text="Override the default tar/rsync options with user options">
+                                                        <variable>ENTRY9</variable>
+                                                </checkbox>
+
                                                 <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check and initramfs building in gentoo">
                                                         <variable>ENTRY10</variable>
                                                 </checkbox>

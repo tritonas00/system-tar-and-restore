@@ -540,14 +540,14 @@ if [ "$BRmode" = "0" ]; then
                --exclude=lost+found   \
                --exclude="$BRFOLDER")
 
-  # Keep only this if -o is given
-  if [ -n "$BRoverride" ]; then
-    BR_TAR_OPTS=(--exclude="$BRFOLDER")
-  fi
-
   # Needed by Fedora
   if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
     BR_TAR_OPTS+=(--selinux)
+  fi
+
+  # Keep only this if -o is given
+  if [ -n "$BRoverride" ]; then
+    BR_TAR_OPTS=(--exclude="$BRFOLDER")
   fi
 
   # Set /home directory options
@@ -921,9 +921,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Set tar default options
   set_tar_opts() {
-   if [ "$BRdistro" = "Fedora" ]; then
+   if [ "$BRdistro" = "Fedora" ] && [ -z "$BRoverride" ]; then
      BR_TR_OPTS+=(--selinux --acls "--xattrs-include='*'")
-   else
+   elif [ -z "$BRoverride" ]; then
      BR_TR_OPTS+=(--acls --xattrs)
    fi
   }

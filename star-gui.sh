@@ -336,7 +336,7 @@ lost+found">
                                                         <default>'"$ENTRY4"'</default>
                                                 </checkbox>
 
-                                                <checkbox label="Override" tooltip-text="Override the default tar options with user options">
+                                                <checkbox label="Override" tooltip-text="Override the default tar options/excludes with user defined ones">
                                                         <variable>ENTRY5</variable>
                                                         <default>'"$ENTRY5"'</default>
                                                 </checkbox>
@@ -579,7 +579,7 @@ lost+found">
 
                                 <vbox>
                                         <frame Misc options:>
-                                                <checkbox label="Override" tooltip-text="Override the default tar/rsync options with user options">
+                                                <checkbox label="Override" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
                                                         <variable>ENTRY9</variable>
                                                 </checkbox>
 

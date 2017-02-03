@@ -8,7 +8,7 @@ Changelog:
   override (-o) now gives full user control in tar options
   show default tar options in tooltips
   generate backup.conf function now writes proper quotes
-  accept only tar/rsync options starting with "-" (also fixes nasty bug in Transfer mode with bad user input)
+  star.sh: accept only tar/rsync options starting with "-" (also fixes nasty bug in Transfer mode with bad user input)
   formatted some code
 
 6.2

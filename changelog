@@ -1,5 +1,16 @@
 Changelog:
 
+6.3
+  added missing Fedora tar option in backup.conf
+  tar options starting with "--exclude=" in backup.conf now translated as paths in Exclude entry
+  fixed wildcard expansion in user tar/rsync options and excludes
+  override (-o) now applies to Restore mode also
+  override (-o) now gives full user control in tar options
+  show default tar options in tooltips
+  generate backup.conf function now writes proper quotes
+  accept only tar/rsync options starting with "-" (also fixes nasty bug in Transfer mode with bad user input)
+  formatted some code
+
 6.2
   added exclude /home option in transfer mode
   --acls and --xattrs are now default tar options

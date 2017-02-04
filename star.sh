@@ -2126,9 +2126,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Download the backup archive
   run_wget() {
     if [ -n "$BRusername" ] || [ -n "$BRpassword" ]; then
-      wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/error
+      wget --user="$BRusername" --password="$BRpassword" -O "$BRsource" "$BRuri" --tries=2 || touch /tmp/error
     else
-      wget -O "$BRsource" "$BRurl" --tries=2 || touch /tmp/error
+      wget -O "$BRsource" "$BRuri" --tries=2 || touch /tmp/error
     fi
   }
 
@@ -2152,11 +2152,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     exit
   fi
 
-  # Find if backup archive is a local file or url
+  # If backup archive is a local file use it directly
   if [[ "$BRuri" == /* ]]; then
     BRsource="$BRuri"
-  else
-    BRurl="$BRuri"
   fi
 
   # A nice working info
@@ -2206,7 +2204,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   if [ "$BRmode" = "1" ]; then
     echo -e "\n${BOLD}[BACKUP ARCHIVE]${NORM}"
 
-    if [ -n "$BRurl" ]; then
+    if [[ ! "$BRuri" == /* ]]; then
       BRsource="$BRmaxsize/downloaded_backup"
       # Give progress info to gui wrapper if -w is given
       if [ -n "$BRwrap" ]; then

@@ -119,9 +119,9 @@ See <code>star.sh --help</code> for all available options.
 
 - Destination: /home/john/
 - Compression: gzip  
-- Additional options: --acls --xattrs 
+- Additional options: --exclude=/home/john/.cache/* --warning=none  
 
-<code>star.sh -i 0 -d /home/john/ -c gzip -u "--acls --xattrs"</code>  
+<code>star.sh -i 0 -d /home/john/ -c gzip -u "--exclude=/home/john/.cache/* --warning=none"</code>  
 
 - Destination: /home/john/
 - Compression: xz  
@@ -140,10 +140,9 @@ See <code>star.sh --help</code> for all available options.
 
 - root: /dev/sdb1
 - grub  
-- local archive
-- tar options: --acls --xattrs 
+- local archive  
 
-<code>star.sh -i 1 -r /dev/sdb1 -G /dev/sdb -f /home/john/backup.tar.gz -u "--acls --xattrs"</code>  
+<code>star.sh -i 1 -r /dev/sdb1 -G /dev/sdb -f /home/john/backup.tar.gz</code>  
 
 - root: /dev/sdb1, /home: /dev/sdb2, swap: /dev/sdb3
 - syslinux 

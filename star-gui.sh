@@ -94,20 +94,20 @@ set_args() {
     if [ "$ENTRY6" = "true" ]; then SCR_ARGS+=(-D); fi
 
   elif [ "$BR_TAB" = "1" ]; then
-    SCR_ARGS+=(-r ${BR_ROOT%% *})
+    SCR_ARGS+=(-r "${BR_ROOT%% *}")
 
-    if [ ! "$BR_BOOT" = "" ]; then SCR_ARGS+=(-b ${BR_BOOT%% *}); fi
-    if [ ! "$BR_HOME" = "" ]; then SCR_ARGS+=(-h ${BR_HOME%% *}); fi
-    if [ ! "$BR_SWAP" = "" ]; then SCR_ARGS+=(-s ${BR_SWAP%% *}); fi
-    if [ ! "$BR_ESP" = "" ]; then SCR_ARGS+=(-e ${BR_ESP%% *} -l $BR_ESP_MPOINT); fi
+    if [ ! "$BR_BOOT" = "" ]; then SCR_ARGS+=(-b "${BR_BOOT%% *}"); fi
+    if [ ! "$BR_HOME" = "" ]; then SCR_ARGS+=(-h "${BR_HOME%% *}"); fi
+    if [ ! "$BR_SWAP" = "" ]; then SCR_ARGS+=(-s "${BR_SWAP%% *}"); fi
+    if [ ! "$BR_ESP" = "" ]; then SCR_ARGS+=(-e "${BR_ESP%% *}" -l "$BR_ESP_MPOINT"); fi
     if [ -n "$BR_OTHER_PARTS" ]; then SCR_ARGS+=(-t "$BR_OTHER_PARTS"); fi
 
     if [ "$ENTRY7" = "Grub" ]; then
-      SCR_ARGS+=(-G ${BR_DISK%% *})
+      SCR_ARGS+=(-G "${BR_DISK%% *}")
     elif [ "$ENTRY7" = "Grub-efi" ]; then
       SCR_ARGS+=(-G auto)
     elif [ "$ENTRY7" = "Syslinux" ]; then
-      SCR_ARGS+=(-S ${BR_DISK%% *})
+      SCR_ARGS+=(-S "${BR_DISK%% *}")
     elif [ "$ENTRY7" = "EFISTUB/efibootmgr" ]; then
       SCR_ARGS+=(-F)
     elif [ "$ENTRY7" = "Systemd/bootctl" ]; then
@@ -160,16 +160,16 @@ run_main() {
 }
 ' > /tmp/wr_functions
 
-export BR_PARTS=$(for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
+export BR_PARTS="$(for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
                   for f in $(find /dev/mapper/ -maxdepth 1 -mindepth 1 ! -name "control"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
                   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
-                  for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done)
+                  for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done)"
 
-export BR_DISKS=$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done
+export BR_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done
                   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done
-                  for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done)
+                  for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done)"
 
-export BR_ROOT=$(echo "$BR_PARTS" | head -n 1)
+export BR_ROOT="$(echo "$BR_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
 
@@ -607,7 +607,7 @@ lost+found">
                         <vbox>
                                 <text use-markup="true" label="<b><big>System Tar &amp; Restore</big></b>"></text>
                                 <text wrap="false" label="Backup and Restore your system using tar or Transfer it with rsync"></text>
-                                <text use-markup="true" label="<i><small>Version 6.3 tritonas00@gmail.com 2012-2017</small></i>"></text>
+                                <text use-markup="true" label="<i><small>Version 6.4 tritonas00@gmail.com 2012-2017</small></i>"></text>
                                 <hseparator></hseparator>
                                 <vbox scrollable="true" shadow-type="0">
                                         <text xalign="0" wrap="false">

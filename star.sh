@@ -1,19 +1,19 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 6.3"
+BR_VERSION="System Tar & Restore 6.4"
 
 # Set EFI detection directory
 BR_EFI_DIR="/sys/firmware/efi"
 
 # Set some color vars
 color_vars() {
-  NORM='\e[00m'
-  RED='\e[00;31m'
-  GREEN='\e[00;32m'
-  YELLOW='\e[00;33m'
-  CYAN='\e[00;36m'
-  BOLD='\033[1m'
+  NORM="\e[00m"
+  RED="\e[00;31m"
+  GREEN="\e[00;32m"
+  YELLOW="\e[00;33m"
+  CYAN="\e[00;36m"
+  BOLD="\033[1m"
 }
 
 # Delete temporary files if exist
@@ -26,17 +26,17 @@ clean_tmp_files() {
 # Calculate percentage and compose a simple progress bar
 pstr="========================"
 dstr="                        "
-lastper=-1
+lastper="-1"
 
 pgrs_bar() {
   while read ln; do
-    x=$((x + 1))
-    per=$((x*100/total))
+    x="$((x + 1))"
+    per="$((x*100/total))"
     # If -v is given print percentage and full output
-    if [ -n "$BRverb" ] && [[ $per -le 100 ]]; then
+    if [ -n "$BRverb" ] && [[ "$per" -le "100" ]]; then
       echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
-    elif [[ $per -gt $lastper ]] && [[ $per -le 100 ]]; then
-      lastper=$per
+    elif [[ "$per" -gt "$lastper" ]] && [[ "$per" -le "100" ]]; then
+      lastper="$per"
       update_wrp "$mode_job: $per% ($x / $total Files)"
       # The main progress bar
       echo -ne "\r$mode_job: [${pstr:0:$((x*24/total))}${dstr:0:24-$((x*24/total))}] $per%"
@@ -55,7 +55,7 @@ update_wrp() {
 echo -e "\n$BR_VERSION"
 
 # Set arguments and help page
-BRargs=$(getopt -o "i:d:n:c:u:HOjqvgDP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFL" -l "mode:,directory:,filename:,compression:,user-opts:,exclude-home,only-hidden,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,help" -n "$1" -- "$@")
+BRargs="$(getopt -o "i:d:n:c:u:HOjqvgDP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFL" -l "mode:,directory:,filename:,compression:,user-opts:,exclude-home,only-hidden,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -67,23 +67,23 @@ eval set -- "$BRargs";
 while true; do
   case "$1" in
     -i|--mode)
-      BRmode=$2
+      BRmode="$2"
       shift 2
     ;;
     -u|--user-opts)
-      BR_USER_OPTS=$2
+      BR_USER_OPTS="$2"
       shift 2
     ;;
     -d|--directory)
-      BRFOLDER=$2
+      BRFOLDER="$2"
       shift 2
     ;;
     -n|--filename)
-      BRNAME=$2
+      BRNAME="$2"
       shift 2
     ;;
     -c|--compression)
-      BRcompression=$2
+      BRcompression="$2"
       shift 2
     ;;
     -H|--exclude-home)
@@ -115,11 +115,11 @@ while true; do
       shift
     ;;
     -P|--passphrase)
-      BRencpass=$2
+      BRencpass="$2"
       shift 2
     ;;
     -E|--encryption)
-      BRencmethod=$2
+      BRencmethod="$2"
       shift 2
     ;;
     -o|--override)
@@ -131,7 +131,7 @@ while true; do
       shift
     ;;
     -C|--conf)
-      BRconf=$2
+      BRconf="$2"
       shift 2
     ;;
     -M|--multi-core)
@@ -143,59 +143,59 @@ while true; do
       shift
     ;;
     -r|--root)
-      BRroot=$2
+      BRroot="$2"
       shift 2
     ;;
     -e|--esp)
-      BResp=$2
+      BResp="$2"
       shift 2
     ;;
     -l|--esp-mpoint)
-      BRespmpoint=$2
+      BRespmpoint="$2"
       shift 2
     ;;
     -s|--swap)
-      BRswap=$2
+      BRswap="$2"
       shift 2
     ;;
     -b|--boot)
-      BRboot=$2
+      BRboot="$2"
       shift 2
     ;;
     -h|--home)
-      BRhome=$2
+      BRhome="$2"
       shift 2
     ;;
     -G|--grub)
-      BRgrub=$2
+      BRgrub="$2"
       shift 2
     ;;
     -S|--syslinux)
-      BRsyslinux=$2
+      BRsyslinux="$2"
       shift 2
     ;;
     -f|--file)
-      BRuri=$2
+      BRuri="$2"
       shift 2
     ;;
     -y|--username)
-      BRusername=$2
+      BRusername="$2"
       shift 2
     ;;
     -p|--password)
-      BRpassword=$2
+      BRpassword="$2"
       shift 2
     ;;
     -R|--rootsubvol)
-      BRrootsubvol=$2
+      BRrootsubvol="$2"
       shift 2
     ;;
     -m|--mount-opts)
-      BRmountopts=$2
+      BRmountopts="$2"
       shift 2
     ;;
     -k|--kernel-opts)
-      BRkernopts=$2
+      BRkernopts="$2"
       shift 2
     ;;
     -t|--other-parts)
@@ -307,7 +307,7 @@ done
 
 # Give PID to gui wrapper if -w is given
 if [ -n "$BRwrap" ]; then
-  echo $$ > /tmp/wr_pid
+  echo "$$" > /tmp/wr_pid
 fi
 
 # Apply colors if -j is not given
@@ -316,7 +316,7 @@ if [ -z "$BRnocolor" ]; then
 fi
 
 # Check if run with root privileges
-if [ $(id -u) -gt 0 ]; then
+if [ "$(id -u)" -gt "0" ]; then
   echo -e "[${RED}ERROR${NORM}] Script must run as root" >&2
   exit
 fi
@@ -386,13 +386,13 @@ if [ "$BRmode" = "0" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      tar ${BR_MAIN_OPTS} >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
+      tar "$BR_MAIN_OPTS" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      tar ${BR_MAIN_OPTS} >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER/$BRNAME.$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
+      tar "$BR_MAIN_OPTS" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
     # Without encryption
     else
-      tar ${BR_MAIN_OPTS} "$BRFOLDER/$BRNAME.$BR_EXT" "${BR_TAR_OPTS[@]}" /
+      tar "$BR_MAIN_OPTS" "$BRFOLDER"/"$BRNAME"."$BR_EXT" "${BR_TAR_OPTS[@]}" /
     fi
   }
 
@@ -437,7 +437,7 @@ if [ "$BRmode" = "0" ]; then
     exit
   fi
 
-  if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z $(which genkernel 2>/dev/null) ]; then
+  if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
     echo -e "[${YELLOW}WARNING${NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)" >&2
     exit
   fi
@@ -460,13 +460,13 @@ if [ "$BRmode" = "0" ]; then
   if [ -n "$BRmcore" ] && [ -z "$BRcompression" ]; then
     echo -e "[${YELLOW}WARNING${NORM}] You must specify compression type" >&2
     exit
-  elif [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z $(which pigz 2>/dev/null) ]; then
+  elif [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z "$(which pigz 2>/dev/null)" ]; then
     echo -e "[${RED}ERROR${NORM}] Package pigz is not installed. Install the package and re-run the script." >&2
     exit
-  elif [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z $(which pbzip2 2>/dev/null) ]; then
+  elif [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
     echo -e "[${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script." >&2
     exit
-  elif [ -n "$BRmcore" ] && [ "$BRcompression" = "xz" ] && [ -z $(which pxz 2>/dev/null) ]; then
+  elif [ -n "$BRmcore" ] && [ "$BRcompression" = "xz" ] && [ -z "$(which pxz 2>/dev/null)" ]; then
     echo -e "[${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script." >&2
     exit
   fi
@@ -487,7 +487,7 @@ if [ "$BRmode" = "0" ]; then
   if [ -z "$BRcompression" ]; then BRcompression="gzip"; fi
 
  # Set backup subdirectory
-  BRFOLDER=$(echo "$BRFOLDER"/Backup-$(date +%Y-%m-%d) | sed 's://*:/:g') # Also eliminate multiple forward slashes in the path
+  BRFOLDER="$(echo "$BRFOLDER"/Backup-$(date +%Y-%m-%d) | sed 's://*:/:g')" # Also eliminate multiple forward slashes in the path
 
   # Set tar compression options and backup file extension
   if [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ]; then
@@ -555,9 +555,9 @@ if [ "$BRmode" = "0" ]; then
     BR_TAR_OPTS+=(--exclude=/home/*)
   elif [ -n "$BRonlyhidden" ]; then
     # Find everything that doesn't start with dot and exclude it
-    for item in $(find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print); do
+    while read item; do
       BR_TAR_OPTS+=(--exclude="$item")
-    done
+    done< <(find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print)
   fi
 
   # Add tar user options to the main array, replace any // with space, add only options starting with -
@@ -580,7 +580,7 @@ if [ "$BRmode" = "0" ]; then
       echo -e "${BOLD}"
       read -p "Destination ($BRNAME.$BR_EXT) already exists. Overwrite? [y/N]: " an
       echo -ne "${NORM}"
-      if [ -z "$an" ]; then an=n; fi
+      if [ -z "$an" ]; then an="n"; fi
 
       if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
         break
@@ -601,7 +601,7 @@ if [ "$BRmode" = "0" ]; then
     echo -e "${BOLD}"
     read -p "Continue? [Y/n]: " an
     echo -ne "${NORM}"
-    if [ -z "$an" ]; then an=y; fi
+    if [ -z "$an" ]; then an="y"; fi
 
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
       break
@@ -632,9 +632,9 @@ if [ "$BRmode" = "0" ]; then
 
   update_wrp "Please wait while calculating files"
   # Calculate the number of files
-  run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
+  run_calc | while read ln; do a="$((a + 1))" && echo -en "\rCalculating: $a Files"; done
   # Store the number of files we found from run_calc
-  total=$(cat /tmp/filelist | wc -l)
+  total="$(cat /tmp/filelist | wc -l)"
   sleep 1
   echo
 
@@ -650,7 +650,7 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Give destination subdirectory full permissions with some nice messages
-  OUTPUT=$(chmod ugo+rw -R "$BRFOLDER" 2>&1) && echo -ne "Setting permissions: Done\n" || echo -ne "Setting permissions: Failed\n$OUTPUT\n"
+  OUTPUT="$(chmod ugo+rw -R "$BRFOLDER" 2>&1)" && echo -ne "Setting permissions: Done\n" || echo -ne "Setting permissions: Failed\n$OUTPUT\n"
 
   # Calculate elapsed time
   elapsed="$(($(($(date +%s)-start))/3600)) hours $((($(($(date +%s)-start))%3600)/60)) min $(($(($(date +%s)-start))%60)) sec"
@@ -710,8 +710,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Detect root partition filesystem and size, exit if filesystem not found
   detect_root_fs_size() {
-    BRrootfs=$(blkid -s TYPE -o value "$BRroot")
-    BRrootsize=$(lsblk -d -n -o size 2>/dev/null "$BRroot" | sed -e 's/ *//')
+    BRrootfs="$(blkid -s TYPE -o value "$BRroot")"
+    BRrootsize="$(lsblk -d -n -o size 2>/dev/null "$BRroot" | sed -e 's/ *//')" # Remove leading spaces
     if [ -z "$BRrootfs" ]; then
       echo -e "[${RED}ERROR${NORM}] Unknown root file system" >&2
       exit
@@ -733,12 +733,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     update_wrp "Checking archive type"
     # If archive is encrypted decrypt first, pipe output to 'file'
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      BRtype=$(openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b -)
+      BRtype="$(openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b -)"
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      BRtype=$(gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b -)
+      BRtype="$(gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | file -b -)"
     else
       # Check archive directly
-      BRtype=$(file -b "$BRsource")
+      BRtype="$(file -b "$BRsource")"
     fi
 
     if echo "$BRtype" | grep -q -w gzip; then
@@ -828,7 +828,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [[ "$BRroot" == *mapper* ]]; then
       echo "root=$BRroot"
     else
-      echo "root=UUID=$(blkid -s UUID -o value $BRroot)"
+      echo "root=UUID=$(blkid -s UUID -o value "$BRroot")"
     fi
   }
 
@@ -837,7 +837,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [[ "$BRroot" == *dev/md* ]]; then
       echo "$BRroot"
     else
-      echo "UUID=$(blkid -s UUID -o value $BRroot)"
+      echo "UUID=$(blkid -s UUID -o value "$BRroot")"
     fi
   }
 
@@ -862,20 +862,20 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ "$BRtable" = "gpt" ]; then
       # Set legacy_boot flag in GPT, use gptmbr.bin
       echo "Setting legacy_boot flag on partition $BRpartition of $BRdevice" # We set BRpartition in install_bootloader
-      sgdisk $BRdevice --attributes=$BRpartition:set:2 &>> /tmp/restore.log || touch /tmp/error
+      sgdisk "$BRdevice" --attributes="$BRpartition":set:2 &>> /tmp/restore.log || touch /tmp/error
       BRsyslinuxmbr="gptmbr.bin"
     else
       # Set boot flag in MBR, use mbr.bin
       echo "Setting boot flag on partition $BRpartition of $BRdevice" # We set BRpartition in install_bootloader
-      sfdisk $BRdevice -A $BRpartition &>> /tmp/restore.log || touch /tmp/error
+      sfdisk "$BRdevice" -A "$BRpartition" &>> /tmp/restore.log || touch /tmp/error
       BRsyslinuxmbr="mbr.bin"
     fi
 
-    for BIN in /mnt/target/usr/lib/syslinux/$BRsyslinuxmbr \
-      /mnt/target/usr/lib/syslinux/mbr/$BRsyslinuxmbr \
-      /mnt/target/usr/share/syslinux/$BRsyslinuxmbr; do
+    for BIN in /mnt/target/usr/lib/syslinux/"$BRsyslinuxmbr" \
+      /mnt/target/usr/lib/syslinux/mbr/"$BRsyslinuxmbr" \
+      /mnt/target/usr/share/syslinux/"$BRsyslinuxmbr"; do
       if [ -f "$BIN" ]; then
-        BRsyslinuxmbrpath=$(dirname "$BIN")
+        BRsyslinuxmbrpath="$(dirname "$BIN")"
       fi
     done
 
@@ -883,7 +883,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       /mnt/target/usr/lib/syslinux/modules/bios/menu.c32 \
       /mnt/target/usr/share/syslinux/menu.c32; do
       if [ -f "$COM32" ]; then
-        BRsyslinuxcompath=$(dirname "$COM32")
+        BRsyslinuxcompath="$(dirname "$COM32")"
       fi
     done
   }
@@ -932,13 +932,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar ${BR_MAIN_OPTS} - "${BR_TR_OPTS[@]}" -C /mnt/target
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar "$BR_MAIN_OPTS" - "${BR_TR_OPTS[@]}" -C /mnt/target
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar ${BR_MAIN_OPTS} - "${BR_TR_OPTS[@]}" -C /mnt/target
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar "$BR_MAIN_OPTS" - "${BR_TR_OPTS[@]}" -C /mnt/target
     # Without encryption
     else
-      tar ${BR_MAIN_OPTS} "$BRsource" "${BR_TR_OPTS[@]}" -C /mnt/target
+      tar "$BR_MAIN_OPTS" "$BRsource" "${BR_TR_OPTS[@]}" -C /mnt/target
     fi
   }
 
@@ -1013,36 +1013,36 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ "$BRmode" = "2" ]; then
-      if [ -z $(which rsync 2>/dev/null) ];then
+      if [ -z "$(which rsync 2>/dev/null)" ];then
         echo -e "[${RED}ERROR${NORM}] Package rsync is not installed. Install the package and re-run the script"
         exit
       fi
-      if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z $(which genkernel 2>/dev/null) ]; then
+      if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
         echo -e "[${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
         exit
       fi
-      if [ -n "$BRgrub" ] && [ -z $(which grub-mkconfig 2>/dev/null) ] && [ -z $(which grub2-mkconfig 2>/dev/null) ]; then
+      if [ -n "$BRgrub" ] && [ -z "$(which grub-mkconfig 2>/dev/null)" ] && [ -z "$(which grub2-mkconfig 2>/dev/null)" ]; then
         echo -e "[${RED}ERROR${NORM}] Grub not found. Install it and re-run the script."
         exit
       elif [ -n "$BRsyslinux" ]; then
-        if [ -z $(which extlinux 2>/dev/null) ]; then
+        if [ -z "$(which extlinux 2>/dev/null)" ]; then
           echo -e "[${RED}ERROR${NORM}] Extlinux not found. Install it and re-run the script"
           exit
         fi
-        if [ -z $(which syslinux 2>/dev/null) ]; then
+        if [ -z "$(which syslinux 2>/dev/null)" ]; then
           echo -e "[${RED}ERROR${NORM}] Syslinux not found. Install it and re-run the script"
           exit
         fi
       fi
-      if [ -n "$BRbootctl" ] || [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z $(which mkfs.vfat 2>/dev/null) ]; then
+      if [ -n "$BRbootctl" ] || [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which mkfs.vfat 2>/dev/null)" ]; then
         echo -e "[${RED}ERROR${NORM}] Package dosfstools is not installed. Install the package and re-run the script"
         exit
       fi
-      if [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z $(which efibootmgr 2>/dev/null) ]; then
+      if [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which efibootmgr 2>/dev/null)" ]; then
         echo -e "[${RED}ERROR${NORM}] Package efibootmgr is not installed. Install the package and re-run the script"
         exit
       fi
-      if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -z $(which bootctl 2>/dev/null) ]; then
+      if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which bootctl 2>/dev/null)" ]; then
         echo -e "[${RED}ERROR${NORM}] Bootctl not found"
         exit
       fi
@@ -1057,8 +1057,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ ! "$BRrootcheck" = "true" ]; then
         echo -e "[${RED}ERROR${NORM}] Wrong root partition: $BRroot"
         exit
-      elif [ ! -z $(lsblk -d -n -o mountpoint 2>/dev/null $BRroot) ]; then
-        echo -e "[${YELLOW}WARNING${NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null $BRroot), refusing to use it"
+      elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot")" ]; then
+        echo -e "[${YELLOW}WARNING${NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot"), refusing to use it"
         exit
       fi
     fi
@@ -1095,8 +1095,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         if [ ! "$BRpartscheck" = "true" ]; then
           echo -e "[${RED}ERROR${NORM}] Wrong $BRmpoint partition: $BRpart"
           exit
-        elif [ ! -z $(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart") ]; then
-          echo -e "[${YELLOW}WARNING${NORM}] $BRpart is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null $BRpart), refusing to use it"
+        elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart")" ]; then
+          echo -e "[${YELLOW}WARNING${NORM}] $BRpart is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart"), refusing to use it"
           exit
         fi
         if [ "$BRpart" = "$BRroot" ] || [ "$BRpart" = "$BRswap" ]; then
@@ -1213,12 +1213,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Create directory to mount the target root partition
     echo -e "\n${BOLD}[MOUNTING]${NORM}"
     echo -ne "${WRK}Making working directory"
-    OUTPUT=$(mkdir /mnt/target 2>&1) && ok_status || error_status
+    OUTPUT="$(mkdir /mnt/target 2>&1)" && ok_status || error_status
 
     # Mount the target root partition
     update_wrp "Mounting $BRroot"
     echo -ne "${WRK}Mounting $BRroot"
-    OUTPUT=$(mount -o $BRmountopts "$BRroot" /mnt/target 2>&1) && ok_status || error_status
+    OUTPUT="$(mount -o "$BRmountopts" "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
     # Store it's size
     BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
     if [ -n "$BRSTOP" ]; then
@@ -1234,7 +1234,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         echo -ne "${WRK}Unmounting $BRroot"
         sleep 1
         update_wrp "Unmounting $BRroot"
-        OUTPUT=$(umount "$BRroot" 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
+        OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
         exit
       else
         # Just warn if -x is given
@@ -1246,26 +1246,26 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
       update_wrp "Creating $BRrootsubvol"
       echo -ne "${WRK}Creating $BRrootsubvol"
-      OUTPUT=$(btrfs subvolume create /mnt/target/"$BRrootsubvol" 2>&1 1>/dev/null) && ok_status || error_status
+      OUTPUT="$(btrfs subvolume create /mnt/target/"$BRrootsubvol" 2>&1 1>/dev/null)" && ok_status || error_status
 
       # Create other btrfs subvolumes if specified by the user
       if [ -n "$BRsubvols" ]; then
         while read ln; do
           update_wrp "Creating $BRrootsubvol$ln"
           echo -ne "${WRK}Creating $BRrootsubvol$ln"
-          OUTPUT=$(btrfs subvolume create /mnt/target/"$BRrootsubvol$ln" 2>&1 1>/dev/null) && ok_status || error_status
+          OUTPUT="$(btrfs subvolume create /mnt/target/"$BRrootsubvol$ln" 2>&1 1>/dev/null)" && ok_status || error_status
         done< <(for subvol in "${BRsubvols[@]}"; do echo "$subvol"; done | sort)
       fi
 
      # Unmount the target root partition
       update_wrp "Unmounting $BRroot"
       echo -ne "${WRK}Unmounting $BRroot"
-      OUTPUT=$(umount "$BRroot" 2>&1) && ok_status || error_status
+      OUTPUT="$(umount "$BRroot" 2>&1)" && ok_status || error_status
 
      # Mount the root btrfs subvolume
       update_wrp "Mounting $BRrootsubvol"
       echo -ne "${WRK}Mounting $BRrootsubvol"
-      OUTPUT=$(mount -t btrfs -o $BRmountopts,subvol="$BRrootsubvol" "$BRroot" /mnt/target 2>&1) && ok_status || error_status
+      OUTPUT="$(mount -t btrfs -o "$BRmountopts",subvol="$BRrootsubvol" "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
       if [ -n "$BRSTOP" ]; then
         echo -e "[${RED}ERROR${NORM}] Error while making subvolumes" >&2
         unset BRSTOP
@@ -1289,7 +1289,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         mkdir -p /mnt/target"$BRmpoint"
         # Mount it
         update_wrp "Mounting $BRpart"
-        OUTPUT=$(mount "$BRpart" /mnt/target"$BRmpoint" 2>&1) && ok_status || error_status
+        OUTPUT="$(mount "$BRpart" /mnt/target"$BRmpoint" 2>&1)" && ok_status || error_status
         # Store sizes
         BRsizes+=(`lsblk -n -b -o size "$BRpart" 2>/dev/null`=/mnt/target"$BRmpoint")
         if [ -n "$BRCON" ]; then
@@ -1309,7 +1309,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
     # Find the bigger partition to save the downloaded backup archive
-    BRmaxsize=$(for size in "${BRsizes[@]}"; do echo "$size"; done | sort -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")
+    BRmaxsize="$(for size in "${BRsizes[@]}"; do echo "$size"; done | sort -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")"
   }
 
   # Show a nice summary
@@ -1323,9 +1323,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         # Replace any // with space
         BRmpoint="${BRmpoint///\//\ }"
         # Find filesystem type
-        BRpartfs=$(blkid -s TYPE -o value "$BRpart")
+        BRpartfs="$(blkid -s TYPE -o value "$BRpart")"
         # Find partition size
-        BRpartsize=$(lsblk -d -n -o size 2>/dev/null "$BRpart" | sed -e 's/ *//') # Remove leading spaces
+        BRpartsize="$(lsblk -d -n -o size 2>/dev/null "$BRpart" | sed -e 's/ *//')" # Remove leading spaces
         BRpartitions="$BRpartitions\n$BRpart|$BRmpoint|$BRpartfs|$BRpartsize"
       done
     fi
@@ -1447,17 +1447,17 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # Other partitions
     if [ -n "$BRparts" ]; then
-      for part in ${BRpartsorted[@]}; do
-        BRpart=$(echo $part | cut -f2 -d"=")
-        BRmpoint=$(echo $part | cut -f1 -d"=")
+      for part in "${BRpartsorted[@]}"; do
+        BRpart="$(echo "$part" | cut -f2 -d"=")"
+        BRmpoint="$(echo "$part" | cut -f1 -d"=")"
         # Convert // with 040, needed for paths with spaces
         BRmpoint="${BRmpoint///\//\\040}"
-        BRpartfs=$(blkid -s TYPE -o value $BRpart)
+        BRpartfs="$(blkid -s TYPE -o value "$BRpart")"
         echo -e "\n# $BRpart"
         if [[ "$BRpart" == *dev/md* ]]; then
           echo "$BRpart  $BRmpoint  $BRpartfs  defaults  0  2"
         else
-          echo "UUID=$(blkid -s UUID -o value $BRpart)  $BRmpoint  $BRpartfs  defaults  0  2"
+          echo "UUID=$(blkid -s UUID -o value "$BRpart")  $BRmpoint  $BRpartfs  defaults  0  2"
         fi
       done
     fi
@@ -1467,7 +1467,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [[ "$BRswap" == *dev/md* ]]; then
         echo -e "\n# $BRswap\n$BRswap  none  swap  defaults  0  0"
       else
-        echo -e "\n# $BRswap\nUUID=$(blkid -s UUID -o value $BRswap)  none  swap  defaults  0  0"
+        echo -e "\n# $BRswap\nUUID=$(blkid -s UUID -o value "$BRswap")  none  swap  defaults  0  0"
       fi
     fi
     # Inform the log
@@ -1504,7 +1504,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
       # Generate a basic crypttab file for the root partition
       echo "Generating basic crypttab..."
-      echo "$crypttab_root UUID=$(blkid -s UUID -o value $BRencdev) none luks" > /mnt/target/etc/crypttab # We set crypttab_root in set_kern_opts
+      echo "$crypttab_root UUID=$(blkid -s UUID -o value "$BRencdev") none luks" > /mnt/target/etc/crypttab # We set crypttab_root in set_kern_opts
       cat /mnt/target/etc/crypttab
       echo
     fi
@@ -1520,13 +1520,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
         # Use distro tools to rebuild initramfs images
         if [ "$BRdistro" = "Arch" ]; then
-          chroot /mnt/target mkinitcpio -p $cn
+          chroot /mnt/target mkinitcpio -p "$cn"
         elif [ "$BRdistro" = "Debian" ]; then
-          chroot /mnt/target update-initramfs -u -k $cn
+          chroot /mnt/target update-initramfs -u -k "$cn"
         elif [ "$BRdistro" = "Suse" ]; then
-          chroot /mnt/target mkinitrd -k vmlinuz-$cn -i $ipn-$cn
+          chroot /mnt/target mkinitrd -k vmlinuz-"$cn" -i "$ipn"-"$cn"
         elif [ "$BRdistro" = "Mandriva" ] || [ "$BRdistro" = "Fedora" ]; then
-          chroot /mnt/target dracut -f -v /boot/$ipn-$cn.img $cn
+          chroot /mnt/target dracut -f -v /boot/"$ipn"-"$cn".img "$cn"
         fi
       fi
     done
@@ -1553,20 +1553,20 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Find and copy Grub efi bootloader executable. Usually we need it in EFI/boot/ and as bootx64/32.efi
   cp_grub_efi() {
-    if [ ! -d /mnt/target$BRespmpoint/EFI/boot ]; then
-      mkdir /mnt/target$BRespmpoint/EFI/boot
+    if [ ! -d /mnt/target"$BRespmpoint"/EFI/boot ]; then
+      mkdir /mnt/target"$BRespmpoint"/EFI/boot
     fi
 
     # Check for both architectures
-    BR_GRUBX64_EFI="$(find /mnt/target$BRespmpoint/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubx64.efi" 2>/dev/null)"
-    BR_GRUBIA32_EFI="$(find /mnt/target$BRespmpoint/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubia32.efi" 2>/dev/null)"
+    BR_GRUBX64_EFI="$(find /mnt/target"$BRespmpoint"/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubx64.efi" 2>/dev/null)"
+    BR_GRUBIA32_EFI="$(find /mnt/target"$BRespmpoint"/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubia32.efi" 2>/dev/null)"
 
     if [ -f "$BR_GRUBX64_EFI" ]; then
       echo "Copying "$BR_GRUBX64_EFI" as /mnt/target$BRespmpoint/EFI/boot/bootx64.efi..."
-      cp "$BR_GRUBX64_EFI" /mnt/target$BRespmpoint/EFI/boot/bootx64.efi
+      cp "$BR_GRUBX64_EFI" /mnt/target"$BRespmpoint"/EFI/boot/bootx64.efi
     elif [ -f "$BR_GRUBIA32_EFI" ]; then
       echo "Copying "$BR_GRUBIA32_EFI" as /mnt/target$BRespmpoint/EFI/boot/bootx32.efi..."
-      cp "$BR_GRUBIA32_EFI" /mnt/target$BRespmpoint/EFI/boot/bootx32.efi
+      cp "$BR_GRUBIA32_EFI" /mnt/target"$BRespmpoint"/EFI/boot/bootx32.efi
     fi
   }
 
@@ -1593,11 +1593,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   detect_root_map() {
     # If the target root partition contains mapper and cryptsetup status succeeds on it then find the underlying block device (BRencdev)
     if [[ "$BRroot" == *mapper* ]] && cryptsetup status "$BRroot" &>/dev/null; then
-      BRencdev=$(cryptsetup status $BRroot 2>/dev/null | grep device | sed -e "s/ *device:[ \t]*//")
+      BRencdev="$(cryptsetup status "$BRroot" 2>/dev/null | grep device | sed -e "s/ *device:[ \t]*//")"
 
       # If the underlying block device contains mapper and lvdisplay succeeds on it then find the physical volume (BRphysical)
       if [[ "$BRencdev" == *mapper* ]] && lvdisplay "$BRencdev" &>/dev/null; then
-        BRphysical=$(lvdisplay --maps $BRencdev 2>/dev/null | grep "Physical volume" | sed -e "s/ *Physical volume[ \t]*//")
+        BRphysical="$(lvdisplay --maps "$BRencdev" 2>/dev/null | grep "Physical volume" | sed -e "s/ *Physical volume[ \t]*//")"
         # If the physical volume is in the form of /dev/md* then probably we have LUKS on LVM on RAID
         if [[ "$BRphysical" == *dev/md* ]]; then
           BRmap="luks->lvm->raid"
@@ -1615,12 +1615,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # If the target root partition contains mapper and lvdisplay succeeds on it then find the physical volume (BRphysical) and the volume group (BRvgname)
     elif [[ "$BRroot" == *mapper* ]] && lvdisplay "$BRroot" &>/dev/null; then
-      BRphysical=$(lvdisplay --maps $BRroot 2>/dev/null | grep "Physical volume" | sed -e "s/ *Physical volume[ \t]*//")
-      BRvgname=$(lvdisplay $BRroot 2>/dev/null | grep "VG Name" | sed -e "s/ *VG Name[ \t]*//")
+      BRphysical="$(lvdisplay --maps "$BRroot" 2>/dev/null | grep "Physical volume" | sed -e "s/ *Physical volume[ \t]*//")"
+      BRvgname="$(lvdisplay "$BRroot" 2>/dev/null | grep "VG Name" | sed -e "s/ *VG Name[ \t]*//")"
 
       # If the physical volume contains mapper and cryptsetup status succeeds on it then find the underlying block device (BRencdev)
       if [[ "$BRphysical" == *mapper* ]] && cryptsetup status "$BRphysical" &>/dev/null; then
-        BRencdev=$(cryptsetup status $BRphysical 2>/dev/null | grep device | sed -e "s/ *device:[ \t]*//")
+        BRencdev="$(cryptsetup status "$BRphysical" 2>/dev/null | grep device | sed -e "s/ *device:[ \t]*//")"
         # If the underlying block device is in the form of /dev/md* then we probably have LVM on LUKS on RAID
         if [[ "$BRencdev" == *dev/md* ]]; then
           BRmap="lvm->luks->raid"
@@ -1667,17 +1667,17 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     if [ "$BRmap" = "luks" ] || [ "$BRmap" = "luks->lvm" ] || [ "$BRmap" = "luks->raid" ] || [ "$BRmap" = "luks->lvm->raid" ]; then
       if [ -n "$BRencdev" ] && [ "$BRdistro" = "Gentoo" ]; then
-        BRkernopts="crypt_root=UUID=$(blkid -s UUID -o value $BRencdev) ${BRkernopts}"
+        BRkernopts="crypt_root=UUID=$(blkid -s UUID -o value "$BRencdev") ${BRkernopts}"
       elif [ -n "$BRencdev" ]; then
-        BRkernopts="cryptdevice=UUID=$(blkid -s UUID -o value $BRencdev):${BRroot##*/} ${BRkernopts}"
+        BRkernopts="cryptdevice=UUID=$(blkid -s UUID -o value "$BRencdev"):${BRroot##*/} ${BRkernopts}"
         # Also set root for crypttab file
         crypttab_root="${BRroot##*/}"
       fi
     elif [ "$BRmap" = "lvm->luks" ] || [ "$BRmap" = "lvm->luks->raid" ]; then
       if [ -n "$BRencdev" ] && [ "$BRdistro" = "Gentoo" ]; then
-        BRkernopts="crypt_root=UUID=$(blkid -s UUID -o value $BRencdev) ${BRkernopts}"
+        BRkernopts="crypt_root=UUID=$(blkid -s UUID -o value "$BRencdev") ${BRkernopts}"
       elif [ -n "$BRencdev" ]; then
-        BRkernopts="cryptdevice=UUID=$(blkid -s UUID -o value $BRencdev):$BRvgname ${BRkernopts}"
+        BRkernopts="cryptdevice=UUID=$(blkid -s UUID -o value "$BRencdev"):$BRvgname ${BRkernopts}"
         # Also set root for crypttab file
         crypttab_root="${BRphysical##*/}"
       fi
@@ -1701,26 +1701,26 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [[ "$BRgrub" == *md* ]]; then
         for device in $(grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]'); do
           if [ "$BRdistro" = "Arch" ]; then
-            chroot /mnt/target grub-install --target=i386-pc --recheck /dev/$device || touch /tmp/error
+            chroot /mnt/target grub-install --target=i386-pc --recheck /dev/"$device" || touch /tmp/error
           elif [ "$BRdistro" = "Debian" ]; then
-            chroot /mnt/target grub-install --recheck /dev/$device || touch /tmp/error
+            chroot /mnt/target grub-install --recheck /dev/"$device" || touch /tmp/error
           else
-            chroot /mnt/target grub2-install --recheck /dev/$device || touch /tmp/error
+            chroot /mnt/target grub2-install --recheck /dev/"$device" || touch /tmp/error
           fi
         done
       # Normal install
       elif [ "$BRdistro" = "Arch" ] && [ -d "$BR_EFI_DIR" ]; then
-        chroot /mnt/target grub-install --target=$BRgrubefiarch --efi-directory=$BRgrub --bootloader-id=grub --recheck || touch /tmp/error
+        chroot /mnt/target grub-install --target="$BRgrubefiarch" --efi-directory="$BRgrub" --bootloader-id=grub --recheck || touch /tmp/error
       elif [ "$BRdistro" = "Arch" ]; then
-        chroot /mnt/target grub-install --target=i386-pc --recheck $BRgrub || touch /tmp/error
+        chroot /mnt/target grub-install --target=i386-pc --recheck "$BRgrub" || touch /tmp/error
       elif [ "$BRdistro" = "Debian" ] && [ -d "$BR_EFI_DIR" ]; then
-        chroot /mnt/target grub-install --efi-directory=$BRgrub --recheck || touch /tmp/error
+        chroot /mnt/target grub-install --efi-directory="$BRgrub" --recheck || touch /tmp/error
       elif [ "$BRdistro" = "Debian" ]; then
-        chroot /mnt/target grub-install --recheck $BRgrub || touch /tmp/error
+        chroot /mnt/target grub-install --recheck "$BRgrub" || touch /tmp/error
       elif [ -d "$BR_EFI_DIR" ]; then
-        chroot /mnt/target grub2-install --efi-directory=$BRgrub --recheck || touch /tmp/error
+        chroot /mnt/target grub2-install --efi-directory="$BRgrub" --recheck || touch /tmp/error
       else
-        chroot /mnt/target grub2-install --recheck $BRgrub || touch /tmp/error
+        chroot /mnt/target grub2-install --recheck "$BRgrub" || touch /tmp/error
       fi
 
       # Fedora already does this
@@ -1782,14 +1782,14 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           # Search for raid devices for the selected array
           for device in $(grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z][0-9]'); do
             # Seperate the device
-            BRdevice=$(echo /dev/$device | cut -c -8)
+            BRdevice="$(echo /dev/"$device" | cut -c -8)"
             # Seperate the partition number
-            BRpartition=$(echo /dev/$device | cut -c 9-)
+            BRpartition="$(echo /dev/"$device" | cut -c 9-)"
             detect_partition_table_syslinux
             set_syslinux_flags_and_paths
             # Install the corresponding bin file
             echo "Installing $BRsyslinuxmbr in $BRdevice ($BRtable)"
-            dd bs=440 count=1 conv=notrunc if=$BRsyslinuxmbrpath/$BRsyslinuxmbr of=$BRdevice &>> /tmp/restore.log || touch /tmp/error
+            dd bs=440 count=1 conv=notrunc if="$BRsyslinuxmbrpath"/"$BRsyslinuxmbr" of="$BRdevice" &>> /tmp/restore.log || touch /tmp/error
           done
         # Normal install
         else
@@ -1808,7 +1808,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           set_syslinux_flags_and_paths
           echo "Installing $BRsyslinuxmbr in $BRsyslinux ($BRtable)"
           # Install the corresponding bin file
-          dd bs=440 count=1 conv=notrunc if=$BRsyslinuxmbrpath/$BRsyslinuxmbr of=$BRsyslinux &>> /tmp/restore.log || touch /tmp/error
+          dd bs=440 count=1 conv=notrunc if="$BRsyslinuxmbrpath"/"$BRsyslinuxmbr" of="$BRsyslinux" &>> /tmp/restore.log || touch /tmp/error
         fi
         # Copy com32 files we found in set_syslinux_flags_and_paths
         echo "Copying com32 modules"
@@ -1837,23 +1837,23 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       # Search target ESP for kernels
       for FILE in /mnt/target$BRespmpoint/*; do
         if file -b -k "$FILE" | grep -qw "bzImage"; then
-          cn=$(echo "$FILE" | sed -n 's/[^-]*-//p') # Cutted kernel name without any prefix (eg without vmlinuz-)
-          kn=$(basename "$FILE") # Full kernel name (eg vmlinuz-linux)
+          cn="$(echo "$FILE" | sed -n 's/[^-]*-//p')" # Cutted kernel name without any prefix (eg without vmlinuz-)
+          kn="$(basename "$FILE")" # Full kernel name (eg vmlinuz-linux)
 
           # Create boot entries using efibootmgr. We set ipn in detect_initramfs_prefix
           if [ "$BRdistro" = "Arch" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro $cn fallback" -l /$kn -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn-fallback.img" || touch /tmp/error
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro $cn" -l /$kn -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro $cn fallback" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn-fallback.img" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro $cn" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
           elif [ "$BRdistro" = "Debian" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BRkernopts initrd=/$ipn.img-$cn" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn.img-$cn" || touch /tmp/error
           elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Mandriva" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
           elif [ "$BRdistro" = "Suse" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$cn" -l /$kn -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
           elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$kn" -l /$kn -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$kn" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
           elif [ "$BRdistro" = "Gentoo" ]; then
-            chroot /mnt/target efibootmgr -d $BRespdev -p $BRespart -c -L "$BRdistro-$kn" -l /$kn -u "root=$BRroot $BRkernopts" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$kn" -l /"$kn" -u "root=$BRroot $BRkernopts" || touch /tmp/error
           fi
         fi
       done
@@ -1865,49 +1865,49 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       update_wrp "Installing Bootctl in $BRespmpoint"
       echo -e "\nInstalling Bootctl in $BRespmpoint"
       # Save old configuration entries first
-      if [ -d /mnt/target$BRespmpoint/loader/entries ]; then
-        for CONF in /mnt/target$BRespmpoint/loader/entries/*; do
+      if [ -d /mnt/target"$BRespmpoint"/loader/entries ]; then
+        for CONF in /mnt/target"$BRespmpoint"/loader/entries/*; do
           mv "$CONF" "$CONF"-old
         done
       fi
       if [ "$BRespmpoint" = "/boot/efi" ]; then cp_kernels; fi
 
       # Install systemd-boot
-      chroot /mnt/target bootctl --path=$BRespmpoint install || touch /tmp/error
+      chroot /mnt/target bootctl --path="$BRespmpoint" install || touch /tmp/error
 
       # Save old loader.conf if found
-      if [ -f /mnt/target$BRespmpoint/loader/loader.conf ]; then
-        mv /mnt/target$BRespmpoint/loader/loader.conf /mnt/target$BRespmpoint/loader/loader.conf-old
+      if [ -f /mnt/target"$BRespmpoint"/loader/loader.conf ]; then
+        mv /mnt/target"$BRespmpoint"/loader/loader.conf /mnt/target"$BRespmpoint"/loader/loader.conf-old
       fi
       # Generate loader.conf
-      echo "timeout 5" > /mnt/target$BRespmpoint/loader/loader.conf
+      echo "timeout 5" > /mnt/target"$BRespmpoint"/loader/loader.conf
       echo "Generating configuration entries"
 
       # Search target ESP for kernels
-      for FILE in /mnt/target$BRespmpoint/*; do
+      for FILE in /mnt/target"$BRespmpoint"/*; do
         if file -b -k "$FILE" | grep -qw "bzImage"; then
-          cn=$(echo "$FILE" | sed -n 's/[^-]*-//p') # Cutted kernel name without any prefix (eg without vmlinuz-)
-          kn=$(basename "$FILE") # Full kernel name (eg vmlinuz-linux)
+          cn="$(echo "$FILE" | sed -n 's/[^-]*-//p')" # Cutted kernel name without any prefix (eg without vmlinuz-)
+          kn="$(basename "$FILE")" # Full kernel name (eg vmlinuz-linux)
 
           # Generate loader.conf entries. We set ipn in detect_initramfs_prefix
           if [ "$BRdistro" = "Arch" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $(detect_bl_root) $BRkernopts" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
-            echo -e "title $BRdistro $cn fallback\nlinux /$kn\ninitrd /$ipn-$cn-fallback.img\noptions $(detect_bl_root) $BRkernopts" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn-fallback.conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
+            echo -e "title $BRdistro $cn fallback\nlinux /$kn\ninitrd /$ipn-$cn-fallback.img\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn"-fallback.conf
           elif [ "$BRdistro" = "Debian" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn.img-$cn\noptions $(detect_bl_root) $BRkernopts" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn.img-$cn\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Mandriva" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $(detect_bl_root) $BRkernopts" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Suse" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $(detect_bl_root) $BRkernopts" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $(detect_bl_root) $BRkernopts" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Gentoo" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\noptions root=$BRroot $BRkernopts" > /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\noptions root=$BRroot $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           fi
           # Inform the log
-          (echo -e "\nGenerated $BRdistro-$cn.conf:"; cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn.conf) >> /tmp/restore.log
+          (echo -e "\nGenerated $BRdistro-$cn.conf:"; cat /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf) >> /tmp/restore.log
           if [ "$BRdistro" = "Arch" ]; then
-            (echo -e "\nGenerated $BRdistro-$cn-fallback.conf:"; cat /mnt/target$BRespmpoint/loader/entries/$BRdistro-$cn-fallback.conf) >> /tmp/restore.log
+            (echo -e "\nGenerated $BRdistro-$cn-fallback.conf:"; cat /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn"-fallback.conf) >> /tmp/restore.log
           fi
         fi
       done
@@ -1935,10 +1935,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
       detect_partition_table_syslinux
       # Search for sgdisk in case of GPT
-      if [ ! "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
+      if [ ! "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ -z "$(which sgdisk 2>/dev/null)" ]; then
         echo -e "[${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" >&2
         BRabort="y"
-      elif [ "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ "$BRmode" = "2" ] && [ -z $(which sgdisk 2>/dev/null) ]; then
+      elif [ "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ "$BRmode" = "2" ] && [ -z "$(which sgdisk 2>/dev/null)" ]; then
         echo -e "[${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" >&2
         BRabort="y"
       # In case of Arch we run syslinux-install_update from chroot so it calls sgdisk from chroot also. Thats why in Restore mode sgdisk has to be in the archive
@@ -2013,7 +2013,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo -e "[${RED}ERROR${NORM}] Error reading archive" >&2
       clean_unmount
     else
-      target_arch=$(grep -F 'target_architecture.' /tmp/filelist | cut -f2 -d".")
+      target_arch="$(grep -F 'target_architecture.' /tmp/filelist | cut -f2 -d".")"
       if [ ! "$(uname -m)" = "$target_arch" ]; then
         echo -e "[${RED}ERROR${NORM}] Running and target system architecture mismatch or invalid archive" >&2
         clean_unmount
@@ -2042,7 +2042,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Make sure we are outside of /mnt/target
     cd ~
     # Delete the downloaded backup archive
-    rm "$BRmaxsize/downloaded_backup" 2>/dev/null
+    rm "$BRmaxsize"/downloaded_backup 2>/dev/null
 
     if [ -n "$post_umt" ]; then
       # Unmount everything we mounted in prepare_chroot
@@ -2062,7 +2062,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         sleep 1
         update_wrp "Unmounting $ln"
         echo -ne "${WRK}Unmounting $ln"
-        OUTPUT=$(umount "$ln" 2>&1) && ok_status || error_status
+        OUTPUT="$(umount "$ln" 2>&1)" && ok_status || error_status
       done < <(for BRpart in "${BRumountparts[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | tac)
     fi
 
@@ -2071,11 +2071,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
         update_wrp "Unmounting $BRrootsubvol"
         echo -ne "${WRK}Unmounting $BRrootsubvol"
-        OUTPUT=$(umount "$BRroot" 2>&1) && ok_status || error_status
+        OUTPUT="$(umount "$BRroot" 2>&1)" && ok_status || error_status
         sleep 1
         update_wrp "Mounting $BRroot"
         echo -ne "${WRK}Mounting $BRroot"
-        OUTPUT=$(mount "$BRroot" /mnt/target 2>&1) && ok_status || error_status
+        OUTPUT="$(mount "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
 
         # Delete the created subvolumes
         if [ -n "$BRsubvols" ]; then
@@ -2083,12 +2083,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
             sleep 1
             update_wrp "Deleting $BRrootsubvol$ln"
             echo -ne "${WRK}Deleting $BRrootsubvol$ln"
-            OUTPUT=$(btrfs subvolume delete /mnt/target/"$BRrootsubvol$ln" 2>&1 1>/dev/null) && ok_status || error_status
+            OUTPUT="$(btrfs subvolume delete /mnt/target/"$BRrootsubvol$ln" 2>&1 1>/dev/null)" && ok_status || error_status
           done < <(for subvol in "${BRsubvols[@]}"; do echo "$subvol"; done | sort -r)
         fi
         update_wrp "Deleting $BRrootsubvol"
         echo -ne "${WRK}Deleting $BRrootsubvol"
-        OUTPUT=$(btrfs subvolume delete /mnt/target/"$BRrootsubvol" 2>&1 1>/dev/null) && ok_status || error_status
+        OUTPUT="$(btrfs subvolume delete /mnt/target/"$BRrootsubvol" 2>&1 1>/dev/null)" && ok_status || error_status
       fi
 
       # If no error occured above and -x is not given clean the target root partition from created mountpoints
@@ -2102,7 +2102,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     sleep 1
     update_wrp "Unmounting $BRroot"
     echo -ne "${WRK}Unmounting $BRroot"
-    OUTPUT=$(umount "$BRroot" 2>&1) && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
+    OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
 
     if [ -n "$BRwrap" ] && [ -n "$post_umt" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
     clean_tmp_files
@@ -2218,7 +2218,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRsource" ]; then
       update_wrp "Please wait while checking and reading archive"
       # Read the backup archive and give list of files in /tmp/filelist also
-      read_archive | tee /tmp/filelist | while read ln; do a=$((a + 1)) && echo -en "\rChecking and reading archive ($a Files) "; done
+      read_archive | tee /tmp/filelist | while read ln; do a="$((a + 1))" && echo -en "\rChecking and reading archive ($a Files) "; done
       echo
       check_archive
     fi
@@ -2252,7 +2252,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo -e "${BOLD}"
     read -p "Continue? [Y/n]: " an
     echo -ne "${NORM}"
-    if [ -z "$an" ]; then an=y; fi
+    if [ -z "$an" ]; then an="y"; fi
 
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
       break
@@ -2270,7 +2270,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Restore mode
   if [ "$BRmode" = "1" ]; then
     # Store the number of files we found from read_archive
-    total=$(cat /tmp/filelist | wc -l)
+    total="$(cat /tmp/filelist | wc -l)"
     sleep 1
     # Run tar and pipe it through the progress calculation, give errors to log
     mode_job="Extracting"
@@ -2280,10 +2280,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   elif [ "$BRmode" = "2" ]; then
     update_wrp "Please wait while calculating files"
     # Calculate the number of files
-    run_calc | while read ln; do a=$((a + 1)) && echo -en "\rCalculating: $a Files"; done
+    run_calc | while read ln; do a="$((a + 1))" && echo -en "\rCalculating: $a Files"; done
     sleep 1
     # Store the number of files we found from run_calc
-    total=$(cat /tmp/filelist | wc -l)
+    total="$(cat /tmp/filelist | wc -l)"
     echo
     # Run rsync and pipe it through the progress calculation, give errors to log
     mode_job="Transferring"
@@ -2291,6 +2291,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   fi
 
   if [ -z "$BRverb" ]; then echo; fi
+  prepare_chroot 1> >(tee -a /tmp/restore.log) 2>&1
 
   update_wrp "Generating fstab"
   echo -e "\nGenerating fstab"
@@ -2305,14 +2306,14 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo -e "${BOLD}"
     read -p "Edit fstab? [y/N]: " an
     echo -ne "${NORM}"
-    if [ -z "$an" ]; then an=n; fi
+    if [ -z "$an" ]; then an="n"; fi
 
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
       PS3="Enter number: "
       echo -e "\n${CYAN}Select editor${NORM}"
       select BReditor in "nano" "vi"; do
         if [[ "$REPLY" = [1-2] ]]; then
-          $BReditor /mnt/target/etc/fstab
+          "$BReditor" /mnt/target/etc/fstab
           # Inform the log
           (echo -e "\nEdited fstab:"; cat /mnt/target/etc/fstab) >> /tmp/restore.log
           break
@@ -2329,7 +2330,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   done
 
  # Run post processing functions, update the log and pray :p
- (prepare_chroot; build_initramfs; generate_locales; install_bootloader) 1> >(tee -a /tmp/restore.log) 2>&1
+ (build_initramfs; generate_locales; install_bootloader) 1> >(tee -a /tmp/restore.log) 2>&1
 
   exit_screen
   sleep 1

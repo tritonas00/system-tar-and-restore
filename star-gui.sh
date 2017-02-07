@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd $(dirname $0)
+cd "$(dirname "$0")"
 
 clean_tmp_files() {
   if [ -f /tmp/wr_proc ]; then rm /tmp/wr_proc; fi

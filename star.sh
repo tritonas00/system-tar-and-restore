@@ -770,7 +770,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     else
       detect_encryption
       # If the downloaded archive is encrypted prompt the user for passphrase
-      if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ]; then
+      if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ] && [ -z "$BRwrap" ]; then
         echo -ne "${BOLD}"
         read -p "Enter Passphrase: " BRencpass
         echo -ne "${NORM}"

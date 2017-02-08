@@ -1,5 +1,12 @@
 Changelog:
 
+6.4
+  proper variable quoting
+  fix: check_input didn't parse correctly mounted partitions in mountpoints with spaces
+  fix: files/directories with spaces in /home didn't parse correctly with -O in backup mode
+  fix: if the scripts are located in directory with spaces and gui wrapper called outside of that directory, it could not find the main script
+  moved prepare_choot before asking to edit fstab - at that stage the user can easily chroot in the target system for further intervention
+
 6.3
   added missing Fedora tar option in backup.conf
   tar options starting with "--exclude=" in backup.conf now translated as paths in Exclude entry

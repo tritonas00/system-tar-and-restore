@@ -607,7 +607,7 @@ lost+found">
                         <vbox>
                                 <text use-markup="true" label="<b><big>System Tar &amp; Restore</big></b>"></text>
                                 <text wrap="false" label="Backup and Restore your system using tar or Transfer it with rsync"></text>
-                                <text use-markup="true" label="<i><small>Version 6.4 tritonas00@gmail.com 2012-2017</small></i>"></text>
+                                <text use-markup="true" label="<i><small>Version 6.4.1 tritonas00@gmail.com 2012-2017</small></i>"></text>
                                 <hseparator></hseparator>
                                 <vbox scrollable="true" shadow-type="0">
                                         <text xalign="0" wrap="false">

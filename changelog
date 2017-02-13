@@ -2,6 +2,7 @@ Changelog:
 
 6.4.1
   fixed broken multi core compression
+  updated openssl detection for file-5.30
 
 6.4
   proper variable quoting

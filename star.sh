@@ -720,7 +720,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Detect backup archive encryption
   detect_encryption() {
-    if [ "$(file -b "$BRsource")" = "data" ]; then
+    if [ "$(file -b "$BRsource")" = "data" ] || file -b "$BRsource" | grep -qw openssl; then
       BRencmethod="openssl"
     elif file -b "$BRsource" | grep -qw GPG; then
       BRencmethod="gpg"

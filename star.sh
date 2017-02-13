@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 6.4"
+BR_VERSION="System Tar & Restore 6.4.1"
 
 # Set EFI detection directory
 BR_EFI_DIR="/sys/firmware/efi"
@@ -386,13 +386,13 @@ if [ "$BRmode" = "0" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      tar "$BR_MAIN_OPTS" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
+      tar ${BR_MAIN_OPTS} >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      tar "$BR_MAIN_OPTS" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
+      tar ${BR_MAIN_OPTS} >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
     # Without encryption
     else
-      tar "$BR_MAIN_OPTS" "$BRFOLDER"/"$BRNAME"."$BR_EXT" "${BR_TAR_OPTS[@]}" /
+      tar ${BR_MAIN_OPTS} "$BRFOLDER"/"$BRNAME"."$BR_EXT" "${BR_TAR_OPTS[@]}" /
     fi
   }
 

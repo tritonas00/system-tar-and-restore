@@ -932,13 +932,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar "$BR_MAIN_OPTS" - "${BR_TR_OPTS[@]}" -C /mnt/target
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar ${BR_MAIN_OPTS} - "${BR_TR_OPTS[@]}" -C /mnt/target
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar "$BR_MAIN_OPTS" - "${BR_TR_OPTS[@]}" -C /mnt/target
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar ${BR_MAIN_OPTS} - "${BR_TR_OPTS[@]}" -C /mnt/target
     # Without encryption
     else
-      tar "$BR_MAIN_OPTS" "$BRsource" "${BR_TR_OPTS[@]}" -C /mnt/target
+      tar ${BR_MAIN_OPTS} "$BRsource" "${BR_TR_OPTS[@]}" -C /mnt/target
     fi
   }
 

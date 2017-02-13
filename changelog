@@ -1,5 +1,8 @@
 Changelog:
 
+6.4.1
+  fixed broken multi core compression
+
 6.4
   proper variable quoting
   fix: check_input didn't parse correctly mounted partitions in mountpoints with spaces

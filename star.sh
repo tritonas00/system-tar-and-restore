@@ -639,7 +639,7 @@ if [ "$BRmode" = "0" ]; then
 
   # Run tar and pipe it through the progress calculation, give errors to log
   mode_job="Archiving"
-  (run_tar 2>> "$BRFOLDER"/backup.log && echo "$total files archived successfully" >> "$BRFOLDER"/backup.log || touch /tmp/error) | pgrs_bar
+  (run_tar 2>> "$BRFOLDER"/backup.log && echo "$total Files archived successfully" >> "$BRFOLDER"/backup.log || touch /tmp/error) | pgrs_bar
   echo
 
   # Generate configuration file if -g is given and no error occurred
@@ -2261,7 +2261,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     sleep 1
     # Run tar and pipe it through the progress calculation, give errors to log
     mode_job="Extracting"
-    (run_tar 2>>/tmp/restore.log && echo "$total files extracted successfully" >> /tmp/restore.log) | pgrs_bar
+    (run_tar 2>>/tmp/restore.log && echo "$total Files extracted successfully" >> /tmp/restore.log) | pgrs_bar
 
   # Transfer mode
   elif [ "$BRmode" = "2" ]; then
@@ -2274,7 +2274,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo
     # Run rsync and pipe it through the progress calculation, give errors to log
     mode_job="Transferring"
-    (run_rsync 2>>/tmp/restore.log && echo "$total files transferred successfully" >> /tmp/restore.log) | pgrs_bar
+    (run_rsync 2>>/tmp/restore.log && echo "$total Files transferred successfully" >> /tmp/restore.log) | pgrs_bar
   fi
 
   if [ -z "$BRverb" ]; then echo; fi

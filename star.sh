@@ -881,18 +881,18 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
         # Create entries. We set ipn in detect_initramfs_prefix
         if [ "$BRdistro" = "Arch" ]; then
-          echo -e "LABEL arch\n\tMENU LABEL $BRdistro $cn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn.img"
-          echo -e "LABEL archfallback\n\tMENU LABEL $BRdistro $cn fallback\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn-fallback.img"
+          echo -e "LABEL arch\n\tMENU LABEL $BRdistro $cn\n\tLINUX ../$kn\n\tAPPEND root=$bl_root $BRkernopts\n\tINITRD ../$ipn-$cn.img"
+          echo -e "LABEL archfallback\n\tMENU LABEL $BRdistro $cn fallback\n\tLINUX ../$kn\n\tAPPEND root=$bl_root $BRkernopts\n\tINITRD ../$ipn-$cn-fallback.img"
         elif [ "$BRdistro" = "Debian" ]; then
-          echo -e "LABEL debian\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn.img-$cn"
+          echo -e "LABEL debian\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND root=$bl_root $BRkernopts\n\tINITRD ../$ipn.img-$cn"
         elif [ "$BRdistro" = "Fedora" ]; then
-          echo -e "LABEL fedora\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn.img"
+          echo -e "LABEL fedora\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND root=$bl_root $BRkernopts\n\tINITRD ../$ipn-$cn.img"
         elif [ "$BRdistro" = "Suse" ]; then
-          echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn"
+          echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND root=$bl_root $BRkernopts\n\tINITRD ../$ipn-$cn"
         elif [ "$BRdistro" = "Mandriva" ]; then
-          echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn.img"
+          echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND root=$bl_root $BRkernopts\n\tINITRD ../$ipn-$cn.img"
         elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-          echo -e "LABEL gentoo\n\tMENU LABEL $BRdistro-$kn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn"
+          echo -e "LABEL gentoo\n\tMENU LABEL $BRdistro-$kn\n\tLINUX ../$kn\n\tAPPEND root=$bl_root $BRkernopts\n\tINITRD ../$ipn-$cn"
         elif [ "$BRdistro" = "Gentoo" ]; then
           echo -e "LABEL gentoo\n\tMENU LABEL $BRdistro-$kn\n\tLINUX ../$kn\n\tAPPEND root=$BRroot $BRkernopts"
         fi
@@ -1837,16 +1837,16 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
           # Create boot entries using efibootmgr. We set ipn in detect_initramfs_prefix
           if [ "$BRdistro" = "Arch" ]; then
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro $cn fallback" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn-$cn-fallback.img" || touch /tmp/error
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro $cn" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro $cn fallback" -l /"$kn" -u "root=$bl_root $BRkernopts initrd=/$ipn-$cn-fallback.img" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro $cn" -l /"$kn" -u "root=$bl_root $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
           elif [ "$BRdistro" = "Debian" ]; then
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn.img-$cn" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "root=$bl_root $BRkernopts initrd=/$ipn.img-$cn" || touch /tmp/error
           elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Mandriva" ]; then
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "root=$bl_root $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
           elif [ "$BRdistro" = "Suse" ]; then
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "root=$bl_root $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
           elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$kn" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$kn" -l /"$kn" -u "root=$bl_root $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
           elif [ "$BRdistro" = "Gentoo" ]; then
             chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$kn" -l /"$kn" -u "root=$BRroot $BRkernopts" || touch /tmp/error
           fi
@@ -1886,16 +1886,16 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
           # Generate loader.conf entries. We set ipn in detect_initramfs_prefix
           if [ "$BRdistro" = "Arch" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
-            echo -e "title $BRdistro $cn fallback\nlinux /$kn\ninitrd /$ipn-$cn-fallback.img\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn"-fallback.conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions root=$bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
+            echo -e "title $BRdistro $cn fallback\nlinux /$kn\ninitrd /$ipn-$cn-fallback.img\noptions root=$bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn"-fallback.conf
           elif [ "$BRdistro" = "Debian" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn.img-$cn\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn.img-$cn\noptions root=$bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Mandriva" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions root=$bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Suse" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions root=$bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions root=$bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Gentoo" ]; then
             echo -e "title $BRdistro $cn\nlinux /$kn\noptions root=$BRroot $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           fi

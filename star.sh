@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 6.4.1"
+BR_VERSION="System Tar & Restore 6.5"
 
 # Set EFI detection directory
 BR_EFI_DIR="/sys/firmware/efi"
@@ -823,24 +823,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Set the root partition in Syslinux, EFISTUB and Bootctl configuration entries. If root is on lvm use the full name, otherwise use UUID
-  detect_bl_root() {
-    if [[ "$BRroot" == *mapper* ]]; then
-      echo "root=$BRroot"
-    else
-      echo "root=UUID=$(blkid -s UUID -o value "$BRroot")"
-    fi
-  }
-
-  # Set the root partition in fstab. If root is on raid use the full name, otherwise use UUID
-  detect_fstab_root() {
-    if [[ "$BRroot" == *dev/md* ]]; then
-      echo "$BRroot"
-    else
-      echo "UUID=$(blkid -s UUID -o value "$BRroot")"
-    fi
-  }
-
   # Detect the partition table for Syslinux so we can use the corresponding bin files
   detect_partition_table_syslinux() {
     # Check if the target Syslinux device is a raid array first
@@ -900,18 +882,18 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
         # Create entries. We set ipn in detect_initramfs_prefix
         if [ "$BRdistro" = "Arch" ]; then
-          echo -e "LABEL arch\n\tMENU LABEL $BRdistro $cn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BRkernopts\n\tINITRD ../$ipn-$cn.img"
-          echo -e "LABEL archfallback\n\tMENU LABEL $BRdistro $cn fallback\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BRkernopts\n\tINITRD ../$ipn-$cn-fallback.img"
+          echo -e "LABEL arch\n\tMENU LABEL $BRdistro $cn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn.img"
+          echo -e "LABEL archfallback\n\tMENU LABEL $BRdistro $cn fallback\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn-fallback.img"
         elif [ "$BRdistro" = "Debian" ]; then
-          echo -e "LABEL debian\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BRkernopts\n\tINITRD ../$ipn.img-$cn"
+          echo -e "LABEL debian\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn.img-$cn"
         elif [ "$BRdistro" = "Fedora" ]; then
-          echo -e "LABEL fedora\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BRkernopts\n\tINITRD ../$ipn-$cn.img"
+          echo -e "LABEL fedora\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn.img"
         elif [ "$BRdistro" = "Suse" ]; then
-          echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BRkernopts\n\tINITRD ../$ipn-$cn"
+          echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn"
         elif [ "$BRdistro" = "Mandriva" ]; then
-          echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BRkernopts\n\tINITRD ../$ipn-$cn.img"
+          echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn.img"
         elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-          echo -e "LABEL gentoo\n\tMENU LABEL $BRdistro-$kn\n\tLINUX ../$kn\n\tAPPEND $(detect_bl_root) $BRkernopts\n\tINITRD ../$ipn-$cn"
+          echo -e "LABEL gentoo\n\tMENU LABEL $BRdistro-$kn\n\tLINUX ../$kn\n\tAPPEND $bl_root $BRkernopts\n\tINITRD ../$ipn-$cn"
         elif [ "$BRdistro" = "Gentoo" ]; then
           echo -e "LABEL gentoo\n\tMENU LABEL $BRdistro-$kn\n\tLINUX ../$kn\n\tAPPEND root=$BRroot $BRkernopts"
         fi
@@ -1436,13 +1418,20 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Generate target system's fstab
   generate_fstab() {
+  # Set the root partition. If it is on raid use the normal name, otherwise use UUID
+    if [[ "$BRroot" == *dev/md* ]]; then
+      fstab_root="$BRroot"
+    else
+      fstab_root="UUID=$(blkid -s UUID -o value "$BRroot")"
+    fi
+
     # Root partition
     if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ] && [ ! "$BRdistro" = "Suse" ]; then # Suse seems to boot without defining subvol= option
-      echo -e "# $BRroot\n$(detect_fstab_root)  /  btrfs  $BRmountopts,subvol=$BRrootsubvol  0  0"
+      echo -e "# $BRroot\n$fstab_root  /  btrfs  $BRmountopts,subvol=$BRrootsubvol  0  0"
     elif [ "$BRrootfs" = "btrfs" ]; then
-      echo -e "# $BRroot\n$(detect_fstab_root)  /  btrfs  $BRmountopts  0  0"
+      echo -e "# $BRroot\n$fstab_root  /  btrfs  $BRmountopts  0  0"
     else
-      echo -e "# $BRroot\n$(detect_fstab_root)  /  $BRrootfs  $BRmountopts  0  1"
+      echo -e "# $BRroot\n$fstab_root  /  $BRrootfs  $BRmountopts  0  1"
     fi
 
     # Other partitions
@@ -1686,6 +1675,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Install the selected bootloader
   install_bootloader() {
+  # Set the root partition in Syslinux, EFISTUB and Bootctl configuration entries. If it is on lvm use the normal name, otherwise use UUID
+    if [[ "$BRroot" == *mapper* ]]; then
+      bl_root="$BRroot"
+    else
+      bl_root="UUID=$(blkid -s UUID -o value "$BRroot")"
+    fi
+
     # GRUB
     if [ -n "$BRgrub" ]; then
       update_wrp "Installing Grub in $BRgrub"
@@ -1842,16 +1838,16 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
           # Create boot entries using efibootmgr. We set ipn in detect_initramfs_prefix
           if [ "$BRdistro" = "Arch" ]; then
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro $cn fallback" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn-fallback.img" || touch /tmp/error
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro $cn" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro $cn fallback" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn-$cn-fallback.img" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro $cn" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
           elif [ "$BRdistro" = "Debian" ]; then
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn.img-$cn" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn.img-$cn" || touch /tmp/error
           elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Mandriva" ]; then
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
           elif [ "$BRdistro" = "Suse" ]; then
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
           elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$kn" -l /"$kn" -u "$(detect_bl_root) $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
+            chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$kn" -l /"$kn" -u "$bl_root $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
           elif [ "$BRdistro" = "Gentoo" ]; then
             chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$kn" -l /"$kn" -u "root=$BRroot $BRkernopts" || touch /tmp/error
           fi
@@ -1891,16 +1887,16 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
           # Generate loader.conf entries. We set ipn in detect_initramfs_prefix
           if [ "$BRdistro" = "Arch" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
-            echo -e "title $BRdistro $cn fallback\nlinux /$kn\ninitrd /$ipn-$cn-fallback.img\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn"-fallback.conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
+            echo -e "title $BRdistro $cn fallback\nlinux /$kn\ninitrd /$ipn-$cn-fallback.img\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn"-fallback.conf
           elif [ "$BRdistro" = "Debian" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn.img-$cn\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn.img-$cn\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Fedora" ] || [ "$BRdistro" = "Mandriva" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Suse" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
-            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $(detect_bl_root) $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
+            echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions $bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Gentoo" ]; then
             echo -e "title $BRdistro $cn\nlinux /$kn\noptions root=$BRroot $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           fi

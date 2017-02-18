@@ -2035,7 +2035,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   clean_unmount() {
     echo -e "\n${BOLD}[CLEANING AND UNMOUNTING]${NORM}"
     # Make sure we are outside of /mnt/target
-    cd ~
+    cd /
     # Delete the downloaded backup archive
     rm "$BRmaxsize"/downloaded_backup 2>/dev/null
 

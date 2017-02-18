@@ -625,8 +625,7 @@ if [ "$BRmode" = "0" ]; then
   mkdir -p "$BRFOLDER"
   sleep 1
   # Start the log
-  echo -e "$BR_VERSION\n" > "$BRFOLDER"/backup.log
-  (echo "[SUMMARY]"; show_summary; echo -e "\n[ARCHIVER]") >> "$BRFOLDER"/backup.log
+  echo -e "$BR_VERSION\n\n[SUMMARY]\n$(show_summary)\n\n[ARCHIVER]" > "$BRFOLDER"/backup.log
   # Store start time
   start=$(date +%s)
 
@@ -640,7 +639,7 @@ if [ "$BRmode" = "0" ]; then
 
   # Run tar and pipe it through the progress calculation, give errors to log
   mode_job="Archiving"
-  (run_tar 2>> "$BRFOLDER"/backup.log || touch /tmp/error) | pgrs_bar
+  (run_tar 2>> "$BRFOLDER"/backup.log && echo "System archived successfully" >> "$BRFOLDER"/backup.log || touch /tmp/error) | pgrs_bar
   echo
 
   # Generate configuration file if -g is given and no error occurred
@@ -654,8 +653,8 @@ if [ "$BRmode" = "0" ]; then
 
   # Calculate elapsed time
   elapsed="$(($(($(date +%s)-start))/3600)) hours $((($(($(date +%s)-start))%3600)/60)) min $(($(($(date +%s)-start))%60)) sec"
+
   # Complete the log
-  if [ ! -f /tmp/error ]; then echo "System archived successfully" >> "$BRFOLDER"/backup.log; fi
   echo "Elapsed time: $elapsed" >> "$BRFOLDER"/backup.log
 
   # Inform the user if error occurred or not
@@ -1460,7 +1459,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
     # Inform the log
-    (echo -e "\nGenerated fstab:"; cat /mnt/target/etc/fstab) >> /tmp/restore.log
+    echo -e "\nGenerated fstab:\n$(cat /mnt/target/etc/fstab)" >> /tmp/restore.log
   }
 
   # Generate a basic mdadm.conf and crypttab, rebuild initramfs images for all available kernels
@@ -1739,7 +1738,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         fi
 
         # Inform the log
-        (echo -e "\nModified grub config:"; cat /mnt/target/etc/default/grub; echo) >> /tmp/restore.log
+        echo -e "\nModified grub config:\n$(cat /mnt/target/etc/default/grub)\n" >> /tmp/restore.log
       fi
 
       # Run also mkconfig (update-grub equivalent)
@@ -1814,7 +1813,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo "Generating syslinux.cfg"
       generate_syslinux_cfg >> /mnt/target/boot/syslinux/syslinux.cfg
       # Inform the log
-      (echo -e "\nGenerated syslinux config:"; cat /mnt/target/boot/syslinux/syslinux.cfg) >> /tmp/restore.log
+      echo -e "\nGenerated syslinux config:\n$(cat /mnt/target/boot/syslinux/syslinux.cfg)" >> /tmp/restore.log
 
    # EFISTUB
     elif [ -n "$BRefistub" ]; then
@@ -1901,9 +1900,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
             echo -e "title $BRdistro $cn\nlinux /$kn\noptions root=$BRroot $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           fi
           # Inform the log
-          (echo -e "\nGenerated $BRdistro-$cn.conf:"; cat /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf) >> /tmp/restore.log
+          echo -e "\nGenerated $BRdistro-$cn.conf:\n$(cat /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf)" >> /tmp/restore.log
           if [ "$BRdistro" = "Arch" ]; then
-            (echo -e "\nGenerated $BRdistro-$cn-fallback.conf:"; cat /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn"-fallback.conf) >> /tmp/restore.log
+            echo -e "\nGenerated $BRdistro-$cn-fallback.conf:\n$(cat /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn"-fallback.conf)" >> /tmp/restore.log
           fi
         fi
       done
@@ -2128,14 +2127,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Start the log
-  start_log() {
-    echo -e "$BR_VERSION\n"
-    echo "[SUMMARY]"
-    show_summary
-    echo -e "\n[PROCESSING]"
-  }
-
   # Check if root partition is given
   if [ -z "$BRroot" ]; then
     echo -e "[${RED}ERROR${NORM}] You must specify a target root partition" >&2
@@ -2259,10 +2250,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   done
 
-  start_log > /tmp/restore.log
+  # Start the log
+  echo -e "$BR_VERSION\n\n[SUMMARY]\n$(show_summary)\n\n[PROCESSING]" > /tmp/restore.log
 
   echo -e "\n${BOLD}[PROCESSING]${NORM}"
-
   # Restore mode
   if [ "$BRmode" = "1" ]; then
     # Store the number of files we found from read_archive
@@ -2311,7 +2302,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         if [[ "$REPLY" = [1-2] ]]; then
           "$BReditor" /mnt/target/etc/fstab
           # Inform the log
-          (echo -e "\nEdited fstab:"; cat /mnt/target/etc/fstab) >> /tmp/restore.log
+          echo -e "\nEdited fstab:\n$(cat /mnt/target/etc/fstab)" >> /tmp/restore.log
           break
         else
           echo -e "${RED}Please select a valid option${NORM}"

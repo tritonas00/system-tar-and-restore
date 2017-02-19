@@ -153,7 +153,7 @@ run_main() {
       echo star.sh "${SCR_ARGS[@]}" > /tmp/wr_proc
     else
       echo false > /tmp/wr_upt
-      setsid ./star.sh "${SCR_ARGS[@]}" 1>&3 2> /tmp/wr_log
+      setsid ./star.sh "${SCR_ARGS[@]}" >&3 2> /tmp/wr_log
       sleep 0.1
       echo "$BR_TITLE" > /tmp/wr_proc
       echo true > /tmp/wr_upt
@@ -653,6 +653,6 @@ lost+found">
 </window>
 '
 exec 3>&1
-gtkdialog --program=MAIN_DIALOG 1>/dev/null
+gtkdialog --program=MAIN_DIALOG > /dev/null
 
 clean_tmp_files

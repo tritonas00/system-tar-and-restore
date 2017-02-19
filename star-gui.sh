@@ -153,7 +153,7 @@ run_main() {
       echo star.sh "${SCR_ARGS[@]}" > /tmp/wr_proc
     else
       echo false > /tmp/wr_upt
-      setsid ./star.sh "${SCR_ARGS[@]}" 2> /tmp/wr_log
+      setsid ./star.sh "${SCR_ARGS[@]}" 1>&3 2> /tmp/wr_log
       sleep 0.1
       echo "$BR_TITLE" > /tmp/wr_proc
       echo true > /tmp/wr_upt
@@ -632,7 +632,7 @@ lost+found">
                                 <input file icon="gtk-ok"></input>
                                 <label>Run</label>
                                 <variable>BTN_RUN</variable>
-                                <action>bash -c "source /tmp/wr_functions; set_args && run_main 1>&3 &"</action>
+                                <action>bash -c "source /tmp/wr_functions; set_args && run_main &"</action>
                         </button>
                         <button tooltip-text="Kill the process" sensitive="false">
                                 <input file icon="gtk-cancel"></input>

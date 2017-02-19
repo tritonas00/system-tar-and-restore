@@ -2202,13 +2202,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       check_wget
     fi
 
-    if [ -n "$BRsource" ]; then
-      update_wrp "Please wait while checking and reading archive"
-      # Read the backup archive and give list of files in /tmp/filelist also
-      read_archive | tee /tmp/filelist | while read ln; do a="$((a + 1))" && echo -en "\rChecking and reading archive ($a Files) "; done
-      echo
-      check_archive
-    fi
+    update_wrp "Please wait while checking and reading archive"
+    # Read the backup archive and give list of files in /tmp/filelist also
+    read_archive | tee /tmp/filelist | while read ln; do a="$((a + 1))" && echo -en "\rChecking and reading archive ($a Files) "; done
+    echo
+    check_archive
   fi
 
   detect_distro

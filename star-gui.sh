@@ -632,7 +632,7 @@ lost+found">
                                 <input file icon="gtk-ok"></input>
                                 <label>Run</label>
                                 <variable>BTN_RUN</variable>
-                                <action>bash -c "source /tmp/wr_functions; set_args && run_main &"</action>
+                                <action>bash -c "source /tmp/wr_functions; set_args && run_main 1>&3 &"</action>
                         </button>
                         <button tooltip-text="Kill the process" sensitive="false">
                                 <input file icon="gtk-cancel"></input>
@@ -652,7 +652,7 @@ lost+found">
 	<input file>/tmp/wr_proc</input>
 </window>
 '
-
-gtkdialog --program=MAIN_DIALOG
+exec 3>&1
+gtkdialog --program=MAIN_DIALOG 1>/dev/null
 
 clean_tmp_files

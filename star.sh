@@ -2191,9 +2191,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     if [[ ! "$BRuri" == /* ]]; then
       BRsource="$BRmaxsize/downloaded_backup"
-      # Give progress info to gui wrapper if -w is given
+      # Give percentage to gui wrapper if -w is given
       if [ -n "$BRwrap" ]; then
-        run_wget 2>&1 | grep --line-buffered -o "[0-9]*%.*" | while read ln; do echo "Downloading in $BRmaxsize: $ln" > /tmp/wr_proc; done
+        run_wget 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
+        while read perc; do
+          if [[ "$perc" -gt "$lastperc" ]]; then
+            lastperc="$perc"
+            echo "Downloading in $BRmaxsize: $lastperc%" > /tmp/wr_proc
+          fi
+        done
       else
         run_wget
       fi

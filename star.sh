@@ -1358,7 +1358,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo -e "\nPROCESS"
     if [ "$BRmode" = "1" ]; then
       echo "Mode:    Restore"
-      if [ -n "$BRencpass" ] && [ -n "$BRencmethod" ]; then
+      if [ -n "$BRencmethod" ]; then
         enc_info="$BRencmethod encrypted"
       fi
       echo "Archive: $BRfiletype $enc_info"

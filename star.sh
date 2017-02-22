@@ -2193,6 +2193,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRsource="$BRmaxsize/downloaded_backup"
       # Give percentage to gui wrapper if -w is given
       if [ -n "$BRwrap" ]; then
+        lastper="-1"
         run_wget 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
         while read perc; do
           if [[ "$perc" -gt "$lastperc" ]]; then

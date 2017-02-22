@@ -4,6 +4,7 @@ Changelog:
   wrapper now reads custom configuration file path (syntax: star-gui.sh /path/to/backup.conf)
   silenced gtkdialog output on exit
   show total files in log
+  smoothed wget output to wrapper
   code cleanups
 
 6.4.1

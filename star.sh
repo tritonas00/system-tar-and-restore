@@ -1358,21 +1358,19 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo -e "\nPROCESS"
     if [ "$BRmode" = "1" ]; then
       echo "Mode:    Restore"
+      if [ -n "$BRencpass" ] && [ -n "$BRencmethod" ]; then
+        enc_info="$BRencmethod encrypted"
+      fi
+      echo "Archive: $BRfiletype $enc_info"
     elif [ "$BRmode" = "2" ]; then
       echo "Mode:    Transfer"
-     fi
-    if [ -n "$BRencpass" ] && [ -n "$BRencmethod" ]; then
-      enc_info="$BRencmethod encrypted"
-    fi
-
-    if [ "$BRmode" = "1" ]; then
-      echo "Archive: $BRfiletype $enc_info"
-    elif [ "$BRmode" = "2" ] && [ -n "$BRonlyhidden" ]; then
-      echo "Home:    Only hidden files and folders"
-    elif [ "$BRmode" = "2" ] && [ -n "$BRnohome" ]; then
-      echo "Home:    Exclude"
-    elif [ "$BRmode" = "2" ]; then
-      echo "Home:    Include"
+      if [ -n "$BRonlyhidden" ]; then
+        echo "Home:    Only hidden files and folders"
+      elif [ -n "$BRnohome" ]; then
+        echo "Home:    Exclude"
+      else
+        echo "Home:    Include"
+      fi
     fi
 
     if [ "$BRdistro" = "Unsupported" ]; then

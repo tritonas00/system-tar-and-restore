@@ -2198,7 +2198,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         while read perc; do
           if [[ "$perc" -gt "$lastperc" ]]; then
             lastperc="$perc"
-            echo "Downloading in $BRmaxsize: $lastperc%" > /tmp/wr_proc
+            echo "Downloading in $BRmaxsize: $perc%" > /tmp/wr_proc
           fi
         done
       else

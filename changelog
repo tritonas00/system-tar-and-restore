@@ -5,6 +5,7 @@ Changelog:
   silenced gtkdialog output on exit
   show total files in log
   smoothed wget output to wrapper
+  use stock gtk icons in wrapper window and buttons
   code cleanups
 
 6.4.1

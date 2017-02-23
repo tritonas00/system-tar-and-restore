@@ -175,7 +175,7 @@ export BR_ROOT="$(echo "$BR_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
 
-<window icon-name="applications-system" height-request="640" width-request="515">
+<window icon-name="gtk-preferences" height-request="640" width-request="515">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_upt</input>
@@ -629,13 +629,13 @@ lost+found">
 
                 <hbox space-expand="false" space-fill="false">
                         <button tooltip-text="Run">
-                                <input file icon="gtk-ok"></input>
+                                <input file stock="gtk-execute"></input>
                                 <label>Run</label>
                                 <variable>BTN_RUN</variable>
                                 <action>bash -c "source /tmp/wr_functions; set_args && run_main &"</action>
                         </button>
                         <button tooltip-text="Kill the process" sensitive="false">
-                                <input file icon="gtk-cancel"></input>
+                                <input file stock="gtk-stop"></input>
                                 <variable>BTN_CANCEL</variable>
                                 <label>Cancel</label>
                                 <action>kill -9 -$(cat /tmp/wr_pid)</action>
@@ -643,7 +643,7 @@ lost+found">
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>
-                                <input file icon="gtk-close"></input>
+                                <input file stock="gtk-quit"></input>
                                 <label>Exit</label>
                         </button>
                 </hbox>

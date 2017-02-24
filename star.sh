@@ -764,7 +764,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Check wget exit status, exit on error, process the downloaded backup archive if otherwise
   check_wget() {
     if [ -f /tmp/error ]; then
-      echo -e "[${RED}ERROR${NORM}] Error downloading file. Wrong URL, wrong authentication, network is down or package wget is not installed." >&2
+      echo -e "[${RED}ERROR${NORM}] Error downloading file. Wrong URL, wrong authentication, network is down." >&2
       clean_unmount
     else
       detect_encryption
@@ -991,10 +991,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         echo -e "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase"
         exit
       fi
+    elif [[ ! "$BRuri" == /* ]] && [ -z "$(which wget 2>/dev/null)" ]; then
+      echo -e "[${RED}ERROR${NORM}] Package wget is not installed. Install the package and re-run the script"
+      exit
     fi
 
     if [ "$BRmode" = "2" ]; then
-      if [ -z "$(which rsync 2>/dev/null)" ];then
+      if [ -z "$(which rsync 2>/dev/null)" ]; then
         echo -e "[${RED}ERROR${NORM}] Package rsync is not installed. Install the package and re-run the script"
         exit
       fi

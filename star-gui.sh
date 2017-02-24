@@ -629,7 +629,7 @@ lost+found">
 
                 <hbox space-expand="false" space-fill="false">
                         <button tooltip-text="Run">
-                                <input file stock="gtk-execute"></input>
+                                <input file stock="gtk-ok"></input>
                                 <label>Run</label>
                                 <variable>BTN_RUN</variable>
                                 <action>bash -c "source /tmp/wr_functions; set_args && run_main &"</action>
@@ -643,7 +643,7 @@ lost+found">
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>
-                                <input file stock="gtk-quit"></input>
+                                <input file stock="gtk-close"></input>
                                 <label>Exit</label>
                         </button>
                 </hbox>

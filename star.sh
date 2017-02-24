@@ -764,7 +764,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Check wget exit status, exit on error, process the downloaded backup archive if otherwise
   check_wget() {
     if [ -f /tmp/error ]; then
-      echo -e "[${RED}ERROR${NORM}] Error downloading file. Wrong URL, wrong authentication, network is down." >&2
+      echo -e "[${RED}ERROR${NORM}] Error downloading file. Wrong URL, wrong authentication or network is down." >&2
       clean_unmount
     else
       detect_encryption

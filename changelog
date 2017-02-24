@@ -6,6 +6,7 @@ Changelog:
   show total files in log
   smoothed wget output to wrapper
   use stock gtk icons in wrapper window and buttons
+  added check for wget
   code cleanups
 
 6.4.1

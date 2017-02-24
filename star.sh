@@ -981,19 +981,22 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Check user input in many possible ways
   check_input() {
-    if [ -n "$BRsource" ] && [ ! -f "$BRsource" ]; then
-      echo -e "[${RED}ERROR${NORM}] File not found: $BRsource"
-      exit
-    elif [ -n "$BRsource" ] && [ -f "$BRsource" ] && [ -z "$BRfiletype" ]; then
-      detect_encryption
-      detect_filetype
-      if [ "$BRfiletype" = "wrong" ]; then
-        echo -e "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase"
+    if [ "$BRmode" = "1" ]; then
+      if [ -n "$BRsource" ] && [ ! -f "$BRsource" ]; then
+        echo -e "[${RED}ERROR${NORM}] File not found: $BRsource"
+        exit
+      elif [ -n "$BRsource" ] && [ -f "$BRsource" ] && [ -z "$BRfiletype" ]; then
+        detect_encryption
+        detect_filetype
+        if [ "$BRfiletype" = "wrong" ]; then
+          echo -e "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase"
+          exit
+        fi
+      fi
+      if [ -n "$BRuri" ] && [[ ! "$BRuri" == /* ]] && [ -z "$(which wget 2>/dev/null)" ]; then
+        echo -e "[${RED}ERROR${NORM}] Package wget is not installed. Install the package and re-run the script"
         exit
       fi
-    elif [[ ! "$BRuri" == /* ]] && [ -z "$(which wget 2>/dev/null)" ]; then
-      echo -e "[${RED}ERROR${NORM}] Package wget is not installed. Install the package and re-run the script"
-      exit
     fi
 
     if [ "$BRmode" = "2" ]; then

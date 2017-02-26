@@ -31,7 +31,7 @@ elif [ -f /etc/backup.conf ]; then
 fi
 
 # Export given vars from configuration file, set defaults if not given
-if [ -n "$BRNAME" ]; then 
+if [ -n "$BRNAME" ]; then
   export ENTRY1="$BRNAME"
 else
   export ENTRY1="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"

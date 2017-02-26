@@ -70,9 +70,9 @@ fi
 if [ -n "$BR_USER_OPTS" ]; then
   for opt in $BR_USER_OPTS; do
     if [[ "$opt" == --exclude=* ]]; then
-      export ENTRY8+="$(echo "$opt" | cut -f2 -d"=") "
+      export ENTRY8="$(echo "$opt" | cut -f2 -d"=") $ENTRY8"
     elif [[ "$opt" == -* ]]; then
-      export ENTRY7+="$opt "
+      export ENTRY7="$opt $ENTRY7"
     fi
   done
 fi

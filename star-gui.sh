@@ -217,7 +217,6 @@ export BR_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 export ENTRY14="$(echo "$BR_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
-
 <window icon-name="gtk-preferences" height-request="640" width-request="515">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">

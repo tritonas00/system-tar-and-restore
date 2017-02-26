@@ -30,35 +30,78 @@ elif [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
 fi
 
-if [ -n "$BRNAME" ]; then export BR_NAME="$BRNAME"; else export BR_NAME="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"; fi
-if [ -n "$BRFOLDER" ]; then export BR_FOLDER="$BRFOLDER"; else export BR_FOLDER="/"; fi
-if [ -n "$BRcompression" ]; then export BR_COMP="$BRcompression"; else export BR_COMP="gzip"; fi
-if [ -n "$BRencmethod" ]; then export BR_ENC="$BRencmethod"; else export BR_ENC="none"; fi
-if [ -n "$BRencpass" ]; then export BR_PASS="$BRencpass"; fi
-if [ -n "$BRmcore" ]; then export ENTRY2="true"; else export ENTRY2="false"; fi
-if [ -n "$BRclean" ]; then export ENTRY4="true"; else export ENTRY4="false"; fi
-if [ -n "$BRoverride" ]; then export ENTRY5="true"; else export ENTRY5="false"; fi
-if [ -n "$BRgenkernel" ]; then export ENTRY6="true"; else export ENTRY6="false"; fi
+# Export given vars from configuration file, set defaults if not given
+if [ -n "$BRNAME" ]; then 
+  export ENTRY1="$BRNAME"
+else
+  export ENTRY1="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"
+fi
+
+if [ -n "$BRFOLDER" ]; then
+  export ENTRY2="$BRFOLDER"
+else
+  export ENTRY2="/"
+fi
 
 if [ -n "$BRonlyhidden" ]; then
-  export ENTRY1="Only hidden files and folders"
+  export ENTRY3="Only hidden files and folders"
 elif [ -n "$BRnohome" ]; then
-  export ENTRY1="Exclude"
+  export ENTRY3="Exclude"
 else
-  export ENTRY1="Include"
+  export ENTRY3="Include"
+fi
+
+if [ -n "$BRcompression" ]; then
+  export ENTRY4="$BRcompression"
+else
+  export ENTRY4="gzip"
+fi
+
+if [ -n "$BRencmethod" ]; then
+  export ENTRY5="$BRencmethod"
+else
+  export ENTRY5="none"
+fi
+
+if [ -n "$BRencpass" ]; then
+  export ENTRY6="$BRencpass"
 fi
 
 if [ -n "$BR_USER_OPTS" ]; then
   for opt in $BR_USER_OPTS; do
     if [[ "$opt" == --exclude=* ]]; then
-      export BR_B_EXC+="$(echo "$opt" | cut -f2 -d"=") "
+      export ENTRY8+="$(echo "$opt" | cut -f2 -d"=") "
     elif [[ "$opt" == -* ]]; then
-      export BR_B_OPTS+="$opt "
+      export ENTRY7+="$opt "
     fi
   done
 fi
 
-# Echo all functions to a temporary file so we can source it inside gtkdialog
+if [ -n "$BRmcore" ]; then
+  export ENTRY9="true"
+else
+  export ENTRY9="false"
+fi
+
+if [ -n "$BRclean" ]; then
+  export ENTRY11="true"
+else
+  export ENTRY11="false"
+fi
+
+if [ -n "$BRoverride" ]; then
+  export ENTRY12="true"
+else
+  export ENTRY12="false"
+fi
+
+if [ -n "$BRgenkernel" ]; then
+  export ENTRY13="true"
+else
+  export ENTRY13="false"
+fi
+
+# Store needed functions to a temporary file so we can source it inside gtkdialog
 # This ensures compatibility with Ubuntu 16.04 and variants
 echo '
 set_args() {
@@ -71,79 +114,79 @@ set_args() {
   fi
 
   if [ "$BR_TAB" = "0" ]; then
-    SCR_ARGS+=(-d "$BR_FOLDER" -c "$BR_COMP")
+    SCR_ARGS+=(-d "$ENTRY2" -c "$ENTRY4")
 
-    if [ -n "$BR_NAME" ] && [[ ! "$BR_NAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
-      SCR_ARGS+=(-n "$BR_NAME")
+    if [ -n "$ENTRY1" ] && [[ ! "$ENTRY1" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
+      SCR_ARGS+=(-n "$ENTRY1")
     fi
 
-    if [ "$ENTRY1" = "Only hidden files and folders" ]; then
+    if [ "$ENTRY3" = "Only hidden files and folders" ]; then
       SCR_ARGS+=(-O)
-    elif [ "$ENTRY1" = "Exclude" ]; then
+    elif [ "$ENTRY3" = "Exclude" ]; then
       SCR_ARGS+=(-H)
     fi
 
-    if [ ! "$BR_ENC" = "none" ]; then SCR_ARGS+=(-E "$BR_ENC" -P "$BR_PASS"); fi
+    if [ ! "$ENTRY5" = "none" ]; then SCR_ARGS+=(-E "$ENTRY5" -P "$ENTRY6"); fi
     set -f
-    for i in $BR_B_EXC; do BR_B_OPTS="$BR_B_OPTS --exclude=$i"; done
+    for i in $ENTRY8; do ENTRY7="$ENTRY7 --exclude=$i"; done
     set +f
-    if [ -n "$BR_B_OPTS" ]; then SCR_ARGS+=(-u "$BR_B_OPTS"); fi
+    if [ -n "$ENTRY7" ]; then SCR_ARGS+=(-u "$ENTRY7"); fi
 
-    if [ "$ENTRY2" = "true" ] && [ ! "$BR_COMP" = "none" ]; then SCR_ARGS+=(-M); fi
-    if [ "$ENTRY3" = "true" ]; then SCR_ARGS+=(-g); fi
-    if [ "$ENTRY4" = "true" ]; then SCR_ARGS+=(-a); fi
-    if [ "$ENTRY5" = "true" ]; then SCR_ARGS+=(-o); fi
-    if [ "$ENTRY6" = "true" ]; then SCR_ARGS+=(-D); fi
+    if [ "$ENTRY9" = "true" ] && [ ! "$ENTRY4" = "none" ]; then SCR_ARGS+=(-M); fi
+    if [ "$ENTRY10" = "true" ]; then SCR_ARGS+=(-g); fi
+    if [ "$ENTRY11" = "true" ]; then SCR_ARGS+=(-a); fi
+    if [ "$ENTRY12" = "true" ]; then SCR_ARGS+=(-o); fi
+    if [ "$ENTRY13" = "true" ]; then SCR_ARGS+=(-D); fi
 
   elif [ "$BR_TAB" = "1" ]; then
-    SCR_ARGS+=(-r "${BR_ROOT%% *}")
+    SCR_ARGS+=(-r "${ENTRY14%% *}")
+    if [ -n "$ENTRY15" ]; then SCR_ARGS+=(-m "$ENTRY15"); fi
 
-    if [ ! "$BR_BOOT" = "" ]; then SCR_ARGS+=(-b "${BR_BOOT%% *}"); fi
-    if [ ! "$BR_HOME" = "" ]; then SCR_ARGS+=(-h "${BR_HOME%% *}"); fi
-    if [ ! "$BR_SWAP" = "" ]; then SCR_ARGS+=(-s "${BR_SWAP%% *}"); fi
-    if [ ! "$BR_ESP" = "" ]; then SCR_ARGS+=(-e "${BR_ESP%% *}" -l "$BR_ESP_MPOINT"); fi
-    if [ -n "$BR_OTHER_PARTS" ]; then SCR_ARGS+=(-t "$BR_OTHER_PARTS"); fi
+    if [ ! "$ENTRY16" = "" ]; then SCR_ARGS+=(-e "${ENTRY16%% *}" -l "$ENTRY17"); fi
+    if [ ! "$ENTRY18" = "" ]; then SCR_ARGS+=(-b "${ENTRY18%% *}"); fi
+    if [ ! "$ENTRY19" = "" ]; then SCR_ARGS+=(-h "${ENTRY19%% *}"); fi
+    if [ ! "$ENTRY20" = "" ]; then SCR_ARGS+=(-s "${ENTRY20%% *}"); fi
 
-    if [ "$ENTRY7" = "Grub" ]; then
-      SCR_ARGS+=(-G "${BR_DISK%% *}")
-    elif [ "$ENTRY7" = "Grub-efi" ]; then
+    if [ -n "$ENTRY21" ]; then SCR_ARGS+=(-t "$ENTRY21"); fi
+    if [ -n "$ENTRY22" ]; then SCR_ARGS+=(-R "$ENTRY22"); fi
+    if [ -n "$ENTRY23" ]; then SCR_ARGS+=(-B "$ENTRY23"); fi
+
+    if [ "$ENTRY24" = "Grub" ]; then
+      SCR_ARGS+=(-G "${ENTRY25%% *}")
+    elif [ "$ENTRY24" = "Grub-efi" ]; then
       SCR_ARGS+=(-G auto)
-    elif [ "$ENTRY7" = "Syslinux" ]; then
-      SCR_ARGS+=(-S "${BR_DISK%% *}")
-    elif [ "$ENTRY7" = "EFISTUB/efibootmgr" ]; then
+    elif [ "$ENTRY24" = "Syslinux" ]; then
+      SCR_ARGS+=(-S "${ENTRY25%% *}")
+    elif [ "$ENTRY24" = "EFISTUB/efibootmgr" ]; then
       SCR_ARGS+=(-F)
-    elif [ "$ENTRY7" = "Systemd/bootctl" ]; then
+    elif [ "$ENTRY24" = "Systemd/bootctl" ]; then
       SCR_ARGS+=(-L)
     fi
 
-    if [ ! "$ENTRY7" = "none" ] && [ -n "$BR_KL_OPTS" ]; then SCR_ARGS+=(-k "$BR_KL_OPTS"); fi
+    if [ ! "$ENTRY24" = "none" ] && [ -n "$ENTRY26" ]; then SCR_ARGS+=(-k "$ENTRY26"); fi
 
     if [ "$RT_TAB" = "0" ]; then
-      SCR_ARGS+=(-f "$BR_FILE")
-      if [ -n "$BR_USERNAME" ]; then SCR_ARGS+=(-y "$BR_USERNAME"); fi
-      if [ -n "$BR_PASSWORD" ]; then SCR_ARGS+=(-p "$BR_PASSWORD"); fi
-      if [ -n "$BR_PASSPHRASE" ]; then SCR_ARGS+=(-P "$BR_PASSPHRASE"); fi
-      if [ -n "$BR_TR_OPTIONS" ]; then SCR_ARGS+=(-u "$BR_TR_OPTIONS"); fi
+      SCR_ARGS+=(-f "$ENTRY27")
+      if [ -n "$ENTRY28" ]; then SCR_ARGS+=(-P "$ENTRY28"); fi
+      if [ -n "$ENTRY29" ]; then SCR_ARGS+=(-u "$ENTRY29"); fi
+      if [ -n "$ENTRY30" ]; then SCR_ARGS+=(-y "$ENTRY30"); fi
+      if [ -n "$ENTRY31" ]; then SCR_ARGS+=(-p "$ENTRY31"); fi
     elif [ "$RT_TAB" = "1" ]; then
-      if [ "$ENTRY8" = "Only hidden files and folders" ]; then
+      if [ "$ENTRY32" = "Only hidden files and folders" ]; then
         SCR_ARGS+=(-O)
-      elif [ "$ENTRY8" = "Exclude" ]; then
+      elif [ "$ENTRY32" = "Exclude" ]; then
         SCR_ARGS+=(-H)
       fi
       set -f
-      for i in $BR_T_EXC; do BR_RS_OPTS="$BR_RS_OPTS --exclude=$i"; done
+      for i in $ENTRY34; do ENTRY33="$ENTRY33 --exclude=$i"; done
       set +f
-      if [ -n "$BR_RS_OPTS" ]; then SCR_ARGS+=(-u "$BR_RS_OPTS"); fi
+      if [ -n "$ENTRY33" ]; then SCR_ARGS+=(-u "$ENTRY33"); fi
     fi
 
-    if [ -n "$BR_MN_OPTS" ]; then SCR_ARGS+=(-m "$BR_MN_OPTS"); fi
-    if [ -n "$BR_ROOT_SUBVOL" ]; then SCR_ARGS+=(-R "$BR_ROOT_SUBVOL"); fi
-    if [ -n "$BR_OTHER_SUBVOLS" ]; then SCR_ARGS+=(-B "$BR_OTHER_SUBVOLS"); fi
-
-    if [ "$ENTRY9" = "true" ]; then SCR_ARGS+=(-o); fi
-    if [ "$ENTRY10" = "true" ]; then SCR_ARGS+=(-D); fi
-    if [ "$ENTRY11" = "true" ]; then SCR_ARGS+=(-x); fi
-    if [ "$ENTRY12" = "true" ]; then SCR_ARGS+=(-W); fi
+    if [ "$ENTRY35" = "true" ]; then SCR_ARGS+=(-o); fi
+    if [ "$ENTRY36" = "true" ]; then SCR_ARGS+=(-D); fi
+    if [ "$ENTRY37" = "true" ]; then SCR_ARGS+=(-x); fi
+    if [ "$ENTRY38" = "true" ]; then SCR_ARGS+=(-W); fi
   fi
 }
 
@@ -171,7 +214,7 @@ export BR_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
                   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done
                   for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done)"
 
-export BR_ROOT="$(echo "$BR_PARTS" | head -n 1)"
+export ENTRY14="$(echo "$BR_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
 
@@ -190,7 +233,7 @@ export MAIN_DIALOG='
                 </checkbox>
                 <entry visible="false" auto-refresh="true">
                         <input file>/tmp/wr_proc</input>
-                        <action>refresh:BR_TL</action>
+                        <action>refresh:BR_WND</action>
                         <action condition="file_is_false(/tmp/wr_upt)">disable:BR_TAB</action>
                 </entry>
                 <notebook labels="Backup|Restore/Transfer|Log|About" space-expand="true" space-fill="true">
@@ -226,27 +269,27 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                 <hseparator></hseparator>
                                 <hbox>
                                         <text width-request="135" label="Filename:"></text>
-                                        <entry text="'"$BR_NAME"'" tooltip-text="Set backup archive name">
-                                                <variable>BR_NAME</variable>
+                                        <entry text="'"$ENTRY1"'" tooltip-text="Set backup archive name">
+                                                <variable>ENTRY1</variable>
                                         </entry>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135" label="Destination:"></text>
-                                        <entry text="'"$BR_FOLDER"'" fs-action="folder" fs-title="Select a directory" tooltip-text="Choose where to save the backup archive">
-                                                <variable>BR_FOLDER</variable>
+                                        <entry text="'"$ENTRY2"'" fs-action="folder" fs-title="Select a directory" tooltip-text="Choose where to save the backup archive">
+                                                <variable>ENTRY2</variable>
                                         </entry>
                                         <button tooltip-text="Select directory">
                                                 <input file stock="gtk-open"></input>
-                                                <action>fileselect:BR_FOLDER</action>
+                                                <action>fileselect:ENTRY2</action>
                                         </button>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Home directory:"></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
-                                                <variable>ENTRY1</variable>
-                                                <default>'"$ENTRY1"'</default>
+                                                <variable>ENTRY3</variable>
+                                                <default>'"$ENTRY3"'</default>
                                                 <item>Include</item>
 	                                        <item>Only hidden files and folders</item>
 	                                        <item>Exclude</item>
@@ -256,54 +299,54 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Compression:"></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
-	                                        <variable>BR_COMP</variable>
-                                                <default>'"$BR_COMP"'</default>
+	                                        <variable>ENTRY4</variable>
+                                                <default>'"$ENTRY4"'</default>
 	                                        <item>gzip</item>
 	                                        <item>bzip2</item>
 	                                        <item>xz</item>
                                                 <item>none</item>
-                                                <action condition="command_is_true([ $BR_COMP = none ] && echo true)">disable:ENTRY2</action>
-                                                <action condition="command_is_true([ ! $BR_COMP = none ] && echo true)">enable:ENTRY2</action>
+                                                <action condition="command_is_true([ $ENTRY4 = none ] && echo true)">disable:ENTRY9</action>
+                                                <action condition="command_is_true([ ! $ENTRY4 = none ] && echo true)">enable:ENTRY9</action>
 	                                </comboboxtext>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Encryption:"></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select encryption method">
-	                                        <variable>BR_ENC</variable>
-                                                <default>'"$BR_ENC"'</default>
+	                                        <variable>ENTRY5</variable>
+                                                <default>'"$ENTRY5"'</default>
                                                 <item>none</item>
 	                                        <item>openssl</item>
 	                                        <item>gpg</item>
-                                                <action condition="command_is_true([ $BR_ENC = none ] && echo true)">disable:BR_PASS</action>
-                                                <action condition="command_is_true([ ! $BR_ENC = none ] && echo true)">enable:BR_PASS</action>
+                                                <action condition="command_is_true([ $ENTRY5 = none ] && echo true)">disable:ENTRY6</action>
+                                                <action condition="command_is_true([ ! $ENTRY5 = none ] && echo true)">enable:ENTRY6</action>
                                         </comboboxtext>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Passphrase:"></text>
-                                        <entry text="'"$BR_PASS"'" visibility="false" tooltip-text="Set passphrase for encryption">
-                                                '"$(if [ "$BR_ENC" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                <variable>BR_PASS</variable>
+                                        <entry text="'"$ENTRY6"'" visibility="false" tooltip-text="Set passphrase for encryption">
+                                                '"$(if [ "$ENTRY5" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                <variable>ENTRY6</variable>
                                         </entry>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
-                                        <entry text="'"$BR_B_OPTS"'" space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //
+                                        <entry text="'"$ENTRY7"'" space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //
 
 Default options:
 --sparse
 --acls
 --xattrs
 --selinux (Fedora)">
-                                                <variable>BR_B_OPTS</variable>
+                                                <variable>ENTRY7</variable>
                                         </entry>
                                 </hbox>
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Exclude:"></text>
-                                        <entry text="'"$BR_B_EXC"'" space-expand="true" space-fill="true" tooltip-text="Exclude files and directories. If you want spaces in names replace them with //
+                                        <entry text="'"$ENTRY8"'" space-expand="true" space-fill="true" tooltip-text="Exclude files and directories. If you want spaces in names replace them with //
 
 Excluded by default:
 /run/*
@@ -317,35 +360,35 @@ Excluded by default:
 /var/lock/*
 .gvfs
 lost+found">
-                                                <variable>BR_B_EXC</variable>
+                                                <variable>ENTRY8</variable>
                                         </entry>
                                 </hbox>
 
                                 <vbox>
                                         <frame Misc options:>
                                                 <checkbox label="Enable multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
-                                                        '"$(if [ "$BR_COMP" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                        <variable>ENTRY2</variable>
-                                                        <default>'"$ENTRY2"'</default>
+                                                        '"$(if [ "$ENTRY4" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                        <variable>ENTRY9</variable>
+                                                        <default>'"$ENTRY9"'</default>
                                                 </checkbox>
 
                                                 <checkbox label="Generate backup.conf" tooltip-text="Generate configuration file in case of successful backup">
-                                                        <variable>ENTRY3</variable>
+                                                        <variable>ENTRY10</variable>
                                                 </checkbox>
 
                                                 <checkbox label="Remove older backups" tooltip-text="Remove older backups in the destination directory">
-                                                        <variable>ENTRY4</variable>
-                                                        <default>'"$ENTRY4"'</default>
+                                                        <variable>ENTRY11</variable>
+                                                        <default>'"$ENTRY11"'</default>
                                                 </checkbox>
 
                                                 <checkbox label="Override" tooltip-text="Override the default tar options/excludes with user defined ones">
-                                                        <variable>ENTRY5</variable>
-                                                        <default>'"$ENTRY5"'</default>
+                                                        <variable>ENTRY12</variable>
+                                                        <default>'"$ENTRY12"'</default>
                                                 </checkbox>
 
                                                 <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check in gentoo">
-                                                        <variable>ENTRY6</variable>
-                                                        <default>'"$ENTRY6"'</default>
+                                                        <variable>ENTRY13</variable>
+                                                        <default>'"$ENTRY13"'</default>
                                                 </checkbox>
                                         </frame>
                                 </vbox>
@@ -363,16 +406,16 @@ lost+found">
                                                 <hbox>
                                                         <text width-request="55" space-expand="false" label="Root:"></text>
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
-	                                                        <variable>BR_ROOT</variable>
-                                                                <input>echo "$BR_ROOT"</input>
-	                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"</input>
-                                                                <action>refresh:BR_BOOT</action>
-                                                                <action>refresh:BR_HOME</action>
-                                                                <action>refresh:BR_SWAP</action>
-                                                                <action>refresh:BR_ESP</action>
+	                                                        <variable>ENTRY14</variable>
+                                                                <input>echo "$ENTRY14"</input>
+	                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY16#*/}" -e "/${ENTRY18#*/}" -e "/${ENTRY19#*/}" -e "/${ENTRY20#*/}"</input>
+                                                                <action>refresh:ENTRY16</action>
+                                                                <action>refresh:ENTRY18</action>
+                                                                <action>refresh:ENTRY19</action>
+                                                                <action>refresh:ENTRY20</action>
 			                                </comboboxtext>
                                                         <entry tooltip-text="Set comma-separated list of mount options. Default options: defaults,noatime">
-                                                                <variable>BR_MN_OPTS</variable>
+                                                                <variable>ENTRY15</variable>
                                                         </entry>
                                                 </hbox>
 
@@ -381,17 +424,17 @@ lost+found">
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Esp:"></text>
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
-	                                                                        <variable>BR_ESP</variable>
-                                                                                <input>echo "$BR_ESP"</input>
-	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"</input>
-                                                                                <input>if [ -n "$BR_ESP" ]; then echo ""; fi</input>
-                                                                                <action>refresh:BR_ROOT</action>
-                                                                                <action>refresh:BR_HOME</action>
-                                                                                <action>refresh:BR_BOOT</action>
-                                                                                <action>refresh:BR_SWAP</action>
+	                                                                        <variable>ENTRY16</variable>
+                                                                                <input>echo "$ENTRY16"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY16#*/}" -e "/${ENTRY18#*/}" -e "/${ENTRY19#*/}" -e "/${ENTRY20#*/}"</input>
+                                                                                <input>if [ -n "$ENTRY16" ]; then echo ""; fi</input>
+                                                                                <action>refresh:ENTRY14</action>
+                                                                                <action>refresh:ENTRY18</action>
+                                                                                <action>refresh:ENTRY19</action>
+                                                                                <action>refresh:ENTRY20</action>
 			                                                </comboboxtext>
                                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select mountpoint">
-	                                                                        <variable>BR_ESP_MPOINT</variable>
+	                                                                        <variable>ENTRY17</variable>
 	                                                                        <item>/boot/efi</item>
 	                                                                        <item>/boot</item>
 	                                                                </comboboxtext>
@@ -399,46 +442,47 @@ lost+found">
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="/boot:"></text>
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
-	                                                                        <variable>BR_BOOT</variable>
-                                                                                <input>echo "$BR_BOOT"</input>
-	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"</input>
-                                                                                <input>if [ -n "$BR_BOOT" ]; then echo ""; fi</input>
-                                                                                <action>refresh:BR_ROOT</action>
-                                                                                <action>refresh:BR_HOME</action>
-                                                                                <action>refresh:BR_SWAP</action>
-                                                                                <action>refresh:BR_ESP</action>
+	                                                                        <variable>ENTRY18</variable>
+                                                                                <input>echo "$ENTRY18"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY16#*/}" -e "/${ENTRY18#*/}" -e "/${ENTRY19#*/}" -e "/${ENTRY20#*/}"</input>
+                                                                                <input>if [ -n "$ENTRY18" ]; then echo ""; fi</input>
+                                                                                <action>refresh:ENTRY14</action>
+                                                                                <action>refresh:ENTRY16</action>
+                                                                                <action>refresh:ENTRY19</action>
+                                                                                <action>refresh:ENTRY20</action>
 			                                                </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="/home:"></text>
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
-	                                                                        <variable>BR_HOME</variable>
-                                                                                <input>echo "$BR_HOME"</input>
-	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"</input>
-                                                                                <input>if [ -n "$BR_HOME" ]; then echo ""; fi</input>
-                                                                                <action>refresh:BR_BOOT</action>
-                                                                                <action>refresh:BR_ROOT</action>
-                                                                                <action>refresh:BR_SWAP</action>
-                                                                                <action>refresh:BR_ESP</action>
+	                                                                        <variable>ENTRY19</variable>
+                                                                                <input>echo "$ENTRY19"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY16#*/}" -e "/${ENTRY18#*/}" -e "/${ENTRY19#*/}" -e "/${ENTRY20#*/}"</input>
+                                                                                <input>if [ -n "$ENTRY19" ]; then echo ""; fi</input>
+                                                                                <action>refresh:ENTRY14</action>
+                                                                                <action>refresh:ENTRY16</action>
+                                                                                <action>refresh:ENTRY18</action>
+                                                                                <action>refresh:ENTRY20</action>
+
                                                                         </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Swap:"></text>
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
-	                                                                        <variable>BR_SWAP</variable>
-                                                                                <input>echo "$BR_SWAP"</input>
-	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${BR_ROOT#*/}" -e "/${BR_BOOT#*/}" -e "/${BR_HOME#*/}" -e "/${BR_ESP#*/}" -e "/${BR_SWAP#*/}"</input>
-                                                                                <input>if [ -n "$BR_SWAP" ]; then echo ""; fi</input>
-                                                                                <action>refresh:BR_ROOT</action>
-                                                                                <action>refresh:BR_HOME</action>
-                                                                                <action>refresh:BR_BOOT</action>
-                                                                                <action>refresh:BR_ESP</action>
+	                                                                        <variable>ENTRY20</variable>
+                                                                                <input>echo "$ENTRY20"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY16#*/}" -e "/${ENTRY18#*/}" -e "/${ENTRY19#*/}" -e "/${ENTRY20#*/}"</input>
+                                                                                <input>if [ -n "$ENTRY20" ]; then echo ""; fi</input>
+                                                                                <action>refresh:ENTRY14</action>
+                                                                                <action>refresh:ENTRY16</action>
+                                                                                <action>refresh:ENTRY18</action>
+                                                                                <action>refresh:ENTRY19</action>
 			                                                </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Other:"></text>
                                                                         <entry tooltip-text="Set other partitions (mountpoint=partition e.g /var=/dev/sda3). If you want spaces in mountpoints replace them with //">
-                                                                                <variable>BR_OTHER_PARTS</variable>
+                                                                                <variable>ENTRY21</variable>
                                                                         </entry>
                                                                 </hbox>
                                                         </vbox>
@@ -448,13 +492,13 @@ lost+found">
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Root:"></text>
                                                                         <entry tooltip-text="Set subvolume name for /">
-                                                                                <variable>BR_ROOT_SUBVOL</variable>
+                                                                                <variable>ENTRY22</variable>
                                                                         </entry>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Other:"></text>
                                                                         <entry tooltip-text="Set other subvolumes (subvolume path e.g /home /var /usr ...)">
-                                                                                <variable>BR_OTHER_SUBVOLS</variable>
+                                                                                <variable>ENTRY23</variable>
                                                                         </entry>
                                                                 </hbox>
                                                         </vbox>
@@ -466,27 +510,27 @@ lost+found">
                                         <frame Bootloader:>
                                                 <hbox>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select bootloader">
-                                                                <variable>ENTRY7</variable>
+                                                                <variable>ENTRY24</variable>
                                                                 <item>none</item>
 	                                                        <item>Grub</item>
 	                                                        <item>Grub-efi</item>
 	                                                        <item>Syslinux</item>
 	                                                        <item>EFISTUB/efibootmgr</item>
 	                                                        <item>Systemd/bootctl</item>
-                                                                <action condition="command_is_true([ $ENTRY7 = none ] && echo true)">disable:BR_DISK</action>
-                                                                <action condition="command_is_true([ ! $ENTRY7 = none ] && echo true)">enable:BR_DISK</action>
-                                                                <action condition="command_is_true([ $ENTRY7 = none ] && echo true)">disable:BR_KL_OPTS</action>
-                                                                <action condition="command_is_true([ ! $ENTRY7 = none ] && echo true)">enable:BR_KL_OPTS</action>
-                                                                <action condition="command_is_true([ $ENTRY7 = EFISTUB/efibootmgr ] && echo true)">disable:BR_DISK</action>
-                                                                <action condition="command_is_true([ $ENTRY7 = Systemd/bootctl ] && echo true)">disable:BR_DISK</action>
-                                                                <action condition="command_is_true([ $ENTRY7 = Grub-efi ] && echo true)">disable:BR_DISK</action>
+                                                                <action condition="command_is_true([ $ENTRY24 = none ] && echo true)">disable:ENTRY25</action>
+                                                                <action condition="command_is_true([ ! $ENTRY24 = none ] && echo true)">enable:ENTRY25</action>
+                                                                <action condition="command_is_true([ $ENTRY24 = none ] && echo true)">disable:ENTRY26</action>
+                                                                <action condition="command_is_true([ ! $ENTRY24 = none ] && echo true)">enable:ENTRY26</action>
+                                                                <action condition="command_is_true([ $ENTRY24 = EFISTUB/efibootmgr ] && echo true)">disable:ENTRY25</action>
+                                                                <action condition="command_is_true([ $ENTRY24 = Systemd/bootctl ] && echo true)">disable:ENTRY25</action>
+                                                                <action condition="command_is_true([ $ENTRY24 = Grub-efi ] && echo true)">disable:ENTRY25</action>
                                                         </comboboxtext>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target device" sensitive="false">
-	                                                        <variable>BR_DISK</variable>
+	                                                        <variable>ENTRY25</variable>
 	                                                        <input>echo "$BR_DISKS"</input>
 	                                                </comboboxtext>
                                                         <entry tooltip-text="Set additional kernel options" sensitive="false">
-                                                                <variable>BR_KL_OPTS</variable>
+                                                                <variable>ENTRY26</variable>
                                                         </entry>
                                                 </hbox>
                                         </frame>
@@ -497,17 +541,17 @@ lost+found">
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Backup archive:"></text>
                                                         <entry fs-action="file" tooltip-text="Choose a local backup archive or enter URL" fs-title="Select a backup archive">
-                                                                <variable>BR_FILE</variable>
+                                                                <variable>ENTRY27</variable>
                                                         </entry>
                                                         <button tooltip-text="Select backup archive">
                                                                 <input file stock="gtk-open"></input>
-                                                                <action>fileselect:BR_FILE</action>
+                                                                <action>fileselect:ENTRY27</action>
                                                         </button>
                                                 </hbox>
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Passphrase:"></text>
                                                         <entry tooltip-text="Set passphrase for decryption" visibility="false">
-                                                                <variable>BR_PASSPHRASE</variable>
+                                                                <variable>ENTRY28</variable>
                                                         </entry>
                                                 </hbox>
                                                 <hbox>
@@ -519,7 +563,7 @@ Default options:
 --xattrs
 --selinux (Fedora)
 --xattrs-include='\''*'\'' (Fedora)">
-                                                                <variable>BR_TR_OPTIONS</variable>
+                                                                <variable>ENTRY29</variable>
                                                         </entry>
                                                 </hbox>
                                                 <expander label="Server authentication">
@@ -527,13 +571,13 @@ Default options:
                                                                 <hbox>
                                                                         <text width-request="135" space-expand="false" label="Username:"></text>
                                                                         <entry tooltip-text="Set ftp/http username">
-                                                                                <variable>BR_USERNAME</variable>
+                                                                                <variable>ENTRY30</variable>
                                                                         </entry>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="135" space-expand="false" label="Password:"></text>
                                                                         <entry tooltip-text="Set ftp/http password" visibility="false">
-                                                                                <variable>BR_PASSWORD</variable>
+                                                                                <variable>ENTRY31</variable>
                                                                         </entry>
                                                                 </hbox>
 
@@ -544,7 +588,7 @@ Default options:
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Home directory:"></text>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
-                                                                <variable>ENTRY8</variable>
+                                                                <variable>ENTRY32</variable>
                                                                 <item>Include</item>
 	                                                        <item>Only hidden files and folders</item>
 	                                                        <item>Exclude</item>
@@ -553,7 +597,7 @@ Default options:
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
                                                         <entry space-expand="true" space-fill="true" tooltip-text="Set extra rsync options. See rsync --help for more info. If you want spaces in names replace them with //">
-                                                                <variable>BR_RS_OPTS</variable>
+                                                                <variable>ENTRY33</variable>
                                                         </entry>
                                                 </hbox>
                                                 <hbox>
@@ -572,7 +616,7 @@ Excluded by default:
 /var/lock/*
 /home/*/.gvfs
 lost+found">
-                                                                <variable>BR_T_EXC</variable>
+                                                                <variable>ENTRY34</variable>
                                                         </entry>
                                                 </hbox>
                                         </vbox>
@@ -582,19 +626,19 @@ lost+found">
                                 <vbox>
                                         <frame Misc options:>
                                                 <checkbox label="Override" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
-                                                        <variable>ENTRY9</variable>
+                                                        <variable>ENTRY35</variable>
                                                 </checkbox>
 
                                                 <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check and initramfs building in gentoo">
-                                                        <variable>ENTRY10</variable>
+                                                        <variable>ENTRY36</variable>
                                                 </checkbox>
 
                                                 <checkbox label="Dont check root" tooltip-text="Dont check if the target root partition is empty (dangerous)">
-                                                        <variable>ENTRY11</variable>
+                                                        <variable>ENTRY37</variable>
                                                 </checkbox>
 
                                                 <checkbox label="Bios" tooltip-text="Ignore UEFI environment">
-                                                        <variable>ENTRY12</variable>
+                                                        <variable>ENTRY38</variable>
                                                 </checkbox>
                                         </frame>
                                 </vbox>
@@ -648,7 +692,7 @@ lost+found">
                         </button>
                 </hbox>
         </vbox>
-	<variable>BR_TL</variable>
+	<variable>BR_WND</variable>
 	<input file>/tmp/wr_proc</input>
 </window>
 '

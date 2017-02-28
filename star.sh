@@ -1065,7 +1065,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ -n "$BRparts" ]; then
-      BRpartused=(`for BRpart in "${BRparts[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | sort | uniq -d`)
+      BRpartused=(`for BRpart in "${BRparts[@]}"; do echo "${BRpart//@}" | cut -f2 -d"="; done | sort | uniq -d`)
       BRmpointused=(`for BRmpoint in "${BRparts[@]}"; do echo "$BRmpoint" | cut -f1 -d"="; done | sort | uniq -d`)
       if [ -n "$BRpartused" ]; then
         echo -e "[${YELLOW}WARNING${NORM}] $BRpartused already used"
@@ -1078,7 +1078,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
       for part in "${BRparts[@]}"; do
         BRmpoint=$(echo "$part" | cut -f1 -d"=")
-        BRpart=$(echo "$part" | cut -f2 -d"=")
+        BRpart=$(echo "${part//@}" | cut -f2 -d"=")
 
         for i in $(scan_parts); do if [ "$i" = "$BRpart" ]; then BRpartscheck="true"; fi; done
         if [ ! "$BRpartscheck" = "true" ]; then
@@ -1218,7 +1218,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # Check if the target root partition is not empty
     if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
-      if [ -z "$BRdontckroot" ]; then
+      if [ -n "$BRrootclean" ]; then
+        update_wrp "Cleaning $BRroot"
+        echo -e "[${YELLOW}WARNING${NORM}] Root partition not empty, cleaning"
+        rm -r /mnt/target/*
+        sleep 1
+      elif [ -z "$BRdontckroot" ]; then
         echo -e "[${RED}ERROR${NORM}] Root partition not empty, refusing to use it" >&2
         echo -ne "${WRK}Unmounting $BRroot"
         sleep 1
@@ -1264,7 +1269,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # Mount any other target partition if given by the user
     if [ -n "$BRparts" ]; then
-      # Sort target partitions array by their mountpoint so we can mount in order
+      # Sort target partitions array by their mountpoint so we can mount in order, keep trailing @ if given so we know what to clean
       BRpartsorted=(`for part in "${BRparts[@]}"; do echo "$part"; done | sort -k 1,1 -t =`)
       unset BRCON
       # We read a sorted array with items in the form of mountpoint=partition (e.g /home=/dev/sda2) and we use = as delimiter
@@ -1273,21 +1278,28 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         BRmpoint=$(echo "$part" | cut -f1 -d"=")
         # Replace any // with space
         BRmpoint="${BRmpoint///\//\ }"
-        echo -ne "${WRK}Mounting $BRpart"
+        echo -ne "${WRK}Mounting ${BRpart//@}"
         # Create the corresponding mounting directory
         mkdir -p /mnt/target"$BRmpoint"
         # Mount it
-        update_wrp "Mounting $BRpart"
-        OUTPUT="$(mount "$BRpart" /mnt/target"$BRmpoint" 2>&1)" && ok_status || error_status
+        update_wrp "Mounting ${BRpart//@}"
+        OUTPUT="$(mount "${BRpart//@}" /mnt/target"$BRmpoint" 2>&1)" && ok_status || error_status
         # Store sizes
-        BRsizes+=(`lsblk -n -b -o size "$BRpart" 2>/dev/null`=/mnt/target"$BRmpoint")
+        BRsizes+=(`lsblk -n -b -o size "${BRpart//@}" 2>/dev/null`=/mnt/target"$BRmpoint")
         if [ -n "$BRCON" ]; then
           unset BRCON
           # Store successfully mounted partitions so we can unmount them later
-          BRumountparts+=("$BRmpoint"="$BRpart")
-          # Check if partitions are not empty and warn
+          BRumountparts+=("$BRmpoint"="${BRpart//@}")
+          # Check if partitions are not empty and warn, clean if it ends with @
           if [ "$(ls -A /mnt/target"$BRmpoint" | grep -vw "lost+found")" ]; then
-            echo -e "[${CYAN}INFO${NORM}] $BRmpoint partition not empty"
+            if [[ "$BRpart" == *@ ]]; then
+              update_wrp "Cleaning ${BRpart//@}"
+              echo -e "[${YELLOW}WARNING${NORM}] $BRmpoint partition not empty, cleaning"
+              rm -r /mnt/target"$BRmpoint"/*
+              sleep 1
+            else
+              echo -e "[${CYAN}INFO${NORM}] $BRmpoint partition not empty"
+            fi
           fi
         fi
       done
@@ -1296,6 +1308,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         unset BRSTOP
         clean_unmount
       fi
+      # Now trim trailing @ from partitions, we dont need it any more
+      if [[ "$BRhome" == *@ ]]; then BRhome="${BRhome//@}"; fi
+      if [[ "$BRboot" == *@ ]]; then BRboot="${BRboot//@}"; fi
+      BRpartsorted=(`for part in "${BRparts[@]}"; do echo "${part//@}"; done | sort -k 1,1 -t =`)
     fi
     # Find the bigger partition to save the downloaded backup archive
     BRmaxsize="$(for size in "${BRsizes[@]}"; do echo "$size"; done | sort -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")"
@@ -2137,6 +2153,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   if [ -z "$BRroot" ]; then
     echo -e "[${RED}ERROR${NORM}] You must specify a target root partition" >&2
     exit
+  fi
+
+  # Check if root partition ends with @, trim it and set var for clean it in mount_all
+  if [[ "$BRroot" == *@ ]]; then
+    BRroot="${BRroot//@}"
+    BRrootclean="y"
   fi
 
   # Check if backup archive is given in Restore Mode

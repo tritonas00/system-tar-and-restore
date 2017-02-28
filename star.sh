@@ -1290,7 +1290,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           unset BRCON
           # Store successfully mounted partitions so we can unmount them later
           BRumountparts+=("$BRmpoint"="${BRpart//@}")
-          # Check if partitions are not empty and warn, clean if it ends with @
+          # Check if partitions are not empty and warn, clean if they end with @
           if [ "$(ls -A /mnt/target"$BRmpoint" | grep -vw "lost+found")" ]; then
             if [[ "$BRpart" == *@ ]]; then
               update_wrp "Cleaning ${BRpart//@}"

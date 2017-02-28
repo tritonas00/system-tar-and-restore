@@ -139,9 +139,9 @@ set_args() {
     if [ "$ENTRY13" = "true" ]; then SCR_ARGS+=(-D); fi
 
   elif [ "$BR_TAB" = "1" ]; then
-    if [ "$ENTRY39" = "true" ]; then  
+    if [ "$ENTRY39" = "true" ]; then
       SCR_ARGS+=(-r "${ENTRY14%% *}"@)
-    else 
+    else
       SCR_ARGS+=(-r "${ENTRY14%% *}")
     fi
     if [ -n "$ENTRY15" ]; then SCR_ARGS+=(-m "$ENTRY15"); fi

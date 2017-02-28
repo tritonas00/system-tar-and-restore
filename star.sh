@@ -262,6 +262,7 @@ Backup Mode:
 Restore / Transfer Mode:
   Partitions:
     -r,  --root               Target root partition
+    -m,  --mount-opts         Comma-separated list of mount options for the root partition
     -e,  --esp                Target EFI system partition
     -l,  --esp-mpoint         Mount point for ESP: /boot/efi /boot
     -b,  --boot               Target /boot partition
@@ -269,7 +270,7 @@ Restore / Transfer Mode:
     -s,  --swap               Swap partition
     -t,  --other-parts        Specify other partitions. Syntax is mountpoint=partition (e.g /var=/dev/sda3)
                               If you want spaces in mountpoints replace them with //
-    -m,  --mount-opts         Comma-separated list of mount options (root partition only)
+     Add a trailing @ in any of the above, if it is not empty and you want to clean it (e.g -r /dev/sda2@)
 
   Btrfs Subvolumes:
     -R,  --rootsubvol         Subvolume name for /

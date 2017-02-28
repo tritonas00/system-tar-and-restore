@@ -970,6 +970,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     for f in $(find /dev/mapper/ -maxdepth 1 -mindepth 1 ! -name "control"); do echo "$f"; done
     for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f"; done
     for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f"; done
+    for f in $(find /dev -regex "/dev/nvme[0-9]+n[0-9]+p[0-9]+"); do echo "$f"; done
   }
 
   # Scan disks, md arrays and sd card devices
@@ -977,6 +978,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     for f in /dev/[vhs]d[a-z]; do echo "$f"; done
     for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f"; done
     for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f"; done
+    for f in $(find /dev -regex "/dev/nvme[0-9]+n[0-9]+"); do echo "$f"; done
   }
 
   # Check user input in many possible ways
@@ -1824,7 +1826,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       update_wrp "Setting boot entries using efibootmgr"
       echo -e "\nSetting boot entries"
       # Seperate device and partition number
-      if [[ "$BResp" == *mmcblk* ]]; then
+      if [[ "$BResp" == *mmcblk* ]] || [[ "$BResp" == *nvme* ]]; then
         BRespdev="${BResp%[[:alpha:]]*}"
       else
         BRespdev="${BResp%%[[:digit:]]*}"

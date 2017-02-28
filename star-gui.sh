@@ -139,12 +139,31 @@ set_args() {
     if [ "$ENTRY13" = "true" ]; then SCR_ARGS+=(-D); fi
 
   elif [ "$BR_TAB" = "1" ]; then
-    SCR_ARGS+=(-r "${ENTRY14%% *}")
+    if [ "$ENTRY39" = "true" ]; then  
+      SCR_ARGS+=(-r "${ENTRY14%% *}"@)
+    else 
+      SCR_ARGS+=(-r "${ENTRY14%% *}")
+    fi
     if [ -n "$ENTRY15" ]; then SCR_ARGS+=(-m "$ENTRY15"); fi
 
-    if [ ! "$ENTRY16" = "" ]; then SCR_ARGS+=(-e "${ENTRY16%% *}" -l "$ENTRY17"); fi
-    if [ ! "$ENTRY18" = "" ]; then SCR_ARGS+=(-b "${ENTRY18%% *}"); fi
-    if [ ! "$ENTRY19" = "" ]; then SCR_ARGS+=(-h "${ENTRY19%% *}"); fi
+    if [ ! "$ENTRY16" = "" ] && [ "$ENTRY40" = "true" ]; then
+      SCR_ARGS+=(-e "${ENTRY16%% *}"@ -l "$ENTRY17")
+    elif [ ! "$ENTRY16" = "" ]; then
+      SCR_ARGS+=(-e "${ENTRY16%% *}" -l "$ENTRY17")
+    fi
+
+    if [ ! "$ENTRY18" = "" ] && [ "$ENTRY41" = "true" ]; then
+      SCR_ARGS+=(-b "${ENTRY18%% *}"@)
+    elif [ ! "$ENTRY18" = "" ]; then
+      SCR_ARGS+=(-b "${ENTRY18%% *}")
+    fi
+
+    if [ ! "$ENTRY19" = "" ] && [ "$ENTRY42" = "true" ]; then
+      SCR_ARGS+=(-h "${ENTRY19%% *}"@)
+    elif [ ! "$ENTRY19" = "" ]; then
+       SCR_ARGS+=(-h "${ENTRY19%% *}")
+    fi
+
     if [ ! "$ENTRY20" = "" ]; then SCR_ARGS+=(-s "${ENTRY20%% *}"); fi
 
     if [ -n "$ENTRY21" ]; then SCR_ARGS+=(-t "$ENTRY21"); fi
@@ -418,6 +437,9 @@ lost+found">
                                                         <entry tooltip-text="Set comma-separated list of mount options. Default options: defaults,noatime">
                                                                 <variable>ENTRY15</variable>
                                                         </entry>
+                                                        <checkbox label="Clean" tooltip-text="Clean the target root partition if it is not empty">
+                                                                <variable>ENTRY39</variable>
+                                                        </checkbox>
                                                 </hbox>
 
                                                 <expander label="More partitions">
@@ -439,6 +461,9 @@ lost+found">
 	                                                                        <item>/boot/efi</item>
 	                                                                        <item>/boot</item>
 	                                                                </comboboxtext>
+                                                                        <checkbox label="Clean" tooltip-text="Clean the target esp partition if it is not empty">
+                                                                                <variable>ENTRY40</variable>
+                                                                        </checkbox>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="/boot:"></text>
@@ -452,6 +477,9 @@ lost+found">
                                                                                 <action>refresh:ENTRY19</action>
                                                                                 <action>refresh:ENTRY20</action>
 			                                                </comboboxtext>
+                                                                        <checkbox label="Clean" tooltip-text="Clean the target /boot partition if it is not empty">
+                                                                                <variable>ENTRY41</variable>
+                                                                        </checkbox>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="/home:"></text>
@@ -464,8 +492,10 @@ lost+found">
                                                                                 <action>refresh:ENTRY16</action>
                                                                                 <action>refresh:ENTRY18</action>
                                                                                 <action>refresh:ENTRY20</action>
-
                                                                         </comboboxtext>
+                                                                        <checkbox label="Clean" tooltip-text="Clean the target /home partition if it is not empty">
+                                                                                <variable>ENTRY42</variable>
+                                                                        </checkbox>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Swap:"></text>
@@ -482,7 +512,11 @@ lost+found">
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Other:"></text>
-                                                                        <entry tooltip-text="Set other partitions (mountpoint=partition e.g /var=/dev/sda3). If you want spaces in mountpoints replace them with //">
+                                                                        <entry tooltip-text="Set other partitions. Syntax is mountpoint=partition
+
+e.g /var=/dev/sda3 or /var=/dev/sda3@ if it is not empty and you want to clean it.
+
+If you want spaces in mountpoints replace them with //">
                                                                                 <variable>ENTRY21</variable>
                                                                         </entry>
                                                                 </hbox>

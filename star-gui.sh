@@ -418,6 +418,10 @@ lost+found">
                                 <text height-request="35" wrap="false" tooltip-text="==>In the first case, you should use a LiveCD of the
        backed up distro
 
+==>A target root parition is required. Optionally you
+       can use any other partition for /boot /home
+       esp swap or custom mountpoints
+
 ==>If you plan to transfer in lvm/mdadm/luks,
        configure this system accordingly"><label>"Restore a backup archive or transfer this system in user defined partitions"</label></text>
                                 <hseparator></hseparator>

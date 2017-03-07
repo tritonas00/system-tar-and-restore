@@ -1,6 +1,8 @@
 Changelog:
 
 6.5
+  added support for nvme devices
+  implemented partition cleaning mechanism
   wrapper now reads custom configuration file path (syntax: star-gui.sh /path/to/backup.conf)
   silenced gtkdialog output on exit
   show total files in log

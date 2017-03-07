@@ -418,7 +418,7 @@ lost+found">
                                 <text height-request="35" wrap="false" tooltip-text="==>In the first case, you should use a LiveCD of the
        backed up distro
 
-==>A target root parition is required. Optionally you
+==>A target root partition is required. Optionally you
        can use any other partition for /boot /home
        esp swap or custom mountpoints
 

@@ -434,10 +434,10 @@ if [ "$BRmode" = "0" ]; then
     # Arguments with user input should override configuration file
     if [ -n "$_BRFOLDER" ]; then BRFOLDER="$_BRFOLDER"; fi
     if [ -n "$_BRNAME" ]; then BRNAME="$_BRNAME"; fi
+    if [ -n "$_BR_USER_OPTS" ]; then BR_USER_OPTS="$_BR_USER_OPTS"; fi
     if [ -n "$_BRcompression" ]; then BRcompression="$_BRcompression"; fi
     if [ -n "$_BRencmethod" ]; then BRencmethod="$_BRencmethod"; fi
     if [ -n "$_BRencpass" ]; then BRencpass="$_BRencpass"; fi
-    if [ -n "$_BR_USER_OPTS" ]; then BR_USER_OPTS="$_BR_USER_OPTS"; fi
   fi
 
   # Check user input, exit on error

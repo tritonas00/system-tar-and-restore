@@ -72,18 +72,22 @@ while true; do
     ;;
     -u|--user-opts)
       BR_USER_OPTS="$2"
+      _BR_USER_OPTS="$2"
       shift 2
     ;;
     -d|--directory)
       BRFOLDER="$2"
+      _BRFOLDER="$2"
       shift 2
     ;;
     -n|--filename)
       BRNAME="$2"
+      _BRNAME="$2"
       shift 2
     ;;
     -c|--compression)
       BRcompression="$2"
+      _BRcompression="$2"
       shift 2
     ;;
     -H|--exclude-home)
@@ -116,10 +120,12 @@ while true; do
     ;;
     -P|--passphrase)
       BRencpass="$2"
+      _BRencpass="$2"
       shift 2
     ;;
     -E|--encryption)
       BRencmethod="$2"
+      _BRencmethod="$2"
       shift 2
     ;;
     -o|--override)
@@ -425,6 +431,13 @@ if [ "$BRmode" = "0" ]; then
   # Source the configuration file. If -w is given don't source, the gui wrapper will source it
   if [ -f "$BRconf" ] && [ -z "$BRwrap" ]; then
     source "$BRconf"
+    # Arguments with user input should override configuration file
+    if [ -n "$_BRFOLDER" ]; then BRFOLDER="$_BRFOLDER"; fi
+    if [ -n "$_BRNAME" ]; then BRNAME="$_BRNAME"; fi
+    if [ -n "$_BRcompression" ]; then BRcompression="$_BRcompression"; fi
+    if [ -n "$_BRencmethod" ]; then BRencmethod="$_BRencmethod"; fi
+    if [ -n "$_BRencpass" ]; then BRencpass="$_BRencpass"; fi
+    if [ -n "$_BR_USER_OPTS" ]; then BR_USER_OPTS="$_BR_USER_OPTS"; fi
   fi
 
   # Check user input, exit on error

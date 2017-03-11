@@ -2346,7 +2346,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     elif [ "$an" = "n" ] || [ "$an" = "N" ] || [ -z "$an" ]; then
       break
     else
-      echo -e "${RED}Please select a valid option${NORM}"
+      echo -e "${RED}Please enter a valid option${NORM}"
     fi
   done
 

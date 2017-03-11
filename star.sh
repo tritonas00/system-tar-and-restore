@@ -8,12 +8,12 @@ BR_EFI_DIR="/sys/firmware/efi"
 
 # Set some color vars
 color_vars() {
-  NORM="\e[00m"
-  RED="\e[00;31m"
-  GREEN="\e[00;32m"
-  YELLOW="\e[00;33m"
-  CYAN="\e[00;36m"
-  BOLD="\033[1m"
+  NORM=$'\e[00m'
+  RED=$'\e[00;31m'
+  GREEN=$'\e[00;32m'
+  YELLOW=$'\e[00;33m'
+  CYAN=$'\e[00;36m'
+  BOLD=$'\033[1m'
 }
 
 # Delete temporary files if exist
@@ -592,7 +592,7 @@ if [ "$BRmode" = "0" ]; then
   if [ -z "$BRquiet" ]; then
     while [ -f "$BRFOLDER/$BRNAME.$BR_EXT" ]; do
       echo -e "${BOLD}"
-      read -p "File $BRNAME.$BR_EXT already exists. Overwrite? [y/N]: $(echo -e "${NORM}")" an
+      read -p "File $BRNAME.$BR_EXT already exists. Overwrite? [y/N]: ${NORM}" an
       if [ -z "$an" ]; then an="n"; fi
 
       if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
@@ -612,7 +612,7 @@ if [ "$BRmode" = "0" ]; then
 
   while [ -z "$BRquiet" ]; do
     echo -e "${BOLD}"
-    read -p "Continue? [Y/n]: $(echo -e "${NORM}")" an
+    read -p "Continue? [Y/n]: ${NORM}" an
     if [ -z "$an" ]; then an="y"; fi
 
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
@@ -783,7 +783,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       # If the downloaded archive is encrypted prompt the user for passphrase
       if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ] && [ -z "$BRwrap" ]; then
         echo -ne "${BOLD}"
-        read -p "Enter Passphrase: $(echo -e "${NORM}")" BRencpass
+        read -p "Enter Passphrase: ${NORM}" BRencpass
       fi
       detect_filetype
       if [ "$BRfiletype" = "wrong" ]; then
@@ -2281,7 +2281,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   while [ -z "$BRquiet" ]; do
     echo -e "${BOLD}"
-    read -p "Continue? [Y/n]: $(echo -e "${NORM}")" an
+    read -p "Continue? [Y/n]: ${NORM}" an
     if [ -z "$an" ]; then an="y"; fi
 
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
@@ -2334,7 +2334,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Prompt the user to edit the generated fstab if -q is not given
   while [ -z "$BRquiet" ]; do
     echo -e "${BOLD}"
-    read -p "Edit fstab? [y/N]: $(echo -e "${NORM}")" an
+    read -p "Edit fstab? [y/N]: ${NORM}" an
     if [ -z "$an" ]; then an="n"; fi
 
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then

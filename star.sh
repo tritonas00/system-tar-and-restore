@@ -592,11 +592,9 @@ if [ "$BRmode" = "0" ]; then
   if [ -z "$BRquiet" ]; then
     while [ -f "$BRFOLDER/$BRNAME.$BR_EXT" ]; do
       read -p $'\n'"${BOLD}File $BRNAME.$BR_EXT already exists. Overwrite? [y/N]: ${NORM}" an
-      if [ -z "$an" ]; then an="n"; fi
-
       if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
         break
-      elif [ "$an" = "n" ] || [ "$an" = "N" ]; then
+      elif [ "$an" = "n" ] || [ "$an" = "N" ] ||  [ -z "$an" ]; then
         exit
       else
         echo -e "${RED}Please enter a valid option${NORM}"
@@ -611,9 +609,7 @@ if [ "$BRmode" = "0" ]; then
 
   while [ -z "$BRquiet" ]; do
     read -p $'\n'"${BOLD}Continue? [Y/n]: ${NORM}" an
-    if [ -z "$an" ]; then an="y"; fi
-
-    if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
+    if [ "$an" = "y" ] || [ "$an" = "Y" ] || [ -z "$an" ]; then
       break
     elif [ "$an" = "n" ] || [ "$an" = "N" ]; then
       exit
@@ -2278,9 +2274,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   while [ -z "$BRquiet" ]; do
     read -p $'\n'"${BOLD}Continue? [Y/n]: ${NORM}" an
-    if [ -z "$an" ]; then an="y"; fi
-
-    if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
+    if [ "$an" = "y" ] || [ "$an" = "Y" ] || [ -z "$an" ]; then
       break
     elif [ "$an" = "n" ] || [ "$an" = "N" ]; then
       clean_unmount
@@ -2330,8 +2324,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Prompt the user to edit the generated fstab if -q is not given
   while [ -z "$BRquiet" ]; do
     read -p $'\n'"${BOLD}Edit fstab? [y/N]: ${NORM}" an
-    if [ -z "$an" ]; then an="n"; fi
-
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
       PS3="Enter number: "
       echo -e "\n${CYAN}Select editor${NORM}"
@@ -2346,7 +2338,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         fi
       done
       break
-    elif [ "$an" = "n" ] || [ "$an" = "N" ]; then
+    elif [ "$an" = "n" ] || [ "$an" = "N" ] || [ -z "$an" ]; then
       break
     else
       echo -e "${RED}Please select a valid option${NORM}"

@@ -8,12 +8,12 @@ BR_EFI_DIR="/sys/firmware/efi"
 
 # Set some color vars
 color_vars() {
-  NORM=$'\e[00m'
-  RED=$'\e[00;31m'
-  GREEN=$'\e[00;32m'
-  YELLOW=$'\e[00;33m'
-  CYAN=$'\e[00;36m'
-  BOLD=$'\033[1m'
+  NORM='\e[00m'
+  RED='\e[00;31m'
+  GREEN='\e[00;32m'
+  YELLOW='\e[00;33m'
+  CYAN='\e[00;36m'
+  BOLD='\033[1m'
 }
 
 # Delete temporary files if exist
@@ -591,7 +591,8 @@ if [ "$BRmode" = "0" ]; then
   # Check if backup file already exists and prompt the user to overwrite. If -q is given overwrite automatically
   if [ -z "$BRquiet" ]; then
     while [ -f "$BRFOLDER/$BRNAME.$BR_EXT" ]; do
-      read -p $'\n'"${BOLD}File $BRNAME.$BR_EXT already exists. Overwrite? [y/N]: ${NORM}" an
+      echo -e "${BOLD}"
+      read -p "File $BRNAME.$BR_EXT already exists. Overwrite? [y/N]: $(echo -e "${NORM}")" an
       if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
         break
       elif [ "$an" = "n" ] || [ "$an" = "N" ] || [ -z "$an" ]; then
@@ -608,7 +609,8 @@ if [ "$BRmode" = "0" ]; then
   echo -ne "${NORM}"
 
   while [ -z "$BRquiet" ]; do
-    read -p $'\n'"${BOLD}Continue? [Y/n]: ${NORM}" an
+    echo -e "${BOLD}"
+    read -p "Continue? [Y/n]: $(echo -e "${NORM}")" an
     if [ "$an" = "y" ] || [ "$an" = "Y" ] || [ -z "$an" ]; then
       break
     elif [ "$an" = "n" ] || [ "$an" = "N" ]; then
@@ -776,7 +778,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       detect_encryption
       # If the downloaded archive is encrypted prompt the user for passphrase
       if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ] && [ -z "$BRwrap" ]; then
-        read -p "${BOLD}Enter Passphrase: ${NORM}" BRencpass
+        echo -ne "${BOLD}"
+        read -p "Enter Passphrase: $(echo -e "${NORM}")" BRencpass
       fi
       detect_filetype
       if [ "$BRfiletype" = "wrong" ]; then
@@ -2273,7 +2276,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   echo -ne "${NORM}"
 
   while [ -z "$BRquiet" ]; do
-    read -p $'\n'"${BOLD}Continue? [Y/n]: ${NORM}" an
+    echo -e "${BOLD}"
+    read -p "Continue? [Y/n]: $(echo -e "${NORM}")" an
     if [ "$an" = "y" ] || [ "$an" = "Y" ] || [ -z "$an" ]; then
       break
     elif [ "$an" = "n" ] || [ "$an" = "N" ]; then
@@ -2323,7 +2327,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Prompt the user to edit the generated fstab if -q is not given
   while [ -z "$BRquiet" ]; do
-    read -p $'\n'"${BOLD}Edit fstab? [y/N]: ${NORM}" an
+    echo -e "${BOLD}"
+    read -p "Edit fstab? [y/N]: $(echo -e "${NORM}")" an
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
       PS3="Enter number: "
       echo -e "\n${CYAN}Select editor${NORM}"

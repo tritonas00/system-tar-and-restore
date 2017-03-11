@@ -594,7 +594,7 @@ if [ "$BRmode" = "0" ]; then
       read -p $'\n'"${BOLD}File $BRNAME.$BR_EXT already exists. Overwrite? [y/N]: ${NORM}" an
       if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
         break
-      elif [ "$an" = "n" ] || [ "$an" = "N" ] ||  [ -z "$an" ]; then
+      elif [ "$an" = "n" ] || [ "$an" = "N" ] || [ -z "$an" ]; then
         exit
       else
         echo -e "${RED}Please enter a valid option${NORM}"

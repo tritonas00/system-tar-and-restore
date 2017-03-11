@@ -591,9 +591,7 @@ if [ "$BRmode" = "0" ]; then
   # Check if backup file already exists and prompt the user to overwrite. If -q is given overwrite automatically
   if [ -z "$BRquiet" ]; then
     while [ -f "$BRFOLDER/$BRNAME.$BR_EXT" ]; do
-      echo -e "${BOLD}"
-      read -p "Destination ($BRNAME.$BR_EXT) already exists. Overwrite? [y/N]: " an
-      echo -ne "${NORM}"
+      read -p "$(echo -e "\n${BOLD}")File $BRNAME.$BR_EXT already exists. Overwrite? [y/N]: $(echo -e "${NORM}")" an
       if [ -z "$an" ]; then an="n"; fi
 
       if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
@@ -612,9 +610,7 @@ if [ "$BRmode" = "0" ]; then
   echo -ne "${NORM}"
 
   while [ -z "$BRquiet" ]; do
-    echo -e "${BOLD}"
-    read -p "Continue? [Y/n]: " an
-    echo -ne "${NORM}"
+    read -p "$(echo -e "\n${BOLD}")Continue? [Y/n]: $(echo -e "${NORM}")" an
     if [ -z "$an" ]; then an="y"; fi
 
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
@@ -784,9 +780,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       detect_encryption
       # If the downloaded archive is encrypted prompt the user for passphrase
       if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ] && [ -z "$BRwrap" ]; then
-        echo -ne "${BOLD}"
-        read -p "Enter Passphrase: " BRencpass
-        echo -ne "${NORM}"
+        read -p "$(echo -e "${BOLD}")Enter Passphrase: $(echo -e "${NORM}")" BRencpass
       fi
       detect_filetype
       if [ "$BRfiletype" = "wrong" ]; then
@@ -2283,9 +2277,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   echo -ne "${NORM}"
 
   while [ -z "$BRquiet" ]; do
-    echo -e "${BOLD}"
-    read -p "Continue? [Y/n]: " an
-    echo -ne "${NORM}"
+    read -p "$(echo -e "\n${BOLD}")Continue? [Y/n]: $(echo -e "${NORM}")" an
     if [ -z "$an" ]; then an="y"; fi
 
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
@@ -2337,9 +2329,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Prompt the user to edit the generated fstab if -q is not given
   while [ -z "$BRquiet" ]; do
-    echo -e "${BOLD}"
-    read -p "Edit fstab? [y/N]: " an
-    echo -ne "${NORM}"
+    read -p "$(echo -e "\n${BOLD}")Edit fstab? [y/N]: $(echo -e "${NORM}")" an
     if [ -z "$an" ]; then an="n"; fi
 
     if [ "$an" = "y" ] || [ "$an" = "Y" ]; then

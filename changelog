@@ -9,6 +9,8 @@ Changelog:
   smoothed wget output to wrapper
   use stock gtk icons in wrapper window and buttons
   added check for wget
+  star.sh: removed bold from user replies
+  star.sh: arguments with user input now override the configuration file
   code cleanups
 
 6.4.1

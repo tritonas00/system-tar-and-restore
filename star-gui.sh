@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z "$(which gtkdialog 2>/dev/null)" ]; then
+  echo "Package gtkdialog is not installed. Install the package and re-run the script"
+  exit
+fi
+
 cd "$(dirname "$0")"
 
 clean_tmp_files() {
@@ -43,7 +48,10 @@ else
   export ENTRY2="/"
 fi
 
-if [ -n "$BRonlyhidden" ]; then
+if [ -n "$BRonlyhidden" ] && [ -n "$BRnohome" ]; then
+  echo "Error parsing configuration file. Choose only one option for the /home directory"
+  exit
+elif [ -n "$BRonlyhidden" ]; then
   export ENTRY3="Only hidden files and folders"
 elif [ -n "$BRnohome" ]; then
   export ENTRY3="Exclude"

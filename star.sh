@@ -51,6 +51,15 @@ update_wrp() {
   fi
 }
 
+# Add tar/rsync user options to the main array, replace any // with space, add only options starting with -
+set_user_opts() {
+  for opt in $BR_USER_OPTS; do
+    if [[ "$opt" == -* ]]; then
+      BR_TR_OPTS+=("${opt///\//\ }")
+    fi
+  done
+}
+
 # Show version
 echo -e "\n$BR_VERSION"
 
@@ -537,31 +546,33 @@ if [ "$BRmode" = "0" ]; then
     BR_EXT="$BR_EXT.gpg"
   fi
 
-  # Set tar default options
-  BR_TR_OPTS=(--sparse               \
-              --acls                 \
-              --xattrs               \
-              --exclude=/run/*       \
-              --exclude=/dev/*       \
-              --exclude=/sys/*       \
-              --exclude=/tmp/*       \
-              --exclude=/mnt/*       \
-              --exclude=/proc/*      \
-              --exclude=/media/*     \
-              --exclude=/var/run/*   \
-              --exclude=/var/lock/*  \
-              --exclude=.gvfs        \
-              --exclude=lost+found   \
-              --exclude="$BRFOLDER")
+  set_user_opts
 
-  # Needed by Fedora
-  if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
-    BR_TR_OPTS+=(--selinux)
-  fi
+  # Set tar default options if -o is not given
+  if [ -z "$BRoverride" ]; then
+    BR_TR_OPTS+=(--sparse               \
+                 --acls                 \
+                 --xattrs               \
+                 --exclude=/run/*       \
+                 --exclude=/dev/*       \
+                 --exclude=/sys/*       \
+                 --exclude=/tmp/*       \
+                 --exclude=/mnt/*       \
+                 --exclude=/proc/*      \
+                 --exclude=/media/*     \
+                 --exclude=/var/run/*   \
+                 --exclude=/var/lock/*  \
+                 --exclude=.gvfs        \
+                 --exclude=lost+found   \
+                 --exclude="$BRFOLDER")
 
-  # Keep only this if -o is given
-  if [ -n "$BRoverride" ]; then
-    BR_TR_OPTS=(--exclude="$BRFOLDER")
+    # Needed by Fedora
+    if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
+      BR_TR_OPTS+=(--selinux)
+    fi
+  else
+    # Keep only this if -o is given
+    BR_TR_OPTS+=(--exclude="$BRFOLDER")
   fi
 
   # Set /home directory options
@@ -573,13 +584,6 @@ if [ "$BRmode" = "0" ]; then
       BR_TR_OPTS+=(--exclude="$item")
     done< <(find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print)
   fi
-
-  # Add tar user options to the main array, replace any // with space, add only options starting with -
-  for opt in $BR_USER_OPTS; do
-    if [[ "$opt" == -* ]]; then
-      BR_TR_OPTS+=("${opt///\//\ }")
-    fi
-  done
 
   # Check destination for backup directories with older date, strictly check directory name format
   while read dir; do
@@ -950,15 +954,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     elif [ -n "$BRnohome" ]; then
       BR_TR_OPTS+=(--exclude=/home/*)
     fi
-  }
-
-  # Set tar/rsync user options, replace any // with space, add only options starting with -
-  set_user_options() {
-    for opt in $BR_USER_OPTS; do
-      if [[ "$opt" == -* ]]; then
-        BR_TR_OPTS+=("${opt///\//\ }")
-      fi
-    done
   }
 
   # Calculate files to create percentage and progress bar in Transfer mode
@@ -2220,7 +2215,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   check_input >&2
   detect_root_fs_size
   mount_all
-  set_user_options
+  set_user_opts
 
   # In Restore mode download the backup archive if url is given, read it and check it
   if [ "$BRmode" = "1" ]; then

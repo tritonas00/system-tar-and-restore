@@ -452,7 +452,7 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
-    echo -e "[${YELLOW}WARNING${NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)" >&2
+    echo -e "[${YELLOW}WARNING${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" >&2
     exit
   fi
 
@@ -475,13 +475,13 @@ if [ "$BRmode" = "0" ]; then
     echo -e "[${YELLOW}WARNING${NORM}] You must specify compression type" >&2
     exit
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z "$(which pigz 2>/dev/null)" ]; then
-    echo -e "[${RED}ERROR${NORM}] Package pigz is not installed. Install the package and re-run the script." >&2
+    echo -e "[${RED}ERROR${NORM}] Package pigz is not installed. Install the package and re-run the script" >&2
     exit
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
-    echo -e "[${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script." >&2
+    echo -e "[${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script" >&2
     exit
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "xz" ] && [ -z "$(which pxz 2>/dev/null)" ]; then
-    echo -e "[${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script." >&2
+    echo -e "[${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script" >&2
     exit
   fi
 
@@ -2316,6 +2316,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   if [ -z "$BRverb" ]; then echo; fi
   prepare_chroot 1> >(tee -a /tmp/restore.log) 2>&1
+  sleep 1
 
   update_wrp "Generating fstab"
   echo -e "\nGenerating fstab"

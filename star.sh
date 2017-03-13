@@ -1014,7 +1014,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         exit
       fi
       if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script. (you can disable this check with -D)"
+        echo -e "[${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)"
         exit
       fi
       if [ -n "$BRgrub" ] && [ -z "$(which grub-mkconfig 2>/dev/null)" ] && [ -z "$(which grub2-mkconfig 2>/dev/null)" ]; then

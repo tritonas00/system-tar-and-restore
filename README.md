@@ -61,7 +61,7 @@ With this mode you can make a tar backup archive of your system. You can define:
 - **Encryption method and passphrase:** Select encryption method (openssl or gpg) and enter a passphrase if you want to encrypt the archive.
 - **Archiver options:** You can pass your own extra options in the archiver. See <code>tar --help</code> for more info.
 
-The script can also read input from */etc/backup.conf*.
+The script can read input from */etc/backup.conf*. Alternative path can also be specified: <code>star.sh -C /path/backup.conf</code> or <code>star-gui.sh /path/backup.conf<code>.
 See the provided [sample](https://github.com/tritonas00/system-tar-and-restore/blob/master/backup.conf) or use -g to generate a configuration file.
 
 When the process completes, you may want to check *backup.log* file in the same directory with the backup archive.

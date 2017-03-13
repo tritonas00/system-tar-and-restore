@@ -351,7 +351,7 @@ if [ "$BRmode" = "0" ]; then
     echo "$BRFOLDER/$BRNAME.$BR_EXT $mcinfo"
 
     echo -e "\nARCHIVER OPTIONS"
-    for opt in "${BR_TAR_OPTS[@]}"; do echo "$opt"; done
+    for opt in "${BR_TR_OPTS[@]}"; do echo "$opt"; done
 
     echo -e "\nHOME DIRECTORY"
     if [ -n "$BRonlyhidden" ]; then
@@ -386,20 +386,20 @@ if [ "$BRmode" = "0" ]; then
 
   # Calculate files to create percentage and progress bar
   run_calc() {
-    tar cvf /dev/null "${BR_TAR_OPTS[@]}" / 2>/dev/null | tee /tmp/filelist
+    tar cvf /dev/null "${BR_TR_OPTS[@]}" / 2>/dev/null | tee /tmp/filelist
   }
 
   # Run tar with given input
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      tar ${BR_MAIN_OPTS} >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
+      tar ${BR_MAIN_OPTS} >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" /
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      tar ${BR_MAIN_OPTS} >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TAR_OPTS[@]}" /
+      tar ${BR_MAIN_OPTS} >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" /
     # Without encryption
     else
-      tar ${BR_MAIN_OPTS} "$BRFOLDER"/"$BRNAME"."$BR_EXT" "${BR_TAR_OPTS[@]}" /
+      tar ${BR_MAIN_OPTS} "$BRFOLDER"/"$BRNAME"."$BR_EXT" "${BR_TR_OPTS[@]}" /
     fi
   }
 
@@ -538,46 +538,46 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Set tar default options
-  BR_TAR_OPTS=(--sparse               \
-               --acls                 \
-               --xattrs               \
-               --exclude=/run/*       \
-               --exclude=/dev/*       \
-               --exclude=/sys/*       \
-               --exclude=/tmp/*       \
-               --exclude=/mnt/*       \
-               --exclude=/proc/*      \
-               --exclude=/media/*     \
-               --exclude=/var/run/*   \
-               --exclude=/var/lock/*  \
-               --exclude=.gvfs        \
-               --exclude=lost+found   \
-               --exclude="$BRFOLDER")
+  BR_TR_OPTS=(--sparse               \
+              --acls                 \
+              --xattrs               \
+              --exclude=/run/*       \
+              --exclude=/dev/*       \
+              --exclude=/sys/*       \
+              --exclude=/tmp/*       \
+              --exclude=/mnt/*       \
+              --exclude=/proc/*      \
+              --exclude=/media/*     \
+              --exclude=/var/run/*   \
+              --exclude=/var/lock/*  \
+              --exclude=.gvfs        \
+              --exclude=lost+found   \
+              --exclude="$BRFOLDER")
 
   # Needed by Fedora
   if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
-    BR_TAR_OPTS+=(--selinux)
+    BR_TR_OPTS+=(--selinux)
   fi
 
   # Keep only this if -o is given
   if [ -n "$BRoverride" ]; then
-    BR_TAR_OPTS=(--exclude="$BRFOLDER")
+    BR_TR_OPTS=(--exclude="$BRFOLDER")
   fi
 
   # Set /home directory options
   if [ -n "$BRnohome" ]; then
-    BR_TAR_OPTS+=(--exclude=/home/*)
+    BR_TR_OPTS+=(--exclude=/home/*)
   elif [ -n "$BRonlyhidden" ]; then
     # Find everything that doesn't start with dot and exclude it
     while read item; do
-      BR_TAR_OPTS+=(--exclude="$item")
+      BR_TR_OPTS+=(--exclude="$item")
     done< <(find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print)
   fi
 
   # Add tar user options to the main array, replace any // with space, add only options starting with -
   for opt in $BR_USER_OPTS; do
     if [[ "$opt" == -* ]]; then
-      BR_TAR_OPTS+=("${opt///\//\ }")
+      BR_TR_OPTS+=("${opt///\//\ }")
     fi
   done
 

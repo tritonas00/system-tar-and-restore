@@ -2,7 +2,7 @@ Changelog:
 
 6.5
   added support for nvme devices
-  implemented partition cleaning mechanism
+  implemented partition cleaning mechanism (see star.sh --help)
   wrapper now reads custom configuration file path (syntax: star-gui.sh /path/to/backup.conf)
   silenced gtkdialog output on exit
   show total files in log

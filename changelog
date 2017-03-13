@@ -8,9 +8,12 @@ Changelog:
   show total files in log
   smoothed wget output to wrapper
   use stock gtk icons in wrapper window and buttons
-  added check for wget
+  user tar options in backup mode now appear on top of the list, just like the other modes
+  proper check for /home directory options
+  star-gui.sh: added check for gtkdialog and /home directory options from backup.conf
   star.sh: removed bold from user replies
   star.sh: arguments now override the configuration file
+  star.sh: added check for wget
   code cleanups
 
 6.4.1

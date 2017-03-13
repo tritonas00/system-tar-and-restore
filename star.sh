@@ -101,10 +101,12 @@ while true; do
     ;;
     -H|--exclude-home)
       BRnohome="y"
+      _BRnohome="y"
       shift
     ;;
     -O|--only-hidden)
       BRonlyhidden="y"
+      _BRonlyhidden="y"
       shift
     ;;
     -j|--no-color)
@@ -348,6 +350,37 @@ fi
 
 clean_tmp_files
 
+# Set and source the configuration file for Backup mode. If -w is given don't source, the gui wrapper will source it
+if [ "$BRmode" = "0" ] && [ -z "$BRwrap" ]; then
+  if [ -z "$BRconf" ]; then
+    BRconf="/etc/backup.conf"
+  elif [ -n "$BRconf" ] && [ ! -f "$BRconf" ]; then
+    echo -e "[${RED}ERROR${NORM}] File does not exist: $BRconf" >&2
+    exit
+  fi
+  if [ -f "$BRconf" ]; then
+    source "$BRconf"
+    # Arguments should override configuration file
+    if [ -n "$_BRFOLDER" ]; then BRFOLDER="$_BRFOLDER"; fi
+    if [ -n "$_BRNAME" ]; then BRNAME="$_BRNAME"; fi
+    if [ -n "$_BR_USER_OPTS" ]; then BR_USER_OPTS="$_BR_USER_OPTS"; fi
+    if [ -n "$_BRcompression" ]; then BRcompression="$_BRcompression"; fi
+    if [ -n "$_BRencmethod" ]; then BRencmethod="$_BRencmethod"; fi
+    if [ -n "$_BRencpass" ]; then BRencpass="$_BRencpass"; fi
+    if [ -n "$_BRnohome" ] && [ -n "$BRonlyhidden" ]; then unset BRonlyhidden; fi
+    if [ -n "$_BRonlyhidden" ] && [ -n "$BRnohome" ]; then unset BRnohome; fi
+  fi
+fi
+
+# Check /home directory options for Backup and Transfer mode
+if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ] && [ -n "$_BRnohome" ] && [ -n "$_BRonlyhidden" ]; then
+  echo -e "[${YELLOW}WARNING${NORM}] Choose only one option for the /home directory" >&2
+  exit
+elif [ "$BRmode" = "0" ] && [ -n "$BRnohome" ] && [ -n "$BRonlyhidden" ]; then
+  echo -e "[${RED}ERROR${NORM}] Error parsing configuration file. Choose only one option for the /home directory" >&2
+  exit
+fi
+
 # Backup mode
 if [ "$BRmode" = "0" ]; then
 
@@ -430,25 +463,6 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRgenkernel" ]; then echo "BRgenkernel=\"No\""; fi
   }
 
-  # Set default configuration file, check if alternative specified by the user
-  if [ -z "$BRconf" ]; then
-    BRconf="/etc/backup.conf"
-  elif [ -n "$BRconf" ] && [ ! -f "$BRconf" ]; then
-    echo -e "[${RED}ERROR${NORM}] File does not exist: $BRconf" >&2
-    exit
-  fi
-  # Source the configuration file. If -w is given don't source, the gui wrapper will source it
-  if [ -f "$BRconf" ] && [ -z "$BRwrap" ]; then
-    source "$BRconf"
-    # Arguments with user input should override configuration file
-    if [ -n "$_BRFOLDER" ]; then BRFOLDER="$_BRFOLDER"; fi
-    if [ -n "$_BRNAME" ]; then BRNAME="$_BRNAME"; fi
-    if [ -n "$_BR_USER_OPTS" ]; then BR_USER_OPTS="$_BR_USER_OPTS"; fi
-    if [ -n "$_BRcompression" ]; then BRcompression="$_BRcompression"; fi
-    if [ -n "$_BRencmethod" ]; then BRencmethod="$_BRencmethod"; fi
-    if [ -n "$_BRencpass" ]; then BRencpass="$_BRencpass"; fi
-  fi
-
   # Check user input, exit on error
   if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
     echo -e "[${RED}ERROR${NORM}] Directory does not exist: $BRFOLDER" >&2
@@ -491,11 +505,6 @@ if [ "$BRmode" = "0" ]; then
     exit
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "xz" ] && [ -z "$(which pxz 2>/dev/null)" ]; then
     echo -e "[${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script" >&2
-    exit
-  fi
-
-  if [ -n "$BRnohome" ] && [ -n "$BRonlyhidden" ]; then
-    echo -e "[${YELLOW}WARNING${NORM}] Choose only one option for the /home directory" >&2
     exit
   fi
 
@@ -1035,10 +1044,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
       if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which bootctl 2>/dev/null)" ]; then
         echo -e "[${RED}ERROR${NORM}] Bootctl not found"
-        exit
-      fi
-      if [ -n "$BRnohome" ] && [ -n "$BRonlyhidden" ]; then
-        echo -e "[${YELLOW}WARNING${NORM}] Choose only one option for the /home directory" >&2
         exit
       fi
     fi

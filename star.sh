@@ -1786,7 +1786,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       # If target boot/syslinux exists remove it so we have a clean directory to work
       if [ -d /mnt/target/boot/syslinux ]; then
         # Save the configuration file first
-        mv /mnt/target/boot/syslinux/syslinux.cfg /mnt/target/boot/syslinux.cfg-old
+        mv /mnt/target/boot/syslinux/syslinux.cfg /mnt/target/boot/syslinux.cfg-old 2>/dev/null
         chattr -i /mnt/target/boot/syslinux/* 2>/dev/null
         rm -r /mnt/target/boot/syslinux/* 2>/dev/null
       # Else create the directory and the configuration file

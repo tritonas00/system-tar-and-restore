@@ -14,6 +14,7 @@ Changelog:
   star.sh: removed bold from user replies
   star.sh: arguments now override the configuration file
   star.sh: added check for wget
+  star.sh: improved verbose tar/rsync output
   code cleanups
 
 6.4.1

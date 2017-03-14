@@ -34,7 +34,7 @@ pgrs_bar() {
     per="$((x*100/total))"
     # If -v is given print percentage and full output
     if [ -n "$BRverb" ] && [[ "$per" -le "100" ]]; then
-      echo -e "${YELLOW}[$per%] ${GREEN}$ln${NORM}"
+      echo -e "${CYAN}[$x / $total] ${YELLOW}[$per%] ${GREEN}$ln${NORM}"
     elif [[ "$per" -gt "$lastper" ]] && [[ "$per" -le "100" ]]; then
       lastper="$per"
       update_wrp "$mode_job: $per% ($x / $total Files)"

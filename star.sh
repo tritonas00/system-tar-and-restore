@@ -967,12 +967,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Calculate files to create percentage and progress bar in Transfer mode
   run_calc() {
-    rsync -av / /mnt/target "${BR_TR_OPTS[@]}" --dry-run 2>/dev/null | tee /tmp/filelist
+    rsync -a --out-format=%n / /mnt/target "${BR_TR_OPTS[@]}" --dry-run 2>/dev/null | tee /tmp/filelist
   }
 
   # Run rsync with given input
   run_rsync() {
-    rsync -aAXv / /mnt/target "${BR_TR_OPTS[@]}"
+    rsync -aAX --out-format=%n / /mnt/target "${BR_TR_OPTS[@]}"
   }
 
   # Scan normal partitions, lvm, md arrays and sd card partitions

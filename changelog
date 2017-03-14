@@ -15,6 +15,7 @@ Changelog:
   star.sh: arguments now override the configuration file
   star.sh: added check for wget
   star.sh: improved verbose tar/rsync output
+  removed summary from rsync output (caused misleading percentage)
   code cleanups
 
 6.4.1

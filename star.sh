@@ -649,9 +649,8 @@ if [ "$BRmode" = "0" ]; then
   echo -e "$BR_VERSION\n\n[SUMMARY]\n$(show_summary)\n\n[ARCHIVER]" > "$BRFOLDER"/backup.log
   # Store start time
   start=$(date +%s)
-
-  update_wrp "Please wait while calculating files"
   # Calculate the number of files
+  update_wrp "Please wait while calculating files"
   run_calc | while read ln; do a="$((a + 1))" && echo -en "\rCalculating: $a Files"; done
   # Store the number of files we found from run_calc
   total="$(cat /tmp/filelist | wc -l)"
@@ -2302,8 +2301,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Transfer mode
   elif [ "$BRmode" = "2" ]; then
-    update_wrp "Please wait while calculating files"
     # Calculate the number of files
+    update_wrp "Please wait while calculating files"
     run_calc | while read ln; do a="$((a + 1))" && echo -en "\rCalculating: $a Files"; done
     sleep 1
     # Store the number of files we found from run_calc

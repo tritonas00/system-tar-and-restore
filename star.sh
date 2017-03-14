@@ -1479,12 +1479,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     # Swap partition
-    if [ -n "$BRswap" ]; then
-      if [[ "$BRswap" == *dev/md* ]]; then
-        echo -e "\n# $BRswap\n$BRswap  none  swap  defaults  0  0"
-      else
-        echo -e "\n# $BRswap\nUUID=$(blkid -s UUID -o value "$BRswap")  none  swap  defaults  0  0"
-      fi
+    if [ -n "$BRswap" ] && [[ "$BRswap" == *dev/md* ]]; then
+      echo -e "\n# $BRswap\n$BRswap  none  swap  defaults  0  0"
+    elif [ -n "$BRswap" ]; then
+      echo -e "\n# $BRswap\nUUID=$(blkid -s UUID -o value "$BRswap")  none  swap  defaults  0  0"
     fi
     # Inform the log
     echo -e "\nGenerated fstab:\n$(cat /mnt/target/etc/fstab)" >> /tmp/restore.log

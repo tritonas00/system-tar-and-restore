@@ -37,18 +37,17 @@ pgrs_bar() {
       echo -e "${CYAN}[$x / $total] ${YELLOW}[$per%] ${GREEN}$ln${NORM}"
     elif [[ "$per" -gt "$lastper" ]] && [[ "$per" -le "100" ]]; then
       lastper="$per"
-      update_wrp "$mode_job: $per% ($x / $total Files)"
+      print_msg 0 "$mode_job: $per% ($x / $total Files)"
       # The main progress bar
       echo -ne "\r$mode_job: [${pstr:0:$((x*24/total))}${dstr:0:24-$((x*24/total))}] $per%"
     fi
   done
 }
 
-# Update the gui wrapper if -w is given
-update_wrp() {
-  if [ -n "$BRwrap" ]; then
-    echo "$1" > /tmp/wr_proc
-  fi
+# Print various messages and update the gui wrapper if -w is given
+print_msg() {
+  if [ ! "$1" = "0" ]; then echo ${1}; fi
+  if [ -n "$BRwrap" ]; then echo "$2" > /tmp/wr_proc; fi
 }
 
 # Show version
@@ -635,7 +634,7 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   echo -e "\n${BOLD}[PROCESSING]${NORM}"
-  update_wrp "Preparing"
+  print_msg 0 "Preparing"
   # Restore mode will check and read this file in the archive
   touch /target_architecture.$(uname -m)
   # Create the destination subdirectory
@@ -646,7 +645,7 @@ if [ "$BRmode" = "0" ]; then
   # Store start time
   start=$(date +%s)
   # Calculate the number of files
-  update_wrp "Please wait while calculating files"
+  print_msg 0 "Please wait while calculating files"
   run_calc | while read ln; do a="$((a + 1))" && echo -en "\rCalculating: $a Files"; done
   # Store the number of files we found from run_calc
   total="$(cat /tmp/filelist | wc -l)"
@@ -744,8 +743,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Detect backup archive filetype and set tar options accordingly
   detect_filetype() {
-    if [ -z "$BRwrap" ]; then echo "Checking archive type..."; fi
-    update_wrp "Checking archive type"
+    print_msg "Checking archive type" "Checking archive type"
     # If archive is encrypted decrypt first, pipe output to 'file'
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
       BRtype="$(openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b -)"
@@ -991,54 +989,54 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   check_input() {
     if [ "$BRmode" = "1" ]; then
       if [ -n "$BRsource" ] && [ ! -f "$BRsource" ]; then
-        echo -e "[${RED}ERROR${NORM}] File not found: $BRsource"
+        echo -e "[${RED}ERROR${NORM}] File not found: $BRsource" >&2
         exit
       elif [ -n "$BRsource" ] && [ -f "$BRsource" ] && [ -z "$BRfiletype" ]; then
         detect_encryption
         detect_filetype
         if [ "$BRfiletype" = "wrong" ]; then
-          echo -e "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase"
+          echo -e "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase" >&2
           exit
         fi
       fi
       if [ -n "$BRuri" ] && [[ ! "$BRuri" == /* ]] && [ -z "$(which wget 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package wget is not installed. Install the package and re-run the script"
+        echo -e "[${RED}ERROR${NORM}] Package wget is not installed. Install the package and re-run the script" >&2
         exit
       fi
     fi
 
     if [ "$BRmode" = "2" ]; then
       if [ -z "$(which rsync 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package rsync is not installed. Install the package and re-run the script"
+        echo -e "[${RED}ERROR${NORM}] Package rsync is not installed. Install the package and re-run the script" >&2
         exit
       fi
       if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)"
+        echo -e "[${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" >&2
         exit
       fi
       if [ -n "$BRgrub" ] && [ -z "$(which grub-mkconfig 2>/dev/null)" ] && [ -z "$(which grub2-mkconfig 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Grub not found. Install it and re-run the script."
+        echo -e "[${RED}ERROR${NORM}] Grub not found. Install it and re-run the script." >&2
         exit
       elif [ -n "$BRsyslinux" ]; then
         if [ -z "$(which extlinux 2>/dev/null)" ]; then
-          echo -e "[${RED}ERROR${NORM}] Extlinux not found. Install it and re-run the script"
+          echo -e "[${RED}ERROR${NORM}] Extlinux not found. Install it and re-run the script" >&2
           exit
         fi
         if [ -z "$(which syslinux 2>/dev/null)" ]; then
-          echo -e "[${RED}ERROR${NORM}] Syslinux not found. Install it and re-run the script"
+          echo -e "[${RED}ERROR${NORM}] Syslinux not found. Install it and re-run the script" >&2
           exit
         fi
       fi
       if [ -n "$BRbootctl" ] || [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which mkfs.vfat 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package dosfstools is not installed. Install the package and re-run the script"
+        echo -e "[${RED}ERROR${NORM}] Package dosfstools is not installed. Install the package and re-run the script" >&2
         exit
       fi
       if [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which efibootmgr 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package efibootmgr is not installed. Install the package and re-run the script"
+        echo -e "[${RED}ERROR${NORM}] Package efibootmgr is not installed. Install the package and re-run the script" >&2
         exit
       fi
       if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which bootctl 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Bootctl not found"
+        echo -e "[${RED}ERROR${NORM}] Bootctl not found" >&2
         exit
       fi
     fi
@@ -1046,10 +1044,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRroot" ]; then
       for i in $(scan_parts); do if [ "$i" = "$BRroot" ]; then BRrootcheck="true"; fi; done
       if [ ! "$BRrootcheck" = "true" ]; then
-        echo -e "[${RED}ERROR${NORM}] Wrong root partition: $BRroot"
+        echo -e "[${RED}ERROR${NORM}] Wrong root partition: $BRroot" >&2
         exit
       elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot")" ]; then
-        echo -e "[${YELLOW}WARNING${NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot"), refusing to use it"
+        echo -e "[${YELLOW}WARNING${NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot"), refusing to use it" >&2
         exit
       fi
     fi
@@ -1057,11 +1055,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRswap" ]; then
       for i in $(scan_parts); do if [ "$i" = "$BRswap" ]; then BRswapcheck="true"; fi; done
       if [ ! "$BRswapcheck" = "true" ]; then
-        echo -e "[${RED}ERROR${NORM}] Wrong swap partition: $BRswap"
+        echo -e "[${RED}ERROR${NORM}] Wrong swap partition: $BRswap" >&2
         exit
       fi
       if [ "$BRswap" = "$BRroot" ]; then
-        echo -e "[${YELLOW}WARNING${NORM}] $BRswap already used"
+        echo -e "[${YELLOW}WARNING${NORM}] $BRswap already used" >&2
         exit
       fi
     fi
@@ -1070,11 +1068,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRpartused=(`for BRpart in "${BRparts[@]}"; do echo "${BRpart//@}" | cut -f2 -d"="; done | sort | uniq -d`)
       BRmpointused=(`for BRmpoint in "${BRparts[@]}"; do echo "$BRmpoint" | cut -f1 -d"="; done | sort | uniq -d`)
       if [ -n "$BRpartused" ]; then
-        echo -e "[${YELLOW}WARNING${NORM}] $BRpartused already used"
+        echo -e "[${YELLOW}WARNING${NORM}] $BRpartused already used" >&2
         exit
       fi
       if [ -n "$BRmpointused" ]; then
-        echo -e "[${YELLOW}WARNING${NORM}] Duplicate mountpoint: $BRmpointused"
+        echo -e "[${YELLOW}WARNING${NORM}] Duplicate mountpoint: $BRmpointused" >&2
         exit
       fi
 
@@ -1084,22 +1082,22 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
         for i in $(scan_parts); do if [ "$i" = "$BRpart" ]; then BRpartscheck="true"; fi; done
         if [ ! "$BRpartscheck" = "true" ]; then
-          echo -e "[${RED}ERROR${NORM}] Wrong $BRmpoint partition: $BRpart"
+          echo -e "[${RED}ERROR${NORM}] Wrong $BRmpoint partition: $BRpart" >&2
           exit
         elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart")" ]; then
-          echo -e "[${YELLOW}WARNING${NORM}] $BRpart is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart"), refusing to use it"
+          echo -e "[${YELLOW}WARNING${NORM}] $BRpart is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart"), refusing to use it" >&2
           exit
         fi
         if [ "$BRpart" = "$BRroot" ] || [ "$BRpart" = "$BRswap" ]; then
-          echo -e "[${YELLOW}WARNING${NORM}] $BRpart already used"
+          echo -e "[${YELLOW}WARNING${NORM}] $BRpart already used" >&2
           exit
         fi
         if [ "$BRmpoint" = "/" ]; then
-          echo -e "[${YELLOW}WARNING${NORM}] Use -r for the root partition"
+          echo -e "[${YELLOW}WARNING${NORM}] Use -r for the root partition" >&2
           exit
         fi
         if [[ ! "$BRmpoint" == /* ]]; then
-          echo -e "[${RED}ERROR${NORM}] Wrong mountpoint syntax: $BRmpoint"
+          echo -e "[${RED}ERROR${NORM}] Wrong mountpoint syntax: $BRmpoint" >&2
           exit
         fi
         unset BRpartscheck
@@ -1107,7 +1105,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     if [ -n "$BRsubvols" ] && [ -z "$BRrootsubvol" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] You must specify a root subvolume name"
+      echo -e "[${YELLOW}WARNING${NORM}] You must specify a root subvolume name" >&2
       exit
     fi
 
@@ -1115,18 +1113,18 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRsubvolused=(`for BRsubvol in "${BRsubvols[@]}"; do echo "$BRsubvol"; done | sort | uniq -d`)
       if [ -n "$BRsubvolused" ]; then
         for a in "${BRsubvolused[@]}"; do
-          echo -e "[${YELLOW}WARNING${NORM}] Duplicate subvolume: $a"
+          echo -e "[${YELLOW}WARNING${NORM}] Duplicate subvolume: $a" >&2
           exit
         done
       fi
 
       for b in "${BRsubvols[@]}"; do
         if [[ ! "$b" == /* ]]; then
-          echo -e "[${RED}ERROR${NORM}] Wrong subvolume syntax: $b"
+          echo -e "[${RED}ERROR${NORM}] Wrong subvolume syntax: $b" >&2
           exit
         fi
         if [ "$b" = "/" ]; then
-          echo -e "[${YELLOW}WARNING${NORM}] Use -R to assign root subvolume"
+          echo -e "[${YELLOW}WARNING${NORM}] Use -R to assign root subvolume" >&2
           exit
         fi
       done
@@ -1135,66 +1133,66 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ]; then
       for i in $(scan_disks); do if [ "$i" = "$BRgrub" ]; then BRgrubcheck="true"; fi; done
       if [ ! "$BRgrubcheck" = "true" ]; then
-        echo -e "[${RED}ERROR${NORM}] Wrong grub device: $BRgrub"
+        echo -e "[${RED}ERROR${NORM}] Wrong grub device: $BRgrub" >&2
         exit
       fi
     fi
 
     if [ -n "$BRgrub" ] && [ "$BRgrub" = "auto" ] && [ ! -d "$BR_EFI_DIR" ]; then
-      echo -e "[${RED}ERROR${NORM}] Use 'auto' in UEFI environment only"
+      echo -e "[${RED}ERROR${NORM}] Use 'auto' in UEFI environment only" >&2
       exit
     fi
 
     if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ] && [ -d "$BR_EFI_DIR" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] In UEFI environment use 'auto' for grub device"
+      echo -e "[${YELLOW}WARNING${NORM}] In UEFI environment use 'auto' for grub device" >&2
       exit
     fi
 
     if [ -n "$BRsyslinux" ]; then
       for i in $(scan_disks); do if [ "$i" = "$BRsyslinux" ]; then BRsyslinuxcheck="true"; fi; done
       if [ ! "$BRsyslinuxcheck" = "true" ]; then
-        echo -e "[${RED}ERROR${NORM}] Wrong syslinux device: $BRsyslinux"
+        echo -e "[${RED}ERROR${NORM}] Wrong syslinux device: $BRsyslinux" >&2
         exit
       fi
       if [ -d "$BR_EFI_DIR" ]; then
-        echo -e "[${RED}ERROR${NORM}] The script does not support Syslinux as UEFI bootloader"
+        echo -e "[${RED}ERROR${NORM}] The script does not support Syslinux as UEFI bootloader" >&2
         exit
       fi
     fi
 
     if [ -n "$BRsyslinux" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -n "$BRgrub" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders"
+      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" >&2
       exit
     elif [ -n "$BRefistub" ] && [ -n "$BRbootctl" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders"
+      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" >&2
       exit
     fi
 
     if [ ! -d "$BR_EFI_DIR" ] && [ -n "$BResp" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Don't use EFI system partition in bios mode"
+      echo -e "[${YELLOW}WARNING${NORM}] Don't use EFI system partition in bios mode" >&2
       exit
     fi
 
     if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -n "$BRroot" ] && [ -z "$BResp" ]; then
-      echo -e "[${RED}ERROR${NORM}] You must specify a target EFI system partition"
+      echo -e "[${RED}ERROR${NORM}] You must specify a target EFI system partition" >&2
       exit
     fi
 
     if [ -n "$BRefistub" ] && [ ! -d "$BR_EFI_DIR" ]; then
-      echo -e "[${RED}ERROR${NORM}] EFISTUB is available in UEFI environment only"
+      echo -e "[${RED}ERROR${NORM}] EFISTUB is available in UEFI environment only" >&2
       exit
     fi
 
     if [ -n "$BRbootctl" ] && [ ! -d "$BR_EFI_DIR" ]; then
-      echo -e "[${RED}ERROR${NORM}] Bootctl is available in UEFI environment only"
+      echo -e "[${RED}ERROR${NORM}] Bootctl is available in UEFI environment only" >&2
       exit
     fi
 
     if [ -n "$BResp" ] && [ -z "$BRespmpoint" ] && [ -d "$BR_EFI_DIR" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] You must specify mount point for ESP ($BResp)"
+      echo -e "[${YELLOW}WARNING${NORM}] You must specify mount point for ESP ($BResp)" >&2
       exit
     elif [ -n "$BResp" ] && [ ! "$BRespmpoint" = "/boot/efi" ] && [ ! "$BRespmpoint" = "/boot" ] && [ -d "$BR_EFI_DIR" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot"
+      echo -e "[${YELLOW}WARNING${NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot" >&2
       exit
     fi
   }
@@ -1203,12 +1201,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   mount_all() {
     # Create directory to mount the target root partition
     echo -e "\n${BOLD}[MOUNTING]${NORM}"
-    echo -ne "${WRK}Making working directory"
+    print_msg  "-ne ${WRK}Making working directory" "Making working directory"
     OUTPUT="$(mkdir /mnt/target 2>&1)" && ok_status || error_status
 
     # Mount the target root partition
-    update_wrp "Mounting $BRroot"
-    echo -ne "${WRK}Mounting $BRroot"
+    print_msg "-ne ${WRK}Mounting $BRroot" "Mounting $BRroot"
     OUTPUT="$(mount -o "$BRmountopts" "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
     # Store it's size
     BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
@@ -1221,15 +1218,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Check if the target root partition is not empty
     if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
       if [ -n "$BRrootclean" ]; then
-        update_wrp "Cleaning $BRroot"
-        echo -e "[${YELLOW}WARNING${NORM}] Root partition not empty, cleaning"
+        print_msg "-e [${YELLOW}WARNING${NORM}] Root partition not empty, cleaning" "Cleaning $BRroot"
         rm -r /mnt/target/*
         sleep 1
       elif [ -z "$BRdontckroot" ]; then
         echo -e "[${RED}ERROR${NORM}] Root partition not empty, refusing to use it" >&2
-        echo -ne "${WRK}Unmounting $BRroot"
+        print_msg "-ne ${WRK}Unmounting $BRroot" "Unmounting $BRroot"
         sleep 1
-        update_wrp "Unmounting $BRroot"
         OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
         exit
       else
@@ -1240,27 +1235,23 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # Create btrfs root subvolume if specified by the user
     if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
-      update_wrp "Creating $BRrootsubvol"
-      echo -ne "${WRK}Creating $BRrootsubvol"
+      print_msg "-ne ${WRK}Creating $BRrootsubvol" "Creating $BRrootsubvol"
       OUTPUT="$(btrfs subvolume create /mnt/target/"$BRrootsubvol" 2>&1 1>/dev/null)" && ok_status || error_status
 
       # Create other btrfs subvolumes if specified by the user
       if [ -n "$BRsubvols" ]; then
         while read ln; do
-          update_wrp "Creating $BRrootsubvol$ln"
-          echo -ne "${WRK}Creating $BRrootsubvol$ln"
+          print_msg "-ne ${WRK}Creating $BRrootsubvol$ln" "Creating $BRrootsubvol$ln"
           OUTPUT="$(btrfs subvolume create /mnt/target/"$BRrootsubvol$ln" 2>&1 1>/dev/null)" && ok_status || error_status
         done< <(for subvol in "${BRsubvols[@]}"; do echo "$subvol"; done | sort)
       fi
 
      # Unmount the target root partition
-      update_wrp "Unmounting $BRroot"
-      echo -ne "${WRK}Unmounting $BRroot"
+      print_msg "-ne ${WRK}Unmounting $BRroot" "Unmounting $BRroot"
       OUTPUT="$(umount "$BRroot" 2>&1)" && ok_status || error_status
 
      # Mount the root btrfs subvolume
-      update_wrp "Mounting $BRrootsubvol"
-      echo -ne "${WRK}Mounting $BRrootsubvol"
+      print_msg "-ne ${WRK}Mounting $BRrootsubvol" "Mounting $BRrootsubvol"
       OUTPUT="$(mount -t btrfs -o "$BRmountopts",subvol="$BRrootsubvol" "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
       if [ -n "$BRSTOP" ]; then
         echo -e "[${RED}ERROR${NORM}] Error while making subvolumes" >&2
@@ -1280,11 +1271,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         BRmpoint=$(echo "$part" | cut -f1 -d"=")
         # Replace any // with space
         BRmpoint="${BRmpoint///\//\ }"
-        echo -ne "${WRK}Mounting ${BRpart//@}"
+        print_msg "-ne ${WRK}Mounting ${BRpart//@}" "Mounting ${BRpart//@}"
         # Create the corresponding mounting directory
         mkdir -p /mnt/target"$BRmpoint"
         # Mount it
-        update_wrp "Mounting ${BRpart//@}"
         OUTPUT="$(mount "${BRpart//@}" /mnt/target"$BRmpoint" 2>&1)" && ok_status || error_status
         # Store sizes
         BRsizes+=(`lsblk -n -b -o size "${BRpart//@}" 2>/dev/null`=/mnt/target"$BRmpoint")
@@ -1295,8 +1285,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           # Check if partitions are not empty and warn, clean if they end with @
           if [ "$(ls -A /mnt/target"$BRmpoint" | grep -vw "lost+found")" ]; then
             if [[ "$BRpart" == *@ ]]; then
-              update_wrp "Cleaning ${BRpart//@}"
-              echo -e "[${YELLOW}WARNING${NORM}] $BRmpoint partition not empty, cleaning"
+              print_msg "-e [${YELLOW}WARNING${NORM}] $BRmpoint partition not empty, cleaning" "Cleaning ${BRpart//@}"
               rm -r /mnt/target"$BRmpoint"/*
               sleep 1
             else
@@ -1421,8 +1410,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Bind needed directories so we can chroot in the target system
   prepare_chroot() {
-    update_wrp "Preparing chroot environment"
-    echo -e "\nPreparing chroot environment"
+    print_msg "-e \nPreparing chroot environment" "Preparing chroot environment"
     echo "Binding /run"
     mount --bind /run /mnt/target/run
     echo "Binding /dev"
@@ -1525,7 +1513,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         cn=$(echo "$FILE" | sed -n 's/[^-]*-//p') # Cutted kernel name without any prefix (eg without vmlinuz-)
 
         if [ ! "$BRdistro" = "Gentoo" ] && [ ! "$BRdistro" = "Unsupported" ]; then
-          update_wrp "Building initramfs image for $cn"
+          print_msg 0 "Building initramfs image for $cn"
         fi
 
         # Use distro tools to rebuild initramfs images
@@ -1546,7 +1534,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ -n "$BRgenkernel" ]; then
         echo "Skipping..."
       else
-        update_wrp "Building initramfs images"
+        print_msg 0 "Building initramfs images"
         chroot /mnt/target genkernel --no-color --install initramfs
       fi
     fi
@@ -1705,8 +1693,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # GRUB
     if [ -n "$BRgrub" ]; then
-      update_wrp "Installing Grub in $BRgrub"
-      echo -e "\nInstalling and updating Grub in $BRgrub"
+      print_msg "-e \nInstalling and updating Grub in $BRgrub" "Installing Grub in $BRgrub"
       # In case of ESP on /boot, if target boot/efi exists move it as boot/efi-old so we have a clean directory to work
       if [ -d "$BR_EFI_DIR" ] && [ "$BRespmpoint" = "/boot" ] && [ -d /mnt/target/boot/efi ]; then
         # Also if boot/efi-old already exists remove it
@@ -1774,8 +1761,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # SYSLINUX
     elif [ -n "$BRsyslinux" ]; then
-      update_wrp "Installing Syslinux in $BRsyslinux"
-      echo -e "\nInstalling and configuring Syslinux in $BRsyslinux"
+      print_msg "-e \nInstalling and configuring Syslinux in $BRsyslinux" "Installing Syslinux in $BRsyslinux"
       # If target boot/syslinux exists remove it so we have a clean directory to work
       if [ -d /mnt/target/boot/syslinux ]; then
         # Save the configuration file first
@@ -1839,8 +1825,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
    # EFISTUB
     elif [ -n "$BRefistub" ]; then
-      update_wrp "Setting boot entries using efibootmgr"
-      echo -e "\nSetting boot entries"
+      print_msg "-e \nSetting boot entries" "Setting boot entries using efibootmgr"
       # Seperate device and partition number
       if [[ "$BResp" == *mmcblk* ]] || [[ "$BResp" == *nvme* ]]; then
         BRespdev="${BResp%[[:alpha:]]*}"
@@ -1879,8 +1864,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # BOOTCTL
     elif [ -n "$BRbootctl" ]; then
-      update_wrp "Installing Bootctl in $BRespmpoint"
-      echo -e "\nInstalling Bootctl in $BRespmpoint"
+      print_msg "-e \nInstalling Bootctl in $BRespmpoint" "Installing Bootctl in $BRespmpoint"
       # Save old configuration entries first
       if [ -d /mnt/target"$BRespmpoint"/loader/entries ]; then
         for CONF in /mnt/target"$BRespmpoint"/loader/entries/*; do
@@ -2041,8 +2025,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Generate target system's locales
   generate_locales() {
     if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Gentoo" ]; then
-      update_wrp "Generating locales"
-      echo -e "\nGenerating locales"
+      print_msg "-e \nGenerating locales" "Generating locales"
       chroot /mnt/target locale-gen
     fi
   }
@@ -2077,8 +2060,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRparts" ]; then
       while read ln; do
         sleep 1
-        update_wrp "Unmounting $ln"
-        echo -ne "${WRK}Unmounting $ln"
+        print_msg "-ne ${WRK}Unmounting $ln" "Unmounting $ln"
         OUTPUT="$(umount "$ln" 2>&1)" && ok_status || error_status
       done < <(for BRpart in "${BRumountparts[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | tac)
     fi
@@ -2086,25 +2068,21 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -z "$post_umt" ]; then
       # In case of btrfs subvolumes, unmount the root subvolume and mount the target root partition again
       if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
-        update_wrp "Unmounting $BRrootsubvol"
-        echo -ne "${WRK}Unmounting $BRrootsubvol"
+        print_msg "-ne ${WRK}Unmounting $BRrootsubvol" "Unmounting $BRrootsubvol"
         OUTPUT="$(umount "$BRroot" 2>&1)" && ok_status || error_status
         sleep 1
-        update_wrp "Mounting $BRroot"
-        echo -ne "${WRK}Mounting $BRroot"
+        print_msg "-ne ${WRK}Mounting $BRroot" "Mounting $BRroot"
         OUTPUT="$(mount "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
 
         # Delete the created subvolumes
         if [ -n "$BRsubvols" ]; then
           while read ln; do
             sleep 1
-            update_wrp "Deleting $BRrootsubvol$ln"
-            echo -ne "${WRK}Deleting $BRrootsubvol$ln"
+            print_msg "-ne ${WRK}Deleting $BRrootsubvol$ln" "Deleting $BRrootsubvol$ln"
             OUTPUT="$(btrfs subvolume delete /mnt/target/"$BRrootsubvol$ln" 2>&1 1>/dev/null)" && ok_status || error_status
           done < <(for subvol in "${BRsubvols[@]}"; do echo "$subvol"; done | sort -r)
         fi
-        update_wrp "Deleting $BRrootsubvol"
-        echo -ne "${WRK}Deleting $BRrootsubvol"
+        print_msg "-ne ${WRK}Deleting $BRrootsubvol" "Deleting $BRrootsubvol"
         OUTPUT="$(btrfs subvolume delete /mnt/target/"$BRrootsubvol" 2>&1 1>/dev/null)" && ok_status || error_status
       fi
 
@@ -2117,8 +2095,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Remove leftovers and unmount the target root partition
     rm /mnt/target/target_architecture.$(uname -m) 2>/dev/null
     sleep 1
-    update_wrp "Unmounting $BRroot"
-    echo -ne "${WRK}Unmounting $BRroot"
+    print_msg "-ne ${WRK}Unmounting $BRroot" "Unmounting $BRroot"
     OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
 
     if [ -n "$BRwrap" ] && [ -n "$post_umt" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
@@ -2210,7 +2187,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo -e "[${CYAN}INFO${NORM}] UEFI environment detected. (use -W to ignore)"
   fi
 
-  check_input >&2
+  check_input
   detect_root_fs_size
   mount_all
 
@@ -2236,7 +2213,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       check_wget
     fi
 
-    update_wrp "Please wait while checking and reading archive"
+    print_msg 0 "Please wait while checking and reading archive"
     # Read the backup archive and give list of files in /tmp/filelist also
     read_archive | tee /tmp/filelist | while read ln; do a="$((a + 1))" && echo -en "\rChecking and reading archive ($a Files) "; done
     echo
@@ -2295,7 +2272,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Transfer mode
   elif [ "$BRmode" = "2" ]; then
     # Calculate the number of files
-    update_wrp "Please wait while calculating files"
+    print_msg 0 "Please wait while calculating files"
     run_calc | while read ln; do a="$((a + 1))" && echo -en "\rCalculating: $a Files"; done
     sleep 1
     # Store the number of files we found from run_calc
@@ -2310,8 +2287,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   prepare_chroot 1> >(tee -a /tmp/restore.log) 2>&1
   sleep 1
 
-  update_wrp "Generating fstab"
-  echo -e "\nGenerating fstab"
+  print_msg "-e \nGenerating fstab" "Generating fstab"
   # Save the old fstab first
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   generate_fstab > /mnt/target/etc/fstab

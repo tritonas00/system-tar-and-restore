@@ -1201,7 +1201,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   mount_all() {
     # Create directory to mount the target root partition
     echo -e "\n${BOLD}[MOUNTING]${NORM}"
-    print_msg  "-ne ${WRK}Making working directory" "Making working directory"
+    print_msg "-ne ${WRK}Making working directory" "Making working directory"
     OUTPUT="$(mkdir /mnt/target 2>&1)" && ok_status || error_status
 
     # Mount the target root partition

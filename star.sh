@@ -51,15 +51,6 @@ update_wrp() {
   fi
 }
 
-# Add tar/rsync user options to the main array, replace any // with space, add only options starting with -
-set_user_opts() {
-  for opt in $BR_USER_OPTS; do
-    if [[ "$opt" == -* ]]; then
-      BR_TR_OPTS+=("${opt///\//\ }")
-    fi
-  done
-}
-
 # Show version
 echo -e "\n$BR_VERSION"
 
@@ -381,6 +372,13 @@ elif [ "$BRmode" = "0" ] && [ -n "$BRnohome" ] && [ -n "$BRonlyhidden" ]; then
   exit
 fi
 
+# Add tar/rsync user options to the main array, replace any // with space, add only options starting with -
+for opt in $BR_USER_OPTS; do
+  if [[ "$opt" == -* ]]; then
+    BR_TR_OPTS+=("${opt///\//\ }")
+  fi
+done
+
 # Backup mode
 if [ "$BRmode" = "0" ]; then
 
@@ -554,8 +552,6 @@ if [ "$BRmode" = "0" ]; then
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
     BR_EXT="$BR_EXT.gpg"
   fi
-
-  set_user_opts
 
   # Set tar default options if -o is not given
   if [ -z "$BRoverride" ]; then
@@ -2217,7 +2213,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   check_input >&2
   detect_root_fs_size
   mount_all
-  set_user_opts
 
   # In Restore mode download the backup archive if url is given, read it and check it
   if [ "$BRmode" = "1" ]; then

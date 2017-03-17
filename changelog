@@ -87,529 +87,528 @@
   In case you miss the old scripts with the cli/dialog interfaces i will keep 5.2 release in downloads
 
 5.2
-    wrapper: always go to log
-    wrapper: fixed some width inconsistencies
-    code cleanups
+  wrapper: always go to log
+  wrapper: fixed some width inconsistencies
+  code cleanups
 
 5.1
-    wrapper: if error occurred go to log tab
-    wrapper: if genkernel not found and -D is not given abort
-    code cleaning
+  wrapper: if error occurred go to log tab
+  wrapper: if genkernel not found and -D is not given abort
+  code cleaning
 
 5.0
-    added support for encrypted root partition with passphrase (luks, luks on lvm, luks on mdadm, luks on lvm on mdadm)
-    enhanced lvm support (lvm on luks, lvm on mdadm, lvm on luks on mdadm)
-    kernel options now apply to all bootloaders and appear in summary
-    esp is now optional (without bootloader) and you can choose it's mountpoint (/boot/efi or /boot)
-    added support for EFISTUB/efibootmgr and Systemd/bootctl
-    updated fedora detection and made dracut verbose
-    updated lvm and raid detection in gentoo for dolvm/domdadm kernel options
-    many wrapper cleanups, fixes and improvements
-    code cleaning
+  added support for encrypted root partition with passphrase (luks, luks on lvm, luks on mdadm, luks on lvm on mdadm)
+  enhanced lvm support (lvm on luks, lvm on mdadm, lvm on luks on mdadm)
+  kernel options now apply to all bootloaders and appear in summary
+  esp is now optional (without bootloader) and you can choose it's mountpoint (/boot/efi or /boot)
+  added support for EFISTUB/efibootmgr and Systemd/bootctl
+  updated fedora detection and made dracut verbose
+  updated lvm and raid detection in gentoo for dolvm/domdadm kernel options
+  many wrapper cleanups, fixes and improvements
+  code cleaning
 
 4.9.4
-    various wrapper improvements
-    code cleaning
+  various wrapper improvements
+  code cleaning
 
 4.9.3
-    use international standard date format
-    better detection of older backups
-    re-write logs on each run
-    wrapper: added cancel button
-    wrapper: added full log button
-    wrapper: show more info in status bar
-    cleanups
+  use international standard date format
+  better detection of older backups
+  re-write logs on each run
+  wrapper: added cancel button
+  wrapper: added full log button
+  wrapper: show more info in status bar
+  cleanups
 
 4.9.2
-    added support for multi-core compression via pigz, pbzip2 or pxz
-    added gtkdialog wrapper
+  added support for multi-core compression via pigz, pbzip2 or pxz
+  added gtkdialog wrapper
 
 4.9.1
-    backup.sh: clean temp files on abort also
-    backup.sh: more consistent dialog sizes
-    backup.sh/backup.conf: updated tar options on override
-    restore.sh: removed useless disk_report
-    added support for mmcblk devices
-    added argument to override the default rsync options
-    use columns in partition/disk lists in cli interface
-    better partitions summary using columns
-    bind /proc and /sys instead of specifying proc/sysfs filesystem
-    use only two basic functions (scan_parts and scan_disks) in both interfaces and check_input
-    code cleaning
+  backup.sh: clean temp files on abort also
+  backup.sh: more consistent dialog sizes
+  backup.sh/backup.conf: updated tar options on override
+  restore.sh: removed useless disk_report
+  added support for mmcblk devices
+  added argument to override the default rsync options
+  use columns in partition/disk lists in cli interface
+  better partitions summary using columns
+  bind /proc and /sys instead of specifying proc/sysfs filesystem
+  use only two basic functions (scan_parts and scan_disks) in both interfaces and check_input
+  code cleaning
 
 4.9
-    backup.sh: added argument to exclude sockets
-    backup.sh: updated backup.conf generator
-    show total files in dialog interface
-    more accurate progress counters
-    dont show fstab in dialog interface and quiet mode
-    use blkid for all partitions
-    removed partitions-in-subvolumes check: not working as intended, let the user decide
-    removed unused colors
-    use tmp file for tar reading errors in dialog interface, keep filelist clean
-    updated backup.conf
-    many code cleanups
-
+  backup.sh: added argument to exclude sockets
+  backup.sh: updated backup.conf generator
+  show total files in dialog interface
+  more accurate progress counters
+  dont show fstab in dialog interface and quiet mode
+  use blkid for all partitions
+  removed partitions-in-subvolumes check: not working as intended, let the user decide
+  removed unused colors
+  use tmp file for tar reading errors in dialog interface, keep filelist clean
+  updated backup.conf
+  many code cleanups
 
 4.8
-    restore.sh: rewritten detect_filetype
-    restore.sh: show partitions filesystem in cli interface also
-    restore.sh: added some messages
-    backup.sh: better filename detection in generate_conf
-    check_input: dont decrypt/check archive type again if already checked
-    accept -k, --kernel-options without defining bootloader in arguments
-    code cleaning
+  restore.sh: rewritten detect_filetype
+  restore.sh: show partitions filesystem in cli interface also
+  restore.sh: added some messages
+  backup.sh: better filename detection in generate_conf
+  check_input: dont decrypt/check archive type again if already checked
+  accept -k, --kernel-options without defining bootloader in arguments
+  code cleaning
 
 4.7
-    removed bsdtar and -a, --archiver argument: GNU tar 1.27+ supports acls xattrs and selinux
-    capture tar stderr directly in logs
-    more accurate progress
-    cleaned backup summary: compression and encryption already shown in archive extension
-    updated tar default options
-    added missing variables in backup.conf generator
-    updated backup.conf
-    code cleaning
+  removed bsdtar and -a, --archiver argument: GNU tar 1.27+ supports acls xattrs and selinux
+  capture tar stderr directly in logs
+  more accurate progress
+  cleaned backup summary: compression and encryption already shown in archive extension
+  updated tar default options
+  added missing variables in backup.conf generator
+  updated backup.conf
+  code cleaning
 
 4.6
-    added elapsed time info in backup.sh
-    added argument for alternative configuration file
-    added argument to ignore UEFI environment
-    code cleaning
+  added elapsed time info in backup.sh
+  added argument for alternative configuration file
+  added argument to ignore UEFI environment
+  code cleaning
 
 4.5
-    backup.sh: common tar/bsdtar options syntax
-    backup.sh: added argument to override archiver options with user options
-    backup.sh: added argument to remove older backups in the destination directory
-    scripts now read // as space in archiver/rsync options and custom mountpoints
-    handle partitions with spaces in mountpoint in fstab
-    show archiver/rsync options vertically
-    add automatically fedora tar extra options (--selinux --acls --xattrs-include='*') in restore
-    force vertical lists in cli interface
-    better output on archive read errors in dialog interface
-    some echo changes
-    updated backup.conf
-    code cleaning
+  backup.sh: common tar/bsdtar options syntax
+  backup.sh: added argument to override archiver options with user options
+  backup.sh: added argument to remove older backups in the destination directory
+  scripts now read // as space in archiver/rsync options and custom mountpoints
+  handle partitions with spaces in mountpoint in fstab
+  show archiver/rsync options vertically
+  add automatically fedora tar extra options (--selinux --acls --xattrs-include='*') in restore
+  force vertical lists in cli interface
+  better output on archive read errors in dialog interface
+  some echo changes
+  updated backup.conf
+  code cleaning
 
 4.4
-    added support for openssl/gpg encryption*
-    fixed reading/calculating dialog starting empty sometimes
-    minor interface refinements
-    code cleaning
+  added support for openssl/gpg encryption*
+  fixed reading/calculating dialog starting empty sometimes
+  minor interface refinements
+  code cleaning
 
 * Thanks poihths for testing
 
 4.3
-    added Mandriva support (Mageia OpenMandriva etc...)
-    updated initramfs name detection and building
-    updated grub2 detection
-    changed some echos for better process description
-    show actual summary in logs
-    updated syslinux mbr and com32 modules paths detection to support the latest debian changes
-    code cleaning
+  added Mandriva support (Mageia OpenMandriva etc...)
+  updated initramfs name detection and building
+  updated grub2 detection
+  changed some echos for better process description
+  show actual summary in logs
+  updated syslinux mbr and com32 modules paths detection to support the latest debian changes
+  code cleaning
 
 4.2
-    fixed cli interface progress bar speed
+  fixed cli interface progress bar speed
 
 4.1
-    added progress bar in cli interface
-    added argument to hide cursor when running tar/rsync
-    use /tmp/filelist to capture bsdtar errors
-    restore.sh: replaced -U with old compatibility argument -u
-    improved kernel detection for target syslinux.cfg
-    updated help pages
-    code cleaning
+  added progress bar in cli interface
+  added argument to hide cursor when running tar/rsync
+  use /tmp/filelist to capture bsdtar errors
+  restore.sh: replaced -U with old compatibility argument -u
+  improved kernel detection for target syslinux.cfg
+  updated help pages
+  code cleaning
 
 4.0
-    added openSUSE support
-    added Gentoo support (with and without genkernel/initramfs)*
-    added support for virtio devices
-    exclude /var/lock/* and /var/run/* from backup/transfer
-    changed grub detection in the archived system
-    updated PATH so we can restore from/to any distro
-    copy all syslinux COM32 files in /boot/syslinux
-    improved syslinux.cfg generator
-    added device comments in generated fstab
-    changed swap mount point to none
-    backup.conf now covers all backup options
-    updated info screen instructions
+  added openSUSE support
+  added Gentoo support (with and without genkernel/initramfs)*
+  added support for virtio devices
+  exclude /var/lock/* and /var/run/* from backup/transfer
+  changed grub detection in the archived system
+  updated PATH so we can restore from/to any distro
+  copy all syslinux COM32 files in /boot/syslinux
+  improved syslinux.cfg generator
+  added device comments in generated fstab
+  changed swap mount point to none
+  backup.conf now covers all backup options
+  updated info screen instructions
 
 * Thanks freestyl3r for testing
 
 3.9.7
-    added support for uncompressed archive
-    fixed destination with spaces in backup.conf generator
+  added support for uncompressed archive
+  fixed destination with spaces in backup.conf generator
 
 3.9.6
-    fixed backup filename with spaces in log
-    show version in logs
-    changed verbose tar/rsync output
-    renamed downloaded backup
-    code cleaning
+  fixed backup filename with spaces in log
+  show version in logs
+  changed verbose tar/rsync output
+  renamed downloaded backup
+  code cleaning
 
 3.9.5
-    various refinements in cli interface
-    cleaner verbose tar/rsync output layout
-    clean temp files after the basic checks
-    use separated temp files between the scripts
+  various refinements in cli interface
+  cleaner verbose tar/rsync output layout
+  clean temp files after the basic checks
+  use separated temp files between the scripts
 
 3.9.4
-    backup.sh can now read input from /etc/backup.conf
-    added argument to generate backup configuration file
-    added argument to bypass the root partition check
-    added checks for basic paramaters in backup.sh
-    added check for btrfs subvolumes in restore.sh
-    clean temp files on startup
-    fixed archive name in backup.log
-    some cosmetic changes
-    code cleaning
+  backup.sh can now read input from /etc/backup.conf
+  added argument to generate backup configuration file
+  added argument to bypass the root partition check
+  added checks for basic paramaters in backup.sh
+  added check for btrfs subvolumes in restore.sh
+  clean temp files on startup
+  fixed archive name in backup.log
+  some cosmetic changes
+  code cleaning
 
 3.9.3
-    added support for additional tar/bsdtar options in restore.sh
-    allow GNU Tar in Fedora
-    show archive read errors in dialog interface
-    dont symlink local archive, use it directly
-    download archive in the biggest partition
+  added support for additional tar/bsdtar options in restore.sh
+  allow GNU Tar in Fedora
+  show archive read errors in dialog interface
+  dont symlink local archive, use it directly
+  download archive in the biggest partition
 
 3.9.2
-    added bzip2 compression support
-    added verbose tar/rsync output argument
-    cleaned cli interface, user selections are shown in summary
-    warn if destination backup file exists and prompt to rename/overwrite
-    better grub efi binary detection
-    warn if target ESP is not empty
-    bsdtar: if errors occur, capture only them in logs, not full output
-    fixed "error symlinking archive" dialog size
-    code cleaning
+  added bzip2 compression support
+  added verbose tar/rsync output argument
+  cleaned cli interface, user selections are shown in summary
+  warn if destination backup file exists and prompt to rename/overwrite
+  better grub efi binary detection
+  warn if target ESP is not empty
+  bsdtar: if errors occur, capture only them in logs, not full output
+  fixed "error symlinking archive" dialog size
+  code cleaning
 
 3.9.1
-    show disks in dialog interface even if sizes are unreadable (thanks to mask2011)
+  show disks in dialog interface even if sizes are unreadable (thanks to mask2011)
 
 3.9
-    added UEFI support (grub only)
-    added support for custom backup filename
-    added support for additional rsync options
-    better detection of bootloaders
-    reduced dialogs
-    show more info in summary
-    show more info in logs
-    moved bootloader dependencies checks in set_bootloader
-    fixed gptfdisk detection in Archlinux
+  added UEFI support (grub only)
+  added support for custom backup filename
+  added support for additional rsync options
+  better detection of bootloaders
+  reduced dialogs
+  show more info in summary
+  show more info in logs
+  moved bootloader dependencies checks in set_bootloader
+  fixed gptfdisk detection in Archlinux
 
 3.8.4
-    better handling of fedora's grub config file
+  better handling of fedora's grub config file
 
 3.8.3
-    force bsdtar on Fedora
-    updated info screen
-    reduced questions in cli interface
-    code cleaning
+  force bsdtar on Fedora
+  updated info screen
+  reduced questions in cli interface
+  code cleaning
 
 3.8.2
-    show disk size in cli interface again
-    code cleaning
+  show disk size in cli interface again
+  code cleaning
 
 3.8.1
-    fixed performance between partition dialogs
-    removed unused character from error messages
-    code cleaning
+  fixed performance between partition dialogs
+  removed unused character from error messages
+  code cleaning
 
 3.8
-    new, real time updated, output layout
-    improved partition detection (thanks to pmav)
-    new partition selection dialog
-    show partitions filesystem in dialog interface
-    check if root partition is given from arguments under certain scenarios
-    fixed kernel options warning
-    -f now accepts both local file path and url (-u is also kept for compatibility)
-    code cleaning
+  new, real time updated, output layout
+  improved partition detection (thanks to pmav)
+  new partition selection dialog
+  show partitions filesystem in dialog interface
+  check if root partition is given from arguments under certain scenarios
+  fixed kernel options warning
+  -f now accepts both local file path and url (-u is also kept for compatibility)
+  code cleaning
 
 3.7.4
-    fixed a warning message
-    moved install_bootloader in "PROCESSING" dialog
-    unified exit screen for both interfaces
+  fixed a warning message
+  moved install_bootloader in "PROCESSING" dialog
+  unified exit screen for both interfaces
 
 3.7.3
-    enhanced btrfs subvolumes subsystem
-    removed clear
-    colorized info screen
-    added -q, --quiet argument in backup.sh
-    dont wait user input to exit when -q is given
-    removed zenity wrappers
+  enhanced btrfs subvolumes subsystem
+  removed clear
+  colorized info screen
+  added -q, --quiet argument in backup.sh
+  dont wait user input to exit when -q is given
+  removed zenity wrappers
 
 3.7.2
-    early btrfs detection using blkid
-    mount_all now creates subvolumes
-    added "View Partition Table" option in dialog interface
-    fixed lsblk errors when no partitions found
-    fixed colors when -q is given
-    if architecture mismatch report both architectures
-    updated info dialogs
-    replaced unnecessary while loops with if statements
+  early btrfs detection using blkid
+  mount_all now creates subvolumes
+  added "View Partition Table" option in dialog interface
+  fixed lsblk errors when no partitions found
+  fixed colors when -q is given
+  if architecture mismatch report both architectures
+  updated info dialogs
+  replaced unnecessary while loops with if statements
 
 3.7.1
-    if no partitions found for root, abort
-    changed a warning message
-    fixed BRvarsubvol variable
-    code cleaning
+  if no partitions found for root, abort
+  changed a warning message
+  fixed BRvarsubvol variable
+  code cleaning
 
 3.7
-    merged clean_unmount_when_subvols in clean_unmount_in
-    show distro and architecture in summary
-    check if selected bootloader exists in the archived system
-    check if running and target system architecture match*
-    ask for /home/boot/swap/custom partitions only if partition list is not empty
-    removed useless tmpfs line in fstab
-    added check for custom mountpoints syntax
-    use custom partitions array to assign home and boot partitions
-    hide used lvm partitions
-    enabled tab auto completion in cli interface
-    replaced error/warning messages in dialog interface with --msgbox
-    more accurate cli dialogs
-    added quit options in backup.sh dialogs
-    fixed partition list in cli interface
-    code cleaning
+  merged clean_unmount_when_subvols in clean_unmount_in
+  show distro and architecture in summary
+  check if selected bootloader exists in the archived system
+  check if running and target system architecture match*
+  ask for /home/boot/swap/custom partitions only if partition list is not empty
+  removed useless tmpfs line in fstab
+  added check for custom mountpoints syntax
+  use custom partitions array to assign home and boot partitions
+  hide used lvm partitions
+  enabled tab auto completion in cli interface
+  replaced error/warning messages in dialog interface with --msgbox
+  more accurate cli dialogs
+  added quit options in backup.sh dialogs
+  fixed partition list in cli interface
+  code cleaning
 
 * With this commit, 3.7 restore.sh will NOT accept backups made with previous versions.
 
 3.6.11
-    backup.sh: obey -h argument when -d is not given
+  backup.sh: obey -h argument when -d is not given
 
 3.6.10
-    fixed fedora tar options detection
-    code cleaning
+  fixed fedora tar options detection
+  code cleaning
 
 3.6.9
-    use blkid to extract uuids, not lsblk
+  use blkid to extract uuids, not lsblk
 
 3.6.8
-    code cleaning/optimising
-    dont hide used partitions in restore wrapper
+  code cleaning/optimising
+  dont hide used partitions in restore wrapper
 
 3.6.7
-    fixed download gauge dialog speed
-    remember url input in dialog interface
+  fixed download gauge dialog speed
+  remember url input in dialog interface
 
 3.6.6
-    updated archlinux syslinux.cfg
+  updated archlinux syslinux.cfg
 
 3.6.5
-    sort custom partitions array
-    check mountpoint syntax
+  sort custom partitions array
+  check mountpoint syntax
 
 3.6.4
-    fix in clean_unmount_in
-    code cleaning
+  fix in clean_unmount_in
+  code cleaning
 
 3.6.3
-    small fix in check_input
+  small fix in check_input
 
 3.6.2
-    changed some dialogs
-    code cleaning
+  changed some dialogs
+  code cleaning
 
 3.6.1
-    better dialog order in backup.sh
-    updated backup.sh wrapper
+  better dialog order in backup.sh
+  updated backup.sh wrapper
 
 3.6
-    added libarchive tar (bsdtar) support
-    changed any upper case argument input to lower case
-    fixed syslinux check output in backup.sh
-    re-ordered restore.sh help page
-    updated wrappers
+  added libarchive tar (bsdtar) support
+  changed any upper case argument input to lower case
+  fixed syslinux check output in backup.sh
+  re-ordered restore.sh help page
+  updated wrappers
 
 3.5.4
-    better handling of not mounted partitions
-    updated backup.sh error messages
-    code cleaning
+  better handling of not mounted partitions
+  updated backup.sh error messages
+  code cleaning
 
 3.5.3
-    added check in create_subvols/better cleaning
-    code cleaning
+  added check in create_subvols/better cleaning
+  code cleaning
 
 3.5.2
-    smarter mounting process/better error handling-cleaning
-    clean_unmount_in is now aware of not mounted partitions
-    code cleaning
+  smarter mounting process/better error handling-cleaning
+  clean_unmount_in is now aware of not mounted partitions
+  code cleaning
 
 3.5.1
-    fixed cleaning tmp file if root is not empty
-    if root failed to mount dont mount other partitions
-    enabled color warnings in dialog interface
+  fixed cleaning tmp file if root is not empty
+  if root failed to mount dont mount other partitions
+  enabled color warnings in dialog interface
 
 3.5
-    new output layout
-    cleaner INFO/WARNING/ERROR messages
-    added custom partitions option
-    backup.sh reports found bootloaders
-    cleaned fedora's grub config file
-    check generated fstab for md devices
-    safer unmount/cleaning process
-    if not empty root partition dont mount anything else, unmount and abort immediately
-    if /mnt/target exists abort
-    dont allow partitions inside btrfs subvolumes
+  new output layout
+  cleaner INFO/WARNING/ERROR messages
+  added custom partitions option
+  backup.sh reports found bootloaders
+  cleaned fedora's grub config file
+  check generated fstab for md devices
+  safer unmount/cleaning process
+  if not empty root partition dont mount anything else, unmount and abort immediately
+  if /mnt/target exists abort
+  dont allow partitions inside btrfs subvolumes
 
 3.4.3
-    changed backup destination dialogs
-    better raid detection
+  changed backup destination dialogs
+  better raid detection
 
 3.4.2
-    more accurate raid detection
-    code cleaning
+  more accurate raid detection
+  code cleaning
 
 3.4.1
-    fixed opening file browser when reading archive fails
+  fixed opening file browser when reading archive fails
 
 3.4
-    added log viewer in dialog interface
-    re-written (un)mount/clean/create_subvols functions
-    better explanation in backup help
-    cleaner edit fstab dialog
-    if tar/rsync completed successfully show it in the log
-    if empty /home and /boot dirrectories exist in non-empty root partition dont touch them
-    fixed last dialog in backup.sh when destination has spaces
-    code cleaning
+  added log viewer in dialog interface
+  re-written (un)mount/clean/create_subvols functions
+  better explanation in backup help
+  cleaner edit fstab dialog
+  if tar/rsync completed successfully show it in the log
+  if empty /home and /boot dirrectories exist in non-empty root partition dont touch them
+  fixed last dialog in backup.sh when destination has spaces
+  code cleaning
 
 3.3.1
-    added simple file/directory browser in dialog interface
-    better /home directory options in backup script and wrapper
-    cleaner editors/bootloaders menu dialog
-    corrected syntax in some dialogs
-    changed summary dialog labels
-    colorized summary
-    code cleaning
+  added simple file/directory browser in dialog interface
+  better /home directory options in backup script and wrapper
+  cleaner editors/bootloaders menu dialog
+  corrected syntax in some dialogs
+  changed summary dialog labels
+  colorized summary
+  code cleaning
 
 3.3
-    added additional root mount/fstab options
-    added additional kernel options with syslinux
-    gpt support for debian/fedora with syslinux
-    re-written install_bootloader
-    better syslinux installation error checking
-    changed dialogues
-    added sgdisk check
-    new syslinux output for debian/fedora
-    bind /run - fixed grub /var/lock/dmraid warnings
-    new help pages
-    updated wrappers
-    code cleaning
+  added additional root mount/fstab options
+  added additional kernel options with syslinux
+  gpt support for debian/fedora with syslinux
+  re-written install_bootloader
+  better syslinux installation error checking
+  changed dialogues
+  added sgdisk check
+  new syslinux output for debian/fedora
+  bind /run - fixed grub /var/lock/dmraid warnings
+  new help pages
+  updated wrappers
+  code cleaning
 
 3.2
-    symlink local archive
-    count archive content
-    added bootloader installation error reporting
-    code cleaning / re-arranging
-    use dialog gauge
-    functions in CLI interface are now a bit faster
-    added manpage
-    cosmetic changes
-    new backup summary
+  symlink local archive
+  count archive content
+  added bootloader installation error reporting
+  code cleaning / re-arranging
+  use dialog gauge
+  functions in CLI interface are now a bit faster
+  added manpage
+  cosmetic changes
+  new backup summary
 
 3.1
-    added tar/rsync progress counter
-    added backup.log and restore.log
-    code re-arranging
-    functions prepare_chroot build_initramfs generate_locales show in one dialog box
-    better rsync syntax for /home's hidden files and folders
-    dont generate locales in fedora
-    various cosmetic changes
+  added tar/rsync progress counter
+  added backup.log and restore.log
+  code re-arranging
+  functions prepare_chroot build_initramfs generate_locales show in one dialog box
+  better rsync syntax for /home's hidden files and folders
+  dont generate locales in fedora
+  various cosmetic changes
 
 3.0
-    allow non-empty /boot and /home partitions
-    changed backup folder name
-    wait user input to exit backup script in CLI interface
-    changed /home options in backup wrapper
-    wrappers use sudo if installed
+  allow non-empty /boot and /home partitions
+  changed backup folder name
+  wait user input to exit backup script in CLI interface
+  changed /home options in backup wrapper
+  wrappers use sudo if installed
 
 2.9.2
-    fixed raid arrays detection
-    fixes in check_input
+  fixed raid arrays detection
+  fixes in check_input
 
 2.9
-    raid support
-    option to install bootloader in all disks that an array contains
-    option to symlink archive
-    added -N, --no-color argument
-    wrappers now find full script's path
-    error reporting in backup script
+  raid support
+  option to install bootloader in all disks that an array contains
+  option to symlink archive
+  added -N, --no-color argument
+  wrappers now find full script's path
+  error reporting in backup script
 
 2.8
-    fixed booting lvm root with syslinux
-    added tar user options
-    wrappers call main scripts with su -c
-    wrappers show the generated command
-    wrappers remember user input
-    added xterm titles
+  fixed booting lvm root with syslinux
+  added tar user options
+  wrappers call main scripts with su -c
+  wrappers show the generated command
+  wrappers remember user input
+  added xterm titles
 
 2.7.1
-    fixed grub detection
+  fixed grub detection
 
 2.7
-    remaned scripts
-    added zenity wrappers
-    better syslinux directory handling
+  remaned scripts
+  added zenity wrappers
+  better syslinux directory handling
 
 2.6
-    xz support
-    added -q --quiet, -o --only-hidden arguments
-    better summary
-    scripts are wrapper-ready now
-    autodetect archive type
-    save old syslinux.cfg
-    added hostname in backup filename
-    fixed file path with spaces in dialog interface
-    autosize dialogs
-    removed trailing spaces
+  xz support
+  added -q --quiet, -o --only-hidden arguments
+  better summary
+  scripts are wrapper-ready now
+  autodetect archive type
+  save old syslinux.cfg
+  added hostname in backup filename
+  fixed file path with spaces in dialog interface
+  autosize dialogs
+  removed trailing spaces
 
 2.5.1
-    write uuids in syslinux.cfg
-    fixed typos
+  write uuids in syslinux.cfg
+  fixed typos
 
 2.5
-    lvm support
-    check if bootloader exists
-    automatic distro detection
-    changed color variables
-    partitions given from arguments dont show them again
-    check mount exit code
-    added dialog titles
-    better fstab generator
-    better chroot enviroment preperation
-    summary shows partition sizes
-    if fedora+grub, save old /etc/default/grub and re-generate it
+  lvm support
+  check if bootloader exists
+  automatic distro detection
+  changed color variables
+  partitions given from arguments dont show them again
+  check mount exit code
+  added dialog titles
+  better fstab generator
+  better chroot enviroment preperation
+  summary shows partition sizes
+  if fedora+grub, save old /etc/default/grub and re-generate it
 
 2.4
-    added transfer mode
-    build initramfs for every available kernel
-    add syslinux.cfg entries for every available kernel
-    removed url ping check
+  added transfer mode
+  build initramfs for every available kernel
+  add syslinux.cfg entries for every available kernel
+  removed url ping check
 
 2.3
-    better backup tar syntax
-    fixed backing up files with spaces when only /home's hidden files and folders selected
-    changed dialog sizes and syntax
+  better backup tar syntax
+  fixed backing up files with spaces when only /home's hidden files and folders selected
+  changed dialog sizes and syntax
 
 2.2
-    check user input
-    archive integrity check
-    smart summary
-    selected partitions dont show up again
-    CLI colors
-    autodetect fedora and add extra tar options
-    bootloader is now optional
-    edit fstab option
-    better unmounting/cleaning with subvolumes
-    changes in dialogs
-    hidden password
-    added info in restore script
-    code cleaning
-    small fixes
+  check user input
+  archive integrity check
+  smart summary
+  selected partitions dont show up again
+  CLI colors
+  autodetect fedora and add extra tar options
+  bootloader is now optional
+  edit fstab option
+  better unmounting/cleaning with subvolumes
+  changes in dialogs
+  hidden password
+  added info in restore script
+  code cleaning
+  small fixes
 
 2.1
-    option for /home's hidden files and folder in backup
-    added -i, --interface argument
-    support for paths with spaces
-    code re-arranging
-    various fixes
+  option for /home's hidden files and folder in backup
+  added -i, --interface argument
+  support for paths with spaces
+  code re-arranging
+  various fixes
 
 2.0
-    initial commit
+  initial commit

@@ -133,73 +133,73 @@ set_args() {
     if [ "$ENTRY13" = "true" ]; then SCR_ARGS+=(-D); fi
 
   elif [ "$BR_TAB" = "1" ]; then
-    if [ "$ENTRY39" = "true" ]; then
+    if [ "$ENTRY16" = "true" ]; then
       SCR_ARGS+=(-r "${ENTRY14%% *}"@)
     else
       SCR_ARGS+=(-r "${ENTRY14%% *}")
     fi
     if [ -n "$ENTRY15" ]; then SCR_ARGS+=(-m "$ENTRY15"); fi
 
-    if [ ! "$ENTRY16" = "" ] && [ "$ENTRY40" = "true" ]; then
-      SCR_ARGS+=(-e "${ENTRY16%% *}"@ -l "$ENTRY17")
-    elif [ ! "$ENTRY16" = "" ]; then
-      SCR_ARGS+=(-e "${ENTRY16%% *}" -l "$ENTRY17")
+    if [ ! "$ENTRY17" = "" ] && [ "$ENTRY19" = "true" ]; then
+      SCR_ARGS+=(-e "${ENTRY17%% *}"@ -l "$ENTRY18")
+    elif [ ! "$ENTRY17" = "" ]; then
+      SCR_ARGS+=(-e "${ENTRY17%% *}" -l "$ENTRY18")
     fi
 
-    if [ ! "$ENTRY18" = "" ] && [ "$ENTRY41" = "true" ]; then
-      SCR_ARGS+=(-b "${ENTRY18%% *}"@)
-    elif [ ! "$ENTRY18" = "" ]; then
-      SCR_ARGS+=(-b "${ENTRY18%% *}")
+    if [ ! "$ENTRY20" = "" ] && [ "$ENTRY21" = "true" ]; then
+      SCR_ARGS+=(-b "${ENTRY20%% *}"@)
+    elif [ ! "$ENTRY20" = "" ]; then
+      SCR_ARGS+=(-b "${ENTRY20%% *}")
     fi
 
-    if [ ! "$ENTRY19" = "" ] && [ "$ENTRY42" = "true" ]; then
-      SCR_ARGS+=(-h "${ENTRY19%% *}"@)
-    elif [ ! "$ENTRY19" = "" ]; then
-      SCR_ARGS+=(-h "${ENTRY19%% *}")
+    if [ ! "$ENTRY22" = "" ] && [ "$ENTRY23" = "true" ]; then
+      SCR_ARGS+=(-h "${ENTRY22%% *}"@)
+    elif [ ! "$ENTRY22" = "" ]; then
+      SCR_ARGS+=(-h "${ENTRY22%% *}")
     fi
 
-    if [ ! "$ENTRY20" = "" ]; then SCR_ARGS+=(-s "${ENTRY20%% *}"); fi
+    if [ ! "$ENTRY24" = "" ]; then SCR_ARGS+=(-s "${ENTRY24%% *}"); fi
 
-    if [ -n "$ENTRY21" ]; then SCR_ARGS+=(-t "$ENTRY21"); fi
-    if [ -n "$ENTRY22" ]; then SCR_ARGS+=(-R "$ENTRY22"); fi
-    if [ -n "$ENTRY23" ]; then SCR_ARGS+=(-B "$ENTRY23"); fi
+    if [ -n "$ENTRY25" ]; then SCR_ARGS+=(-t "$ENTRY25"); fi
+    if [ -n "$ENTRY26" ]; then SCR_ARGS+=(-R "$ENTRY26"); fi
+    if [ -n "$ENTRY27" ]; then SCR_ARGS+=(-B "$ENTRY27"); fi
 
-    if [ "$ENTRY24" = "Grub" ]; then
-      SCR_ARGS+=(-G "${ENTRY25%% *}")
-    elif [ "$ENTRY24" = "Grub-efi" ]; then
+    if [ "$ENTRY28" = "Grub" ]; then
+      SCR_ARGS+=(-G "${ENTRY29%% *}")
+    elif [ "$ENTRY28" = "Grub-efi" ]; then
       SCR_ARGS+=(-G auto)
-    elif [ "$ENTRY24" = "Syslinux" ]; then
-      SCR_ARGS+=(-S "${ENTRY25%% *}")
-    elif [ "$ENTRY24" = "EFISTUB/efibootmgr" ]; then
+    elif [ "$ENTRY28" = "Syslinux" ]; then
+      SCR_ARGS+=(-S "${ENTRY29%% *}")
+    elif [ "$ENTRY28" = "EFISTUB/efibootmgr" ]; then
       SCR_ARGS+=(-F)
-    elif [ "$ENTRY24" = "Systemd/bootctl" ]; then
+    elif [ "$ENTRY28" = "Systemd/bootctl" ]; then
       SCR_ARGS+=(-L)
     fi
 
-    if [ ! "$ENTRY24" = "none" ] && [ -n "$ENTRY26" ]; then SCR_ARGS+=(-k "$ENTRY26"); fi
+    if [ ! "$ENTRY28" = "none" ] && [ -n "$ENTRY30" ]; then SCR_ARGS+=(-k "$ENTRY30"); fi
 
     if [ "$RT_TAB" = "0" ]; then
-      SCR_ARGS+=(-f "$ENTRY27")
-      if [ -n "$ENTRY28" ]; then SCR_ARGS+=(-P "$ENTRY28"); fi
-      if [ -n "$ENTRY29" ]; then SCR_ARGS+=(-u "$ENTRY29"); fi
-      if [ -n "$ENTRY30" ]; then SCR_ARGS+=(-y "$ENTRY30"); fi
-      if [ -n "$ENTRY31" ]; then SCR_ARGS+=(-p "$ENTRY31"); fi
+      SCR_ARGS+=(-f "$ENTRY31")
+      if [ -n "$ENTRY32" ]; then SCR_ARGS+=(-P "$ENTRY32"); fi
+      if [ -n "$ENTRY33" ]; then SCR_ARGS+=(-u "$ENTRY33"); fi
+      if [ -n "$ENTRY34" ]; then SCR_ARGS+=(-y "$ENTRY34"); fi
+      if [ -n "$ENTRY35" ]; then SCR_ARGS+=(-p "$ENTRY35"); fi
     elif [ "$RT_TAB" = "1" ]; then
-      if [ "$ENTRY32" = "Only hidden files and folders" ]; then
+      if [ "$ENTRY36" = "Only hidden files and folders" ]; then
         SCR_ARGS+=(-O)
-      elif [ "$ENTRY32" = "Exclude" ]; then
+      elif [ "$ENTRY36" = "Exclude" ]; then
         SCR_ARGS+=(-H)
       fi
       set -f
-      for i in $ENTRY34; do ENTRY33="$ENTRY33 --exclude=$i"; done
+      for i in $ENTRY38; do ENTRY37="$ENTRY37 --exclude=$i"; done
       set +f
-      if [ -n "$ENTRY33" ]; then SCR_ARGS+=(-u "$ENTRY33"); fi
+      if [ -n "$ENTRY37" ]; then SCR_ARGS+=(-u "$ENTRY37"); fi
     fi
 
-    if [ "$ENTRY35" = "true" ]; then SCR_ARGS+=(-o); fi
-    if [ "$ENTRY36" = "true" ]; then SCR_ARGS+=(-D); fi
-    if [ "$ENTRY37" = "true" ]; then SCR_ARGS+=(-x); fi
-    if [ "$ENTRY38" = "true" ]; then SCR_ARGS+=(-W); fi
+    if [ "$ENTRY39" = "true" ]; then SCR_ARGS+=(-o); fi
+    if [ "$ENTRY40" = "true" ]; then SCR_ARGS+=(-D); fi
+    if [ "$ENTRY41" = "true" ]; then SCR_ARGS+=(-x); fi
+    if [ "$ENTRY42" = "true" ]; then SCR_ARGS+=(-W); fi
   fi
 }
 
@@ -414,17 +414,17 @@ lost+found">
 		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
 	                                                        <variable>ENTRY14</variable>
                                                                 <input>echo "$ENTRY14"</input>
-	                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY16#*/}" -e "/${ENTRY18#*/}" -e "/${ENTRY19#*/}" -e "/${ENTRY20#*/}"</input>
-                                                                <action>refresh:ENTRY16</action>
-                                                                <action>refresh:ENTRY18</action>
-                                                                <action>refresh:ENTRY19</action>
+	                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY17#*/}" -e "/${ENTRY20#*/}" -e "/${ENTRY22#*/}" -e "/${ENTRY24#*/}"</input>
+                                                                <action>refresh:ENTRY17</action>
                                                                 <action>refresh:ENTRY20</action>
+                                                                <action>refresh:ENTRY22</action>
+                                                                <action>refresh:ENTRY24</action>
 			                                </comboboxtext>
                                                         <entry tooltip-text="Set comma-separated list of mount options. Default options: defaults,noatime">
                                                                 <variable>ENTRY15</variable>
                                                         </entry>
                                                         <checkbox label="Clean" tooltip-text="Clean the target root partition if it is not empty">
-                                                                <variable>ENTRY39</variable>
+                                                                <variable>ENTRY16</variable>
                                                         </checkbox>
                                                 </hbox>
 
@@ -433,67 +433,67 @@ lost+found">
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Esp:"></text>
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
-	                                                                        <variable>ENTRY16</variable>
-                                                                                <input>echo "$ENTRY16"</input>
-	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY16#*/}" -e "/${ENTRY18#*/}" -e "/${ENTRY19#*/}" -e "/${ENTRY20#*/}"</input>
-                                                                                <input>if [ -n "$ENTRY16" ]; then echo ""; fi</input>
+	                                                                        <variable>ENTRY17</variable>
+                                                                                <input>echo "$ENTRY17"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY17#*/}" -e "/${ENTRY20#*/}" -e "/${ENTRY22#*/}" -e "/${ENTRY24#*/}"</input>
+                                                                                <input>if [ -n "$ENTRY17" ]; then echo ""; fi</input>
                                                                                 <action>refresh:ENTRY14</action>
-                                                                                <action>refresh:ENTRY18</action>
-                                                                                <action>refresh:ENTRY19</action>
                                                                                 <action>refresh:ENTRY20</action>
+                                                                                <action>refresh:ENTRY22</action>
+                                                                                <action>refresh:ENTRY24</action>
 			                                                </comboboxtext>
                                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select mountpoint">
-	                                                                        <variable>ENTRY17</variable>
+	                                                                        <variable>ENTRY18</variable>
 	                                                                        <item>/boot/efi</item>
 	                                                                        <item>/boot</item>
 	                                                                </comboboxtext>
                                                                         <checkbox label="Clean" tooltip-text="Clean the target esp partition if it is not empty">
-                                                                                <variable>ENTRY40</variable>
+                                                                                <variable>ENTRY19</variable>
                                                                         </checkbox>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="/boot:"></text>
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
-	                                                                        <variable>ENTRY18</variable>
-                                                                                <input>echo "$ENTRY18"</input>
-	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY16#*/}" -e "/${ENTRY18#*/}" -e "/${ENTRY19#*/}" -e "/${ENTRY20#*/}"</input>
-                                                                                <input>if [ -n "$ENTRY18" ]; then echo ""; fi</input>
+	                                                                        <variable>ENTRY20</variable>
+                                                                                <input>echo "$ENTRY20"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY17#*/}" -e "/${ENTRY20#*/}" -e "/${ENTRY22#*/}" -e "/${ENTRY24#*/}"</input>
+                                                                                <input>if [ -n "$ENTRY20" ]; then echo ""; fi</input>
                                                                                 <action>refresh:ENTRY14</action>
-                                                                                <action>refresh:ENTRY16</action>
-                                                                                <action>refresh:ENTRY19</action>
-                                                                                <action>refresh:ENTRY20</action>
+                                                                                <action>refresh:ENTRY17</action>
+                                                                                <action>refresh:ENTRY22</action>
+                                                                                <action>refresh:ENTRY24</action>
 			                                                </comboboxtext>
                                                                         <checkbox label="Clean" tooltip-text="Clean the target /boot partition if it is not empty">
-                                                                                <variable>ENTRY41</variable>
+                                                                                <variable>ENTRY21</variable>
                                                                         </checkbox>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="/home:"></text>
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
-	                                                                        <variable>ENTRY19</variable>
-                                                                                <input>echo "$ENTRY19"</input>
-	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY16#*/}" -e "/${ENTRY18#*/}" -e "/${ENTRY19#*/}" -e "/${ENTRY20#*/}"</input>
-                                                                                <input>if [ -n "$ENTRY19" ]; then echo ""; fi</input>
+	                                                                        <variable>ENTRY22</variable>
+                                                                                <input>echo "$ENTRY22"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY17#*/}" -e "/${ENTRY20#*/}" -e "/${ENTRY22#*/}" -e "/${ENTRY24#*/}"</input>
+                                                                                <input>if [ -n "$ENTRY22" ]; then echo ""; fi</input>
                                                                                 <action>refresh:ENTRY14</action>
-                                                                                <action>refresh:ENTRY16</action>
-                                                                                <action>refresh:ENTRY18</action>
+                                                                                <action>refresh:ENTRY17</action>
                                                                                 <action>refresh:ENTRY20</action>
+                                                                                <action>refresh:ENTRY24</action>
                                                                         </comboboxtext>
                                                                         <checkbox label="Clean" tooltip-text="Clean the target /home partition if it is not empty">
-                                                                                <variable>ENTRY42</variable>
+                                                                                <variable>ENTRY23</variable>
                                                                         </checkbox>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Swap:"></text>
 		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
-	                                                                        <variable>ENTRY20</variable>
-                                                                                <input>echo "$ENTRY20"</input>
-	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY16#*/}" -e "/${ENTRY18#*/}" -e "/${ENTRY19#*/}" -e "/${ENTRY20#*/}"</input>
-                                                                                <input>if [ -n "$ENTRY20" ]; then echo ""; fi</input>
+	                                                                        <variable>ENTRY24</variable>
+                                                                                <input>echo "$ENTRY24"</input>
+	                                                                        <input>echo "$BR_PARTS" | grep -vw -e "/${ENTRY14#*/}" -e "/${ENTRY17#*/}" -e "/${ENTRY20#*/}" -e "/${ENTRY22#*/}" -e "/${ENTRY24#*/}"</input>
+                                                                                <input>if [ -n "$ENTRY24" ]; then echo ""; fi</input>
                                                                                 <action>refresh:ENTRY14</action>
-                                                                                <action>refresh:ENTRY16</action>
-                                                                                <action>refresh:ENTRY18</action>
-                                                                                <action>refresh:ENTRY19</action>
+                                                                                <action>refresh:ENTRY17</action>
+                                                                                <action>refresh:ENTRY20</action>
+                                                                                <action>refresh:ENTRY22</action>
 			                                                </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>
@@ -503,7 +503,7 @@ lost+found">
 e.g /var=/dev/sda3 or /var=/dev/sda3@ if it is not empty and you want to clean it.
 
 If you want spaces in mountpoints replace them with //">
-                                                                                <variable>ENTRY21</variable>
+                                                                                <variable>ENTRY25</variable>
                                                                         </entry>
                                                                 </hbox>
                                                         </vbox>
@@ -513,13 +513,13 @@ If you want spaces in mountpoints replace them with //">
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Root:"></text>
                                                                         <entry tooltip-text="Set subvolume name for /">
-                                                                                <variable>ENTRY22</variable>
+                                                                                <variable>ENTRY26</variable>
                                                                         </entry>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="55" space-expand="false" label="Other:"></text>
                                                                         <entry tooltip-text="Set other subvolumes (subvolume path e.g /home /var /usr ...)">
-                                                                                <variable>ENTRY23</variable>
+                                                                                <variable>ENTRY27</variable>
                                                                         </entry>
                                                                 </hbox>
                                                         </vbox>
@@ -531,27 +531,27 @@ If you want spaces in mountpoints replace them with //">
                                         <frame Bootloader:>
                                                 <hbox>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select bootloader">
-                                                                <variable>ENTRY24</variable>
+                                                                <variable>ENTRY28</variable>
                                                                 <item>none</item>
 	                                                        <item>Grub</item>
 	                                                        <item>Grub-efi</item>
 	                                                        <item>Syslinux</item>
 	                                                        <item>EFISTUB/efibootmgr</item>
 	                                                        <item>Systemd/bootctl</item>
-                                                                <action condition="command_is_true([ $ENTRY24 = none ] && echo true)">disable:ENTRY25</action>
-                                                                <action condition="command_is_true([ ! $ENTRY24 = none ] && echo true)">enable:ENTRY25</action>
-                                                                <action condition="command_is_true([ $ENTRY24 = none ] && echo true)">disable:ENTRY26</action>
-                                                                <action condition="command_is_true([ ! $ENTRY24 = none ] && echo true)">enable:ENTRY26</action>
-                                                                <action condition="command_is_true([ $ENTRY24 = EFISTUB/efibootmgr ] && echo true)">disable:ENTRY25</action>
-                                                                <action condition="command_is_true([ $ENTRY24 = Systemd/bootctl ] && echo true)">disable:ENTRY25</action>
-                                                                <action condition="command_is_true([ $ENTRY24 = Grub-efi ] && echo true)">disable:ENTRY25</action>
+                                                                <action condition="command_is_true([ $ENTRY28 = none ] && echo true)">disable:ENTRY29</action>
+                                                                <action condition="command_is_true([ ! $ENTRY28 = none ] && echo true)">enable:ENTRY29</action>
+                                                                <action condition="command_is_true([ $ENTRY28 = none ] && echo true)">disable:ENTRY30</action>
+                                                                <action condition="command_is_true([ ! $ENTRY28 = none ] && echo true)">enable:ENTRY30</action>
+                                                                <action condition="command_is_true([ $ENTRY28 = EFISTUB/efibootmgr ] && echo true)">disable:ENTRY29</action>
+                                                                <action condition="command_is_true([ $ENTRY28 = Systemd/bootctl ] && echo true)">disable:ENTRY29</action>
+                                                                <action condition="command_is_true([ $ENTRY28 = Grub-efi ] && echo true)">disable:ENTRY29</action>
                                                         </comboboxtext>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target device" sensitive="false">
-	                                                        <variable>ENTRY25</variable>
+	                                                        <variable>ENTRY29</variable>
 	                                                        <input>echo "$BR_DISKS"</input>
 	                                                </comboboxtext>
                                                         <entry tooltip-text="Set additional kernel options" sensitive="false">
-                                                                <variable>ENTRY26</variable>
+                                                                <variable>ENTRY30</variable>
                                                         </entry>
                                                 </hbox>
                                         </frame>
@@ -562,17 +562,17 @@ If you want spaces in mountpoints replace them with //">
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Backup archive:"></text>
                                                         <entry fs-action="file" tooltip-text="Choose a local backup archive or enter URL" fs-title="Select a backup archive">
-                                                                <variable>ENTRY27</variable>
+                                                                <variable>ENTRY31</variable>
                                                         </entry>
                                                         <button tooltip-text="Select backup archive">
                                                                 <input file stock="gtk-open"></input>
-                                                                <action>fileselect:ENTRY27</action>
+                                                                <action>fileselect:ENTRY31</action>
                                                         </button>
                                                 </hbox>
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Passphrase:"></text>
                                                         <entry tooltip-text="Set passphrase for decryption" visibility="false">
-                                                                <variable>ENTRY28</variable>
+                                                                <variable>ENTRY32</variable>
                                                         </entry>
                                                 </hbox>
                                                 <hbox>
@@ -584,7 +584,7 @@ Default options:
 --xattrs
 --selinux (Fedora)
 --xattrs-include='\''*'\'' (Fedora)">
-                                                                <variable>ENTRY29</variable>
+                                                                <variable>ENTRY33</variable>
                                                         </entry>
                                                 </hbox>
                                                 <expander label="Server authentication">
@@ -592,13 +592,13 @@ Default options:
                                                                 <hbox>
                                                                         <text width-request="135" space-expand="false" label="Username:"></text>
                                                                         <entry tooltip-text="Set ftp/http username">
-                                                                                <variable>ENTRY30</variable>
+                                                                                <variable>ENTRY34</variable>
                                                                         </entry>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="135" space-expand="false" label="Password:"></text>
                                                                         <entry tooltip-text="Set ftp/http password" visibility="false">
-                                                                                <variable>ENTRY31</variable>
+                                                                                <variable>ENTRY35</variable>
                                                                         </entry>
                                                                 </hbox>
 
@@ -609,7 +609,7 @@ Default options:
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Home directory:"></text>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
-                                                                <variable>ENTRY32</variable>
+                                                                <variable>ENTRY36</variable>
                                                                 <item>Include</item>
 	                                                        <item>Only hidden files and folders</item>
 	                                                        <item>Exclude</item>
@@ -618,7 +618,7 @@ Default options:
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
                                                         <entry space-expand="true" space-fill="true" tooltip-text="Set extra rsync options. See rsync --help for more info. If you want spaces in names replace them with //">
-                                                                <variable>ENTRY33</variable>
+                                                                <variable>ENTRY37</variable>
                                                         </entry>
                                                 </hbox>
                                                 <hbox>
@@ -637,7 +637,7 @@ Excluded by default:
 /var/lock/*
 /home/*/.gvfs
 lost+found">
-                                                                <variable>ENTRY34</variable>
+                                                                <variable>ENTRY38</variable>
                                                         </entry>
                                                 </hbox>
                                         </vbox>
@@ -647,19 +647,19 @@ lost+found">
                                 <vbox>
                                         <frame Misc options:>
                                                 <checkbox label="Override" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
-                                                        <variable>ENTRY35</variable>
+                                                        <variable>ENTRY39</variable>
                                                 </checkbox>
 
                                                 <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check and initramfs building in gentoo">
-                                                        <variable>ENTRY36</variable>
+                                                        <variable>ENTRY40</variable>
                                                 </checkbox>
 
                                                 <checkbox label="Dont check root" tooltip-text="Dont check if the target root partition is empty (dangerous)">
-                                                        <variable>ENTRY37</variable>
+                                                        <variable>ENTRY41</variable>
                                                 </checkbox>
 
                                                 <checkbox label="Bios" tooltip-text="Ignore UEFI environment">
-                                                        <variable>ENTRY38</variable>
+                                                        <variable>ENTRY42</variable>
                                                 </checkbox>
                                         </frame>
                                 </vbox>

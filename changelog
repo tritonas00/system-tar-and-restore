@@ -10,7 +10,7 @@ Changelog:
   use stock gtk icons in wrapper window and buttons
   user tar options in backup mode now appear on top of the list, just like the other modes
   proper check for /home directory options
-  star-gui.sh: added check for gtkdialog and /home directory options from backup.conf
+  star-gui.sh: added check for gtkdialog and /home directory options
   star.sh: removed bold from user replies
   star.sh: arguments now override the configuration file
   star.sh: added check for wget

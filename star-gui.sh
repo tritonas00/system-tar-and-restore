@@ -35,7 +35,7 @@ elif [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
 fi
 
-# Export given vars from configuration file, set defaults if not given
+# Set some defaults if not given from the configuration file
 if [ -n "$BRNAME" ]; then
   export ENTRY1="$BRNAME"
 else
@@ -71,10 +71,6 @@ else
   export ENTRY5="none"
 fi
 
-if [ -n "$BRencpass" ]; then
-  export ENTRY6="$BRencpass"
-fi
-
 if [ -n "$BR_USER_OPTS" ]; then
   for opt in $BR_USER_OPTS; do
     if [[ "$opt" == --exclude=* ]]; then
@@ -83,30 +79,6 @@ if [ -n "$BR_USER_OPTS" ]; then
       export ENTRY7="$opt $ENTRY7"
     fi
   done
-fi
-
-if [ -n "$BRmcore" ]; then
-  export ENTRY9="true"
-else
-  export ENTRY9="false"
-fi
-
-if [ -n "$BRclean" ]; then
-  export ENTRY11="true"
-else
-  export ENTRY11="false"
-fi
-
-if [ -n "$BRoverride" ]; then
-  export ENTRY12="true"
-else
-  export ENTRY12="false"
-fi
-
-if [ -n "$BRgenkernel" ]; then
-  export ENTRY13="true"
-else
-  export ENTRY13="false"
 fi
 
 # Store needed functions to a temporary file so we can source it inside gtkdialog
@@ -353,9 +325,10 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
 
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Passphrase:"></text>
-                                        <entry text="'"$ENTRY6"'" visibility="false" tooltip-text="Set passphrase for encryption">
+                                        <entry visibility="false" tooltip-text="Set passphrase for encryption">
                                                 '"$(if [ "$ENTRY5" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                 <variable>ENTRY6</variable>
+                                                '"$(if [ -n "$BRencpass" ]; then echo "<default>$BRencpass</default>"; fi)"'
                                         </entry>
                                 </hbox>
 
@@ -397,7 +370,7 @@ lost+found">
                                                 <checkbox label="Enable multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
                                                         '"$(if [ "$ENTRY4" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                         <variable>ENTRY9</variable>
-                                                        <default>'"$ENTRY9"'</default>
+                                                        '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
                                                 </checkbox>
 
                                                 <checkbox label="Generate backup.conf" tooltip-text="Generate configuration file in case of successful backup">
@@ -406,17 +379,17 @@ lost+found">
 
                                                 <checkbox label="Remove older backups" tooltip-text="Remove older backups in the destination directory">
                                                         <variable>ENTRY11</variable>
-                                                        <default>'"$ENTRY11"'</default>
+                                                        '"$(if [ -n "$BRclean" ]; then echo "<default>true</default>"; fi)"'
                                                 </checkbox>
 
                                                 <checkbox label="Override" tooltip-text="Override the default tar options/excludes with user defined ones">
                                                         <variable>ENTRY12</variable>
-                                                        <default>'"$ENTRY12"'</default>
+                                                        '"$(if [ -n "$BRoverride" ]; then echo "<default>true</default>"; fi)"'
                                                 </checkbox>
 
                                                 <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check in gentoo">
                                                         <variable>ENTRY13</variable>
-                                                        <default>'"$ENTRY13"'</default>
+                                                        '"$(if [ -n "$BRgenkernel" ]; then echo "<default>true</default>"; fi)"'
                                                 </checkbox>
                                         </frame>
                                 </vbox>

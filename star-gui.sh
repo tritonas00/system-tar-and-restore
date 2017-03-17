@@ -95,7 +95,8 @@ export BR_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 
 export ENTRY14="$(echo "$BR_PARTS" | head -n 1)"
 
-# Store needed functions to a temporary file so we can source it inside gtkdialog (compatibility with Ubuntu 16.04)
+# Store needed functions to a temporary file so we can source it inside gtkdialog
+# This ensures compatibility with Ubuntu 16.04 and variants
 echo '
 set_args() {
   if [ "$BR_TAB" = "0" ]; then

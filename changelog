@@ -1,5 +1,3 @@
-Changelog:
-
 6.5
   added support for nvme devices (thanks scottbass for reporting)
   implemented partition cleaning mechanism (see star.sh --help)

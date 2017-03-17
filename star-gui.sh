@@ -169,7 +169,7 @@ set_args() {
     if [ ! "$ENTRY19" = "" ] && [ "$ENTRY42" = "true" ]; then
       SCR_ARGS+=(-h "${ENTRY19%% *}"@)
     elif [ ! "$ENTRY19" = "" ]; then
-       SCR_ARGS+=(-h "${ENTRY19%% *}")
+      SCR_ARGS+=(-h "${ENTRY19%% *}")
     fi
 
     if [ ! "$ENTRY20" = "" ]; then SCR_ARGS+=(-s "${ENTRY20%% *}"); fi

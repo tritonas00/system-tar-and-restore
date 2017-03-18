@@ -14,6 +14,7 @@
   star.sh: added check for wget
   star.sh: improved verbose tar/rsync output
   removed summary from rsync output (caused misleading percentage)
+  generate_conf: trim leading, trailing and multiple spaces in user tar options
   code cleanups
 
 6.4.1

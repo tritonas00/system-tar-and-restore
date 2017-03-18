@@ -444,7 +444,7 @@ if [ "$BRmode" = "0" ]; then
 
  # Generate configuration file
   generate_conf() {
-    echo -e "#Auto-generated configuration file\n#Place it in /etc/backup.conf\n\n"
+    echo -e "#Auto-generated configuration file for backup mode. Place it in /etc\n"
     echo BRFOLDER=\"$(dirname "$BRFOLDER")\"
     if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then echo BRNAME=\"$BRNAME\"; fi # Strictly check the default filename format
     if [ -n "$BR_USER_OPTS" ]; then echo BR_USER_OPTS=\"$(echo $BR_USER_OPTS)\"; fi # trim leading/trailing and multiple spaces

@@ -35,7 +35,7 @@ elif [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
 fi
 
-# Set some defaults if not given from the configuration file
+# Export basic vars from configuration file, set defaults if not given
 if [ -n "$BRNAME" ]; then
   export ENTRY1="$BRNAME"
 else
@@ -71,6 +71,7 @@ else
   export ENTRY5="none"
 fi
 
+# Set user tar/rsync options if given from configuration file
 if [ -n "$BR_USER_OPTS" ]; then
   for opt in $BR_USER_OPTS; do
     if [[ "$opt" == --exclude=* ]]; then
@@ -80,20 +81,6 @@ if [ -n "$BR_USER_OPTS" ]; then
     fi
   done
 fi
-
-# Scan normal partitions, lvm, md arrays, sd card partitions and devices, store in vars, initialize target root partition
-export BR_PARTS="$(for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
-                   for f in $(find /dev/mapper/ -maxdepth 1 -mindepth 1 ! -name "control"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
-                   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
-                   for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
-                   for f in $(find /dev -regex "/dev/nvme[0-9]+n[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done)"
-
-export BR_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done
-                   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done
-                   for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done
-                   for f in $(find /dev -regex "/dev/nvme[0-9]+n[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done)"
-
-export ENTRY14="$(echo "$BR_PARTS" | head -n 1)"
 
 # Store needed functions to a temporary file so we can source it inside gtkdialog
 # This ensures compatibility with Ubuntu 16.04 and variants
@@ -159,7 +146,6 @@ set_args() {
     fi
 
     if [ ! "$ENTRY24" = "" ]; then SCR_ARGS+=(-s "${ENTRY24%% *}"); fi
-
     if [ -n "$ENTRY25" ]; then SCR_ARGS+=(-t "$ENTRY25"); fi
     if [ -n "$ENTRY26" ]; then SCR_ARGS+=(-R "$ENTRY26"); fi
     if [ -n "$ENTRY27" ]; then SCR_ARGS+=(-B "$ENTRY27"); fi
@@ -217,6 +203,21 @@ run_main() {
   fi
 }
 ' > /tmp/wr_functions
+
+# Scan normal partitions, lvm, md arrays, sd card partitions and devices
+export BR_PARTS="$(for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
+                   for f in $(find /dev/mapper/ -maxdepth 1 -mindepth 1 ! -name "control"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
+                   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
+                   for f in $(find /dev -regex "/dev/mmcblk[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
+                   for f in $(find /dev -regex "/dev/nvme[0-9]+n[0-9]+p[0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done)"
+
+export BR_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size $f)"; done
+                   for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f)"; done
+                   for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done
+                   for f in $(find /dev -regex "/dev/nvme[0-9]+n[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done)"
+
+# Initialize target root partition
+export ENTRY14="$(echo "$BR_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
 <window icon-name="gtk-preferences" height-request="640" width-request="515">

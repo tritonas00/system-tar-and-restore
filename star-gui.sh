@@ -71,7 +71,7 @@ else
   export ENTRY5="none"
 fi
 
-# Set user tar/rsync options if given from configuration file
+# Set user tar/rsync options if given from configuration file, separate entries
 if [ -n "$BR_USER_OPTS" ]; then
   for opt in $BR_USER_OPTS; do
     if [[ "$opt" == --exclude=* ]]; then
@@ -204,7 +204,7 @@ run_main() {
 }
 ' > /tmp/wr_functions
 
-# Scan normal partitions, lvm, md arrays, sd card partitions and devices
+# Scan normal partitions, lvm, md arrays, sd card partitions and devices, initialize target root partition
 export BR_PARTS="$(for f in $(find /dev -regex "/dev/[vhs]d[a-z][0-9]+"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done | sort
                    for f in $(find /dev/mapper/ -maxdepth 1 -mindepth 1 ! -name "control"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
                    for f in $(find /dev -regex "^/dev/md[0-9]+$"); do echo "$f $(lsblk -d -n -o size $f) $(blkid -s TYPE -o value $f)"; done
@@ -216,7 +216,6 @@ export BR_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
                    for f in $(find /dev -regex "/dev/mmcblk[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done
                    for f in $(find /dev -regex "/dev/nvme[0-9]+n[0-9]+"); do echo "$f $(lsblk -d -n -o size $f)"; done)"
 
-# Initialize target root partition
 export ENTRY14="$(echo "$BR_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='

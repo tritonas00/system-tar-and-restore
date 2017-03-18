@@ -71,7 +71,7 @@ else
   export ENTRY5="none"
 fi
 
-# Set user tar/rsync options if given from configuration file, separate entries
+# Set user tar options if given from configuration file, separate entries
 if [ -n "$BR_USER_OPTS" ]; then
   for opt in $BR_USER_OPTS; do
     if [[ "$opt" == --exclude=* ]]; then

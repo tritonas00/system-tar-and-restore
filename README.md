@@ -13,7 +13,7 @@ System Tar & Restore
 
 ![Backup](https://raw.githubusercontent.com/tritonas00/system-tar-and-restore/master/images/backup.png)
 
-###ABOUT###
+### ABOUT
 
 System tar & restore contains two bash scripts, the main program **star.sh** and a gui wrapper **star-gui.sh**.  
 Three modes are available: Backup, Restore and Transfer.
@@ -33,7 +33,7 @@ The package is provided by the <code>gentoo-el</code> overlay. You can install i
     layman -a gentoo-el  
     emerge app-backup/system-tar-and-restore
 
-###REQUIREMENTS###
+### REQUIREMENTS
 
 - gtkdialog 0.8.3 or later (for the gui)
 - tar 1.27+ (acls and xattrs support)
@@ -42,7 +42,7 @@ The package is provided by the <code>gentoo-el</code> overlay. You can install i
 - gptfdisk/gdisk (for GPT and Syslinux)
 - openssl/gpg (for encryption)
 
-###THINGS YOU CAN DO###
+### THINGS YOU CAN DO
 
 - Full system or partial backup
 - Restore or transfer to the same or different disk/partition layout.
@@ -50,7 +50,7 @@ The package is provided by the <code>gentoo-el</code> overlay. You can install i
 - Restore a BIOS-based system to UEFI and vice versa.
 - Prepare a system in a virtual machine (such as virtualbox), back it up and restore it in a normal machine.
 
-###BACKUP MODE###
+### BACKUP MODE
 
 With this mode you can make a tar backup archive of your system. You can define:
 
@@ -66,7 +66,7 @@ See the provided [sample](https://github.com/tritonas00/system-tar-and-restore/b
 
 When the process completes, you may want to check *backup.log* file in the same directory with the backup archive.
 
-###RESTORE/TRANSFER MODE###
+### RESTORE/TRANSFER MODE
 
 Restore mode uses the above created archive to extract it in desired partition(s). Transfer mode transfers your system in desired partition(s) using rsync. Then, in both cases, the script generates the target system's fstab, rebuilds initramfs for every available kernel, generates locales and finally installs and configures the selected bootloader.
 
@@ -83,7 +83,7 @@ When the process completes check */tmp/restore.log*.
 
 See <code>star.sh --help</code> for all available options.
 
-###NOTES###
+### NOTES
 
 - In case of Gentoo package genkernel is required to build initramfs. If you dont want initramfs image you can use -D to disable genkernel check and initramfs building.
 
@@ -92,7 +92,7 @@ See <code>star.sh --help</code> for all available options.
 - In case of UEFI, you must boot in UEFI enviroment to restore a system. The script will check if */sys/firmware/efi* exists and act accordingly.
    You must create an [ESP (EFI System Partition)](https://wiki.archlinux.org/index.php/EFI_System_Partition). 
 
-###TESTED PARTITION SCHEMES###
+### TESTED PARTITION SCHEMES
 
 | TARGET&nbsp;PARTITION | MOUNTPOINT | BOOTLOADER | SYSTEM | NOTES |
 |-----------------|----------------|--------------|------------|-------------|
@@ -113,7 +113,7 @@ See <code>star.sh --help</code> for all available options.
 |/dev/sdX2<br>/dev/sdX1*|/<br>/boot|Grub<br>EFISTUB/efibootmgr<br>Systemd/bootctl|UEFI&nbsp;GPT|ESP*<br>efibootmgr 0.12<br>efivar 0.21<br>systemd >= 222|
 |/dev/mapper/X<br>/dev/sdX2<br>/dev/sdX1*|/<br>/boot<br>/boot/efi|Grub<br>EFISTUB/efibootmgr<br>Systemd/bootctl|UEFI&nbsp;GPT|luks<br>ESP*<br>efibootmgr 0.12<br>efivar 0.21<br>systemd >= 222|
 
-###EXAMPLES USING ARGUMENTS###
+### EXAMPLES USING ARGUMENTS
 
 **Backup Mode:**
 

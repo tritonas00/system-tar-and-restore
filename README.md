@@ -89,7 +89,7 @@ See <code>star.sh --help</code> for all available options.
 - In the target system, the script saves configuration files before generate/modify them with *-old* suffix.  
 
 - In case of UEFI, you must boot in UEFI enviroment to restore a system. The script will check if */sys/firmware/efi* exists and act accordingly.
-   You must create an [ESP (EFI System Partition)](https://wiki.archlinux.org/index.php/EFI_System_Partition). 
+   You must create an [EFI System Partition](https://wiki.archlinux.org/index.php/EFI_System_Partition). 
 
 - Some tested Restore/Transfer scenarios are included in the table below.  
 

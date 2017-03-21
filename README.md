@@ -96,6 +96,7 @@ See <code>star.sh --help</code> for all available options.
 
 <details>
 <summary>Tested scenarios</summary>
+
 | TARGET&nbsp;PARTITION | MOUNTPOINT | BOOTLOADER | SYSTEM | NOTES |
 |-----------------|----------------|--------------|------------|-------------|
 |/dev/sdX1|/|Grub<br>Syslinux|BIOS&nbsp;MBR|
@@ -114,6 +115,7 @@ See <code>star.sh --help</code> for all available options.
 |/dev/sdX2<br>/dev/sdX1*|/<br>/boot/efi|Grub<br>EFISTUB/efibootmgr<br>Systemd/bootctl|UEFI&nbsp;GPT|ESP*<br>efibootmgr 0.12<br>efivar 0.21<br>systemd >= 222|
 |/dev/sdX2<br>/dev/sdX1*|/<br>/boot|Grub<br>EFISTUB/efibootmgr<br>Systemd/bootctl|UEFI&nbsp;GPT|ESP*<br>efibootmgr 0.12<br>efivar 0.21<br>systemd >= 222|
 |/dev/mapper/X<br>/dev/sdX2<br>/dev/sdX1*|/<br>/boot<br>/boot/efi|Grub<br>EFISTUB/efibootmgr<br>Systemd/bootctl|UEFI&nbsp;GPT|luks<br>ESP*<br>efibootmgr 0.12<br>efivar 0.21<br>systemd >= 222|
+
 </details>
 
 ### EXAMPLES USING ARGUMENTS

@@ -8,7 +8,6 @@ System Tar & Restore
   * [Backup Mode](#backup-mode)
   * [Restore/Transfer Mode](#restoretransfer-mode)
   * [Notes](#notes)
-  * [Tested partition schemes](#tested-partition-schemes)
   * [Examples using arguments](#examples-using-arguments)
 
 ![Backup](https://raw.githubusercontent.com/tritonas00/system-tar-and-restore/master/images/backup.png)

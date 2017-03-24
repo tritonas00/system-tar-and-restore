@@ -590,11 +590,13 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Check destination for backup directories with older date, strictly check directory name format
-  while read dir; do
-    if [ "${dir//[^0-9]/}" -lt "${BRFOLDER//[^0-9]/}" ]; then # Compare the date numbers
-      BRoldbackups+=("$dir")
-    fi
-  done < <(find "$(dirname "$BRFOLDER")" -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
+  if [ -n "$BRclean" ]; then
+    while read dir; do
+      if [ "${dir//[^0-9]/}" -lt "${BRFOLDER//[^0-9]/}" ]; then # Compare the date numbers
+        BRoldbackups+=("$dir")
+      fi
+    done < <(find "$(dirname "$BRFOLDER")" -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
+  fi
 
   # Check if backup file already exists and prompt the user to overwrite. If -q is given overwrite automatically
   if [ -z "$BRquiet" ]; then

@@ -6,5 +6,5 @@ Comment=Backup and Restore your system using tar or Transfer it with rsync
 Icon=gtk-preferences
 Categories=GTK;System;
 Exec=pkexec /usr/bin/star-gui.sh
-StartupNotify=true
+StartupNotify=false
 Terminal=false

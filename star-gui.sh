@@ -113,7 +113,11 @@ set_args() {
     set +f
     if [ -n "$ENTRY7" ]; then SCR_ARGS+=(-u "$ENTRY7"); fi
 
-    if [ "$ENTRY9" = "true" ] && [ ! "$ENTRY4" = "none" ]; then SCR_ARGS+=(-M); fi
+    if [ "$ENTRY9" = "true" ] && [ ! "$ENTRY4" = "none" ]; then
+      SCR_ARGS+=(-M)
+      if [ ! "$ENTRY43" = "0" ]; then SCR_ARGS+=(-z "$ENTRY43"); fi
+    fi
+
     if [ "$ENTRY10" = "true" ]; then SCR_ARGS+=(-g); fi
     if [ "$ENTRY11" = "true" ]; then SCR_ARGS+=(-a); fi
     if [ "$ENTRY12" = "true" ]; then SCR_ARGS+=(-o); fi
@@ -368,11 +372,19 @@ lost+found">
 
                                 <vbox>
                                         <frame Misc options:>
-                                                <checkbox label="Enable multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
-                                                        '"$(if [ "$ENTRY4" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                        <variable>ENTRY9</variable>
-                                                        '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
-                                                </checkbox>
+                                                <hbox>
+                                                        <checkbox space-expand="true" label="Enable multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
+                                                                '"$(if [ "$ENTRY4" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                                <variable>ENTRY9</variable>
+                                                                '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
+                                                        </checkbox>
+
+                                                        <text space-fill="true" label="Number of threads:"></text>
+                                                        <spinbutton tooltip-text="Specify number of threads for multi-core compression, set 0 for maximum">
+	                                                        <variable>ENTRY43</variable>
+                                                                '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
+                                                        </spinbutton>
+                                                </hbox>
 
                                                 <checkbox label="Generate backup.conf" tooltip-text="Generate configuration file in case of successful backup">
                                                         <variable>ENTRY10</variable>
@@ -674,7 +686,7 @@ lost+found">
                         <vbox>
                                 <text use-markup="true" label="<b><big>System Tar &amp; Restore</big></b>"></text>
                                 <text wrap="false" label="Backup and Restore your system using tar or Transfer it with rsync"></text>
-                                <text use-markup="true" label="<i><small>Version 6.5 tritonas00@gmail.com 2012-2017</small></i>"></text>
+                                <text use-markup="true" label="<i><small>Version 6.6 tritonas00@gmail.com 2012-2017</small></i>"></text>
                                 <hseparator></hseparator>
                                 <vbox scrollable="true" shadow-type="0">
                                         <text xalign="0" wrap="false">

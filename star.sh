@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 6.5"
+BR_VERSION="System Tar & Restore 6.6"
 
 # Set EFI detection directory
 BR_EFI_DIR="/sys/firmware/efi"
@@ -54,7 +54,7 @@ print_msg() {
 echo -e "\n$BR_VERSION"
 
 # Set arguments and help page
-BRargs="$(getopt -o "i:d:n:c:u:HOjqvgDP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFL" -l "mode:,directory:,filename:,compression:,user-opts:,exclude-home,only-hidden,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,help" -n "$1" -- "$@")"
+BRargs="$(getopt -o "i:d:n:c:u:HOjqvgDP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:" -l "mode:,directory:,filename:,compression:,user-opts:,exclude-home,only-hidden,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -229,6 +229,11 @@ while true; do
       BRbootctl="y"
       shift
     ;;
+    -z|--threads)
+      BRthreads="$2"
+      _BRthreads="$2"
+      shift 2
+    ;;
     --help)
       echo "Usage: star.sh -i mode [options]
 
@@ -256,6 +261,7 @@ Backup Mode:
   Archiver Options:
     -c, --compression         Compression type: gzip bzip2 xz none
     -M, --multi-core          Enable multi-core compression (via pigz, pbzip2 or pxz)
+    -z, --threads             Specify number of threads for multi-core compression
 
   Encryption Options:
     -E, --encryption          Encryption method: openssl gpg
@@ -359,6 +365,7 @@ if [ "$BRmode" = "0" ] && [ -z "$BRwrap" ]; then
     if [ -n "$_BRencpass" ]; then BRencpass="$_BRencpass"; fi
     if [ -n "$_BRnohome" ] && [ -n "$BRonlyhidden" ]; then unset BRonlyhidden; fi
     if [ -n "$_BRonlyhidden" ] && [ -n "$BRnohome" ]; then unset BRnohome; fi
+    if [ -n "$_BRthreads" ]; then BRthreads="$_BRthreads"; fi
   fi
 fi
 
@@ -432,13 +439,13 @@ if [ "$BRmode" = "0" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      tar ${BR_MAIN_OPTS} >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" /
+      tar "${BR_MAIN_OPTS[@]}" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" /
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      tar ${BR_MAIN_OPTS} >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" /
+      tar "${BR_MAIN_OPTS[@]}" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" /
     # Without encryption
     else
-      tar ${BR_MAIN_OPTS} "$BRFOLDER"/"$BRNAME"."$BR_EXT" "${BR_TR_OPTS[@]}" /
+      tar "${BR_MAIN_OPTS[@]}" "$BRFOLDER"/"$BRNAME"."$BR_EXT" "${BR_TR_OPTS[@]}" /
     fi
   }
 
@@ -458,6 +465,8 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRencpass" ]; then echo -e "BRencmethod=\"$BRencmethod\"\nBRencpass=\"$BRencpass\""; fi
     if [ -n "$BRclean" ]; then echo BRclean=\"Yes\"; fi
     if [ -n "$BRgenkernel" ]; then echo BRgenkernel=\"No\"; fi
+    if [ -n "$BRmcore" ]; then echo BRmcore=\"Yes\"; fi
+    if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo BRthreads=\"$BRthreads\"; fi
   }
 
   # Check user input, exit on error
@@ -519,29 +528,41 @@ if [ "$BRmode" = "0" ]; then
   BRFOLDER="$(echo "$BRFOLDER"/Backup-$(date +%Y-%m-%d) | sed 's://*:/:g')" # Also eliminate multiple forward slashes in the path
 
   # Set tar compression options and backup file extension
-  if [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ]; then
-    BR_MAIN_OPTS="-c -I pigz -vpf"
+  if [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then
+    BR_MAIN_OPTS=(-c -I "pigz -p$BRthreads" -vpf)
+    BR_EXT="tar.gz"
+    mcinfo="(pigz $BRthreads threads)"
+  elif [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ]; then
+    BR_MAIN_OPTS=(-c -I pigz -vpf)
     BR_EXT="tar.gz"
     mcinfo="(pigz)"
   elif [ "$BRcompression" = "gzip" ]; then
-    BR_MAIN_OPTS="cvpzf"
+    BR_MAIN_OPTS=(cvpzf)
     BR_EXT="tar.gz"
+  elif [ "$BRcompression" = "xz" ] && [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then
+    BR_MAIN_OPTS=(-c -I "pxz -T$BRthreads" -vpf)
+    BR_EXT="tar.xz"
+    mcinfo="(pxz $BRthreads threads)"
   elif [ "$BRcompression" = "xz" ] && [ -n "$BRmcore" ]; then
-    BR_MAIN_OPTS="-c -I pxz -vpf"
+    BR_MAIN_OPTS=(-c -I pxz -vpf)
     BR_EXT="tar.xz"
     mcinfo="(pxz)"
   elif [ "$BRcompression" = "xz" ]; then
-    BR_MAIN_OPTS="cvpJf"
+    BR_MAIN_OPTS=(cvpJf)
     BR_EXT="tar.xz"
+  elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then
+    BR_MAIN_OPTS=(-c -I "pbzip2 -p$BRthreads" -vpf)
+    BR_EXT="tar.bz2"
+    mcinfo="(pbzip2 $BRthreads threads)"
   elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcore" ]; then
-    BR_MAIN_OPTS="-c -I pbzip2 -vpf"
+    BR_MAIN_OPTS=(-c -I pbzip2 -vpf)
     BR_EXT="tar.bz2"
     mcinfo="(pbzip2)"
   elif [ "$BRcompression" = "bzip2" ]; then
-    BR_MAIN_OPTS="cvpjf"
+    BR_MAIN_OPTS=(cvpjf)
     BR_EXT="tar.bz2"
   elif [ "$BRcompression" = "none" ]; then
-    BR_MAIN_OPTS="cvpf"
+    BR_MAIN_OPTS=(cvpf)
     BR_EXT="tar"
   fi
 

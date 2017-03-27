@@ -3,7 +3,7 @@
 "http://www.freedesktop.org/software/polkit/policyconfig-1.dtd">
 <policyconfig>
 
-  <action id="org.freedesktop.policykit.example.pkexec.star-gui.sh">
+  <action id="org.freedesktop.policykit.pkexec.star-gui.sh">
     <description>Run star-gui.sh</description>
     <message>Authentication is required to run star-gui.sh</message>
     <icon_name>gtk-preferences</icon_name>

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=System Tar & Restore
+Comment=Backup and Restore your system using tar or Transfer it with rsync
+Icon=gtk-preferences
+Categories=GTK;System;
+Exec=pkexec /usr/bin/star-gui.sh
+StartupNotify=true
+Terminal=false

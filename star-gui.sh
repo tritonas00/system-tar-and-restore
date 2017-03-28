@@ -48,6 +48,12 @@ else
   export ENTRY2="/"
 fi
 
+if [ -n "$BRtopdir" ]; then
+  export ENTRY44="$BRtopdir"
+else
+  export ENTRY44="/"
+fi
+
 if [ -n "$BRonlyhidden" ] && [ -n "$BRnohome" ]; then
   echo "Error parsing configuration file. Choose only one option for the /home directory"
   exit
@@ -100,6 +106,8 @@ set_args() {
     if [ -n "$ENTRY1" ] && [[ ! "$ENTRY1" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
       SCR_ARGS+=(-n "$ENTRY1")
     fi
+
+    if [ ! "$ENTRY44" = "/" ]; then SCR_ARGS+=(-T "$ENTRY44"); fi
 
     if [ "$ENTRY3" = "Only hidden files and folders" ]; then
       SCR_ARGS+=(-O)
@@ -223,7 +231,7 @@ export BR_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 export ENTRY14="$(echo "$BR_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
-<window icon-name="gtk-preferences" height-request="640" width-request="515">
+<window icon-name="gtk-preferences" height-request="645" width-request="515">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_upt</input>
@@ -287,6 +295,17 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                         <button tooltip-text="Select directory">
                                                 <input file stock="gtk-open"></input>
                                                 <action>fileselect:ENTRY2</action>
+                                        </button>
+                                </hbox>
+
+                                <hbox>
+                                        <text width-request="135" label="Top directory:"></text>
+                                        <entry text="'"$ENTRY44"'" fs-action="folder" fs-title="Select a directory" tooltip-text="Choose an alternative top-level directory if you want to create a non-system backup">
+                                                <variable>ENTRY44</variable>
+                                        </entry>
+                                        <button tooltip-text="Select directory">
+                                                <input file stock="gtk-open"></input>
+                                                <action>fileselect:ENTRY44</action>
                                         </button>
                                 </hbox>
 

@@ -380,7 +380,7 @@ lost+found">
                                                         </checkbox>
 
                                                         <text space-fill="true" label="Number of threads:"></text>
-                                                        <spinbutton tooltip-text="Specify the number of threads for multi-core compression, set 0 for maximum">
+                                                        <spinbutton tooltip-text="Specify the number of threads for multi-core compression (max = 0)">
 	                                                        <variable>ENTRY43</variable>
                                                                 '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
                                                         </spinbutton>

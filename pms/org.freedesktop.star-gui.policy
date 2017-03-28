@@ -6,7 +6,7 @@
   <action id="org.freedesktop.policykit.pkexec.star-gui.sh">
     <description>Run star-gui.sh</description>
     <message>Authentication is required to run star-gui.sh</message>
-    <icon_name>gtk-preferences</icon_name> 
+    <icon_name>gtk-preferences</icon_name>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>

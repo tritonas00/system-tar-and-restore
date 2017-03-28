@@ -512,6 +512,9 @@ if [ "$BRmode" = "0" ]; then
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "xz" ] && [ -z "$(which pxz 2>/dev/null)" ]; then
     echo -e "[${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script" >&2
     exit
+  elif [ -n "$BRmcore" ] && [ -n "$BRthreads" ] && [ "$BRthreads" -gt "$(nproc --all)" ]; then
+    echo -e "[${RED}ERROR${NORM}] Maximum number of processing units: $(nproc --all)" >&2
+    exit
   fi
 
   if [ -n "$BRwrap" ] && [ -z "$BRFOLDER" ]; then

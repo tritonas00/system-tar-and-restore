@@ -689,6 +689,13 @@ if [ "$BRmode" = "0" ]; then
   echo -e "$BR_VERSION\n\n[SUMMARY]\n$(show_summary)\n\n[ARCHIVER]" > "$BRFOLDER"/backup.log
   # Store start time
   start=$(date +%s)
+
+  # If custom top-level directory is given, cd in it's parent and backup the child
+  if [ ! "$BRtopdir" = "/" ]; then
+    cd "$(dirname "$BRtopdir")"
+    BRtopdir="$(basename "$BRtopdir")"
+  fi
+
   # Calculate the number of files
   print_msg 0 "Please wait while calculating files"
   run_calc | while read ln; do a="$((a + 1))" && echo -en "\rCalculating: $a Files"; done

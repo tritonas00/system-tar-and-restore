@@ -300,7 +300,7 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
 
                                 <hbox>
                                         <text width-request="135" label="Top directory:"></text>
-                                        <entry text="'"$ENTRY44"'" fs-action="folder" fs-title="Select a directory" tooltip-text="Choose an alternative top-level directory if you want to create a non-system backup">
+                                        <entry text="'"$ENTRY44"'" fs-action="folder" fs-title="Select a directory" tooltip-text="Choose an alternative top-level directory if you want to create a non-system backup archive">
                                                 <variable>ENTRY44</variable>
                                         </entry>
                                         <button tooltip-text="Select directory">

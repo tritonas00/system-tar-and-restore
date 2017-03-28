@@ -276,7 +276,7 @@ Backup Mode:
     -C, --conf                Alternative configuration file path
     -g, --generate            Generate configuration file (in case of successful backup)
     -a, --clean               Remove older backups in the destination directory
-    -T, --top-dir             Create a non-system backup of a specified directory
+    -T, --top-dir             Create a non-system backup archive of a specified directory
 
 Restore / Transfer Mode:
   Partitions:

@@ -733,7 +733,7 @@ if [ "$BRmode" = "0" ]; then
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
-  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRmcore BRthreads
+  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRmcore BRthreads BRtopdir
 
   # Show the exit screen
   exit_screen() {

@@ -54,7 +54,7 @@ print_msg() {
 echo -e "\n$BR_VERSION"
 
 # Set arguments and help page
-BRargs="$(getopt -o "i:d:n:c:u:HOjqvgDP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,directory:,filename:,compression:,user-opts:,exclude-home,only-hidden,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,top-dir:,help" -n "$1" -- "$@")"
+BRargs="$(getopt -o "i:d:n:c:u:HOjqvgDP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,directory:,filename:,compression:,user-opts:,exclude-home,only-hidden,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -235,8 +235,8 @@ while true; do
       shift 2
     ;;
     -T|--top-dir)
-      BRtopdir="$2"
-      _BRtopdir="$2"
+      BRsrc="$2"
+      _BRsrc="$2"
       shift 2
     ;;
     --help)
@@ -276,7 +276,7 @@ Backup Mode:
     -C, --conf                Alternative configuration file path
     -g, --generate            Generate configuration file (in case of successful backup)
     -a, --clean               Remove older backups in the destination directory
-    -T, --top-dir             Create a non-system backup archive of a specified directory
+    -T, --src-dir             Create a non-system backup archive of a specified directory
 
 Restore / Transfer Mode:
   Partitions:
@@ -372,7 +372,7 @@ if [ "$BRmode" = "0" ] && [ -z "$BRwrap" ]; then
     if [ -n "$_BRnohome" ] && [ -n "$BRonlyhidden" ]; then unset BRonlyhidden; fi
     if [ -n "$_BRonlyhidden" ] && [ -n "$BRnohome" ]; then unset BRnohome; fi
     if [ -n "$_BRthreads" ]; then BRthreads="$_BRthreads"; fi
-    if [ -n "$_BRtopdir" ]; then BRtopdir="$_BRtopdir"; fi
+    if [ -n "$_BRsrc" ]; then BRsrc="$_BRsrc"; fi
   fi
 fi
 
@@ -401,12 +401,12 @@ if [ "$BRmode" = "0" ]; then
   # Show a nice summary
   show_summary() {
     echo "ARCHIVE"
-    echo "$BRFOLDER/$BRNAME.$BR_EXT ($BRtopdir) $mcinfo"
+    echo "$BRFOLDER/$BRNAME.$BR_EXT ($BRsrc) $mcinfo"
 
     echo -e "\nARCHIVER OPTIONS"
     for opt in "${BR_TR_OPTS[@]}"; do echo "$opt"; done
 
-    if [ "$BRtopdir" = "/" ]; then
+    if [ "$BRsrc" = "/" ]; then
       echo -e "\nHOME DIRECTORY"
       if [ -n "$BRonlyhidden" ]; then
         echo "Only hidden files and folders"
@@ -440,20 +440,20 @@ if [ "$BRmode" = "0" ]; then
 
   # Calculate files to create percentage and progress bar
   run_calc() {
-    tar cvf /dev/null "${BR_TR_OPTS[@]}" "$BRtopdir" 2>/dev/null | tee /tmp/filelist
+    tar cvf /dev/null "${BR_TR_OPTS[@]}" "$BRsrc" 2>/dev/null | tee /tmp/filelist
   }
 
   # Run tar with given input
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      tar "${BR_MAIN_OPTS[@]}" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" "$BRtopdir"
+      tar "${BR_MAIN_OPTS[@]}" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      tar "${BR_MAIN_OPTS[@]}" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" "$BRtopdir"
+      tar "${BR_MAIN_OPTS[@]}" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
     # Without encryption
     else
-      tar "${BR_MAIN_OPTS[@]}" "$BRFOLDER"/"$BRNAME"."$BR_EXT" "${BR_TR_OPTS[@]}" "$BRtopdir"
+      tar "${BR_MAIN_OPTS[@]}" "$BRFOLDER"/"$BRNAME"."$BR_EXT" "${BR_TR_OPTS[@]}" "$BRsrc"
     fi
   }
 
@@ -475,7 +475,7 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRgenkernel" ]; then echo BRgenkernel=\"No\"; fi
     if [ -n "$BRmcore" ]; then echo BRmcore=\"Yes\"; fi
     if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo BRthreads=\"$BRthreads\"; fi
-    if [ -n "$BRtopdir" ] && [ ! "$BRtopdir" = "/" ]; then echo BRtopdir=\"$BRtopdir\"; fi
+    if [ -n "$BRsrc" ] && [ ! "$BRsrc" = "/" ]; then echo BRsrc=\"$BRsrc\"; fi
   }
 
   # Check user input, exit on error
@@ -484,8 +484,8 @@ if [ "$BRmode" = "0" ]; then
     exit
   fi
 
-  if [ ! -d "$BRtopdir" ] && [ -n "$BRtopdir" ]; then
-    echo -e "[${RED}ERROR${NORM}] Directory does not exist: $BRtopdir" >&2
+  if [ ! -d "$BRsrc" ] && [ -n "$BRsrc" ]; then
+    echo -e "[${RED}ERROR${NORM}] Directory does not exist: $BRsrc" >&2
     exit
   fi
 
@@ -540,13 +540,13 @@ if [ "$BRmode" = "0" ]; then
   if [ -z "$BRFOLDER" ]; then BRFOLDER="/"; fi
   if [ -z "$BRNAME" ]; then BRNAME="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"; fi
   if [ -z "$BRcompression" ]; then BRcompression="gzip"; fi
-  if [ -z "$BRtopdir" ]; then BRtopdir="/"; fi
+  if [ -z "$BRsrc" ]; then BRsrc="/"; fi
 
  # Set backup subdirectory
   BRFOLDER="$(echo "$BRFOLDER"/Backup-$(date +%Y-%m-%d) | sed 's://*:/:g')" # Also eliminate multiple forward slashes in the path
 
-  if [ ! "$BRtopdir" = "/" ]; then
-    BRtopdir="$(echo "$BRtopdir" | sed 's://*:/:g')" # Eliminate multiple forward slashes in the path
+  if [ ! "$BRsrc" = "/" ]; then
+    BRsrc="$(echo "$BRsrc" | sed 's://*:/:g')" # Eliminate multiple forward slashes in the path
   fi
 
   # Set tar compression options and backup file extension
@@ -596,7 +596,7 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Set tar default options if -o is not given
-  if [ -z "$BRoverride" ] && [ "$BRtopdir" = "/" ]; then
+  if [ -z "$BRoverride" ] && [ "$BRsrc" = "/" ]; then
     BR_TR_OPTS+=(--sparse               \
                  --acls                 \
                  --xattrs               \
@@ -623,9 +623,9 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Set /home directory options
-  if [ -n "$BRnohome" ] && [ "$BRtopdir" = "/" ]; then
+  if [ -n "$BRnohome" ] && [ "$BRsrc" = "/" ]; then
     BR_TR_OPTS+=(--exclude=/home/*)
-  elif [ -n "$BRonlyhidden" ] && [ "$BRtopdir" = "/" ]; then
+  elif [ -n "$BRonlyhidden" ] && [ "$BRsrc" = "/" ]; then
     # Find everything that doesn't start with dot and exclude it
     while read item; do
       BR_TR_OPTS+=(--exclude="$item")
@@ -681,7 +681,7 @@ if [ "$BRmode" = "0" ]; then
   echo -e "\n${BOLD}[PROCESSING]${NORM}"
   print_msg 0 "Preparing"
   # Restore mode will check and read this file in the archive
-  if [ "$BRtopdir" = "/" ]; then touch /target_architecture.$(uname -m); fi
+  if [ "$BRsrc" = "/" ]; then touch /target_architecture.$(uname -m); fi
   # Create the destination subdirectory
   mkdir -p "$BRFOLDER"
   sleep 1
@@ -691,9 +691,9 @@ if [ "$BRmode" = "0" ]; then
   start=$(date +%s)
 
   # If custom top-level directory is given, cd in it's parent and backup the child
-  if [ ! "$BRtopdir" = "/" ]; then
-    cd "$(dirname "$BRtopdir")"
-    BRtopdir="$(basename "$BRtopdir")"
+  if [ ! "$BRsrc" = "/" ]; then
+    cd "$(dirname "$BRsrc")"
+    BRsrc="$(basename "$BRsrc")"
   fi
 
   # Calculate the number of files
@@ -740,7 +740,7 @@ if [ "$BRmode" = "0" ]; then
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
-  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRmcore BRthreads BRtopdir
+  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRmcore BRthreads BRsrc
 
   # Show the exit screen
   exit_screen() {

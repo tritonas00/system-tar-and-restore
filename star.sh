@@ -595,7 +595,7 @@ if [ "$BRmode" = "0" ]; then
     BR_EXT="$BR_EXT.gpg"
   fi
 
-  # Set tar default options if -o is not given
+  # Set tar default options
   if [ -z "$BRoverride" ] && [ "$BRsrc" = "/" ]; then
     BR_TR_OPTS+=(--sparse               \
                  --acls                 \
@@ -610,17 +610,14 @@ if [ "$BRmode" = "0" ]; then
                  --exclude=/var/run/*   \
                  --exclude=/var/lock/*  \
                  --exclude=.gvfs        \
-                 --exclude=lost+found   \
-                 --exclude="$BRFOLDER")
+                 --exclude=lost+found)
 
     # Needed by Fedora
     if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
       BR_TR_OPTS+=(--selinux)
     fi
-  else
-    # Keep only this if -o is given
-    BR_TR_OPTS+=(--exclude="$BRFOLDER")
   fi
+  BR_TR_OPTS+=(--exclude="$(basename "$BRFOLDER")")
 
   # Set /home directory options
   if [ -n "$BRnohome" ] && [ "$BRsrc" = "/" ]; then

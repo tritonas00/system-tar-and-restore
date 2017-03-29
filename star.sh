@@ -475,7 +475,7 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRgenkernel" ]; then echo BRgenkernel=\"No\"; fi
     if [ -n "$BRmcore" ]; then echo BRmcore=\"Yes\"; fi
     if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo BRthreads=\"$BRthreads\"; fi
-    if [ -n "$BRsrc" ] && [ ! "$BRsrc" = "/" ]; then echo BRsrc=\"$BRsrc\"; fi
+    if [ -n "$BRsrc" ] && [ ! "$BRsrc" = "/" ]; then echo BRsrc=\"$BRsrcfull\"; fi
   }
 
   # Check user input, exit on error
@@ -690,6 +690,7 @@ if [ "$BRmode" = "0" ]; then
   # If custom source directory specified, cd in it's parent and backup the child
   if [ ! "$BRsrc" = "/" ]; then
     cd "$(dirname "$BRsrc")"
+    BRsrcfull="$BRsrc"
     BRsrc="$(basename "$BRsrc")"
   fi
 

@@ -479,12 +479,12 @@ if [ "$BRmode" = "0" ]; then
   }
 
   # Check user input, exit on error
-  if [ ! -d "$BRFOLDER" ] && [ -n "$BRFOLDER" ]; then
+  if [ -n "$BRFOLDER" ] && [ ! -d "$BRFOLDER" ]; then
     echo -e "[${RED}ERROR${NORM}] Directory does not exist: $BRFOLDER" >&2
     exit
   fi
 
-  if [ ! -d "$BRsrc" ] && [ -n "$BRsrc" ]; then
+  if [ -n "$BRsrc" ] && [ ! -d "$BRsrc" ]; then
     echo -e "[${RED}ERROR${NORM}] Directory does not exist: $BRsrc" >&2
     exit
   fi

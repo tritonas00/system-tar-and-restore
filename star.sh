@@ -690,7 +690,7 @@ if [ "$BRmode" = "0" ]; then
   # Store start time
   start=$(date +%s)
 
-  # If custom top-level directory is given, cd in it's parent and backup the child
+  # If custom source directory is given, cd in it's parent and backup the child
   if [ ! "$BRsrc" = "/" ]; then
     cd "$(dirname "$BRsrc")"
     BRsrc="$(basename "$BRsrc")"

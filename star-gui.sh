@@ -48,8 +48,8 @@ else
   export ENTRY2="/"
 fi
 
-if [ -n "$BRtopdir" ]; then
-  export ENTRY44="$BRtopdir"
+if [ -n "$BRsrc" ]; then
+  export ENTRY44="$BRsrc"
 else
   export ENTRY44="/"
 fi

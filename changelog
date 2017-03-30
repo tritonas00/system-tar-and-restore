@@ -1,3 +1,10 @@
+6.6
+  added option to specify the number of threads for multi-core compression
+  added option to create a non-system backup archive of a specified directory
+  added .desktop launcher and polkit action file, useful for packaging
+  fixed missing BRmcore entry in generate_conf
+  code cleanups
+
 6.5
   added support for nvme devices (thanks scottbass for reporting)
   implemented partition cleaning mechanism (see star.sh --help)

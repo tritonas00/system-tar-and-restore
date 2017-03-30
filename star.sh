@@ -266,7 +266,7 @@ Backup Mode:
   Archiver Options:
     -c, --compression         Compression type: gzip bzip2 xz none
     -M, --multi-core          Enable multi-core compression (via pigz, pbzip2 or pxz)
-    -z, --threads             Specify number of threads for multi-core compression
+    -z, --threads             Specify the number of threads for multi-core compression
 
   Encryption Options:
     -E, --encryption          Encryption method: openssl gpg

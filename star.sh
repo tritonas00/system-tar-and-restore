@@ -327,7 +327,7 @@ done
 
 # Give PID to gui wrapper if -w is given
 if [ -n "$BRwrap" ]; then
-  echo "$$" > /tmp/wr_pid
+  echo "$$" >> /tmp/wr_pid
 fi
 
 # Apply colors if -j is not given

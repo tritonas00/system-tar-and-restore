@@ -9,7 +9,6 @@ cd "$(dirname "$0")"
 
 clean_tmp_files() {
   if [ -f /tmp/wr_proc ]; then rm /tmp/wr_proc; fi
-  if [ -f /tmp/wr_upt ]; then rm /tmp/wr_upt; fi
   if [ -f /tmp/wr_log ]; then rm /tmp/wr_log; fi
   if [ -f /tmp/wr_pid ]; then rm /tmp/wr_pid; fi
   if [ -f /tmp/wr_functions ]; then rm /tmp/wr_functions; fi
@@ -20,7 +19,7 @@ clean_tmp_files
 export BRtitle="System Tar & Restore"
 
 echo -n > /tmp/wr_log
-echo true > /tmp/wr_upt
+echo true > /tmp/wr_pid
 echo "$BRtitle" > /tmp/wr_proc
 
 if [ -f changelog ]; then
@@ -266,11 +265,11 @@ run_main() {
   if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ] && [ "$BR_DEBUG" = "true" ]; then
     echo star.sh "${SCR_ARGS[@]}" > /tmp/wr_proc
   elif [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
-    echo false > /tmp/wr_upt
+    echo false > /tmp/wr_pid
     setsid ./star.sh "${SCR_ARGS[@]}" >&3 2> /tmp/wr_log
     sleep 0.1
     echo "$BRtitle" > /tmp/wr_proc
-    echo true > /tmp/wr_upt
+    echo true > /tmp/wr_pid
   fi
 }
 ' > /tmp/wr_functions
@@ -293,20 +292,20 @@ export MAIN_DIALOG='
 <window icon-name="gtk-preferences" height-request="645" width-request="515">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
-                        <input file>/tmp/wr_upt</input>
-                        <action condition="file_is_true(/tmp/wr_upt)">enable:BTN_RUN</action>
-                        <action condition="file_is_true(/tmp/wr_upt)">enable:BTN_EXIT</action>
-                        <action condition="file_is_true(/tmp/wr_upt)">enable:BR_TAB</action>
-                        <action condition="file_is_true(/tmp/wr_upt)">disable:BTN_CANCEL</action>
-                        <action condition="file_is_true(/tmp/wr_upt)">refresh:BR_TAB</action>
-                        <action condition="file_is_false(/tmp/wr_upt)">disable:BTN_RUN</action>
-                        <action condition="file_is_false(/tmp/wr_upt)">disable:BTN_EXIT</action>
-                        <action condition="file_is_false(/tmp/wr_upt)">enable:BTN_CANCEL</action>
+                        <input file>/tmp/wr_pid</input>
+                        <action> if true enable:BTN_RUN</action>
+                        <action> if true enable:BTN_EXIT</action>
+                        <action> if true enable:BR_TAB</action>
+                        <action> if true disable:BTN_CANCEL</action>
+                        <action> if true refresh:BR_TAB</action>
+                        <action> if false disable:BTN_RUN</action>
+                        <action> if false disable:BTN_EXIT</action>
+                        <action> if false enable:BTN_CANCEL</action>
                 </checkbox>
                 <entry visible="false" auto-refresh="true">
                         <input file>/tmp/wr_proc</input>
                         <action>refresh:WND_TITLE</action>
-                        <action condition="file_is_false(/tmp/wr_upt)">disable:BR_TAB</action>
+                        <action condition="file_is_false(/tmp/wr_pid)">disable:BR_TAB</action>
                 </entry>
                 <notebook labels="Backup|Restore/Transfer|Log|About" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">
@@ -767,8 +766,8 @@ lost+found">
                                 <input file stock="gtk-stop"></input>
                                 <variable>BTN_CANCEL</variable>
                                 <label>Cancel</label>
-                                <action>kill -9 -$(cat /tmp/wr_pid)</action>
-                                <action>echo "PID $(cat /tmp/wr_pid) Killed" > /tmp/wr_log</action>
+                                <action>kill -9 -$(tail -1 /tmp/wr_pid)</action>
+                                <action>echo "PID $(tail -1 /tmp/wr_pid) Killed" > /tmp/wr_log</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>

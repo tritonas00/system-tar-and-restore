@@ -445,7 +445,7 @@ lost+found">
                                 <vbox>
                                         <hseparator></hseparator>
                                         <hbox>
-                                                <checkbox space-expand="true" label="Enable multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
+                                                <checkbox space-expand="true" label="Multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
                                                         '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                         <variable>BC_MULTICORE</variable>
                                                         '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'

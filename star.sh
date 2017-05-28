@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 6.6"
+BR_VERSION="System Tar & Restore 6.7"
 
 # Set EFI detection directory
 BR_EFI_DIR="/sys/firmware/efi"
@@ -730,7 +730,13 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Give log to gui wrapper if -w is given
-  if [ -n "$BRwrap" ]; then cat "$BRFOLDER"/backup.log > /tmp/wr_log; fi
+  if [ -n "$BRwrap" ]; then
+    cat "$BRFOLDER"/backup.log > /tmp/wr_log
+    # Give generated configuration file to gui wrapper also
+    if [ -n "$BRgen" ] && [ ! -f /tmp/error ]; then
+      echo -e "\n[CONFIGURATION FILE]\n$(cat "$BRFOLDER"/backup.conf)" >> /tmp/wr_log
+    fi
+  fi
 
   clean_tmp_files
 

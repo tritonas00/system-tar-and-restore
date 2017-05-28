@@ -309,7 +309,7 @@ export MAIN_DIALOG='
                 </entry>
                 <notebook labels="Backup|Restore/Transfer|Log|About" space-expand="true" space-fill="true">
                         <vbox scrollable="true" shadow-type="0">
-                                <text height-request="35" tooltip-text="==>Make sure destination has enough space
+                                <text height-request="25" tooltip-text="==>Make sure destination has enough space
 
 ==>If you plan to restore in lvm/mdadm/luks,
        configure this system accordingly
@@ -385,6 +385,10 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 <item>none</item>
                                                 <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_MULTICORE</action>
                                                 <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && echo true)">enable:BC_MULTICORE</action>
+                                                <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_THREADS</action>
+                                                <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && [ $BC_MULTICORE = true ] && echo true)">enable:BC_THREADS</action>
+                                                <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_THREADS_TXT</action>
+                                                <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && [ $BC_MULTICORE = true ] && echo true)">enable:BC_THREADS_TXT</action>
 	                                </comboboxtext>
                                 </hbox>
                                 <hbox>
@@ -439,39 +443,46 @@ lost+found">
                                         </entry>
                                 </hbox>
                                 <vbox>
-                                        <frame Misc options:>
-                                                <hbox>
-                                                        <checkbox space-expand="true" label="Enable multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
-                                                                '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                                <variable>BC_MULTICORE</variable>
-                                                                '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
-                                                        </checkbox>
-                                                        <text space-fill="true" label="Number of threads:"></text>
-                                                        <spinbutton range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression (max = 0)">
-	                                                        <variable>BC_THREADS</variable>
-                                                                '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
-                                                        </spinbutton>
-                                                </hbox>
-                                                <checkbox label="Generate backup.conf" tooltip-text="Generate configuration file in case of successful backup">
-                                                        <variable>BC_GENERATE</variable>
+                                        <hseparator></hseparator>
+                                        <hbox>
+                                                <checkbox space-expand="true" label="Enable multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
+                                                        '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                        <variable>BC_MULTICORE</variable>
+                                                        '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
+                                                        <action>if true enable:BC_THREADS</action>
+                                                        <action>if false disable:BC_THREADS</action>
+                                                        <action>if true enable:BC_THREADS_TXT</action>
+                                                        <action>if false disable:BC_THREADS_TXT</action>
                                                 </checkbox>
-                                                <checkbox label="Remove older backups" tooltip-text="Remove older backups in the destination directory">
-                                                        <variable>BC_CLEAN</variable>
-                                                        '"$(if [ -n "$BRclean" ]; then echo "<default>true</default>"; fi)"'
-                                                </checkbox>
-                                                <checkbox label="Override" tooltip-text="Override the default tar options/excludes with user defined ones">
-                                                        <variable>BC_OVERRIDE</variable>
-                                                        '"$(if [ -n "$BRoverride" ]; then echo "<default>true</default>"; fi)"'
-                                                </checkbox>
-                                                <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check in gentoo">
-                                                        <variable>BC_GENKERNEL</variable>
-                                                        '"$(if [ -n "$BRgenkernel" ]; then echo "<default>true</default>"; fi)"'
-                                                </checkbox>
-                                        </frame>
+                                                <text space-fill="true" label="Threads:">
+                                                        '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                        <variable>BC_THREADS_TXT</variable>
+                                                </text>
+                                                <spinbutton range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression (max = 0)">
+                                                        '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+	                                                <variable>BC_THREADS</variable>
+                                                        '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
+                                                </spinbutton>
+                                        </hbox>
+                                        <checkbox label="Generate backup.conf" tooltip-text="Generate configuration file in case of successful backup">
+                                                <variable>BC_GENERATE</variable>
+                                        </checkbox>
+                                        <checkbox label="Remove older backups" tooltip-text="Remove older backups in the destination directory">
+                                                <variable>BC_CLEAN</variable>
+                                                '"$(if [ -n "$BRclean" ]; then echo "<default>true</default>"; fi)"'
+                                        </checkbox>
+                                        <checkbox label="Override" tooltip-text="Override the default tar options/excludes with user defined ones">
+                                                <variable>BC_OVERRIDE</variable>
+                                                '"$(if [ -n "$BRoverride" ]; then echo "<default>true</default>"; fi)"'
+                                        </checkbox>
+                                        <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check in gentoo">
+                                                <variable>BC_GENKERNEL</variable>
+                                                '"$(if [ -n "$BRgenkernel" ]; then echo "<default>true</default>"; fi)"'
+                                        </checkbox>
                                 </vbox>
                         </vbox>
                         <vbox scrollable="true" shadow-type="0">
-                                <text height-request="35" wrap="false" tooltip-text="==>In the first case, you should use a LiveCD of the
+                                <text height-request="25" wrap="false" tooltip-text="==>In the first case, you should use a LiveCD of the
        backed up distro
 
 ==>A target root partition is required. Optionally you
@@ -714,20 +725,19 @@ lost+found">
                                         <variable>RT_TAB</variable>
                                 </notebook>
                                 <vbox>
-                                        <frame Misc options:>
-                                                <checkbox label="Override" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
-                                                        <variable>RT_OVERRIDE</variable>
-                                                </checkbox>
-                                                <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check and initramfs building in gentoo">
-                                                        <variable>RT_GENKERNEL</variable>
-                                                </checkbox>
-                                                <checkbox label="Dont check root" tooltip-text="Dont check if the target root partition is empty (dangerous)">
-                                                        <variable>RT_CHECK_ROOT</variable>
-                                                </checkbox>
-                                                <checkbox label="Bios" tooltip-text="Ignore UEFI environment">
-                                                        <variable>RT_BIOS</variable>
-                                                </checkbox>
-                                        </frame>
+                                        <hseparator></hseparator>
+                                        <checkbox label="Override" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
+                                                <variable>RT_OVERRIDE</variable>
+                                        </checkbox>
+                                        <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check and initramfs building in gentoo">
+                                                <variable>RT_GENKERNEL</variable>
+                                        </checkbox>
+                                        <checkbox label="Dont check root" tooltip-text="Dont check if the target root partition is empty (dangerous)">
+                                                <variable>RT_CHECK_ROOT</variable>
+                                        </checkbox>
+                                        <checkbox label="Bios" tooltip-text="Ignore UEFI environment">
+                                                <variable>RT_BIOS</variable>
+                                        </checkbox>
                                 </vbox>
 			</vbox>
                         <vbox scrollable="true" shadow-type="0">
@@ -738,7 +748,7 @@ lost+found">
                         <vbox>
                                 <text use-markup="true" label="<b><big>System Tar &amp; Restore</big></b>"></text>
                                 <text wrap="false" label="Backup and Restore your system using tar or Transfer it with rsync"></text>
-                                <text use-markup="true" label="<i><small>Version 6.6 tritonas00@gmail.com 2012-2017</small></i>"></text>
+                                <text use-markup="true" label="<i><small>Version 6.7 tritonas00@gmail.com 2012-2017</small></i>"></text>
                                 <hseparator></hseparator>
                                 <vbox scrollable="true" shadow-type="0">
                                         <text xalign="0" wrap="false">

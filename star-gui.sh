@@ -464,14 +464,14 @@ lost+found">
                                                         '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
                                                 </spinbutton>
                                         </hbox>
-                                        <checkbox label="Generate backup.conf" tooltip-text="Generate configuration file in case of successful backup">
+                                        <checkbox label="Generate configuration file" tooltip-text="Generate configuration file in case of successful backup">
                                                 <variable>BC_GENERATE</variable>
                                         </checkbox>
                                         <checkbox label="Remove older backups" tooltip-text="Remove older backups in the destination directory">
                                                 <variable>BC_CLEAN</variable>
                                                 '"$(if [ -n "$BRclean" ]; then echo "<default>true</default>"; fi)"'
                                         </checkbox>
-                                        <checkbox label="Override" tooltip-text="Override the default tar options/excludes with user defined ones">
+                                        <checkbox label="Override options" tooltip-text="Override the default tar options/excludes with user defined ones">
                                                 <variable>BC_OVERRIDE</variable>
                                                 '"$(if [ -n "$BRoverride" ]; then echo "<default>true</default>"; fi)"'
                                         </checkbox>
@@ -726,7 +726,7 @@ lost+found">
                                 </notebook>
                                 <vbox>
                                         <hseparator></hseparator>
-                                        <checkbox label="Override" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
+                                        <checkbox label="Override options" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
                                                 <variable>RT_OVERRIDE</variable>
                                         </checkbox>
                                         <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check and initramfs building in gentoo">

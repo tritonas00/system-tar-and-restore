@@ -1,6 +1,6 @@
 6.7
   show generated configuration file to gui wrapper log
-  gui wrapper improvements			
+  gui wrapper improvements
 
 6.6
   added option to specify the number of threads for multi-core compression

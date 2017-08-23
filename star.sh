@@ -1,20 +1,10 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 6.7"
+BR_VERSION="System Tar & Restore 6.8"
 
 # Set EFI detection directory
 BR_EFI_DIR="/sys/firmware/efi"
-
-# Set some color vars
-color_vars() {
-  NORM='\e[00m'
-  RED='\e[00;31m'
-  GREEN='\e[00;32m'
-  YELLOW='\e[00;33m'
-  CYAN='\e[00;36m'
-  BOLD='\033[1m'
-}
 
 # Delete temporary files if exist
 clean_tmp_files() {
@@ -70,34 +60,44 @@ while true; do
       shift 2
     ;;
     -u|--user-opts)
-      BR_USER_OPTS="$2"
       _BR_USER_OPTS="$2"
       shift 2
     ;;
     -d|--directory)
-      BRFOLDER="$2"
       _BRFOLDER="$2"
       shift 2
     ;;
     -n|--filename)
-      BRNAME="$2"
       _BRNAME="$2"
       shift 2
     ;;
     -c|--compression)
-      BRcompression="$2"
       _BRcompression="$2"
       shift 2
     ;;
     -H|--exclude-home)
-      BRnohome="y"
       _BRnohome="y"
       shift
     ;;
     -O|--only-hidden)
-      BRonlyhidden="y"
       _BRonlyhidden="y"
       shift
+    ;;
+    -P|--passphrase)
+      _BRencpass="$2"
+      shift 2
+    ;;
+    -E|--encryption)
+      _BRencmethod="$2"
+      shift 2
+    ;;
+    -z|--threads)
+      _BRthreads="$2"
+      shift 2
+    ;;
+    -T|--top-dir)
+      _BRsrc="$2"
+      shift 2
     ;;
     -j|--no-color)
       BRnocolor="y"
@@ -118,16 +118,6 @@ while true; do
     -D|--disable-genkernel)
       BRgenkernel="n"
       shift
-    ;;
-    -P|--passphrase)
-      BRencpass="$2"
-      _BRencpass="$2"
-      shift 2
-    ;;
-    -E|--encryption)
-      BRencmethod="$2"
-      _BRencmethod="$2"
-      shift 2
     ;;
     -o|--override)
       BRoverride="y"
@@ -229,16 +219,6 @@ while true; do
       BRbootctl="y"
       shift
     ;;
-    -z|--threads)
-      BRthreads="$2"
-      _BRthreads="$2"
-      shift 2
-    ;;
-    -T|--top-dir)
-      BRsrc="$2"
-      _BRsrc="$2"
-      shift 2
-    ;;
     --help)
       echo "Usage: star.sh -i mode [options]
 
@@ -330,9 +310,14 @@ if [ -n "$BRwrap" ]; then
   echo "$$" >> /tmp/wr_pid
 fi
 
-# Apply colors if -j is not given
+# Set colors if -j is not given
 if [ -z "$BRnocolor" ]; then
-  color_vars
+  NORM='\e[00m'
+  RED='\e[00;31m'
+  GREEN='\e[00;32m'
+  YELLOW='\e[00;33m'
+  CYAN='\e[00;36m'
+  BOLD='\033[1m'
 fi
 
 # Check if run with root privileges
@@ -362,17 +347,6 @@ if [ "$BRmode" = "0" ] && [ -z "$BRwrap" ]; then
   fi
   if [ -f "$BRconf" ]; then
     source "$BRconf"
-    # Arguments should override configuration file
-    if [ -n "$_BRFOLDER" ]; then BRFOLDER="$_BRFOLDER"; fi
-    if [ -n "$_BRNAME" ]; then BRNAME="$_BRNAME"; fi
-    if [ -n "$_BR_USER_OPTS" ]; then BR_USER_OPTS="$_BR_USER_OPTS"; fi
-    if [ -n "$_BRcompression" ]; then BRcompression="$_BRcompression"; fi
-    if [ -n "$_BRencmethod" ]; then BRencmethod="$_BRencmethod"; fi
-    if [ -n "$_BRencpass" ]; then BRencpass="$_BRencpass"; fi
-    if [ -n "$_BRnohome" ] && [ -n "$BRonlyhidden" ]; then unset BRonlyhidden; fi
-    if [ -n "$_BRonlyhidden" ] && [ -n "$BRnohome" ]; then unset BRnohome; fi
-    if [ -n "$_BRthreads" ]; then BRthreads="$_BRthreads"; fi
-    if [ -n "$_BRsrc" ]; then BRsrc="$_BRsrc"; fi
   fi
 fi
 
@@ -384,6 +358,20 @@ elif [ "$BRmode" = "0" ] && [ -n "$BRnohome" ] && [ -n "$BRonlyhidden" ]; then
   echo -e "[${RED}ERROR${NORM}] Error parsing configuration file. Choose only one option for the /home directory" >&2
   exit
 fi
+
+# Arguments should override configuration file
+if [ -n "$_BR_USER_OPTS" ]; then BR_USER_OPTS="$_BR_USER_OPTS"; fi
+if [ -n "$_BRFOLDER" ]; then BRFOLDER="$_BRFOLDER"; fi
+if [ -n "$_BRNAME" ]; then BRNAME="$_BRNAME"; fi
+if [ -n "$_BRcompression" ]; then BRcompression="$_BRcompression"; fi
+if [ -n "$_BRencmethod" ]; then BRencmethod="$_BRencmethod"; fi
+if [ -n "$_BRencpass" ]; then BRencpass="$_BRencpass"; fi
+if [ -n "$_BRnohome" ]; then BRnohome="$_BRnohome"; fi
+if [ -n "$_BRonlyhidden" ]; then BRonlyhidden="$_BRonlyhidden"; fi
+if [ -n "$_BRnohome" ] && [ -n "$BRonlyhidden" ]; then unset BRonlyhidden; fi
+if [ -n "$_BRonlyhidden" ] && [ -n "$BRnohome" ]; then unset BRnohome; fi
+if [ -n "$_BRthreads" ]; then BRthreads="$_BRthreads"; fi
+if [ -n "$_BRsrc" ]; then BRsrc="$_BRsrc"; fi
 
 # Add tar/rsync user options to the main array, replace any // with space, add only options starting with -
 for opt in $BR_USER_OPTS; do
@@ -746,26 +734,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Unset Backup mode vars
   unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRmcore BRthreads BRsrc
 
-  # Show the exit screen
-  exit_screen() {
-    if [ -f /tmp/error ]; then
-      echo -e "\n${RED}Error installing $BRbootloader. Check /tmp/restore.log for details.${NORM}"
-    else
-      echo -e "\n${CYAN}Completed. Log: /tmp/restore.log${NORM}"
-      if [ -z "$BRbootloader" ] && [ -z "$BRquiet" ]; then
-        echo -e "\n${YELLOW}You didn't choose a bootloader, so this is the right time to install and\nupdate one. To do so:"
-        echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
-        echo -e "\n==>Then chroot into the target system: chroot /mnt/target"
-        echo -e "\n==>Install and update a bootloader"
-        echo -e "\n==>When done exit chroot, return here and press ENTER${NORM}"
-      fi
-    fi
-    if [ -z "$BRquiet" ]; then
-      echo -e "\n${CYAN}Press ENTER to unmount all remaining (engaged) devices.${NORM}"
-      read -s
-    fi
-  }
-
   # Print success message, set var for processing partitions
   ok_status() {
     echo -e "\r[${GREEN}SUCCESS${NORM}]"
@@ -776,16 +744,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   error_status() {
     echo -e "\r[${RED}FAILURE${NORM}]\n$OUTPUT"
     BRSTOP="y"
-  }
-
-  # Detect root partition filesystem and size, exit if filesystem not found
-  detect_root_fs_size() {
-    BRrootfs="$(blkid -s TYPE -o value "$BRroot")"
-    BRrootsize="$(lsblk -d -n -o size 2>/dev/null "$BRroot" | sed -e 's/ *//')" # Remove leading spaces
-    if [ -z "$BRrootfs" ]; then
-      echo -e "[${RED}ERROR${NORM}] Unknown root file system" >&2
-      exit
-    fi
   }
 
   # Detect backup archive encryption
@@ -828,26 +786,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BR_MAIN_OPTS="xvpf"
     else
       BRfiletype="wrong"
-    fi
-  }
-
-  # Check wget exit status, exit on error, process the downloaded backup archive if otherwise
-  check_wget() {
-    if [ -f /tmp/error ]; then
-      echo -e "[${RED}ERROR${NORM}] Error downloading file. Wrong URL, wrong authentication or network is down." >&2
-      clean_unmount
-    else
-      detect_encryption
-      # If the downloaded archive is encrypted prompt the user for passphrase
-      if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ] && [ -z "$BRwrap" ]; then
-        echo -ne "${BOLD}"
-        read -p "Enter Passphrase: $(echo -e "${NORM}")" BRencpass
-      fi
-      detect_filetype
-      if [ "$BRfiletype" = "wrong" ]; then
-        echo -e "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase" >&2
-        clean_unmount
-      fi
     fi
   }
 
@@ -1255,6 +1193,14 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Main mount function. Exit and clean on errors
   mount_all() {
+    # Check the target root partition
+    BRrootfs="$(blkid -s TYPE -o value "$BRroot")"
+    BRrootsize="$(lsblk -d -n -o size 2>/dev/null "$BRroot" | sed -e 's/ *//')" # Remove leading spaces
+    if [ -z "$BRrootfs" ]; then
+      echo -e "[${RED}ERROR${NORM}] Unknown root file system" >&2
+      exit
+    fi
+
     # Create directory to mount the target root partition
     echo -e "\n${BOLD}[MOUNTING]${NORM}"
     print_msg "-ne ${WRK}Making working directory" "Making working directory"
@@ -1281,7 +1227,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         echo -e "[${RED}ERROR${NORM}] Root partition not empty, refusing to use it" >&2
         print_msg "-ne ${WRK}Unmounting $BRroot" "Unmounting $BRroot"
         sleep 1
-        OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
+        OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && sleep 1 && rm -r /mnt/target) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
         exit
       else
         # Just warn if -x is given
@@ -2062,32 +2008,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Check backup archive and set the target system's architecture, exit on errors
-  check_archive() {
-    if [ -f /tmp/error ]; then
-      echo -e "[${RED}ERROR${NORM}] Error reading archive" >&2
-      clean_unmount
-    else
-      target_arch="$(grep -F 'target_architecture.' /tmp/filelist | cut -f2 -d".")"
-      if [ ! "$(uname -m)" = "$target_arch" ]; then
-        echo -e "[${RED}ERROR${NORM}] Running and target system architecture mismatch or invalid archive" >&2
-        clean_unmount
-      fi
-    fi
-  }
-
   # Generate target system's locales
   generate_locales() {
     if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Gentoo" ]; then
       print_msg "-e \nGenerating locales" "Generating locales"
       chroot /mnt/target locale-gen
     fi
-  }
-
-  # Delete the working directory
-  rm_work_dir() {
-    sleep 1
-    rm -r /mnt/target
   }
 
   # Clean and unmount
@@ -2150,7 +2076,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     rm /mnt/target/target_architecture.$(uname -m) 2>/dev/null
     sleep 1
     print_msg "-ne ${WRK}Unmounting $BRroot" "Unmounting $BRroot"
-    OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && rm_work_dir) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
+    OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && sleep 1 && rm -r /mnt/target) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
 
     if [ -n "$BRwrap" ] && [ -n "$post_umt" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
     clean_tmp_files
@@ -2242,7 +2168,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   fi
 
   check_input
-  detect_root_fs_size
   mount_all
 
   # In Restore mode download the backup archive if url is given, read it and check it
@@ -2264,14 +2189,38 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       else
         run_wget
       fi
-      check_wget
+      if [ -f /tmp/error ]; then
+        echo -e "[${RED}ERROR${NORM}] Error downloading file. Wrong URL, wrong authentication or network is down." >&2
+        clean_unmount
+      else
+        detect_encryption
+        # If the downloaded archive is encrypted prompt the user for passphrase
+        if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ] && [ -z "$BRwrap" ]; then
+          echo -ne "${BOLD}"
+          read -p "Enter Passphrase: $(echo -e "${NORM}")" BRencpass
+        fi
+        detect_filetype
+        if [ "$BRfiletype" = "wrong" ]; then
+          echo -e "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase" >&2
+          clean_unmount
+        fi
+      fi
     fi
 
     print_msg 0 "Please wait while checking and reading archive"
     # Read the backup archive and give list of files in /tmp/filelist also
     read_archive | tee /tmp/filelist | while read ln; do a="$((a + 1))" && echo -en "\rChecking and reading archive ($a Files) "; done
     echo
-    check_archive
+    if [ -f /tmp/error ]; then
+      echo -e "[${RED}ERROR${NORM}] Error reading archive" >&2
+      clean_unmount
+    else
+      target_arch="$(grep -F 'target_architecture.' /tmp/filelist | cut -f2 -d".")"
+      if [ ! "$(uname -m)" = "$target_arch" ]; then
+        echo -e "[${RED}ERROR${NORM}] Running and target system architecture mismatch or invalid archive" >&2
+        clean_unmount
+      fi
+    fi
   fi
 
   detect_distro
@@ -2373,10 +2322,27 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   done
 
- # Run post processing functions, update the log and pray :p
- (build_initramfs; generate_locales; install_bootloader) 1> >(tee -a /tmp/restore.log) 2>&1
+  # Run post processing functions, update the log and pray :p
+  (build_initramfs; generate_locales; install_bootloader) 1> >(tee -a /tmp/restore.log) 2>&1
 
-  exit_screen
+  # Inform the user if error occurred or not
+  if [ -f /tmp/error ]; then
+    echo -e "\n${RED}Error installing $BRbootloader. Check /tmp/restore.log for details.${NORM}"
+  else
+    echo -e "\n${CYAN}Completed. Log: /tmp/restore.log${NORM}"
+    if [ -z "$BRbootloader" ] && [ -z "$BRquiet" ]; then
+      echo -e "\n${YELLOW}You didn't choose a bootloader, so this is the right time to install and\nupdate one. To do so:"
+      echo -e "\n==>For internet connection to work, on a new terminal with root\n   access enter: cp -L /etc/resolv.conf /mnt/target/etc/resolv.conf"
+      echo -e "\n==>Then chroot into the target system: chroot /mnt/target"
+      echo -e "\n==>Install and update a bootloader"
+      echo -e "\n==>When done exit chroot, return here and press ENTER${NORM}"
+    fi
+  fi
+  if [ -z "$BRquiet" ]; then
+    echo -e "\n${CYAN}Press ENTER to unmount all remaining (engaged) devices.${NORM}"
+    read -s
+  fi
+
   sleep 1
   post_umt="y"
   clean_unmount

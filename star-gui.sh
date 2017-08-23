@@ -38,7 +38,7 @@ fi
 if [ -n "$BRNAME" ]; then
   export BC_FILENAME="$BRNAME"
 else
-  export BC_FILENAME="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"
+  export BC_FILENAME="Backup-$(hostname)-$(date +%Y%m%d-%H%M%S)"
 fi
 
 if [ -n "$BRFOLDER" ]; then
@@ -95,7 +95,7 @@ set_args() {
   if [ "$BR_TAB" = "0" ]; then
     SCR_ARGS=(-i 0 -jwq -d "$BC_DESTINATION" -c "$BC_COMPRESSION")
 
-    if [ -n "$BC_FILENAME" ] && [[ ! "$BC_FILENAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then
+    if [ -n "$BC_FILENAME" ] && [[ ! "$BC_FILENAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9] ]]; then
       SCR_ARGS+=(-n "$BC_FILENAME")
     fi
 
@@ -748,7 +748,7 @@ lost+found">
                         <vbox>
                                 <text use-markup="true" label="<b><big>System Tar &amp; Restore</big></b>"></text>
                                 <text wrap="false" label="Backup and Restore your system using tar or Transfer it with rsync"></text>
-                                <text use-markup="true" label="<i><small>Version 6.7 tritonas00@gmail.com 2012-2017</small></i>"></text>
+                                <text use-markup="true" label="<i><small>Version 6.8 tritonas00@gmail.com 2012-2017</small></i>"></text>
                                 <hseparator></hseparator>
                                 <vbox scrollable="true" shadow-type="0">
                                         <text xalign="0" wrap="false">

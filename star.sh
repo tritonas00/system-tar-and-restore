@@ -449,7 +449,7 @@ if [ "$BRmode" = "0" ]; then
   generate_conf() {
     echo -e "# Auto-generated configuration file for backup mode. Place it in /etc\n"
     echo BRFOLDER=\"$(dirname "$BRFOLDER")\"
-    if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]:[0-9][0-9]:[0-9][0-9] ]]; then echo BRNAME=\"$BRNAME\"; fi # Strictly check the default filename format
+    if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9] ]]; then echo BRNAME=\"$BRNAME\"; fi # Strictly check the default filename format
     if [ -n "$BR_USER_OPTS" ]; then echo BR_USER_OPTS=\"$(echo $BR_USER_OPTS)\"; fi # trim leading/trailing and multiple spaces
     echo BRcompression=\"$BRcompression\"
     if [ -n "$BRnohome" ]; then echo BRnohome=\"Yes\"; fi
@@ -526,7 +526,7 @@ if [ "$BRmode" = "0" ]; then
 
   # Set some defaults if not given by the user
   if [ -z "$BRFOLDER" ]; then BRFOLDER="/"; fi
-  if [ -z "$BRNAME" ]; then BRNAME="Backup-$(hostname)-$(date +%Y-%m-%d-%T)"; fi
+  if [ -z "$BRNAME" ]; then BRNAME="Backup-$(hostname)-$(date +%Y%m%d-%H%M%S)"; fi
   if [ -z "$BRcompression" ]; then BRcompression="gzip"; fi
   if [ -z "$BRsrc" ]; then BRsrc="/"; fi
 

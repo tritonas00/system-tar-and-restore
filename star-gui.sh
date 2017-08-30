@@ -289,7 +289,7 @@ export RT_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 export RT_ROOT="$(echo "$RT_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
-<window icon-name="gtk-preferences" height-request="645" width-request="515">
+<window icon-name="gtk-preferences" height-request="645" width-request="525">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_pid</input>
@@ -308,7 +308,7 @@ export MAIN_DIALOG='
                         <action condition="file_is_false(/tmp/wr_pid)">disable:BR_TAB</action>
                 </entry>
                 <notebook labels="Backup|Restore/Transfer|Log|About" space-expand="true" space-fill="true">
-                        <vbox scrollable="true" shadow-type="0">
+                        <vbox shadow-type="0">
                                 <text height-request="25" tooltip-text="==>Make sure destination has enough space
 
 ==>If you plan to restore in lvm/mdadm/luks,
@@ -370,18 +370,18 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 <variable>BC_HOME</variable>
                                                 <default>'"$BC_HOME"'</default>
                                                 <item>Include</item>
-	                                        <item>Only hidden files and folders</item>
-	                                        <item>Exclude</item>
+                                                <item>Only hidden files and folders</item>
+                                                <item>Exclude</item>
                                         </comboboxtext>
                                 </hbox>
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Compression:"></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
-	                                        <variable>BC_COMPRESSION</variable>
+                                                <variable>BC_COMPRESSION</variable>
                                                 <default>'"$BC_COMPRESSION"'</default>
-	                                        <item>gzip</item>
-	                                        <item>bzip2</item>
-	                                        <item>xz</item>
+                                                <item>gzip</item>
+                                                <item>bzip2</item>
+                                                <item>xz</item>
                                                 <item>none</item>
                                                 <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_MULTICORE</action>
                                                 <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && echo true)">enable:BC_MULTICORE</action>
@@ -389,16 +389,16 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && [ $BC_MULTICORE = true ] && echo true)">enable:BC_THREADS</action>
                                                 <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_THREADS_TXT</action>
                                                 <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && [ $BC_MULTICORE = true ] && echo true)">enable:BC_THREADS_TXT</action>
-	                                </comboboxtext>
+                                        </comboboxtext>
                                 </hbox>
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Encryption:"></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select encryption method">
-	                                        <variable>BC_ENCRYPTION</variable>
+                                                <variable>BC_ENCRYPTION</variable>
                                                 <default>'"$BC_ENCRYPTION"'</default>
                                                 <item>none</item>
-	                                        <item>openssl</item>
-	                                        <item>gpg</item>
+                                                <item>openssl</item>
+                                                <item>gpg</item>
                                                 <action condition="command_is_true([ $BC_ENCRYPTION = none ] && echo true)">disable:BC_PASSPHRASE</action>
                                                 <action condition="command_is_true([ ! $BC_ENCRYPTION = none ] && echo true)">enable:BC_PASSPHRASE</action>
                                         </comboboxtext>
@@ -442,46 +442,44 @@ lost+found">
                                                 <variable>BC_EXCLUDE</variable>
                                         </entry>
                                 </hbox>
-                                <vbox>
-                                        <hseparator></hseparator>
-                                        <hbox>
-                                                <checkbox space-expand="true" label="Multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
-                                                        '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                        <variable>BC_MULTICORE</variable>
-                                                        '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
-                                                        <action>if true enable:BC_THREADS</action>
-                                                        <action>if false disable:BC_THREADS</action>
-                                                        <action>if true enable:BC_THREADS_TXT</action>
-                                                        <action>if false disable:BC_THREADS_TXT</action>
-                                                </checkbox>
-                                                <text space-fill="true" label="Threads:">
-                                                        '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                        <variable>BC_THREADS_TXT</variable>
-                                                </text>
-                                                <spinbutton range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression (max = 0)">
-                                                        '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-	                                                <variable>BC_THREADS</variable>
-                                                        '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
-                                                </spinbutton>
-                                        </hbox>
-                                        <checkbox label="Generate configuration file" tooltip-text="Generate configuration file in case of successful backup">
-                                                <variable>BC_GENERATE</variable>
+                                <hseparator></hseparator>
+                                <hbox>
+                                        <checkbox space-expand="true" label="Multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
+                                                '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                <variable>BC_MULTICORE</variable>
+                                                '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
+                                                <action>if true enable:BC_THREADS</action>
+                                                <action>if false disable:BC_THREADS</action>
+                                                <action>if true enable:BC_THREADS_TXT</action>
+                                                <action>if false disable:BC_THREADS_TXT</action>
                                         </checkbox>
-                                        <checkbox label="Remove older backups" tooltip-text="Remove older backups in the destination directory">
-                                                <variable>BC_CLEAN</variable>
-                                                '"$(if [ -n "$BRclean" ]; then echo "<default>true</default>"; fi)"'
-                                        </checkbox>
-                                        <checkbox label="Override options" tooltip-text="Override the default tar options/excludes with user defined ones">
-                                                <variable>BC_OVERRIDE</variable>
-                                                '"$(if [ -n "$BRoverride" ]; then echo "<default>true</default>"; fi)"'
-                                        </checkbox>
-                                        <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check in gentoo">
-                                                <variable>BC_GENKERNEL</variable>
-                                                '"$(if [ -n "$BRgenkernel" ]; then echo "<default>true</default>"; fi)"'
-                                        </checkbox>
-                                </vbox>
+                                        <text space-fill="true" label="Threads:">
+                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                <variable>BC_THREADS_TXT</variable>
+                                        </text>
+                                        <spinbutton range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression (max = 0)">
+                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                <variable>BC_THREADS</variable>
+                                                '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
+                                        </spinbutton>
+                                </hbox>
+                                <checkbox label="Generate configuration file" tooltip-text="Generate configuration file in case of successful backup">
+                                        <variable>BC_GENERATE</variable>
+                                </checkbox>
+                                <checkbox label="Remove older backups" tooltip-text="Remove older backups in the destination directory">
+                                        <variable>BC_CLEAN</variable>
+                                        '"$(if [ -n "$BRclean" ]; then echo "<default>true</default>"; fi)"'
+                                </checkbox>
+                                <checkbox label="Override options" tooltip-text="Override the default tar options/excludes with user defined ones">
+                                        <variable>BC_OVERRIDE</variable>
+                                        '"$(if [ -n "$BRoverride" ]; then echo "<default>true</default>"; fi)"'
+                                </checkbox>
+                                <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check in gentoo">
+                                        <variable>BC_GENKERNEL</variable>
+                                        '"$(if [ -n "$BRgenkernel" ]; then echo "<default>true</default>"; fi)"'
+                                </checkbox>
                         </vbox>
-                        <vbox scrollable="true" shadow-type="0">
+                        <vbox shadow-type="0">
                                 <text height-request="25" wrap="false" tooltip-text="==>In the first case, you should use a LiveCD of the
        backed up distro
 
@@ -492,96 +490,111 @@ lost+found">
 ==>If you plan to transfer in lvm/mdadm/luks,
        configure this system accordingly"><label>"Restore a backup archive or transfer this system in user defined partitions"</label></text>
                                 <hseparator></hseparator>
-                                <vbox>
-                                        <frame Target partitions:>
+                                <notebook labels="Root Partition|More Partitions|Bootloader">
+                                        <vbox>
                                                 <hbox>
-                                                        <text width-request="55" space-expand="false" label="Root:"></text>
-		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
-	                                                        <variable>RT_ROOT</variable>
-                                                                <input>echo "$RT_ROOT"</input>
-	                                                        <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
-                                                                <action>refresh:RT_ESP</action>
-                                                                <action>refresh:RT_BOOT</action>
-                                                                <action>refresh:RT_HOME</action>
-                                                                <action>refresh:RT_SWAP</action>
-			                                </comboboxtext>
-                                                        <entry tooltip-text="Set comma-separated list of mount options. Default options: defaults,noatime">
-                                                                <variable>RT_ROOT_OPTIONS</variable>
-                                                        </entry>
-                                                        <checkbox label="Clean" tooltip-text="Clean the target root partition if it is not empty">
-                                                                <variable>RT_ROOT_CLEAN</variable>
-                                                        </checkbox>
-                                                </hbox>
-                                                <expander label="More partitions">
-                                                        <vbox>
+                                                        <vbox space-expand="true" space-fill="true">
                                                                 <hbox>
-                                                                        <text width-request="55" space-expand="false" label="Esp:"></text>
-		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
-	                                                                        <variable>RT_ESP</variable>
-                                                                                <input>echo "$RT_ESP"</input>
+                                                                        <text width-request="100" space-expand="false" label="Root:"></text>
+		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
+	                                                                        <variable>RT_ROOT</variable>
+                                                                                <input>echo "$RT_ROOT"</input>
 	                                                                        <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
-                                                                                <input>if [ -n "$RT_ESP" ]; then echo ""; fi</input>
-                                                                                <action>refresh:RT_ROOT</action>
+                                                                                <action>refresh:RT_ESP</action>
                                                                                 <action>refresh:RT_BOOT</action>
                                                                                 <action>refresh:RT_HOME</action>
                                                                                 <action>refresh:RT_SWAP</action>
 			                                                </comboboxtext>
-                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select mountpoint">
-	                                                                        <variable>RT_ESP_MOUNTPOINT</variable>
-	                                                                        <item>/boot/efi</item>
-	                                                                        <item>/boot</item>
-	                                                                </comboboxtext>
-                                                                        <checkbox label="Clean" tooltip-text="Clean the target esp partition if it is not empty">
-                                                                                <variable>RT_ESP_CLEAN</variable>
-                                                                        </checkbox>
                                                                 </hbox>
                                                                 <hbox>
-                                                                        <text width-request="55" space-expand="false" label="/boot:"></text>
-		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
-	                                                                        <variable>RT_BOOT</variable>
+                                                                        <text width-request="100" space-expand="false" label="Options:"></text>
+                                                                        <entry tooltip-text="Set comma-separated list of mount options. Default options: defaults,noatime">
+                                                                                <variable>RT_ROOT_OPTIONS</variable>
+                                                                        </entry>
+                                                                </hbox>
+                                                                <hbox>
+                                                                        <text width-request="100" space-expand="false" label="Btrfs root:"></text>
+                                                                        <entry tooltip-text="(Optional-Btrfs only) Set root subvolume name">
+                                                                                <variable>RT_ROOT_SUBVOL</variable>
+                                                                        </entry>
+                                                                </hbox>
+                                                                <hbox>
+                                                                        <text width-request="100" space-expand="false" label="Subvolumes:"></text>
+                                                                        <entry tooltip-text="(Optional-Btrfs only) Set other subvolumes (path e.g /home /var /usr ...)">
+                                                                                <variable>RT_OTHER_SUBVOLS</variable>
+                                                                        </entry>
+                                                                </hbox>
+                                                        </vbox>
+                                                        <vseparator></vseparator>
+                                                        <vbox>
+                                                                <checkbox height-request="30" label="Clean" tooltip-text="Clean the target root partition if it is not empty">
+                                                                        <variable>RT_ROOT_CLEAN</variable>
+                                                                </checkbox>
+                                                        </vbox>
+                                                </hbox>
+                                        </vbox>
+                                        <vbox>
+                                                <hbox>
+                                                        <vbox space-expand="true" space-fill="true">
+                                                                <hbox>
+                                                                        <text width-request="100" space-expand="false" label="/boot:"></text>
+                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
+                                                                                <variable>RT_BOOT</variable>
                                                                                 <input>echo "$RT_BOOT"</input>
-	                                                                        <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
+                                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
                                                                                 <input>if [ -n "$RT_BOOT" ]; then echo ""; fi</input>
                                                                                 <action>refresh:RT_ROOT</action>
                                                                                 <action>refresh:RT_ESP</action>
                                                                                 <action>refresh:RT_HOME</action>
                                                                                 <action>refresh:RT_SWAP</action>
-			                                                </comboboxtext>
-                                                                        <checkbox label="Clean" tooltip-text="Clean the target /boot partition if it is not empty">
-                                                                                <variable>RT_BOOT_CLEAN</variable>
-                                                                        </checkbox>
+	                                                                </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>
-                                                                        <text width-request="55" space-expand="false" label="/home:"></text>
-		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
-	                                                                        <variable>RT_HOME</variable>
+                                                                        <text width-request="100" space-expand="false" label="/home:"></text>
+                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
+                                                                                <variable>RT_HOME</variable>
                                                                                 <input>echo "$RT_HOME"</input>
-	                                                                        <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
+                                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
                                                                                 <input>if [ -n "$RT_HOME" ]; then echo ""; fi</input>
                                                                                 <action>refresh:RT_ROOT</action>
                                                                                 <action>refresh:RT_ESP</action>
                                                                                 <action>refresh:RT_BOOT</action>
                                                                                 <action>refresh:RT_SWAP</action>
                                                                         </comboboxtext>
-                                                                        <checkbox label="Clean" tooltip-text="Clean the target /home partition if it is not empty">
-                                                                                <variable>RT_HOME_CLEAN</variable>
-                                                                        </checkbox>
                                                                 </hbox>
                                                                 <hbox>
-                                                                        <text width-request="55" space-expand="false" label="Swap:"></text>
-		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
-	                                                                        <variable>RT_SWAP</variable>
+                                                                        <text width-request="100" space-expand="false" label="Esp:"></text>
+                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
+                                                                                <variable>RT_ESP</variable>
+                                                                                <input>echo "$RT_ESP"</input>
+                                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
+                                                                                <input>if [ -n "$RT_ESP" ]; then echo ""; fi</input>
+                                                                                <action>refresh:RT_ROOT</action>
+                                                                                <action>refresh:RT_BOOT</action>
+                                                                                <action>refresh:RT_HOME</action>
+                                                                                <action>refresh:RT_SWAP</action>
+	                                                                </comboboxtext>
+                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select mountpoint">
+                                                                                <variable>RT_ESP_MOUNTPOINT</variable>
+                                                                                <item>/boot/efi</item>
+                                                                                <item>/boot</item>
+                                                                        </comboboxtext>
+                                                                </hbox>
+                                                                <hbox>
+                                                                        <text width-request="100" space-expand="false" label="Swap:"></text>
+                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
+                                                                                <variable>RT_SWAP</variable>
                                                                                 <input>echo "$RT_SWAP"</input>
-	                                                                        <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
+                                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
                                                                                 <input>if [ -n "$RT_SWAP" ]; then echo ""; fi</input>
                                                                                 <action>refresh:RT_ROOT</action>
                                                                                 <action>refresh:RT_ESP</action>
                                                                                 <action>refresh:RT_BOOT</action>
                                                                                 <action>refresh:RT_HOME</action>
-			                                                </comboboxtext>
+	                                                                </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>
-                                                                        <text width-request="55" space-expand="false" label="Other:"></text>
+                                                                        <text width-request="100" space-expand="false" label="Other:"></text>
                                                                         <entry tooltip-text="Set other partitions. Syntax is mountpoint=partition
 
 e.g /var=/dev/sda3 or /var=/dev/sda3@ if it is not empty and you want to clean it.
@@ -591,36 +604,31 @@ If you want spaces in mountpoints replace them with //">
                                                                         </entry>
                                                                 </hbox>
                                                         </vbox>
-                                                </expander>
-                                                <expander label="Btrfs subvolumes">
+                                                        <vseparator></vseparator>
                                                         <vbox>
-                                                                <hbox>
-                                                                        <text width-request="55" space-expand="false" label="Root:"></text>
-                                                                        <entry tooltip-text="Set subvolume name for /">
-                                                                                <variable>RT_ROOT_SUBVOL</variable>
-                                                                        </entry>
-                                                                </hbox>
-                                                                <hbox>
-                                                                        <text width-request="55" space-expand="false" label="Other:"></text>
-                                                                        <entry tooltip-text="Set other subvolumes (subvolume path e.g /home /var /usr ...)">
-                                                                                <variable>RT_OTHER_SUBVOLS</variable>
-                                                                        </entry>
-                                                                </hbox>
+                                                                <checkbox height-request="30" label="Clean" tooltip-text="Clean the target /boot partition if it is not empty">
+                                                                        <variable>RT_BOOT_CLEAN</variable>
+                                                                </checkbox>
+                                                                <checkbox height-request="30" label="Clean" tooltip-text="Clean the target /home partition if it is not empty">
+                                                                        <variable>RT_HOME_CLEAN</variable>
+                                                                </checkbox>
+                                                                <checkbox height-request="30" label="Clean" tooltip-text="Clean the target esp partition if it is not empty">
+                                                                        <variable>RT_ESP_CLEAN</variable>
+                                                                </checkbox>
                                                         </vbox>
-                                                </expander>
-                                        </frame>
-                                </vbox>
-                                <vbox>
-                                        <frame Bootloader:>
+                                                </hbox>
+                                        </vbox>
+                                        <vbox>
                                                 <hbox>
+                                                        <text width-request="100" space-expand="false" label="Bootloader:"></text>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select bootloader">
                                                                 <variable>RT_BOOTLOADER</variable>
                                                                 <item>none</item>
-	                                                        <item>Grub</item>
-	                                                        <item>Grub-efi</item>
-	                                                        <item>Syslinux</item>
-	                                                        <item>EFISTUB/efibootmgr</item>
-	                                                        <item>Systemd/bootctl</item>
+                                                                <item>Grub</item>
+                                                                <item>Grub-efi</item>
+                                                                <item>Syslinux</item>
+                                                                <item>EFISTUB/efibootmgr</item>
+                                                                <item>Systemd/bootctl</item>
                                                                 <action condition="command_is_true([ $RT_BOOTLOADER = none ] && echo true)">disable:RT_BOOTLOADER_DEVICE</action>
                                                                 <action condition="command_is_true([ ! $RT_BOOTLOADER = none ] && echo true)">enable:RT_BOOTLOADER_DEVICE</action>
                                                                 <action condition="command_is_true([ $RT_BOOTLOADER = none ] && echo true)">disable:RT_KERNEL_OPTIONS</action>
@@ -629,16 +637,22 @@ If you want spaces in mountpoints replace them with //">
                                                                 <action condition="command_is_true([ $RT_BOOTLOADER = Systemd/bootctl ] && echo true)">disable:RT_BOOTLOADER_DEVICE</action>
                                                                 <action condition="command_is_true([ $RT_BOOTLOADER = Grub-efi ] && echo true)">disable:RT_BOOTLOADER_DEVICE</action>
                                                         </comboboxtext>
+                                                </hbox>
+                                                <hbox>
+                                                        <text width-request="100" space-expand="false" label="Device:"></text>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target device" sensitive="false">
-	                                                        <variable>RT_BOOTLOADER_DEVICE</variable>
-	                                                        <input>echo "$RT_DISKS"</input>
-	                                                </comboboxtext>
-                                                        <entry tooltip-text="Set additional kernel options" sensitive="false">
+                                                                <variable>RT_BOOTLOADER_DEVICE</variable>
+                                                                <input>echo "$RT_DISKS"</input>
+                                                        </comboboxtext>
+                                                </hbox>
+                                                <hbox>
+                                                        <text width-request="100" space-expand="false" label="Options:"></text>
+                                                        <entry space-expand="true" space-fill="true" tooltip-text="Set additional kernel options" sensitive="false">
                                                                 <variable>RT_KERNEL_OPTIONS</variable>
                                                         </entry>
                                                 </hbox>
-                                        </frame>
-                                </vbox>
+                                        </vbox>
+                                </notebook>
                                 <notebook labels="Restore Mode|Transfer Mode">
                                         <vbox>
                                                 <hbox>
@@ -669,22 +683,15 @@ Default options:
                                                                 <variable>RS_OPTIONS</variable>
                                                         </entry>
                                                 </hbox>
-                                                <expander label="Server authentication">
-                                                        <vbox>
-                                                                <hbox>
-                                                                        <text width-request="135" space-expand="false" label="Username:"></text>
-                                                                        <entry tooltip-text="Set ftp/http username">
-                                                                                <variable>RS_USERNAME</variable>
-                                                                        </entry>
-                                                                </hbox>
-                                                                <hbox>
-                                                                        <text width-request="135" space-expand="false" label="Password:"></text>
-                                                                        <entry tooltip-text="Set ftp/http password" visibility="false">
-                                                                                <variable>RS_PASSWORD</variable>
-                                                                        </entry>
-                                                                </hbox>
-                                                        </vbox>
-                                                </expander>
+                                                <hbox>
+                                                        <text width-request="135" space-expand="false" label="Server:"></text>
+                                                        <entry tooltip-text="Set ftp/http username">
+                                                                <variable>RS_USERNAME</variable>
+                                                        </entry>
+                                                        <entry tooltip-text="Set ftp/http password" visibility="false">
+                                                                <variable>RS_PASSWORD</variable>
+                                                        </entry>
+                                                </hbox>
                                         </vbox>
                                         <vbox>
                                                 <hbox>
@@ -692,8 +699,8 @@ Default options:
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
                                                                 <variable>TS_HOME</variable>
                                                                 <item>Include</item>
-	                                                        <item>Only hidden files and folders</item>
-	                                                        <item>Exclude</item>
+                                                                <item>Only hidden files and folders</item>
+                                                                <item>Exclude</item>
                                                         </comboboxtext>
                                                 </hbox>
                                                 <hbox>
@@ -724,21 +731,18 @@ lost+found">
                                         </vbox>
                                         <variable>RT_TAB</variable>
                                 </notebook>
-                                <vbox>
-                                        <hseparator></hseparator>
-                                        <checkbox label="Override options" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
-                                                <variable>RT_OVERRIDE</variable>
-                                        </checkbox>
-                                        <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check and initramfs building in gentoo">
-                                                <variable>RT_GENKERNEL</variable>
-                                        </checkbox>
-                                        <checkbox label="Dont check root" tooltip-text="Dont check if the target root partition is empty (dangerous)">
-                                                <variable>RT_CHECK_ROOT</variable>
-                                        </checkbox>
-                                        <checkbox label="Bios" tooltip-text="Ignore UEFI environment">
-                                                <variable>RT_BIOS</variable>
-                                        </checkbox>
-                                </vbox>
+                                <checkbox label="Override options" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
+                                        <variable>RT_OVERRIDE</variable>
+                                </checkbox>
+                                <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check and initramfs building in gentoo">
+                                        <variable>RT_GENKERNEL</variable>
+                                </checkbox>
+                                <checkbox label="Dont check root" tooltip-text="Dont check if the target root partition is empty (dangerous)">
+                                        <variable>RT_CHECK_ROOT</variable>
+                                </checkbox>
+                                <checkbox label="Bios" tooltip-text="Ignore UEFI environment">
+                                        <variable>RT_BIOS</variable>
+                                </checkbox>
 			</vbox>
                         <vbox scrollable="true" shadow-type="0">
                                 <edit xalign="0" wrap="false" auto-refresh="true" editable="no">
@@ -752,7 +756,7 @@ lost+found">
                                 <hseparator></hseparator>
                                 <vbox scrollable="true" shadow-type="0">
                                         <text xalign="0" wrap="false">
-				                <input>if [ -f "$BRchangelog" ]; then cat "$BRchangelog"; else echo "Changelog file not found"; fi</input>
+		                                <input>if [ -f "$BRchangelog" ]; then cat "$BRchangelog"; else echo "Changelog file not found"; fi</input>
                                         </text>
                                 </vbox>
                                 <hseparator></hseparator>

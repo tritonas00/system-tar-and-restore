@@ -1009,7 +1009,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         exit
       fi
       if [ -n "$BRgrub" ] && [ -z "$(which grub-mkconfig 2>/dev/null)" ] && [ -z "$(which grub2-mkconfig 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Grub not found. Install it and re-run the script." >&2
+        echo -e "[${RED}ERROR${NORM}] Grub not found. Install it and re-run the script" >&2
         exit
       elif [ -n "$BRsyslinux" ]; then
         if [ -z "$(which extlinux 2>/dev/null)" ]; then

@@ -574,7 +574,7 @@ lost+found">
                                                                                 <action>refresh:RT_HOME</action>
                                                                                 <action>refresh:RT_SWAP</action>
 	                                                                </comboboxtext>
-                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select mountpoint">
+                                                                        <comboboxtext space-expand="false" space-fill="true" tooltip-text="Select mountpoint">
                                                                                 <variable>RT_ESP_MOUNTPOINT</variable>
                                                                                 <item>/boot/efi</item>
                                                                                 <item>/boot</item>

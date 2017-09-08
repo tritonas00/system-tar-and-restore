@@ -968,179 +968,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     for f in $(find /dev -regex "/dev/nvme[0-9]+n[0-9]+"); do echo "$f"; done
   }
 
-  # Check user input in many possible ways
-  check_input() {
-    if [ "$BRmode" = "1" ]; then
-      if [ -n "$BRsource" ] && [ ! -f "$BRsource" ]; then
-        print_err "-e [${RED}ERROR${NORM}] File not found: $BRsource" 0
-      elif [ -n "$BRsource" ] && [ -f "$BRsource" ] && [ -z "$BRfiletype" ]; then
-        detect_encryption
-        detect_filetype
-        if [ "$BRfiletype" = "wrong" ]; then
-          print_err "-e [${RED}ERROR${NORM}] Invalid file type or wrong passphrase" 0
-        fi
-      fi
-      if [ -n "$BRuri" ] && [[ ! "$BRuri" == /* ]] && [ -z "$(which wget 2>/dev/null)" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Package wget is not installed. Install the package and re-run the script" 0
-      fi
-    fi
-
-    if [ "$BRmode" = "2" ]; then
-      if [ -z "$(which rsync 2>/dev/null)" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Package rsync is not installed. Install the package and re-run the script" 0
-      fi
-      if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" 0
-      fi
-      if [ -n "$BRgrub" ] && [ -z "$(which grub-mkconfig 2>/dev/null)" ] && [ -z "$(which grub2-mkconfig 2>/dev/null)" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Grub not found. Install it and re-run the script" 0
-      elif [ -n "$BRsyslinux" ]; then
-        if [ -z "$(which extlinux 2>/dev/null)" ]; then
-          print_err "-e [${RED}ERROR${NORM}] Extlinux not found. Install it and re-run the script" 0
-        fi
-        if [ -z "$(which syslinux 2>/dev/null)" ]; then
-          print_err "-e [${RED}ERROR${NORM}] Syslinux not found. Install it and re-run the script" 0
-        fi
-      fi
-      if [ -n "$BRbootctl" ] || [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which mkfs.vfat 2>/dev/null)" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Package dosfstools is not installed. Install the package and re-run the script" 0
-      fi
-      if [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which efibootmgr 2>/dev/null)" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Package efibootmgr is not installed. Install the package and re-run the script" 0
-      fi
-      if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which bootctl 2>/dev/null)" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Bootctl not found" 0
-      fi
-    fi
-
-    if [ -n "$BRroot" ]; then
-      for i in $(scan_parts); do if [ "$i" = "$BRroot" ]; then BRrootcheck="true"; fi; done
-      if [ ! "$BRrootcheck" = "true" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Wrong root partition: $BRroot" 0
-      elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot")" ]; then
-        print_err "-e [${YELLOW}WARNING${NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot"), refusing to use it" 0
-      fi
-    fi
-
-    if [ -n "$BRswap" ]; then
-      for i in $(scan_parts); do if [ "$i" = "$BRswap" ]; then BRswapcheck="true"; fi; done
-      if [ ! "$BRswapcheck" = "true" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Wrong swap partition: $BRswap" 0
-      fi
-      if [ "$BRswap" = "$BRroot" ]; then
-        print_err "-e [${YELLOW}WARNING${NORM}] $BRswap already used" 0
-      fi
-    fi
-
-    if [ -n "$BRparts" ]; then
-      BRpartused=(`for BRpart in "${BRparts[@]}"; do echo "${BRpart//@}" | cut -f2 -d"="; done | sort | uniq -d`)
-      BRmpointused=(`for BRmpoint in "${BRparts[@]}"; do echo "$BRmpoint" | cut -f1 -d"="; done | sort | uniq -d`)
-      if [ -n "$BRpartused" ]; then
-        print_err "-e [${YELLOW}WARNING${NORM}] $BRpartused already used" 0
-      fi
-      if [ -n "$BRmpointused" ]; then
-        print_err "-e [${YELLOW}WARNING${NORM}] Duplicate mountpoint: $BRmpointused" 0
-      fi
-
-      for part in "${BRparts[@]}"; do
-        BRmpoint=$(echo "$part" | cut -f1 -d"=")
-        BRpart=$(echo "${part//@}" | cut -f2 -d"=")
-
-        for i in $(scan_parts); do if [ "$i" = "$BRpart" ]; then BRpartscheck="true"; fi; done
-        if [ ! "$BRpartscheck" = "true" ]; then
-          print_err "-e [${RED}ERROR${NORM}] Wrong $BRmpoint partition: $BRpart" 0
-        elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart")" ]; then
-          print_err "-e [${YELLOW}WARNING${NORM}] $BRpart is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart"), refusing to use it" 0
-        fi
-        if [ "$BRpart" = "$BRroot" ] || [ "$BRpart" = "$BRswap" ]; then
-          print_err "-e [${YELLOW}WARNING${NORM}] $BRpart already used" 0
-        fi
-        if [ "$BRmpoint" = "/" ]; then
-          print_err "-e [${YELLOW}WARNING${NORM}] Use -r for the root partition" 0
-        fi
-        if [[ ! "$BRmpoint" == /* ]]; then
-          print_err "-e [${RED}ERROR${NORM}] Wrong mountpoint syntax: $BRmpoint" 0
-        fi
-        unset BRpartscheck
-      done
-    fi
-
-    if [ -n "$BRsubvols" ] && [ -z "$BRrootsubvol" ]; then
-      print_err "-e [${YELLOW}WARNING${NORM}] You must specify a root subvolume name" 0
-    fi
-
-    if [ -n "$BRsubvols" ]; then
-      BRsubvolused=(`for BRsubvol in "${BRsubvols[@]}"; do echo "$BRsubvol"; done | sort | uniq -d`)
-      if [ -n "$BRsubvolused" ]; then
-        for a in "${BRsubvolused[@]}"; do
-          print_err "-e [${YELLOW}WARNING${NORM}] Duplicate subvolume: $a" 0
-        done
-      fi
-
-      for b in "${BRsubvols[@]}"; do
-        if [[ ! "$b" == /* ]]; then
-          print_err "-e [${RED}ERROR${NORM}] Wrong subvolume syntax: $b" 0
-        fi
-        if [ "$b" = "/" ]; then
-          print_err "-e [${YELLOW}WARNING${NORM}] Use -R to assign root subvolume" 0
-        fi
-      done
-    fi
-
-    if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ]; then
-      for i in $(scan_disks); do if [ "$i" = "$BRgrub" ]; then BRgrubcheck="true"; fi; done
-      if [ ! "$BRgrubcheck" = "true" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Wrong grub device: $BRgrub" 0
-      fi
-    fi
-
-    if [ -n "$BRgrub" ] && [ "$BRgrub" = "auto" ] && [ ! -d "$BR_EFI_DIR" ]; then
-      print_err "-e [${RED}ERROR${NORM}] Use 'auto' in UEFI environment only" 0
-    fi
-
-    if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ] && [ -d "$BR_EFI_DIR" ]; then
-      print_err "-e [${YELLOW}WARNING${NORM}] In UEFI environment use 'auto' for grub device" 0
-    fi
-
-    if [ -n "$BRsyslinux" ]; then
-      for i in $(scan_disks); do if [ "$i" = "$BRsyslinux" ]; then BRsyslinuxcheck="true"; fi; done
-      if [ ! "$BRsyslinuxcheck" = "true" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Wrong syslinux device: $BRsyslinux" 0
-      fi
-      if [ -d "$BR_EFI_DIR" ]; then
-        print_err "-e [${RED}ERROR${NORM}] The script does not support Syslinux as UEFI bootloader" 0
-      fi
-    fi
-
-    if [ -n "$BRsyslinux" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -n "$BRgrub" ]; then
-      print_err "-e [${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" 0
-    elif [ -n "$BRefistub" ] && [ -n "$BRbootctl" ]; then
-      print_err "-e [${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" 0
-    fi
-
-    if [ ! -d "$BR_EFI_DIR" ] && [ -n "$BResp" ]; then
-      print_err "-e [${YELLOW}WARNING${NORM}] Don't use EFI system partition in bios mode" 0
-    fi
-
-    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -n "$BRroot" ] && [ -z "$BResp" ]; then
-      print_err "-e [${RED}ERROR${NORM}] You must specify a target EFI system partition" 0
-    fi
-
-    if [ -n "$BRefistub" ] && [ ! -d "$BR_EFI_DIR" ]; then
-      print_err "-e [${RED}ERROR${NORM}] EFISTUB is available in UEFI environment only" 0
-    fi
-
-    if [ -n "$BRbootctl" ] && [ ! -d "$BR_EFI_DIR" ]; then
-      print_err "-e [${RED}ERROR${NORM}] Bootctl is available in UEFI environment only" 0
-    fi
-
-    if [ -n "$BResp" ] && [ -z "$BRespmpoint" ] && [ -d "$BR_EFI_DIR" ]; then
-      print_err "-e [${YELLOW}WARNING${NORM}] You must specify mount point for ESP ($BResp)" 0
-    elif [ -n "$BResp" ] && [ ! "$BRespmpoint" = "/boot/efi" ] && [ ! "$BRespmpoint" = "/boot" ] && [ -d "$BR_EFI_DIR" ]; then
-      print_err "-e [${YELLOW}WARNING${NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot" 0
-    fi
-  }
-
   # Main mount function. Exit and clean on errors
   mount_all() {
     # Check the target root partition
@@ -2100,7 +1927,177 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo -e "[${CYAN}INFO${NORM}] UEFI environment detected. (use -W to ignore)"
   fi
 
-  check_input
+  # Check user input in many possible ways
+  if [ "$BRmode" = "1" ]; then
+    if [ -n "$BRsource" ] && [ ! -f "$BRsource" ]; then
+      print_err "-e [${RED}ERROR${NORM}] File not found: $BRsource" 0
+    elif [ -n "$BRsource" ] && [ -f "$BRsource" ] && [ -z "$BRfiletype" ]; then
+      detect_encryption
+      detect_filetype
+      if [ "$BRfiletype" = "wrong" ]; then
+        print_err "-e [${RED}ERROR${NORM}] Invalid file type or wrong passphrase" 0
+      fi
+    fi
+    if [ -n "$BRuri" ] && [[ ! "$BRuri" == /* ]] && [ -z "$(which wget 2>/dev/null)" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Package wget is not installed. Install the package and re-run the script" 0
+    fi
+  fi
+
+  if [ "$BRmode" = "2" ]; then
+    if [ -z "$(which rsync 2>/dev/null)" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Package rsync is not installed. Install the package and re-run the script" 0
+    fi
+    if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" 0
+    fi
+    if [ -n "$BRgrub" ] && [ -z "$(which grub-mkconfig 2>/dev/null)" ] && [ -z "$(which grub2-mkconfig 2>/dev/null)" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Grub not found. Install it and re-run the script" 0
+    elif [ -n "$BRsyslinux" ]; then
+      if [ -z "$(which extlinux 2>/dev/null)" ]; then
+        print_err "-e [${RED}ERROR${NORM}] Extlinux not found. Install it and re-run the script" 0
+      fi
+      if [ -z "$(which syslinux 2>/dev/null)" ]; then
+        print_err "-e [${RED}ERROR${NORM}] Syslinux not found. Install it and re-run the script" 0
+      fi
+    fi
+    if [ -n "$BRbootctl" ] || [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which mkfs.vfat 2>/dev/null)" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Package dosfstools is not installed. Install the package and re-run the script" 0
+    fi
+    if [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which efibootmgr 2>/dev/null)" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Package efibootmgr is not installed. Install the package and re-run the script" 0
+    fi
+    if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which bootctl 2>/dev/null)" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Bootctl not found" 0
+    fi
+  fi
+
+  if [ -n "$BRroot" ]; then
+    for i in $(scan_parts); do if [ "$i" = "$BRroot" ]; then BRrootcheck="true"; fi; done
+    if [ ! "$BRrootcheck" = "true" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Wrong root partition: $BRroot" 0
+    elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot")" ]; then
+      print_err "-e [${YELLOW}WARNING${NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot"), refusing to use it" 0
+    fi
+  fi
+
+  if [ -n "$BRswap" ]; then
+    for i in $(scan_parts); do if [ "$i" = "$BRswap" ]; then BRswapcheck="true"; fi; done
+    if [ ! "$BRswapcheck" = "true" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Wrong swap partition: $BRswap" 0
+    fi
+    if [ "$BRswap" = "$BRroot" ]; then
+      print_err "-e [${YELLOW}WARNING${NORM}] $BRswap already used" 0
+    fi
+  fi
+
+  if [ -n "$BRparts" ]; then
+    BRpartused=(`for BRpart in "${BRparts[@]}"; do echo "${BRpart//@}" | cut -f2 -d"="; done | sort | uniq -d`)
+    BRmpointused=(`for BRmpoint in "${BRparts[@]}"; do echo "$BRmpoint" | cut -f1 -d"="; done | sort | uniq -d`)
+    if [ -n "$BRpartused" ]; then
+      print_err "-e [${YELLOW}WARNING${NORM}] $BRpartused already used" 0
+    fi
+    if [ -n "$BRmpointused" ]; then
+      print_err "-e [${YELLOW}WARNING${NORM}] Duplicate mountpoint: $BRmpointused" 0
+    fi
+
+    for part in "${BRparts[@]}"; do
+      BRmpoint=$(echo "$part" | cut -f1 -d"=")
+      BRpart=$(echo "${part//@}" | cut -f2 -d"=")
+
+      for i in $(scan_parts); do if [ "$i" = "$BRpart" ]; then BRpartscheck="true"; fi; done
+      if [ ! "$BRpartscheck" = "true" ]; then
+        print_err "-e [${RED}ERROR${NORM}] Wrong $BRmpoint partition: $BRpart" 0
+      elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart")" ]; then
+        print_err "-e [${YELLOW}WARNING${NORM}] $BRpart is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart"), refusing to use it" 0
+      fi
+      if [ "$BRpart" = "$BRroot" ] || [ "$BRpart" = "$BRswap" ]; then
+        print_err "-e [${YELLOW}WARNING${NORM}] $BRpart already used" 0
+      fi
+      if [ "$BRmpoint" = "/" ]; then
+        print_err "-e [${YELLOW}WARNING${NORM}] Use -r for the root partition" 0
+      fi
+      if [[ ! "$BRmpoint" == /* ]]; then
+        print_err "-e [${RED}ERROR${NORM}] Wrong mountpoint syntax: $BRmpoint" 0
+      fi
+      unset BRpartscheck
+    done
+  fi
+
+  if [ -n "$BRsubvols" ] && [ -z "$BRrootsubvol" ]; then
+    print_err "-e [${YELLOW}WARNING${NORM}] You must specify a root subvolume name" 0
+  fi
+
+  if [ -n "$BRsubvols" ]; then
+    BRsubvolused=(`for BRsubvol in "${BRsubvols[@]}"; do echo "$BRsubvol"; done | sort | uniq -d`)
+    if [ -n "$BRsubvolused" ]; then
+      for a in "${BRsubvolused[@]}"; do
+        print_err "-e [${YELLOW}WARNING${NORM}] Duplicate subvolume: $a" 0
+      done
+    fi
+
+    for b in "${BRsubvols[@]}"; do
+      if [[ ! "$b" == /* ]]; then
+        print_err "-e [${RED}ERROR${NORM}] Wrong subvolume syntax: $b" 0
+      fi
+      if [ "$b" = "/" ]; then
+        print_err "-e [${YELLOW}WARNING${NORM}] Use -R to assign root subvolume" 0
+      fi
+    done
+  fi
+
+  if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ]; then
+    for i in $(scan_disks); do if [ "$i" = "$BRgrub" ]; then BRgrubcheck="true"; fi; done
+    if [ ! "$BRgrubcheck" = "true" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Wrong grub device: $BRgrub" 0
+    fi
+  fi
+
+  if [ -n "$BRgrub" ] && [ "$BRgrub" = "auto" ] && [ ! -d "$BR_EFI_DIR" ]; then
+    print_err "-e [${RED}ERROR${NORM}] Use 'auto' in UEFI environment only" 0
+  fi
+
+  if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ] && [ -d "$BR_EFI_DIR" ]; then
+    print_err "-e [${YELLOW}WARNING${NORM}] In UEFI environment use 'auto' for grub device" 0
+  fi
+
+  if [ -n "$BRsyslinux" ]; then
+    for i in $(scan_disks); do if [ "$i" = "$BRsyslinux" ]; then BRsyslinuxcheck="true"; fi; done
+    if [ ! "$BRsyslinuxcheck" = "true" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Wrong syslinux device: $BRsyslinux" 0
+    fi
+    if [ -d "$BR_EFI_DIR" ]; then
+      print_err "-e [${RED}ERROR${NORM}] The script does not support Syslinux as UEFI bootloader" 0
+    fi
+  fi
+
+  if [ -n "$BRsyslinux" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -n "$BRgrub" ]; then
+    print_err "-e [${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" 0
+  elif [ -n "$BRefistub" ] && [ -n "$BRbootctl" ]; then
+    print_err "-e [${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" 0
+  fi
+
+  if [ ! -d "$BR_EFI_DIR" ] && [ -n "$BResp" ]; then
+    print_err "-e [${YELLOW}WARNING${NORM}] Don't use EFI system partition in bios mode" 0
+  fi
+
+  if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -n "$BRroot" ] && [ -z "$BResp" ]; then
+    print_err "-e [${RED}ERROR${NORM}] You must specify a target EFI system partition" 0
+  fi
+
+  if [ -n "$BRefistub" ] && [ ! -d "$BR_EFI_DIR" ]; then
+    print_err "-e [${RED}ERROR${NORM}] EFISTUB is available in UEFI environment only" 0
+  fi
+
+  if [ -n "$BRbootctl" ] && [ ! -d "$BR_EFI_DIR" ]; then
+    print_err "-e [${RED}ERROR${NORM}] Bootctl is available in UEFI environment only" 0
+  fi
+
+  if [ -n "$BResp" ] && [ -z "$BRespmpoint" ] && [ -d "$BR_EFI_DIR" ]; then
+    print_err "-e [${YELLOW}WARNING${NORM}] You must specify mount point for ESP ($BResp)" 0
+  elif [ -n "$BResp" ] && [ ! "$BRespmpoint" = "/boot/efi" ] && [ ! "$BRespmpoint" = "/boot" ] && [ -d "$BR_EFI_DIR" ]; then
+    print_err "-e [${YELLOW}WARNING${NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot" 0
+  fi
+
   mount_all
 
   # In Restore mode download the backup archive if url is given, read it and check it

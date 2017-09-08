@@ -40,6 +40,14 @@ print_msg() {
   if [ -n "$BRwrap" ]; then echo "$2" > /tmp/wr_proc; fi
 }
 
+# Print various error messages and exit
+print_err() {
+  echo ${1} >&2
+  BRabort="y"
+  if [ "$2" = "0" ]; then exit; fi
+  if [ "$2" = "1" ]; then clean_unmount; fi
+}
+
 # Show version
 echo -e "\n$BR_VERSION"
 
@@ -322,17 +330,14 @@ fi
 
 # Check if run with root privileges
 if [ "$(id -u)" -gt "0" ]; then
-  echo -e "[${RED}ERROR${NORM}] Script must run as root" >&2
-  exit
+  print_err "-e [${RED}ERROR${NORM}] Script must run as root" 0
 fi
 
 # Check mode
 if [ -z "$BRmode" ]; then
-  echo -e "[${RED}ERROR${NORM}] You must specify a mode" >&2
-  exit
+  print_err "-e [${RED}ERROR${NORM}] You must specify a mode" 0
 elif [ -n "$BRmode" ] && [ ! "$BRmode" = "0" ] && [ ! "$BRmode" = "1" ] && [ ! "$BRmode" = "2" ]; then
-  echo -e "[${RED}ERROR${NORM}] Wrong mode: $BRmode. Available options: 0 (Backup) 1 (Restore) 2 (Transfer)" >&2
-  exit
+  print_err "-e [${RED}ERROR${NORM}] Wrong mode: $BRmode. Available options: 0 (Backup) 1 (Restore) 2 (Transfer)" 0
 fi
 
 clean_tmp_files
@@ -342,8 +347,7 @@ if [ "$BRmode" = "0" ] && [ -z "$BRwrap" ]; then
   if [ -z "$BRconf" ]; then
     BRconf="/etc/backup.conf"
   elif [ -n "$BRconf" ] && [ ! -f "$BRconf" ]; then
-    echo -e "[${RED}ERROR${NORM}] File does not exist: $BRconf" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] File does not exist: $BRconf" 0
   fi
   if [ -f "$BRconf" ]; then
     source "$BRconf"
@@ -352,11 +356,9 @@ fi
 
 # Check /home directory options for Backup and Transfer mode
 if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ] && [ -n "$_BRnohome" ] && [ -n "$_BRonlyhidden" ]; then
-  echo -e "[${YELLOW}WARNING${NORM}] Choose only one option for the /home directory" >&2
-  exit
+  print_err "-e [${YELLOW}WARNING${NORM}] Choose only one option for the /home directory" 0
 elif [ "$BRmode" = "0" ] && [ -n "$BRnohome" ] && [ -n "$BRonlyhidden" ]; then
-  echo -e "[${RED}ERROR${NORM}] Error parsing configuration file. Choose only one option for the /home directory" >&2
-  exit
+  print_err "-e [${RED}ERROR${NORM}] Error parsing configuration file. Choose only one option for the /home directory" 0
 fi
 
 # Arguments should override configuration file
@@ -468,60 +470,47 @@ if [ "$BRmode" = "0" ]; then
 
   # Check user input, exit on error
   if [ -n "$BRFOLDER" ] && [ ! -d "$BRFOLDER" ]; then
-    echo -e "[${RED}ERROR${NORM}] Directory does not exist: $BRFOLDER" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] Directory does not exist: $BRFOLDER" 0
   fi
 
   if [ -n "$BRsrc" ] && [ ! -d "$BRsrc" ]; then
-    echo -e "[${RED}ERROR${NORM}] Directory does not exist: $BRsrc" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] Directory does not exist: $BRsrc" 0
   fi
 
   if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ] && [ ! "$BRcompression" = "bzip2" ] && [ ! "$BRcompression" = "none" ]; then
-    echo -e "[${RED}ERROR${NORM}] Wrong compression type: $BRcompression. Available options: gzip bzip2 xz none" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] Wrong compression type: $BRcompression. Available options: gzip bzip2 xz none" 0
   fi
 
   if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
-    echo -e "[${YELLOW}WARNING${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" >&2
-    exit
+    print_err "-e [${YELLOW}WARNING${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" 0
   fi
 
   if [ -z "$BRencmethod" ] || [ "$BRencmethod" = "none" ] && [ -n "$BRencpass" ]; then
-    echo -e "[${YELLOW}WARNING${NORM}] You must specify an encryption method" >&2
-    exit
+    print_err "-e [${YELLOW}WARNING${NORM}] You must specify an encryption method" 0
   fi
 
   if [ -z "$BRencpass" ] && [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "none" ]; then
-    echo -e "[${YELLOW}WARNING${NORM}] You must specify a passphrase" >&2
-    exit
+    print_err "-e [${YELLOW}WARNING${NORM}] You must specify a passphrase" 0
   fi
 
   if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ] && [ ! "$BRencmethod" = "none" ]; then
-    echo -e "[${RED}ERROR${NORM}] Wrong encryption method: $BRencmethod. Available options: openssl gpg" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] Wrong encryption method: $BRencmethod. Available options: openssl gpg" 0
   fi
 
   if [ -n "$BRmcore" ] && [ -z "$BRcompression" ]; then
-    echo -e "[${YELLOW}WARNING${NORM}] You must specify compression type" >&2
-    exit
+    print_err "-e [${YELLOW}WARNING${NORM}] You must specify compression type" 0
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z "$(which pigz 2>/dev/null)" ]; then
-    echo -e "[${RED}ERROR${NORM}] Package pigz is not installed. Install the package and re-run the script" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] Package pigz is not installed. Install the package and re-run the script" 0
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
-    echo -e "[${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script" 0
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "xz" ] && [ -z "$(which pxz 2>/dev/null)" ]; then
-    echo -e "[${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script" 0
   elif [ -n "$BRmcore" ] && [ -n "$BRthreads" ] && [ "$BRthreads" -gt "$(nproc --all)" ]; then
-    echo -e "[${RED}ERROR${NORM}] Maximum number of processing units: $(nproc --all)" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] Maximum number of processing units: $(nproc --all)" 0
   fi
 
   if [ -n "$BRwrap" ] && [ -z "$BRFOLDER" ]; then
-    echo -e "[${YELLOW}WARNING${NORM}] You must specify destination directory" >&2
-    exit
+    print_err "-e [${YELLOW}WARNING${NORM}] You must specify destination directory" 0
   fi
 
   # Set some defaults if not given by the user
@@ -983,78 +972,63 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   check_input() {
     if [ "$BRmode" = "1" ]; then
       if [ -n "$BRsource" ] && [ ! -f "$BRsource" ]; then
-        echo -e "[${RED}ERROR${NORM}] File not found: $BRsource" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] File not found: $BRsource" 0
       elif [ -n "$BRsource" ] && [ -f "$BRsource" ] && [ -z "$BRfiletype" ]; then
         detect_encryption
         detect_filetype
         if [ "$BRfiletype" = "wrong" ]; then
-          echo -e "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase" >&2
-          exit
+          print_err "-e [${RED}ERROR${NORM}] Invalid file type or wrong passphrase" 0
         fi
       fi
       if [ -n "$BRuri" ] && [[ ! "$BRuri" == /* ]] && [ -z "$(which wget 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package wget is not installed. Install the package and re-run the script" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Package wget is not installed. Install the package and re-run the script" 0
       fi
     fi
 
     if [ "$BRmode" = "2" ]; then
       if [ -z "$(which rsync 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package rsync is not installed. Install the package and re-run the script" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Package rsync is not installed. Install the package and re-run the script" 0
       fi
       if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" 0
       fi
       if [ -n "$BRgrub" ] && [ -z "$(which grub-mkconfig 2>/dev/null)" ] && [ -z "$(which grub2-mkconfig 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Grub not found. Install it and re-run the script" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Grub not found. Install it and re-run the script" 0
       elif [ -n "$BRsyslinux" ]; then
         if [ -z "$(which extlinux 2>/dev/null)" ]; then
-          echo -e "[${RED}ERROR${NORM}] Extlinux not found. Install it and re-run the script" >&2
-          exit
+          print_err "-e [${RED}ERROR${NORM}] Extlinux not found. Install it and re-run the script" 0
         fi
         if [ -z "$(which syslinux 2>/dev/null)" ]; then
-          echo -e "[${RED}ERROR${NORM}] Syslinux not found. Install it and re-run the script" >&2
-          exit
+          print_err "-e [${RED}ERROR${NORM}] Syslinux not found. Install it and re-run the script" 0
         fi
       fi
       if [ -n "$BRbootctl" ] || [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which mkfs.vfat 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package dosfstools is not installed. Install the package and re-run the script" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Package dosfstools is not installed. Install the package and re-run the script" 0
       fi
       if [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which efibootmgr 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package efibootmgr is not installed. Install the package and re-run the script" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Package efibootmgr is not installed. Install the package and re-run the script" 0
       fi
       if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which bootctl 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Bootctl not found" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Bootctl not found" 0
       fi
     fi
 
     if [ -n "$BRroot" ]; then
       for i in $(scan_parts); do if [ "$i" = "$BRroot" ]; then BRrootcheck="true"; fi; done
       if [ ! "$BRrootcheck" = "true" ]; then
-        echo -e "[${RED}ERROR${NORM}] Wrong root partition: $BRroot" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Wrong root partition: $BRroot" 0
       elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot")" ]; then
-        echo -e "[${YELLOW}WARNING${NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot"), refusing to use it" >&2
-        exit
+        print_err "-e [${YELLOW}WARNING${NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot"), refusing to use it" 0
       fi
     fi
 
     if [ -n "$BRswap" ]; then
       for i in $(scan_parts); do if [ "$i" = "$BRswap" ]; then BRswapcheck="true"; fi; done
       if [ ! "$BRswapcheck" = "true" ]; then
-        echo -e "[${RED}ERROR${NORM}] Wrong swap partition: $BRswap" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Wrong swap partition: $BRswap" 0
       fi
       if [ "$BRswap" = "$BRroot" ]; then
-        echo -e "[${YELLOW}WARNING${NORM}] $BRswap already used" >&2
-        exit
+        print_err "-e [${YELLOW}WARNING${NORM}] $BRswap already used" 0
       fi
     fi
 
@@ -1062,12 +1036,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRpartused=(`for BRpart in "${BRparts[@]}"; do echo "${BRpart//@}" | cut -f2 -d"="; done | sort | uniq -d`)
       BRmpointused=(`for BRmpoint in "${BRparts[@]}"; do echo "$BRmpoint" | cut -f1 -d"="; done | sort | uniq -d`)
       if [ -n "$BRpartused" ]; then
-        echo -e "[${YELLOW}WARNING${NORM}] $BRpartused already used" >&2
-        exit
+        print_err "-e [${YELLOW}WARNING${NORM}] $BRpartused already used" 0
       fi
       if [ -n "$BRmpointused" ]; then
-        echo -e "[${YELLOW}WARNING${NORM}] Duplicate mountpoint: $BRmpointused" >&2
-        exit
+        print_err "-e [${YELLOW}WARNING${NORM}] Duplicate mountpoint: $BRmpointused" 0
       fi
 
       for part in "${BRparts[@]}"; do
@@ -1076,50 +1048,41 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
         for i in $(scan_parts); do if [ "$i" = "$BRpart" ]; then BRpartscheck="true"; fi; done
         if [ ! "$BRpartscheck" = "true" ]; then
-          echo -e "[${RED}ERROR${NORM}] Wrong $BRmpoint partition: $BRpart" >&2
-          exit
+          print_err "-e [${RED}ERROR${NORM}] Wrong $BRmpoint partition: $BRpart" 0
         elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart")" ]; then
-          echo -e "[${YELLOW}WARNING${NORM}] $BRpart is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart"), refusing to use it" >&2
-          exit
+          print_err "-e [${YELLOW}WARNING${NORM}] $BRpart is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart"), refusing to use it" 0
         fi
         if [ "$BRpart" = "$BRroot" ] || [ "$BRpart" = "$BRswap" ]; then
-          echo -e "[${YELLOW}WARNING${NORM}] $BRpart already used" >&2
-          exit
+          print_err "-e [${YELLOW}WARNING${NORM}] $BRpart already used" 0
         fi
         if [ "$BRmpoint" = "/" ]; then
-          echo -e "[${YELLOW}WARNING${NORM}] Use -r for the root partition" >&2
-          exit
+          print_err "-e [${YELLOW}WARNING${NORM}] Use -r for the root partition" 0
         fi
         if [[ ! "$BRmpoint" == /* ]]; then
-          echo -e "[${RED}ERROR${NORM}] Wrong mountpoint syntax: $BRmpoint" >&2
-          exit
+          print_err "-e [${RED}ERROR${NORM}] Wrong mountpoint syntax: $BRmpoint" 0
         fi
         unset BRpartscheck
       done
     fi
 
     if [ -n "$BRsubvols" ] && [ -z "$BRrootsubvol" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] You must specify a root subvolume name" >&2
-      exit
+      print_err "-e [${YELLOW}WARNING${NORM}] You must specify a root subvolume name" 0
     fi
 
     if [ -n "$BRsubvols" ]; then
       BRsubvolused=(`for BRsubvol in "${BRsubvols[@]}"; do echo "$BRsubvol"; done | sort | uniq -d`)
       if [ -n "$BRsubvolused" ]; then
         for a in "${BRsubvolused[@]}"; do
-          echo -e "[${YELLOW}WARNING${NORM}] Duplicate subvolume: $a" >&2
-          exit
+          print_err "-e [${YELLOW}WARNING${NORM}] Duplicate subvolume: $a" 0
         done
       fi
 
       for b in "${BRsubvols[@]}"; do
         if [[ ! "$b" == /* ]]; then
-          echo -e "[${RED}ERROR${NORM}] Wrong subvolume syntax: $b" >&2
-          exit
+          print_err "-e [${RED}ERROR${NORM}] Wrong subvolume syntax: $b" 0
         fi
         if [ "$b" = "/" ]; then
-          echo -e "[${YELLOW}WARNING${NORM}] Use -R to assign root subvolume" >&2
-          exit
+          print_err "-e [${YELLOW}WARNING${NORM}] Use -R to assign root subvolume" 0
         fi
       done
     fi
@@ -1127,67 +1090,54 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ]; then
       for i in $(scan_disks); do if [ "$i" = "$BRgrub" ]; then BRgrubcheck="true"; fi; done
       if [ ! "$BRgrubcheck" = "true" ]; then
-        echo -e "[${RED}ERROR${NORM}] Wrong grub device: $BRgrub" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Wrong grub device: $BRgrub" 0
       fi
     fi
 
     if [ -n "$BRgrub" ] && [ "$BRgrub" = "auto" ] && [ ! -d "$BR_EFI_DIR" ]; then
-      echo -e "[${RED}ERROR${NORM}] Use 'auto' in UEFI environment only" >&2
-      exit
+      print_err "-e [${RED}ERROR${NORM}] Use 'auto' in UEFI environment only" 0
     fi
 
     if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ] && [ -d "$BR_EFI_DIR" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] In UEFI environment use 'auto' for grub device" >&2
-      exit
+      print_err "-e [${YELLOW}WARNING${NORM}] In UEFI environment use 'auto' for grub device" 0
     fi
 
     if [ -n "$BRsyslinux" ]; then
       for i in $(scan_disks); do if [ "$i" = "$BRsyslinux" ]; then BRsyslinuxcheck="true"; fi; done
       if [ ! "$BRsyslinuxcheck" = "true" ]; then
-        echo -e "[${RED}ERROR${NORM}] Wrong syslinux device: $BRsyslinux" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Wrong syslinux device: $BRsyslinux" 0
       fi
       if [ -d "$BR_EFI_DIR" ]; then
-        echo -e "[${RED}ERROR${NORM}] The script does not support Syslinux as UEFI bootloader" >&2
-        exit
+        print_err "-e [${RED}ERROR${NORM}] The script does not support Syslinux as UEFI bootloader" 0
       fi
     fi
 
     if [ -n "$BRsyslinux" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -n "$BRgrub" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" >&2
-      exit
+      print_err "-e [${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" 0
     elif [ -n "$BRefistub" ] && [ -n "$BRbootctl" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" >&2
-      exit
+      print_err "-e [${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" 0
     fi
 
     if [ ! -d "$BR_EFI_DIR" ] && [ -n "$BResp" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Don't use EFI system partition in bios mode" >&2
-      exit
+      print_err "-e [${YELLOW}WARNING${NORM}] Don't use EFI system partition in bios mode" 0
     fi
 
     if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -n "$BRroot" ] && [ -z "$BResp" ]; then
-      echo -e "[${RED}ERROR${NORM}] You must specify a target EFI system partition" >&2
-      exit
+      print_err "-e [${RED}ERROR${NORM}] You must specify a target EFI system partition" 0
     fi
 
     if [ -n "$BRefistub" ] && [ ! -d "$BR_EFI_DIR" ]; then
-      echo -e "[${RED}ERROR${NORM}] EFISTUB is available in UEFI environment only" >&2
-      exit
+      print_err "-e [${RED}ERROR${NORM}] EFISTUB is available in UEFI environment only" 0
     fi
 
     if [ -n "$BRbootctl" ] && [ ! -d "$BR_EFI_DIR" ]; then
-      echo -e "[${RED}ERROR${NORM}] Bootctl is available in UEFI environment only" >&2
-      exit
+      print_err "-e [${RED}ERROR${NORM}] Bootctl is available in UEFI environment only" 0
     fi
 
     if [ -n "$BResp" ] && [ -z "$BRespmpoint" ] && [ -d "$BR_EFI_DIR" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] You must specify mount point for ESP ($BResp)" >&2
-      exit
+      print_err "-e [${YELLOW}WARNING${NORM}] You must specify mount point for ESP ($BResp)" 0
     elif [ -n "$BResp" ] && [ ! "$BRespmpoint" = "/boot/efi" ] && [ ! "$BRespmpoint" = "/boot" ] && [ -d "$BR_EFI_DIR" ]; then
-      echo -e "[${YELLOW}WARNING${NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot" >&2
-      exit
+      print_err "-e [${YELLOW}WARNING${NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot" 0
     fi
   }
 
@@ -1197,8 +1147,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     BRrootfs="$(blkid -s TYPE -o value "$BRroot")"
     BRrootsize="$(lsblk -d -n -o size 2>/dev/null "$BRroot" | sed -e 's/ *//')" # Remove leading spaces
     if [ -z "$BRrootfs" ]; then
-      echo -e "[${RED}ERROR${NORM}] Unknown root file system" >&2
-      exit
+      print_err "-e [${RED}ERROR${NORM}] Unknown root file system" 0
     fi
 
     # Create directory to mount the target root partition
@@ -1212,9 +1161,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Store it's size
     BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
     if [ -n "$BRSTOP" ]; then
-      echo -e "[${RED}ERROR${NORM}] Error while mounting partitions" >&2
       rm -r /mnt/target
-      exit
+      print_err "-e [${RED}ERROR${NORM}] Error while mounting partitions" 0
     fi
 
     # Check if the target root partition is not empty
@@ -1224,7 +1172,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         rm -r /mnt/target/*
         sleep 1
       elif [ -z "$BRdontckroot" ]; then
-        echo -e "[${RED}ERROR${NORM}] Root partition not empty, refusing to use it" >&2
+        print_err "-e [${RED}ERROR${NORM}] Root partition not empty, refusing to use it"
         print_msg "-ne ${WRK}Unmounting $BRroot" "Unmounting $BRroot"
         sleep 1
         OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && sleep 1 && rm -r /mnt/target) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
@@ -1256,9 +1204,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       print_msg "-ne ${WRK}Mounting $BRrootsubvol" "Mounting $BRrootsubvol"
       OUTPUT="$(mount -t btrfs -o "$BRmountopts",subvol="$BRrootsubvol" "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
       if [ -n "$BRSTOP" ]; then
-        echo -e "[${RED}ERROR${NORM}] Error while making subvolumes" >&2
         unset BRSTOP
-        clean_unmount
+        print_err "-e [${RED}ERROR${NORM}] Error while making subvolumes" 1
       fi
     fi
 
@@ -1297,9 +1244,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         fi
       done
       if [ -n "$BRSTOP" ]; then
-        echo -e "[${RED}ERROR${NORM}] Error while mounting partitions" >&2
         unset BRSTOP
-        clean_unmount
+        print_err "-e [${RED}ERROR${NORM}] Error while mounting partitions" 1
       fi
       # Now trim trailing @ from partitions, we dont need it any more
       if [[ "$BRhome" == *@ ]]; then BRhome="${BRhome//@}"; fi
@@ -1937,49 +1883,40 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       detect_partition_table_syslinux
       # Search for sgdisk in case of GPT
       if [ ! "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ -z "$(which sgdisk 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" >&2
-        BRabort="y"
+        print_err "-e [${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
       elif [ "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ "$BRmode" = "2" ] && [ -z "$(which sgdisk 2>/dev/null)" ]; then
-        echo -e "[${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" >&2
-        BRabort="y"
+        print_err "-e [${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script"
       # In case of Arch we run syslinux-install_update from chroot so it calls sgdisk from chroot also. Thats why in Restore mode sgdisk has to be in the archive
       elif [ "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ "$BRmode" = "1" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist; then
-        echo -e "[${RED}ERROR${NORM}] sgdisk not found in the archived system" >&2
-        BRabort="y"
+        print_err "-e [${RED}ERROR${NORM}] sgdisk not found in the archived system"
       fi
     fi
 
     if [ "$BRmode" = "1" ]; then
       # Search archive contents for grub(2)-mkconfig
       if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist; then
-        echo -e "[${RED}ERROR${NORM}] Grub not found in the archived system" >&2
-        BRabort="y"
+        print_err "-e [${RED}ERROR${NORM}] Grub not found in the archived system"
       # Search archive contents for sys/extlinux
       elif [ -n "$BRsyslinux" ]; then
         if ! grep -Fq "bin/extlinux" /tmp/filelist; then
-          echo -e "[${RED}ERROR${NORM}] Extlinux not found in the archived system" >&2
-          BRabort="y"
+          print_err "-e [${RED}ERROR${NORM}] Extlinux not found in the archived system"
         fi
         if ! grep -Fq "bin/syslinux" /tmp/filelist; then
-          echo -e "[${RED}ERROR${NORM}] Syslinux not found in the archived system" >&2
-          BRabort="y"
+          print_err "-e [${RED}ERROR${NORM}] Syslinux not found in the archived system"
         fi
       fi
 
       # Search archive contents for efibootmgr
       if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
-        echo -e "[${RED}ERROR${NORM}] efibootmgr not found in the archived system" >&2
-        BRabort="y"
+        print_err "-e [${RED}ERROR${NORM}] efibootmgr not found in the archived system"
       fi
       # Search archive contents for mkfs.vfat
       if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
-        echo -e "[${RED}ERROR${NORM}] dosfstools not found in the archived system" >&2
-        BRabort="y"
+        print_err "-e [${RED}ERROR${NORM}] dosfstools not found in the archived system"
       fi
       # Search archive contents for bootctl
       if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/bootctl" /tmp/filelist; then
-        echo -e "[${RED}ERROR${NORM}] Bootctl not found in the archived system" >&2
-        BRabort="y"
+        print_err "-e [${RED}ERROR${NORM}] Bootctl not found in the archived system"
       fi
       # Set the EFI Grub architecture in Restore Mode
       if [ "$target_arch" = "x86_64" ]; then
@@ -2108,8 +2045,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Check if root partition is given
   if [ -z "$BRroot" ]; then
-    echo -e "[${RED}ERROR${NORM}] You must specify a target root partition" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] You must specify a target root partition" 0
   fi
 
   # Check if root partition ends with @, trim it and set var for clean it in mount_all
@@ -2120,8 +2056,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Check if backup archive is given in Restore Mode
   if [ "$BRmode" = "1" ] && [ -z "$BRuri" ]; then
-    echo -e "[${RED}ERROR${NORM}] You must specify a backup archive" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] You must specify a backup archive" 0
   fi
 
   # If backup archive is a local file use it directly
@@ -2150,14 +2085,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Exit if no partitions found by scan_parts
   if [ -z "$(scan_parts 2>/dev/null)" ]; then
-    echo -e "[${RED}ERROR${NORM}] No partitions found" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] No partitions found" 0
   fi
 
   # Check if working directory already exists
   if [ -d /mnt/target ]; then
-    echo -e "[${RED}ERROR${NORM}] /mnt/target exists, aborting" >&2
-    exit
+    print_err "-e [${RED}ERROR${NORM}] /mnt/target exists, aborting" 0
   fi
 
   PATH="$PATH:/usr/sbin:/bin:/sbin"
@@ -2190,8 +2123,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         run_wget
       fi
       if [ -f /tmp/error ]; then
-        echo -e "[${RED}ERROR${NORM}] Error downloading file. Wrong URL, wrong authentication or network is down." >&2
-        clean_unmount
+        print_err "-e [${RED}ERROR${NORM}] Error downloading file. Wrong URL, wrong authentication or network is down." 1
       else
         detect_encryption
         # If the downloaded archive is encrypted prompt the user for passphrase
@@ -2201,8 +2133,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         fi
         detect_filetype
         if [ "$BRfiletype" = "wrong" ]; then
-          echo -e "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase" >&2
-          clean_unmount
+          print_err "-e [${RED}ERROR${NORM}] Invalid file type or wrong passphrase" 1
         fi
       fi
     fi
@@ -2212,13 +2143,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     read_archive | tee /tmp/filelist | while read ln; do a="$((a + 1))" && echo -en "\rChecking and reading archive ($a Files) "; done
     echo
     if [ -f /tmp/error ]; then
-      echo -e "[${RED}ERROR${NORM}] Error reading archive" >&2
-      clean_unmount
+      print_err "-e [${RED}ERROR${NORM}] Error reading archive" 1
     else
       target_arch="$(grep -F 'target_architecture.' /tmp/filelist | cut -f2 -d".")"
       if [ ! "$(uname -m)" = "$target_arch" ]; then
-        echo -e "[${RED}ERROR${NORM}] Running and target system architecture mismatch or invalid archive" >&2
-        clean_unmount
+        print_err "-e [${RED}ERROR${NORM}] Running and target system architecture mismatch or invalid archive" 1
       fi
     fi
   fi
@@ -2229,8 +2158,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Check archive for genkernel in case of Gentoo if -D is not given
   if [ "$BRmode" = "1" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
-    echo -e "[${YELLOW}WARNING${NORM}] Genkernel not found in the archived system. (you can disable this check with -D)" >&2
-    clean_unmount
+    print_err "-e [${YELLOW}WARNING${NORM}] Genkernel not found in the archived system. (you can disable this check with -D)" 1
   fi
 
   if [ "$BRmode" = "1" ]; then

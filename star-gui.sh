@@ -532,6 +532,9 @@ lost+found">
                                                                 </checkbox>
                                                         </vbox>
                                                 </hbox>
+                                                <checkbox height-request="30" label="Dont check if empty" tooltip-text="Dont check if the target root partition is empty (dangerous)">
+                                                        <variable>RT_CHECK_ROOT</variable>
+                                                </checkbox>
                                         </vbox>
                                         <vbox>
                                                 <hbox>
@@ -736,9 +739,6 @@ lost+found">
                                 </checkbox>
                                 <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check and initramfs building in gentoo">
                                         <variable>RT_GENKERNEL</variable>
-                                </checkbox>
-                                <checkbox label="Dont check root" tooltip-text="Dont check if the target root partition is empty (dangerous)">
-                                        <variable>RT_CHECK_ROOT</variable>
                                 </checkbox>
                                 <checkbox label="Bios" tooltip-text="Ignore UEFI environment">
                                         <variable>RT_BIOS</variable>

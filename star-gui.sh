@@ -444,24 +444,30 @@ lost+found">
                                 </hbox>
                                 <hseparator></hseparator>
                                 <hbox>
-                                        <checkbox space-expand="true" label="Multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
-                                                '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                <variable>BC_MULTICORE</variable>
-                                                '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
-                                                <action>if true enable:BC_THREADS</action>
-                                                <action>if false disable:BC_THREADS</action>
-                                                <action>if true enable:BC_THREADS_TXT</action>
-                                                <action>if false disable:BC_THREADS_TXT</action>
-                                        </checkbox>
-                                        <text space-fill="true" label="Threads:">
-                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                <variable>BC_THREADS_TXT</variable>
-                                        </text>
-                                        <spinbutton range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression (max = 0)">
-                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                <variable>BC_THREADS</variable>
-                                                '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
-                                        </spinbutton>
+                                        <vbox space-expand="true">
+                                                <checkbox label="Multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
+                                                        '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                        <variable>BC_MULTICORE</variable>
+                                                        '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
+                                                        <action>if true enable:BC_THREADS</action>
+                                                        <action>if false disable:BC_THREADS</action>
+                                                        <action>if true enable:BC_THREADS_TXT</action>
+                                                        <action>if false disable:BC_THREADS_TXT</action>
+                                                </checkbox>
+                                        </vbox>
+                                        <vbox space-fill="true">
+                                                <hbox>
+                                                        <text label="Threads:">
+                                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                                <variable>BC_THREADS_TXT</variable>
+                                                        </text>
+                                                        <spinbutton range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression (max = 0)">
+                                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                                <variable>BC_THREADS</variable>
+                                                                '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
+                                                        </spinbutton>
+                                                </hbox>
+                                        </vbox>
                                 </hbox>
                                 <checkbox label="Generate configuration file" tooltip-text="Generate configuration file in case of successful backup">
                                         <variable>BC_GENERATE</variable>

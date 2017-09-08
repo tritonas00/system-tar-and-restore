@@ -726,13 +726,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Print success message, set var for processing partitions
   ok_status() {
     echo -e "\r[${GREEN}SUCCESS${NORM}]"
-    BRCON="y"
+    BRcontinue="y"
   }
 
   # Print failure message, set var for errors
   error_status() {
     echo -e "\r[${RED}FAILURE${NORM}]\n$OUTPUT"
-    BRSTOP="y"
+    BRstop="y"
   }
 
   # Detect backup archive encryption
@@ -987,7 +987,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     OUTPUT="$(mount -o "$BRmountopts" "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
     # Store it's size
     BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
-    if [ -n "$BRSTOP" ]; then
+    if [ -n "$BRstop" ]; then
       rm -r /mnt/target
       print_err "-e [${RED}ERROR${NORM}] Error while mounting partitions" 0
     fi
@@ -1029,8 +1029,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
      # Mount the root btrfs subvolume
       print_msg "-ne ${WRK}Mounting $BRrootsubvol" "Mounting $BRrootsubvol"
       OUTPUT="$(mount -t btrfs -o "$BRmountopts",subvol="$BRrootsubvol" "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
-      if [ -n "$BRSTOP" ]; then
-        unset BRSTOP
+      if [ -n "$BRstop" ]; then
+        unset BRstop
         print_err "-e [${RED}ERROR${NORM}] Error while making subvolumes" 1
       fi
     fi
@@ -1039,7 +1039,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRparts" ]; then
       # Sort target partitions array by their mountpoint so we can mount in order, keep trailing @ if given so we know what to clean
       BRpartsorted=(`for part in "${BRparts[@]}"; do echo "$part"; done | sort -k 1,1 -t =`)
-      unset BRCON
+      unset BRcontinue
       # We read a sorted array with items in the form of mountpoint=partition (e.g /home=/dev/sda2) and we use = as delimiter
       for part in "${BRpartsorted[@]}"; do
         BRpart=$(echo "$part" | cut -f2 -d"=")
@@ -1053,8 +1053,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         OUTPUT="$(mount "${BRpart//@}" /mnt/target"$BRmpoint" 2>&1)" && ok_status || error_status
         # Store sizes
         BRsizes+=(`lsblk -n -b -o size "${BRpart//@}" 2>/dev/null`=/mnt/target"$BRmpoint")
-        if [ -n "$BRCON" ]; then
-          unset BRCON
+        if [ -n "$BRcontinue" ]; then
+          unset BRcontinue
           # Store successfully mounted partitions so we can unmount them later
           BRumountparts+=("$BRmpoint"="${BRpart//@}")
           # Check if partitions are not empty and warn, clean if they end with @
@@ -1069,8 +1069,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           fi
         fi
       done
-      if [ -n "$BRSTOP" ]; then
-        unset BRSTOP
+      if [ -n "$BRstop" ]; then
+        unset BRstop
         print_err "-e [${RED}ERROR${NORM}] Error while mounting partitions" 1
       fi
       # Now trim trailing @ from partitions, we dont need it any more
@@ -1830,7 +1830,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
 
       # If no error occured above and -x is not given clean the target root partition from created mountpoints
-      if [ -z "$BRSTOP" ] && [ -z "$BRdontckroot" ]; then
+      if [ -z "$BRstop" ] && [ -z "$BRdontckroot" ]; then
         rm -r /mnt/target/* 2>/dev/null
       fi
     fi

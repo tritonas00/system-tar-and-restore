@@ -729,7 +729,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     BRcontinue="y"
   }
 
-  # Print failure message, set var for errors
+  # Print failure message, set var for stop processing partitions
   error_status() {
     echo -e "\r[${RED}FAILURE${NORM}]\n$OUTPUT"
     BRstop="y"

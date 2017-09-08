@@ -999,11 +999,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         rm -r /mnt/target/*
         sleep 1
       elif [ -z "$BRdontckroot" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Root partition not empty, refusing to use it"
         print_msg "-ne ${WRK}Unmounting $BRroot" "Unmounting $BRroot"
         sleep 1
         OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && sleep 1 && rm -r /mnt/target) || (error_status && echo -e "[${YELLOW}WARNING${NORM}] /mnt/target remained")
-        exit
+        print_err "-e [${RED}ERROR${NORM}] Root partition not empty, refusing to use it" 0
       else
         # Just warn if -x is given
         echo -e "[${YELLOW}WARNING${NORM}] Root partition not empty"

@@ -546,7 +546,7 @@ lost+found">
                                                 <hbox>
                                                         <vbox space-expand="true" space-fill="true">
                                                                 <hbox>
-                                                                        <text width-request="100" space-expand="false" label="/boot:"></text>
+                                                                        <text width-request="100" space-expand="false" label="Boot:"></text>
                                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
                                                                                 <variable>RT_BOOT</variable>
                                                                                 <input>echo "$RT_BOOT"</input>
@@ -559,7 +559,7 @@ lost+found">
 	                                                                </comboboxtext>
                                                                 </hbox>
                                                                 <hbox>
-                                                                        <text width-request="100" space-expand="false" label="/home:"></text>
+                                                                        <text width-request="100" space-expand="false" label="Home:"></text>
                                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
                                                                                 <variable>RT_HOME</variable>
                                                                                 <input>echo "$RT_HOME"</input>

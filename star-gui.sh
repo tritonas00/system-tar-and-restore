@@ -693,7 +693,7 @@ Default options:
                                                         </entry>
                                                 </hbox>
                                                 <hbox>
-                                                        <text width-request="135" space-expand="false" label="Server:"></text>
+                                                        <text width-request="135" space-expand="false" label="Remote user/pass:"></text>
                                                         <entry tooltip-text="Set ftp/http username">
                                                                 <variable>RS_USERNAME</variable>
                                                         </entry>

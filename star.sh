@@ -721,7 +721,7 @@ if [ "$BRmode" = "0" ]; then
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
-  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRmcore BRthreads BRsrc
+  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRthreads BRsrc
 
   # Print success message, set var for processing partitions
   ok_status() {
@@ -761,6 +761,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRfiletype="gzip compressed"
       BRreadopts="tfz"
       BR_MAIN_OPTS="xvpfz"
+    elif echo "$BRtype" | grep -q -w bzip2 && [ -n $BRmcore ]; then
+      BRfiletype="pbzip2 compressed"
+      BRreadopts="-I pbzip2 -tf"
+      BR_MAIN_OPTS="-I pbzip2 -xvpf"
     elif echo "$BRtype" | grep -q -w bzip2; then
       BRfiletype="bzip2 compressed"
       BRreadopts="tfj"
@@ -1856,7 +1860,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "$BRreadopts" - "${BR_TR_OPTS[@]}" || touch /tmp/error
     # Without encryption
     else
-      tar tf "$BRsource" "${BR_TR_OPTS[@]}" || touch /tmp/error
+      tar ${BRreadopts} "$BRsource" "${BR_TR_OPTS[@]}" || touch /tmp/error
     fi
   }
 

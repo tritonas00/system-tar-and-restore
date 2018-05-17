@@ -497,8 +497,7 @@ if [ "$BRmode" = "0" ]; then
     print_err "-e [${RED}ERROR${NORM}] Wrong encryption method: $BRencmethod. Available options: openssl gpg" 0
   fi
 
-  if [ -n "
-  " ] && [ -z "$BRcompression" ]; then
+  if [ -n "$BRmcore" ] && [ -z "$BRcompression" ]; then
     print_err "-e [${YELLOW}WARNING${NORM}] You must specify compression type" 0
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z "$(which pigz 2>/dev/null)" ]; then
     print_err "-e [${RED}ERROR${NORM}] Package pigz is not installed. Install the package and re-run the script" 0

@@ -477,7 +477,7 @@ if [ "$BRmode" = "0" ]; then
     print_err "-e [${RED}ERROR${NORM}] Directory does not exist: $BRsrc" 0
   fi
 
-  if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ] && [ ! "$BRcompression" = "bzip2" ] && [ ! "$BRcompression" = "none" ]; then
+  if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ] && [ ! "$BRcompression" = "bzip2" ] && [ ! "$BRcompression" = "pixz" ] && [ ! "$BRcompression" = "none" ]; then
     print_err "-e [${RED}ERROR${NORM}] Wrong compression type: $BRcompression. Available options: gzip bzip2 xz none" 0
   fi
 
@@ -549,6 +549,12 @@ if [ "$BRmode" = "0" ]; then
   elif [ "$BRcompression" = "xz" ]; then
     BR_MAIN_OPTS=(cvpJf)
     BR_EXT="tar.xz"
+  elif [ "$BRcompression" = "pixz" ] &&  [ -n "$BRthreads" ]; then
+    BR_MAIN_OPTS=(-c -I "pixz -p$BRthreads" -vpf)
+    BR_EXT="tpxz"
+  elif [ "$BRcompression" = "pixz" ]; then
+    BR_MAIN_OPTS=(-c -I pixz -vpf)
+    BR_EXT="tpxz"
   elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then
     BR_MAIN_OPTS=(-c -I "pbzip2 -p$BRthreads" -vpf)
     BR_EXT="tar.bz2"
@@ -721,7 +727,7 @@ if [ "$BRmode" = "0" ]; then
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
-  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRmcore BRthreads BRsrc
+  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRthreads BRsrc
 
   # Print success message, set var for processing partitions
   ok_status() {
@@ -761,10 +767,18 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRfiletype="gzip compressed"
       BRreadopts="tfz"
       BR_MAIN_OPTS="xvpfz"
+    elif echo "$BRtype" | grep -q -w bzip2 && [ -n $BRmcore ]; then
+      BRfiletype="pbzip2 compressed"
+      BRreadopts="-I pbzip2 -tf"
+      BR_MAIN_OPTS="-I pbzip2 -xvpf"
     elif echo "$BRtype" | grep -q -w bzip2; then
       BRfiletype="bzip2 compressed"
       BRreadopts="tfj"
       BR_MAIN_OPTS="xvpfj"
+    elif echo "$BRtype" | grep -q -w XZ && [ -n $BRmcore ]; then
+      BRfiletype="pixz compressed"
+      BRreadopts="-I pixz -tf"
+      BR_MAIN_OPTS="-I pixz -xvpf"
     elif echo "$BRtype" | grep -q -w XZ; then
       BRfiletype="xz compressed"
       BRreadopts="tfJ"
@@ -1856,7 +1870,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "$BRreadopts" - "${BR_TR_OPTS[@]}" || touch /tmp/error
     # Without encryption
     else
-      tar tf "$BRsource" "${BR_TR_OPTS[@]}" || touch /tmp/error
+      tar ${BRreadopts} "$BRsource" "${BR_TR_OPTS[@]}" || touch /tmp/error
     fi
   }
 

@@ -913,13 +913,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar ${BR_MAIN_OPTS} - "${BR_TR_OPTS[@]}" -C /mnt/target
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar "${BR_MAIN_OPTS[@]}" - "${BR_TR_OPTS[@]}" -C /mnt/target
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar ${BR_MAIN_OPTS} - "${BR_TR_OPTS[@]}" -C /mnt/target
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar "${BR_MAIN_OPTS[@]}" - "${BR_TR_OPTS[@]}" -C /mnt/target
     # Without encryption
     else
-      tar ${BR_MAIN_OPTS} "$BRsource" "${BR_TR_OPTS[@]}" -C /mnt/target
+      tar "${BR_MAIN_OPTS[@]}" "$BRsource" "${BR_TR_OPTS[@]}" -C /mnt/target
     fi
   }
 
@@ -1854,13 +1854,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   read_archive() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar ${BRreadopts[@]} - "${BR_TR_OPTS[@]}" || touch /tmp/error
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar "${BRreadopts[@]}" - "${BR_TR_OPTS[@]}" || touch /tmp/error
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar ${BRreadopts[@]} - "${BR_TR_OPTS[@]}" || touch /tmp/error
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "${BRreadopts[@]}" - "${BR_TR_OPTS[@]}" || touch /tmp/error
     # Without encryption
     else
-      tar ${BRreadopts[@]} "$BRsource" "${BR_TR_OPTS[@]}" || touch /tmp/error
+      tar "${BRreadopts[@]}" "$BRsource" "${BR_TR_OPTS[@]}" || touch /tmp/error
     fi
   }
 

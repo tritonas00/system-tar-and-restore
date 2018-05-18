@@ -760,7 +760,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if echo "$BRtype" | grep -q -w gzip; then
       BRfiletype="gzip compressed"
       BRreadopts=(tfz)
-      BR_MAIN_OPTS=(vpfz)
+      BR_MAIN_OPTS=(xvpfz)
     elif echo "$BRtype" | grep -q -w bzip2 && [ -n "$BRmcore" ]; then
       BRfiletype="pbzip2 compressed"
       BRreadopts=(-I pbzip2 -tf)

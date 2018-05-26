@@ -721,7 +721,7 @@ if [ "$BRmode" = "0" ]; then
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
-  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRmcore BRthreads BRsrc
+  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRthreads BRsrc
 
   # Print success message, set var for processing partitions
   ok_status() {
@@ -759,20 +759,24 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     if echo "$BRtype" | grep -q -w gzip; then
       BRfiletype="gzip compressed"
-      BRreadopts="tfz"
-      BR_MAIN_OPTS="xvpfz"
+      BRreadopts=(tfz)
+      BR_MAIN_OPTS=(xvpfz)
+    elif echo "$BRtype" | grep -q -w bzip2 && [ -n "$BRmcore" ]; then
+      BRfiletype="pbzip2 compressed"
+      BRreadopts=(-I pbzip2 -tf)
+      BR_MAIN_OPTS=(-I pbzip2 -xvpf)
     elif echo "$BRtype" | grep -q -w bzip2; then
       BRfiletype="bzip2 compressed"
-      BRreadopts="tfj"
-      BR_MAIN_OPTS="xvpfj"
+      BRreadopts=(tfj)
+      BR_MAIN_OPTS=(xvpfj)
     elif echo "$BRtype" | grep -q -w XZ; then
       BRfiletype="xz compressed"
-      BRreadopts="tfJ"
-      BR_MAIN_OPTS="xvpfJ"
+      BRreadopts=(tfJ)
+      BR_MAIN_OPTS=(xvpfJ)
     elif echo "$BRtype" | grep -q -w POSIX; then
       BRfiletype="uncompressed"
-      BRreadopts="tf"
-      BR_MAIN_OPTS="xvpf"
+      BRreadopts=(tf)
+      BR_MAIN_OPTS=(xvpf)
     else
       BRfiletype="wrong"
     fi
@@ -909,13 +913,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar ${BR_MAIN_OPTS} - "${BR_TR_OPTS[@]}" -C /mnt/target
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar "${BR_MAIN_OPTS[@]}" - "${BR_TR_OPTS[@]}" -C /mnt/target
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar ${BR_MAIN_OPTS} - "${BR_TR_OPTS[@]}" -C /mnt/target
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar "${BR_MAIN_OPTS[@]}" - "${BR_TR_OPTS[@]}" -C /mnt/target
     # Without encryption
     else
-      tar ${BR_MAIN_OPTS} "$BRsource" "${BR_TR_OPTS[@]}" -C /mnt/target
+      tar "${BR_MAIN_OPTS[@]}" "$BRsource" "${BR_TR_OPTS[@]}" -C /mnt/target
     fi
   }
 
@@ -1850,13 +1854,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   read_archive() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar "$BRreadopts" - "${BR_TR_OPTS[@]}" || touch /tmp/error
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar "${BRreadopts[@]}" - "${BR_TR_OPTS[@]}" || touch /tmp/error
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "$BRreadopts" - "${BR_TR_OPTS[@]}" || touch /tmp/error
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "${BRreadopts[@]}" - "${BR_TR_OPTS[@]}" || touch /tmp/error
     # Without encryption
     else
-      tar tf "$BRsource" "${BR_TR_OPTS[@]}" || touch /tmp/error
+      tar "${BRreadopts[@]}" "$BRsource" "${BR_TR_OPTS[@]}" || touch /tmp/error
     fi
   }
 

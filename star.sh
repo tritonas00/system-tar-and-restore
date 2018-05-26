@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 6.8"
+BR_VERSION="System Tar & Restore 6.9"
 
 # Set EFI detection directory
 BR_EFI_DIR="/sys/firmware/efi"

@@ -763,8 +763,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BR_MAIN_OPTS=(xvpfz)
     elif echo "$BRtype" | grep -q -w bzip2 && [ -n "$BRmcore" ]; then
       BRfiletype="pbzip2 compressed"
-      BRreadopts=(-I pbzip2 -tf)
-      BR_MAIN_OPTS=(-I pbzip2 -xvpf)
+      BRreadopts=(-I "pbzip2 --ignore-trailing-garbage=1" -tf)
+      BR_MAIN_OPTS=(-I "pbzip2 --ignore-trailing-garbage=1" -xvpf)
     elif echo "$BRtype" | grep -q -w bzip2; then
       BRfiletype="bzip2 compressed"
       BRreadopts=(tfj)

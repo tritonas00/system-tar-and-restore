@@ -375,6 +375,13 @@ if [ -n "$_BRonlyhidden" ] && [ -n "$BRnohome" ]; then unset BRnohome; fi
 if [ -n "$_BRthreads" ]; then BRthreads="$_BRthreads"; fi
 if [ -n "$_BRsrc" ]; then BRsrc="$_BRsrc"; fi
 
+# Set default multi-core threads for Backup and Restore mode, check user input
+if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcore" ]; then
+  if [ -z "$BRthreads" ] || [ "$BRthreads" -lt "1" ] || [ "$BRthreads" -gt "$(nproc --all)" ]; then
+    BRthreads="$(nproc --all)"
+  fi
+fi
+
 # Add tar/rsync user options to the main array, replace any // with space, add only options starting with -
 for opt in $BR_USER_OPTS; do
   if [[ "$opt" == -* ]]; then
@@ -505,8 +512,6 @@ if [ "$BRmode" = "0" ]; then
     print_err "-e [${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script" 0
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "xz" ] && [ -z "$(which pxz 2>/dev/null)" ]; then
     print_err "-e [${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script" 0
-  elif [ -n "$BRmcore" ] && [ -n "$BRthreads" ] && [ "$BRthreads" -gt "$(nproc --all)" ]; then
-    print_err "-e [${RED}ERROR${NORM}] Maximum number of processing units: $(nproc --all)" 0
   fi
 
   if [ -n "$BRwrap" ] && [ -z "$BRFOLDER" ]; then
@@ -527,36 +532,24 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Set tar compression options and backup file extension
-  if [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then
+  if [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ]; then
     BR_MAIN_OPTS=(-c -I "pigz -p$BRthreads" -vpf)
     BR_EXT="tar.gz"
     mcinfo="(pigz $BRthreads threads)"
-  elif [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ]; then
-    BR_MAIN_OPTS=(-c -I pigz -vpf)
-    BR_EXT="tar.gz"
-    mcinfo="(pigz)"
   elif [ "$BRcompression" = "gzip" ]; then
     BR_MAIN_OPTS=(cvpzf)
     BR_EXT="tar.gz"
-  elif [ "$BRcompression" = "xz" ] && [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then
+  elif [ "$BRcompression" = "xz" ] && [ -n "$BRmcore" ]; then
     BR_MAIN_OPTS=(-c -I "pxz -T$BRthreads" -vpf)
     BR_EXT="tar.xz"
     mcinfo="(pxz $BRthreads threads)"
-  elif [ "$BRcompression" = "xz" ] && [ -n "$BRmcore" ]; then
-    BR_MAIN_OPTS=(-c -I pxz -vpf)
-    BR_EXT="tar.xz"
-    mcinfo="(pxz)"
   elif [ "$BRcompression" = "xz" ]; then
     BR_MAIN_OPTS=(cvpJf)
     BR_EXT="tar.xz"
-  elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then
+  elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcore" ]; then
     BR_MAIN_OPTS=(-c -I "pbzip2 -p$BRthreads" -vpf)
     BR_EXT="tar.bz2"
     mcinfo="(pbzip2 $BRthreads threads)"
-  elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcore" ]; then
-    BR_MAIN_OPTS=(-c -I pbzip2 -vpf)
-    BR_EXT="tar.bz2"
-    mcinfo="(pbzip2)"
   elif [ "$BRcompression" = "bzip2" ]; then
     BR_MAIN_OPTS=(cvpjf)
     BR_EXT="tar.bz2"
@@ -721,7 +714,7 @@ if [ "$BRmode" = "0" ]; then
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
-  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRthreads BRsrc
+  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRsrc
 
   # Print success message, set var for processing partitions
   ok_status() {
@@ -762,9 +755,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRreadopts=(tfz)
       BR_MAIN_OPTS=(xvpfz)
     elif echo "$BRtype" | grep -q -w bzip2 && [ -n "$BRmcore" ]; then
-      BRfiletype="pbzip2 compressed"
-      BRreadopts=(-I "pbzip2 --ignore-trailing-garbage=1" -tf)
-      BR_MAIN_OPTS=(-I "pbzip2 --ignore-trailing-garbage=1" -xvpf)
+      BRfiletype="bzip2 compressed"
+      mcinfo="(pbzip2 $BRthreads threads)"
+      BRreadopts=(-I "pbzip2 --ignore-trailing-garbage=1 -p$BRthreads" -tf)
+      BR_MAIN_OPTS=(-I "pbzip2 --ignore-trailing-garbage=1 -p$BRthreads" -xvpf)
     elif echo "$BRtype" | grep -q -w bzip2; then
       BRfiletype="bzip2 compressed"
       BRreadopts=(tfj)
@@ -1152,9 +1146,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ "$BRmode" = "1" ]; then
       echo "Mode:    Restore"
       if [ -n "$BRencmethod" ]; then
-        enc_info="$BRencmethod encrypted"
+        echo "Archive: $BRfiletype $BRencmethod encrypted $mcinfo"
+      else
+        echo "Archive: $BRfiletype $mcinfo"
       fi
-      echo "Archive: $BRfiletype $enc_info"
     elif [ "$BRmode" = "2" ]; then
       echo "Mode:    Transfer"
       if [ -n "$BRonlyhidden" ]; then
@@ -1939,6 +1934,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       detect_filetype
       if [ "$BRfiletype" = "wrong" ]; then
         print_err "-e [${RED}ERROR${NORM}] Invalid file type or wrong passphrase" 0
+      elif [ -n "$BRmcore" ] && [ "$BRfiletype" = "bzip2 compressed" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
+        print_err "-e [${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script" 0
       fi
     fi
     if [ -n "$BRuri" ] && [[ ! "$BRuri" == /* ]] && [ -z "$(which wget 2>/dev/null)" ]; then
@@ -2134,6 +2131,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         detect_filetype
         if [ "$BRfiletype" = "wrong" ]; then
           print_err "-e [${RED}ERROR${NORM}] Invalid file type or wrong passphrase" 1
+        elif [ -n "$BRmcore" ] && [ "$BRfiletype" = "bzip2 compressed" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
+          print_err "-e [${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script" 1
         fi
       fi
     fi

@@ -76,6 +76,12 @@ else
   export BC_ENCRYPTION="none"
 fi
 
+if [ -n "$BRthreads" ]; then
+  export BC_THREADS="$BRthreads"
+else
+  BC_THREADS="$(nproc --all)"
+fi
+
 # Set user tar options if given from configuration file, separate entries
 if [ -n "$BR_USER_OPTS" ]; then
   for opt in $BR_USER_OPTS; do
@@ -122,10 +128,7 @@ set_args() {
     fi
 
     if [ "$BC_MULTICORE" = "true" ] && [ ! "$BC_COMPRESSION" = "none" ]; then
-      SCR_ARGS+=(-M)
-      if [ ! "$BC_THREADS" = "0" ]; then
-        SCR_ARGS+=(-z "$BC_THREADS")
-      fi
+      SCR_ARGS+=(-M -z "$BC_THREADS")
     fi
 
     if [ "$BC_GENERATE" = "true" ]; then
@@ -461,9 +464,10 @@ lost+found">
                                                                 '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                                 <variable>BC_THREADS_TXT</variable>
                                                         </text>
-                                                        <spinbutton range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression (max = 0)">
+                                                        <spinbutton range-min="1" range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression">
                                                                 '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                                 <variable>BC_THREADS</variable>
+                                                                <default>'"$BC_THREADS"'</default>
                                                                 '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
                                                         </spinbutton>
                                                 </hbox>

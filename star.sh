@@ -295,6 +295,8 @@ Restore / Transfer Mode:
     -y,  --username           Ftp/http username
     -p,  --password           Ftp/http password
     -P,  --passphrase         Passphrase for decryption
+    -M,  --multi-core         Enable multi-core decompression (via pbzip2)
+    -z,  --threads            Specify the number of threads for multi-core decompression
 
   Transfer Mode:
     -O,  --only-hidden        Transfer /home's hidden files and folders only

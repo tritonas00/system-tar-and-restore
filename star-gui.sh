@@ -167,6 +167,11 @@ set_args() {
       if [ -n "$RS_PASSWORD" ]; then
         SCR_ARGS+=(-p "$RS_PASSWORD")
       fi
+
+      if [ "$RS_MULTICORE" = "true" ]; then
+        SCR_ARGS+=(-M -z "$RS_THREADS")
+      fi
+
     # Transfer mode arguments
     elif [ "$RT_TAB" = "1" ]; then
       SCR_ARGS=(-i 2 -jwq)
@@ -292,7 +297,7 @@ export RT_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 export RT_ROOT="$(echo "$RT_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
-<window icon-name="gtk-preferences" height-request="645" width-request="525">
+<window icon-name="gtk-preferences" height-request="655" width-request="525">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_pid</input>
@@ -704,6 +709,28 @@ Default options:
                                                         <entry tooltip-text="Set ftp/http password" visibility="false">
                                                                 <variable>RS_PASSWORD</variable>
                                                         </entry>
+                                                </hbox>
+                                                <hbox>
+                                                        <vbox space-expand="true">
+                                                                <checkbox label="Multi-core decompression" tooltip-text="Enable multi-core decompression via pbzip2">
+                                                                        <variable>RS_MULTICORE</variable>
+                                                                        <action>if true enable:RS_THREADS</action>
+                                                                        <action>if false disable:RS_THREADS</action>
+                                                                        <action>if true enable:RS_THREADS_TXT</action>
+                                                                        <action>if false disable:RS_THREADS_TXT</action>
+                                                                </checkbox>
+                                                        </vbox>
+                                                        <vbox space-fill="true">
+                                                                <hbox>
+                                                                        <text label="Threads:" sensitive="false">
+                                                                                <variable>RS_THREADS_TXT</variable>
+                                                                        </text>
+                                                                        <spinbutton range-min="1" range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core decompression" sensitive="false">
+                                                                                <variable>RS_THREADS</variable>
+                                                                                <default>"'"$(nproc --all)"'"</default>
+                                                                        </spinbutton>
+                                                                </hbox>
+                                                        </vbox>
                                                 </hbox>
                                         </vbox>
                                         <vbox>

@@ -223,7 +223,10 @@ set_args() {
       SCR_ARGS+=(-s "${RT_SWAP%% *}")
     fi
 
-    if [ -n "$RT_OTHER_PARTS" ]; then
+    if [ -n "$RT_OTHER_PARTS" ] && [ "$RT_OTHER_CLEAN" = "true" ]; then
+      for p in $RT_OTHER_PARTS; do RT_OTHER_PART="$RT_OTHER_PART $p@"; done
+      SCR_ARGS+=(-t "$RT_OTHER_PART")
+    elif [ -n "$RT_OTHER_PARTS" ]; then
       SCR_ARGS+=(-t "$RT_OTHER_PARTS")
     fi
 
@@ -297,7 +300,7 @@ export RT_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 export RT_ROOT="$(echo "$RT_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
-<window icon-name="gtk-preferences" height-request="655" width-request="525">
+<window icon-name="gtk-preferences" height-request="675" width-request="525">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_pid</input>
@@ -539,15 +542,12 @@ lost+found">
                                                                                 <variable>RT_OTHER_SUBVOLS</variable>
                                                                         </entry>
                                                                 </hbox>
-                                                        </vbox>
-                                                        <vseparator></vseparator>
-                                                        <vbox>
-                                                                <checkbox height-request="30" label="Clean" tooltip-text="Clean the target root partition if it is not empty">
+                                                                <checkbox label="Clean" tooltip-text="Clean the target root partition if it is not empty">
                                                                         <variable>RT_ROOT_CLEAN</variable>
                                                                 </checkbox>
                                                         </vbox>
                                                 </hbox>
-                                                <checkbox height-request="30" label="Dont check if empty" tooltip-text="Dont check if the target root partition is empty (dangerous)">
+                                                <checkbox label="Not empty" tooltip-text="Dont check if the target root partition is empty (dangerous)">
                                                         <variable>RT_CHECK_ROOT</variable>
                                                 </checkbox>
                                         </vbox>
@@ -566,6 +566,9 @@ lost+found">
                                                                                 <action>refresh:RT_HOME</action>
                                                                                 <action>refresh:RT_SWAP</action>
 	                                                                </comboboxtext>
+                                                                        <checkbox label="Clean" tooltip-text="Clean the target /boot partition if it is not empty">
+                                                                                <variable>RT_BOOT_CLEAN</variable>
+                                                                        </checkbox>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="100" space-expand="false" label="Home:"></text>
@@ -579,6 +582,9 @@ lost+found">
                                                                                 <action>refresh:RT_BOOT</action>
                                                                                 <action>refresh:RT_SWAP</action>
                                                                         </comboboxtext>
+                                                                        <checkbox label="Clean" tooltip-text="Clean the target /home partition if it is not empty">
+                                                                                <variable>RT_HOME_CLEAN</variable>
+                                                                        </checkbox>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="100" space-expand="false" label="Esp:"></text>
@@ -597,6 +603,9 @@ lost+found">
                                                                                 <item>/boot/efi</item>
                                                                                 <item>/boot</item>
                                                                         </comboboxtext>
+                                                                        <checkbox label="Clean" tooltip-text="Clean the target esp partition if it is not empty">
+                                                                                <variable>RT_ESP_CLEAN</variable>
+                                                                        </checkbox>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="100" space-expand="false" label="Swap:"></text>
@@ -610,6 +619,7 @@ lost+found">
                                                                                 <action>refresh:RT_BOOT</action>
                                                                                 <action>refresh:RT_HOME</action>
 	                                                                </comboboxtext>
+                                                                        <checkbox label="Clean" sensitive="false"></checkbox>
                                                                 </hbox>
                                                                 <hbox>
                                                                         <text width-request="100" space-expand="false" label="Other:"></text>
@@ -620,19 +630,10 @@ e.g /var=/dev/sda3 or /var=/dev/sda3@ if it is not empty and you want to clean i
 If you want spaces in mountpoints replace them with //">
                                                                                 <variable>RT_OTHER_PARTS</variable>
                                                                         </entry>
+                                                                        <checkbox label="Clean" tooltip-text="Clean partitions if they are not empty">
+                                                                                <variable>RT_OTHER_CLEAN</variable>
+                                                                        </checkbox>
                                                                 </hbox>
-                                                        </vbox>
-                                                        <vseparator></vseparator>
-                                                        <vbox>
-                                                                <checkbox height-request="30" label="Clean" tooltip-text="Clean the target /boot partition if it is not empty">
-                                                                        <variable>RT_BOOT_CLEAN</variable>
-                                                                </checkbox>
-                                                                <checkbox height-request="30" label="Clean" tooltip-text="Clean the target /home partition if it is not empty">
-                                                                        <variable>RT_HOME_CLEAN</variable>
-                                                                </checkbox>
-                                                                <checkbox height-request="30" label="Clean" tooltip-text="Clean the target esp partition if it is not empty">
-                                                                        <variable>RT_ESP_CLEAN</variable>
-                                                                </checkbox>
                                                         </vbox>
                                                 </hbox>
                                         </vbox>

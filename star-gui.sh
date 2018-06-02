@@ -511,130 +511,122 @@ lost+found">
                                 <notebook labels="Root Partition|More Partitions|Bootloader">
                                         <vbox>
                                                 <hbox>
-                                                        <vbox space-expand="true" space-fill="true">
-                                                                <hbox>
-                                                                        <text width-request="100" space-expand="false" label="Root:"></text>
-		                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
-	                                                                        <variable>RT_ROOT</variable>
-                                                                                <input>echo "$RT_ROOT"</input>
-	                                                                        <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
-                                                                                <action>refresh:RT_ESP</action>
-                                                                                <action>refresh:RT_BOOT</action>
-                                                                                <action>refresh:RT_HOME</action>
-                                                                                <action>refresh:RT_SWAP</action>
-			                                                </comboboxtext>
-                                                                </hbox>
-                                                                <hbox>
-                                                                        <text width-request="100" space-expand="false" label="Options:"></text>
-                                                                        <entry tooltip-text="Set comma-separated list of mount options. Default options: defaults,noatime">
-                                                                                <variable>RT_ROOT_OPTIONS</variable>
-                                                                        </entry>
-                                                                </hbox>
-                                                                <hbox>
-                                                                        <text width-request="100" space-expand="false" label="Btrfs root:"></text>
-                                                                        <entry tooltip-text="(Optional-Btrfs only) Set root subvolume name">
-                                                                                <variable>RT_ROOT_SUBVOL</variable>
-                                                                        </entry>
-                                                                </hbox>
-                                                                <hbox>
-                                                                        <text width-request="100" space-expand="false" label="Subvolumes:"></text>
-                                                                        <entry tooltip-text="(Optional-Btrfs only) Set other subvolumes (path e.g /home /var /usr ...)">
-                                                                                <variable>RT_OTHER_SUBVOLS</variable>
-                                                                        </entry>
-                                                                </hbox>
-                                                                <checkbox label="Clean" tooltip-text="Clean the target root partition if it is not empty">
-                                                                        <variable>RT_ROOT_CLEAN</variable>
-                                                                </checkbox>
-                                                        </vbox>
+                                                        <text width-request="100" space-expand="false" label="Root:"></text>
+		                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select target root partition">
+	                                                        <variable>RT_ROOT</variable>
+                                                                <input>echo "$RT_ROOT"</input>
+	                                                        <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
+                                                                <action>refresh:RT_ESP</action>
+                                                                <action>refresh:RT_BOOT</action>
+                                                                <action>refresh:RT_HOME</action>
+                                                                <action>refresh:RT_SWAP</action>
+		                                        </comboboxtext>
                                                 </hbox>
+                                                <hbox>
+                                                        <text width-request="100" space-expand="false" label="Options:"></text>
+                                                        <entry tooltip-text="Set comma-separated list of mount options. Default options: defaults,noatime">
+                                                                <variable>RT_ROOT_OPTIONS</variable>
+                                                        </entry>
+                                                </hbox>
+                                                <hbox>
+                                                        <text width-request="100" space-expand="false" label="Btrfs root:"></text>
+                                                        <entry tooltip-text="(Optional-Btrfs only) Set root subvolume name">
+                                                                <variable>RT_ROOT_SUBVOL</variable>
+                                                        </entry>
+                                                </hbox>
+                                                <hbox>
+                                                        <text width-request="100" space-expand="false" label="Subvolumes:"></text>
+                                                        <entry tooltip-text="(Optional-Btrfs only) Set other subvolumes (path e.g /home /var /usr ...)">
+                                                                <variable>RT_OTHER_SUBVOLS</variable>
+                                                        </entry>
+                                                </hbox>
+                                                <checkbox label="Clean" tooltip-text="Clean the target root partition if it is not empty">
+                                                        <variable>RT_ROOT_CLEAN</variable>
+                                                </checkbox>
                                                 <checkbox label="Not empty" tooltip-text="Dont check if the target root partition is empty (dangerous)">
                                                         <variable>RT_CHECK_ROOT</variable>
                                                 </checkbox>
                                         </vbox>
                                         <vbox>
                                                 <hbox>
-                                                        <vbox space-expand="true" space-fill="true">
-                                                                <hbox>
-                                                                        <text width-request="100" space-expand="false" label="Boot:"></text>
-                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
-                                                                                <variable>RT_BOOT</variable>
-                                                                                <input>echo "$RT_BOOT"</input>
-                                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
-                                                                                <input>if [ -n "$RT_BOOT" ]; then echo ""; fi</input>
-                                                                                <action>refresh:RT_ROOT</action>
-                                                                                <action>refresh:RT_ESP</action>
-                                                                                <action>refresh:RT_HOME</action>
-                                                                                <action>refresh:RT_SWAP</action>
-	                                                                </comboboxtext>
-                                                                        <checkbox label="Clean" tooltip-text="Clean the target /boot partition if it is not empty">
-                                                                                <variable>RT_BOOT_CLEAN</variable>
-                                                                        </checkbox>
-                                                                </hbox>
-                                                                <hbox>
-                                                                        <text width-request="100" space-expand="false" label="Home:"></text>
-                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
-                                                                                <variable>RT_HOME</variable>
-                                                                                <input>echo "$RT_HOME"</input>
-                                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
-                                                                                <input>if [ -n "$RT_HOME" ]; then echo ""; fi</input>
-                                                                                <action>refresh:RT_ROOT</action>
-                                                                                <action>refresh:RT_ESP</action>
-                                                                                <action>refresh:RT_BOOT</action>
-                                                                                <action>refresh:RT_SWAP</action>
-                                                                        </comboboxtext>
-                                                                        <checkbox label="Clean" tooltip-text="Clean the target /home partition if it is not empty">
-                                                                                <variable>RT_HOME_CLEAN</variable>
-                                                                        </checkbox>
-                                                                </hbox>
-                                                                <hbox>
-                                                                        <text width-request="100" space-expand="false" label="Esp:"></text>
-                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
-                                                                                <variable>RT_ESP</variable>
-                                                                                <input>echo "$RT_ESP"</input>
-                                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
-                                                                                <input>if [ -n "$RT_ESP" ]; then echo ""; fi</input>
-                                                                                <action>refresh:RT_ROOT</action>
-                                                                                <action>refresh:RT_BOOT</action>
-                                                                                <action>refresh:RT_HOME</action>
-                                                                                <action>refresh:RT_SWAP</action>
-	                                                                </comboboxtext>
-                                                                        <comboboxtext space-expand="false" space-fill="true" tooltip-text="Select mountpoint">
-                                                                                <variable>RT_ESP_MOUNTPOINT</variable>
-                                                                                <item>/boot/efi</item>
-                                                                                <item>/boot</item>
-                                                                        </comboboxtext>
-                                                                        <checkbox label="Clean" tooltip-text="Clean the target esp partition if it is not empty">
-                                                                                <variable>RT_ESP_CLEAN</variable>
-                                                                        </checkbox>
-                                                                </hbox>
-                                                                <hbox>
-                                                                        <text width-request="100" space-expand="false" label="Swap:"></text>
-                                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
-                                                                                <variable>RT_SWAP</variable>
-                                                                                <input>echo "$RT_SWAP"</input>
-                                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
-                                                                                <input>if [ -n "$RT_SWAP" ]; then echo ""; fi</input>
-                                                                                <action>refresh:RT_ROOT</action>
-                                                                                <action>refresh:RT_ESP</action>
-                                                                                <action>refresh:RT_BOOT</action>
-                                                                                <action>refresh:RT_HOME</action>
-	                                                                </comboboxtext>
-                                                                        <checkbox label="Clean" sensitive="false"></checkbox>
-                                                                </hbox>
-                                                                <hbox>
-                                                                        <text width-request="100" space-expand="false" label="Other:"></text>
-                                                                        <entry tooltip-text="Set other partitions. Syntax is mountpoint=partition
+                                                        <text width-request="100" space-expand="false" label="Boot:"></text>
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /boot partition">
+                                                                        <variable>RT_BOOT</variable>
+                                                                        <input>echo "$RT_BOOT"</input>
+                                                                        <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
+                                                                        <input>if [ -n "$RT_BOOT" ]; then echo ""; fi</input>
+                                                                        <action>refresh:RT_ROOT</action>
+                                                                        <action>refresh:RT_ESP</action>
+                                                                        <action>refresh:RT_HOME</action>
+                                                                        <action>refresh:RT_SWAP</action>
+	                                                </comboboxtext>
+                                                        <checkbox label="Clean" tooltip-text="Clean the target /boot partition if it is not empty">
+                                                                <variable>RT_BOOT_CLEAN</variable>
+                                                        </checkbox>
+                                                </hbox>
+                                                <hbox>
+                                                        <text width-request="100" space-expand="false" label="Home:"></text>
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target /home partition">
+                                                                <variable>RT_HOME</variable>
+                                                                <input>echo "$RT_HOME"</input>
+                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
+                                                                <input>if [ -n "$RT_HOME" ]; then echo ""; fi</input>
+                                                                <action>refresh:RT_ROOT</action>
+                                                                <action>refresh:RT_ESP</action>
+                                                                <action>refresh:RT_BOOT</action>
+                                                                <action>refresh:RT_SWAP</action>
+                                                        </comboboxtext>
+                                                        <checkbox label="Clean" tooltip-text="Clean the target /home partition if it is not empty">
+                                                                <variable>RT_HOME_CLEAN</variable>
+                                                        </checkbox>
+                                                </hbox>
+                                                <hbox>
+                                                        <text width-request="100" space-expand="false" label="Esp:"></text>
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
+                                                                <variable>RT_ESP</variable>
+                                                                <input>echo "$RT_ESP"</input>
+                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
+                                                                <input>if [ -n "$RT_ESP" ]; then echo ""; fi</input>
+                                                                <action>refresh:RT_ROOT</action>
+                                                                <action>refresh:RT_BOOT</action>
+                                                                <action>refresh:RT_HOME</action>
+                                                                <action>refresh:RT_SWAP</action>
+	                                                </comboboxtext>
+                                                        <comboboxtext space-expand="false" space-fill="true" tooltip-text="Select mountpoint">
+                                                                <variable>RT_ESP_MOUNTPOINT</variable>
+                                                                <item>/boot/efi</item>
+                                                                <item>/boot</item>
+                                                        </comboboxtext>
+                                                        <checkbox label="Clean" tooltip-text="Clean the target esp partition if it is not empty">
+                                                                <variable>RT_ESP_CLEAN</variable>
+                                                        </checkbox>
+                                                </hbox>
+                                                <hbox>
+                                                        <text width-request="100" space-expand="false" label="Swap:"></text>
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
+                                                                <variable>RT_SWAP</variable>
+                                                                <input>echo "$RT_SWAP"</input>
+                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
+                                                                <input>if [ -n "$RT_SWAP" ]; then echo ""; fi</input>
+                                                                <action>refresh:RT_ROOT</action>
+                                                                <action>refresh:RT_ESP</action>
+                                                                <action>refresh:RT_BOOT</action>
+                                                                <action>refresh:RT_HOME</action>
+	                                                </comboboxtext>
+                                                        <checkbox label="Clean" sensitive="false"></checkbox>
+                                                </hbox>
+                                                <hbox>
+                                                        <text width-request="100" space-expand="false" label="Other:"></text>
+                                                        <entry tooltip-text="Set other partitions. Syntax is mountpoint=partition
 
 e.g /var=/dev/sda3 or /var=/dev/sda3@ if it is not empty and you want to clean it.
 
 If you want spaces in mountpoints replace them with //">
-                                                                                <variable>RT_OTHER_PARTS</variable>
-                                                                        </entry>
-                                                                        <checkbox label="Clean" tooltip-text="Clean partitions if they are not empty">
-                                                                                <variable>RT_OTHER_CLEAN</variable>
-                                                                        </checkbox>
-                                                                </hbox>
-                                                        </vbox>
+                                                                <variable>RT_OTHER_PARTS</variable>
+                                                        </entry>
+                                                        <checkbox label="Clean" tooltip-text="Clean partitions if they are not empty">
+                                                                <variable>RT_OTHER_CLEAN</variable>
+                                                        </checkbox>
                                                 </hbox>
                                         </vbox>
                                         <vbox>

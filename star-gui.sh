@@ -583,6 +583,20 @@ lost+found">
                                                         </checkbox>
                                                 </hbox>
                                                 <hbox>
+                                                        <text width-request="100" space-expand="false" label="Swap:"></text>
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
+                                                                <variable>RT_SWAP</variable>
+                                                                <input>echo "$RT_SWAP"</input>
+                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
+                                                                <input>if [ -n "$RT_SWAP" ]; then echo ""; fi</input>
+                                                                <action>refresh:RT_ROOT</action>
+                                                                <action>refresh:RT_ESP</action>
+                                                                <action>refresh:RT_BOOT</action>
+                                                                <action>refresh:RT_HOME</action>
+	                                                </comboboxtext>
+                                                        <checkbox label="Clean" sensitive="false"></checkbox>
+                                                </hbox>
+                                                <hbox>
                                                         <text width-request="100" space-expand="false" label="Esp:"></text>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional-UEFI only) Select target EFI System Partition">
                                                                 <variable>RT_ESP</variable>
@@ -602,20 +616,6 @@ lost+found">
                                                         <checkbox label="Clean" tooltip-text="Clean the target esp partition if it is not empty">
                                                                 <variable>RT_ESP_CLEAN</variable>
                                                         </checkbox>
-                                                </hbox>
-                                                <hbox>
-                                                        <text width-request="100" space-expand="false" label="Swap:"></text>
-                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="(Optional) Select target swap partition">
-                                                                <variable>RT_SWAP</variable>
-                                                                <input>echo "$RT_SWAP"</input>
-                                                                <input>echo "$RT_PARTS" | grep -vw -e "/${RT_ROOT#*/}" -e "/${RT_ESP#*/}" -e "/${RT_BOOT#*/}" -e "/${RT_HOME#*/}" -e "/${RT_SWAP#*/}"</input>
-                                                                <input>if [ -n "$RT_SWAP" ]; then echo ""; fi</input>
-                                                                <action>refresh:RT_ROOT</action>
-                                                                <action>refresh:RT_ESP</action>
-                                                                <action>refresh:RT_BOOT</action>
-                                                                <action>refresh:RT_HOME</action>
-	                                                </comboboxtext>
-                                                        <checkbox label="Clean" sensitive="false"></checkbox>
                                                 </hbox>
                                                 <hbox>
                                                         <text width-request="100" space-expand="false" label="Other:"></text>

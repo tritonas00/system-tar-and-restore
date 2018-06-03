@@ -300,7 +300,7 @@ export RT_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 export RT_ROOT="$(echo "$RT_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
-<window icon-name="gtk-preferences" height-request="675" width-request="525">
+<window icon-name="gtk-preferences" height-request="655" width-request="525">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_pid</input>
@@ -540,12 +540,14 @@ lost+found">
                                                                 <variable>RT_OTHER_SUBVOLS</variable>
                                                         </entry>
                                                 </hbox>
-                                                <checkbox label="Clean" tooltip-text="Clean the target root partition if it is not empty">
-                                                        <variable>RT_ROOT_CLEAN</variable>
-                                                </checkbox>
-                                                <checkbox label="Not empty" tooltip-text="Dont check if the target root partition is empty (dangerous)">
-                                                        <variable>RT_CHECK_ROOT</variable>
-                                                </checkbox>
+                                                <hbox>
+                                                        <checkbox space-expand="false" label="Allow non-empty" tooltip-text="Dont check if the target root partition is empty (dangerous)">
+                                                                <variable>RT_CHECK_ROOT</variable>
+                                                        </checkbox>
+                                                        <checkbox space-expand="true" space-fill="true" label="Clean" tooltip-text="Clean the target root partition if it is not empty">
+                                                                <variable>RT_ROOT_CLEAN</variable>
+                                                        </checkbox>
+                                                </hbox>
                                         </vbox>
                                         <vbox>
                                                 <hbox>

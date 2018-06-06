@@ -300,7 +300,7 @@ export RT_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 export RT_ROOT="$(echo "$RT_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
-<window icon-name="gtk-preferences" height-request="655" width-request="525">
+<window icon-name="gtk-preferences" height-request="645" width-request="525">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_pid</input>
@@ -376,16 +376,6 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                         </button>
                                 </hbox>
                                 <hbox>
-                                        <text width-request="135" space-expand="false" label="Home directory:"></text>
-                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
-                                                <variable>BC_HOME</variable>
-                                                <default>'"$BC_HOME"'</default>
-                                                <item>Include</item>
-                                                <item>Only hidden files and folders</item>
-                                                <item>Exclude</item>
-                                        </comboboxtext>
-                                </hbox>
-                                <hbox>
                                         <text width-request="135" space-expand="false" label="Compression:"></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
                                                 <variable>BC_COMPRESSION</variable>
@@ -398,9 +388,20 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && echo true)">enable:BC_MULTICORE</action>
                                                 <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_THREADS</action>
                                                 <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && [ $BC_MULTICORE = true ] && echo true)">enable:BC_THREADS</action>
-                                                <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_THREADS_TXT</action>
-                                                <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && [ $BC_MULTICORE = true ] && echo true)">enable:BC_THREADS_TXT</action>
                                         </comboboxtext>
+                                        <togglebutton label="Multi-Core" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
+                                                '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                <variable>BC_MULTICORE</variable>
+                                                '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
+                                                <action>if true enable:BC_THREADS</action>
+                                                <action>if false disable:BC_THREADS</action>
+                                        </togglebutton>
+                                        <spinbutton range-min="1" range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression">
+                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                <variable>BC_THREADS</variable>
+                                                <default>'"$BC_THREADS"'</default>
+                                                '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
+                                        </spinbutton>
                                 </hbox>
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Encryption:"></text>
@@ -421,6 +422,16 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 <variable>BC_PASSPHRASE</variable>
                                                 '"$(if [ -n "$BRencpass" ]; then echo "<default>$BRencpass</default>"; fi)"'
                                         </entry>
+                                </hbox>
+                                <hbox>
+                                        <text width-request="135" space-expand="false" label="Home directory:"></text>
+                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
+                                                <variable>BC_HOME</variable>
+                                                <default>'"$BC_HOME"'</default>
+                                                <item>Include</item>
+                                                <item>Only hidden files and folders</item>
+                                                <item>Exclude</item>
+                                        </comboboxtext>
                                 </hbox>
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Additional options:"></text>
@@ -454,33 +465,6 @@ lost+found">
                                         </entry>
                                 </hbox>
                                 <hseparator></hseparator>
-                                <hbox>
-                                        <vbox space-expand="true">
-                                                <checkbox label="Multi-core compression" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
-                                                        '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                        <variable>BC_MULTICORE</variable>
-                                                        '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
-                                                        <action>if true enable:BC_THREADS</action>
-                                                        <action>if false disable:BC_THREADS</action>
-                                                        <action>if true enable:BC_THREADS_TXT</action>
-                                                        <action>if false disable:BC_THREADS_TXT</action>
-                                                </checkbox>
-                                        </vbox>
-                                        <vbox space-fill="true">
-                                                <hbox>
-                                                        <text label="Threads:">
-                                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                                <variable>BC_THREADS_TXT</variable>
-                                                        </text>
-                                                        <spinbutton range-min="1" range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression">
-                                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                                <variable>BC_THREADS</variable>
-                                                                <default>'"$BC_THREADS"'</default>
-                                                                '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
-                                                        </spinbutton>
-                                                </hbox>
-                                        </vbox>
-                                </hbox>
                                 <checkbox label="Generate configuration file" tooltip-text="Generate configuration file in case of successful backup">
                                         <variable>BC_GENERATE</variable>
                                 </checkbox>
@@ -521,6 +505,12 @@ lost+found">
                                                                 <action>refresh:RT_HOME</action>
                                                                 <action>refresh:RT_SWAP</action>
 		                                        </comboboxtext>
+                                                        <togglebutton label="Clean" tooltip-text="Clean the target root partition if it is not empty">
+                                                                <variable>RT_ROOT_CLEAN</variable>
+                                                        </togglebutton>
+                                                        <togglebutton label="Non-Empty" tooltip-text="Allow non-empty target root partition (dangerous)">
+                                                                <variable>RT_CHECK_ROOT</variable>
+                                                        </togglebutton>
                                                 </hbox>
                                                 <hbox>
                                                         <text width-request="100" space-expand="false" label="Options:"></text>
@@ -540,14 +530,6 @@ lost+found">
                                                                 <variable>RT_OTHER_SUBVOLS</variable>
                                                         </entry>
                                                 </hbox>
-                                                <hbox>
-                                                        <checkbox space-expand="false" label="Allow non-empty" tooltip-text="Dont check if the target root partition is empty (dangerous)">
-                                                                <variable>RT_CHECK_ROOT</variable>
-                                                        </checkbox>
-                                                        <checkbox space-expand="true" space-fill="true" label="Clean" tooltip-text="Clean the target root partition if it is not empty">
-                                                                <variable>RT_ROOT_CLEAN</variable>
-                                                        </checkbox>
-                                                </hbox>
                                         </vbox>
                                         <vbox>
                                                 <hbox>
@@ -562,9 +544,9 @@ lost+found">
                                                                         <action>refresh:RT_HOME</action>
                                                                         <action>refresh:RT_SWAP</action>
 	                                                </comboboxtext>
-                                                        <checkbox label="Clean" tooltip-text="Clean the target /boot partition if it is not empty">
+                                                        <togglebutton label="Clean" tooltip-text="Clean the target /boot partition if it is not empty">
                                                                 <variable>RT_BOOT_CLEAN</variable>
-                                                        </checkbox>
+                                                        </togglebutton>
                                                 </hbox>
                                                 <hbox>
                                                         <text width-request="100" space-expand="false" label="Home:"></text>
@@ -578,9 +560,9 @@ lost+found">
                                                                 <action>refresh:RT_BOOT</action>
                                                                 <action>refresh:RT_SWAP</action>
                                                         </comboboxtext>
-                                                        <checkbox label="Clean" tooltip-text="Clean the target /home partition if it is not empty">
+                                                        <togglebutton label="Clean" tooltip-text="Clean the target /home partition if it is not empty">
                                                                 <variable>RT_HOME_CLEAN</variable>
-                                                        </checkbox>
+                                                        </togglebutton>
                                                 </hbox>
                                                 <hbox>
                                                         <text width-request="100" space-expand="false" label="Swap:"></text>
@@ -594,7 +576,7 @@ lost+found">
                                                                 <action>refresh:RT_BOOT</action>
                                                                 <action>refresh:RT_HOME</action>
 	                                                </comboboxtext>
-                                                        <checkbox label="Clean" sensitive="false"></checkbox>
+                                                        <togglebutton label="Clean" sensitive="false"></togglebutton>
                                                 </hbox>
                                                 <hbox>
                                                         <text width-request="100" space-expand="false" label="Esp:"></text>
@@ -613,9 +595,9 @@ lost+found">
                                                                 <item>/boot/efi</item>
                                                                 <item>/boot</item>
                                                         </comboboxtext>
-                                                        <checkbox label="Clean" tooltip-text="Clean the target esp partition if it is not empty">
+                                                        <togglebutton label="Clean" tooltip-text="Clean the target esp partition if it is not empty">
                                                                 <variable>RT_ESP_CLEAN</variable>
-                                                        </checkbox>
+                                                        </togglebutton>
                                                 </hbox>
                                                 <hbox>
                                                         <text width-request="100" space-expand="false" label="Other:"></text>
@@ -626,9 +608,9 @@ e.g /var=/dev/sda3 or /var=/dev/sda3@ if it is not empty and you want to clean i
 If you want spaces in mountpoints replace them with //">
                                                                 <variable>RT_OTHER_PARTS</variable>
                                                         </entry>
-                                                        <checkbox label="Clean" tooltip-text="Clean partitions if they are not empty">
+                                                        <togglebutton label="Clean" tooltip-text="Clean partitions if they are not empty">
                                                                 <variable>RT_OTHER_CLEAN</variable>
-                                                        </checkbox>
+                                                        </togglebutton>
                                                 </hbox>
                                         </vbox>
                                         <vbox>
@@ -677,6 +659,15 @@ If you want spaces in mountpoints replace them with //">
                                                                 <input file stock="gtk-open"></input>
                                                                 <action>fileselect:RS_ARCHIVE</action>
                                                         </button>
+                                                        <togglebutton label="Multi-Core" tooltip-text="Enable multi-core decompression via pbzip2">
+                                                                <variable>RS_MULTICORE</variable>
+                                                                <action>if true enable:RS_THREADS</action>
+                                                                <action>if false disable:RS_THREADS</action>
+                                                        </togglebutton>
+                                                        <spinbutton range-min="1" range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core decompression" sensitive="false">
+                                                                <variable>RS_THREADS</variable>
+                                                                <default>"'"$(nproc --all)"'"</default>
+                                                        </spinbutton>
                                                 </hbox>
                                                 <hbox>
                                                         <text width-request="135" space-expand="false" label="Passphrase:"></text>
@@ -704,28 +695,6 @@ Default options:
                                                         <entry tooltip-text="Set ftp/http password" visibility="false">
                                                                 <variable>RS_PASSWORD</variable>
                                                         </entry>
-                                                </hbox>
-                                                <hbox>
-                                                        <vbox space-expand="true">
-                                                                <checkbox label="Multi-core decompression" tooltip-text="Enable multi-core decompression via pbzip2">
-                                                                        <variable>RS_MULTICORE</variable>
-                                                                        <action>if true enable:RS_THREADS</action>
-                                                                        <action>if false disable:RS_THREADS</action>
-                                                                        <action>if true enable:RS_THREADS_TXT</action>
-                                                                        <action>if false disable:RS_THREADS_TXT</action>
-                                                                </checkbox>
-                                                        </vbox>
-                                                        <vbox space-fill="true">
-                                                                <hbox>
-                                                                        <text label="Threads:" sensitive="false">
-                                                                                <variable>RS_THREADS_TXT</variable>
-                                                                        </text>
-                                                                        <spinbutton range-min="1" range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core decompression" sensitive="false">
-                                                                                <variable>RS_THREADS</variable>
-                                                                                <default>"'"$(nproc --all)"'"</default>
-                                                                        </spinbutton>
-                                                                </hbox>
-                                                        </vbox>
                                                 </hbox>
                                         </vbox>
                                         <vbox>

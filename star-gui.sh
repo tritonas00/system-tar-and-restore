@@ -376,6 +376,16 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                         </button>
                                 </hbox>
                                 <hbox>
+                                        <text width-request="135" space-expand="false" label="Home directory:"></text>
+                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
+                                                <variable>BC_HOME</variable>
+                                                <default>'"$BC_HOME"'</default>
+                                                <item>Include</item>
+                                                <item>Only hidden files and folders</item>
+                                                <item>Exclude</item>
+                                        </comboboxtext>
+                                </hbox>
+                                <hbox>
                                         <text width-request="135" space-expand="false" label="Compression:"></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
                                                 <variable>BC_COMPRESSION</variable>
@@ -422,16 +432,6 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 <variable>BC_PASSPHRASE</variable>
                                                 '"$(if [ -n "$BRencpass" ]; then echo "<default>$BRencpass</default>"; fi)"'
                                         </entry>
-                                </hbox>
-                                <hbox>
-                                        <text width-request="135" space-expand="false" label="Home directory:"></text>
-                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
-                                                <variable>BC_HOME</variable>
-                                                <default>'"$BC_HOME"'</default>
-                                                <item>Include</item>
-                                                <item>Only hidden files and folders</item>
-                                                <item>Exclude</item>
-                                        </comboboxtext>
                                 </hbox>
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Additional options:"></text>

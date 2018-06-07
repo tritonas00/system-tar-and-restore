@@ -375,6 +375,62 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 <action>fileselect:BC_SOURCE</action>
                                         </button>
                                 </hbox>
+                                <hseparator></hseparator>
+                                <hbox>
+                                        <vbox space-expand="true">
+                                                <hbox>
+                                                        <text width-request="135" space-expand="false" label="Compression:"></text>
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
+                                                                <variable>BC_COMPRESSION</variable>
+                                                                <default>'"$BC_COMPRESSION"'</default>
+                                                                <item>gzip</item>
+                                                                <item>bzip2</item>
+                                                                <item>xz</item>
+                                                                <item>none</item>
+                                                                <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_MULTICORE</action>
+                                                                <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && echo true)">enable:BC_MULTICORE</action>
+                                                                <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_THREADS</action>
+                                                                <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && [ $BC_MULTICORE = true ] && echo true)">enable:BC_THREADS</action>
+                                                        </comboboxtext>
+                                                </hbox>
+                                                <hbox>
+                                                        <text width-request="135" space-expand="false" label="Encryption:"></text>
+                                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select encryption method">
+                                                                <variable>BC_ENCRYPTION</variable>
+                                                                <default>'"$BC_ENCRYPTION"'</default>
+                                                                <item>none</item>
+                                                                <item>openssl</item>
+                                                                <item>gpg</item>
+                                                                <action condition="command_is_true([ $BC_ENCRYPTION = none ] && echo true)">disable:BC_PASSPHRASE</action>
+                                                                <action condition="command_is_true([ ! $BC_ENCRYPTION = none ] && echo true)">enable:BC_PASSPHRASE</action>
+                                                        </comboboxtext>
+                                                </hbox>
+                                        </vbox>
+                                        <vseparator space-expand="false"></vseparator>
+                                        <vbox space-expand="true" space-fill="true">
+                                                <hbox>
+                                                        <togglebutton space-expand="true" label="Multi-Core" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
+                                                                '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                                <variable>BC_MULTICORE</variable>
+                                                                '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
+                                                                <action>if true enable:BC_THREADS</action>
+                                                                <action>if false disable:BC_THREADS</action>
+                                                        </togglebutton>
+                                                        <spinbutton space-fill="true" range-min="1" range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression">
+                                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                                <variable>BC_THREADS</variable>
+                                                                <default>'"$BC_THREADS"'</default>
+                                                                '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
+                                                        </spinbutton>
+                                                </hbox>
+                                                <entry visibility="false" tooltip-text="Set passphrase for encryption">
+                                                        '"$(if [ "$BC_ENCRYPTION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                        <variable>BC_PASSPHRASE</variable>
+                                                        '"$(if [ -n "$BRencpass" ]; then echo "<default>$BRencpass</default>"; fi)"'
+                                                </entry>
+                                        </vbox>
+                                </hbox>
+                                <hseparator></hseparator>
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Home directory:"></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
@@ -384,54 +440,6 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 <item>Only hidden files and folders</item>
                                                 <item>Exclude</item>
                                         </comboboxtext>
-                                </hbox>
-                                <hbox>
-                                        <text width-request="135" space-expand="false" label="Compression:"></text>
-                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
-                                                <variable>BC_COMPRESSION</variable>
-                                                <default>'"$BC_COMPRESSION"'</default>
-                                                <item>gzip</item>
-                                                <item>bzip2</item>
-                                                <item>xz</item>
-                                                <item>none</item>
-                                                <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_MULTICORE</action>
-                                                <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && echo true)">enable:BC_MULTICORE</action>
-                                                <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_THREADS</action>
-                                                <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && [ $BC_MULTICORE = true ] && echo true)">enable:BC_THREADS</action>
-                                        </comboboxtext>
-                                        <togglebutton label="Multi-Core" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
-                                                '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                <variable>BC_MULTICORE</variable>
-                                                '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
-                                                <action>if true enable:BC_THREADS</action>
-                                                <action>if false disable:BC_THREADS</action>
-                                        </togglebutton>
-                                        <spinbutton range-min="1" range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression">
-                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                <variable>BC_THREADS</variable>
-                                                <default>'"$BC_THREADS"'</default>
-                                                '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
-                                        </spinbutton>
-                                </hbox>
-                                <hbox>
-                                        <text width-request="135" space-expand="false" label="Encryption:"></text>
-                                        <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select encryption method">
-                                                <variable>BC_ENCRYPTION</variable>
-                                                <default>'"$BC_ENCRYPTION"'</default>
-                                                <item>none</item>
-                                                <item>openssl</item>
-                                                <item>gpg</item>
-                                                <action condition="command_is_true([ $BC_ENCRYPTION = none ] && echo true)">disable:BC_PASSPHRASE</action>
-                                                <action condition="command_is_true([ ! $BC_ENCRYPTION = none ] && echo true)">enable:BC_PASSPHRASE</action>
-                                        </comboboxtext>
-                                </hbox>
-                                <hbox>
-                                        <text width-request="135" space-expand="false" label="Passphrase:"></text>
-                                        <entry visibility="false" tooltip-text="Set passphrase for encryption">
-                                                '"$(if [ "$BC_ENCRYPTION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
-                                                <variable>BC_PASSPHRASE</variable>
-                                                '"$(if [ -n "$BRencpass" ]; then echo "<default>$BRencpass</default>"; fi)"'
-                                        </entry>
                                 </hbox>
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Additional options:"></text>

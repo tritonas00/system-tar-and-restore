@@ -300,7 +300,7 @@ export RT_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 export RT_ROOT="$(echo "$RT_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
-<window icon-name="gtk-preferences" height-request="645" width-request="525">
+<window icon-name="gtk-preferences" height-request="650" width-request="525">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_pid</input>
@@ -348,6 +348,7 @@ SYSLINUX PACKAGES
 
 OTHER PACKAGES
 efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</label></text>
+                                <text xalign="0" use-markup="true" label="<b>Archive Settings</b>"></text>
                                 <hseparator></hseparator>
                                 <hbox>
                                         <text width-request="135" label="Filename:"></text>
@@ -375,11 +376,12 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 <action>fileselect:BC_SOURCE</action>
                                         </button>
                                 </hbox>
+                                <text xalign="0" use-markup="true" label="<b>Compression and Encryption</b>"></text>
                                 <hseparator></hseparator>
                                 <hbox>
                                         <vbox space-expand="true">
                                                 <hbox>
-                                                        <text width-request="135" space-expand="false" label="Compression:"></text>
+                                                        <text width-request="135" space-expand="false" label="Compressor:"></text>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
                                                                 <variable>BC_COMPRESSION</variable>
                                                                 <default>'"$BC_COMPRESSION"'</default>
@@ -430,9 +432,10 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 </entry>
                                         </vbox>
                                 </hbox>
+                                <text xalign="0" use-markup="true" label="<b>Additional Options</b>"></text>
                                 <hseparator></hseparator>
                                 <hbox>
-                                        <text width-request="135" space-expand="false" label="Home directory:"></text>
+                                        <text width-request="135" space-expand="false" label="Home Directory:"></text>
                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
                                                 <variable>BC_HOME</variable>
                                                 <default>'"$BC_HOME"'</default>
@@ -442,7 +445,7 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                         </comboboxtext>
                                 </hbox>
                                 <hbox>
-                                        <text width-request="135" space-expand="false" label="Additional options:"></text>
+                                        <text width-request="135" space-expand="false" label="Tar Options:"></text>
                                         <entry text="'"$BC_OPTIONS"'" space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //
 
 Default options:
@@ -499,7 +502,7 @@ lost+found">
 
 ==>If you plan to transfer in lvm/mdadm/luks,
        configure this system accordingly"><label>"Restore a backup archive or transfer this system in user defined partitions"</label></text>
-                                <hseparator></hseparator>
+                                <text xalign="0" use-markup="true" label="<b>Partitions and Bootloader</b>"></text>
                                 <notebook labels="Root Partition|More Partitions|Bootloader">
                                         <vbox>
                                                 <hbox>
@@ -527,7 +530,7 @@ lost+found">
                                                         </entry>
                                                 </hbox>
                                                 <hbox>
-                                                        <text width-request="100" space-expand="false" label="Btrfs root:"></text>
+                                                        <text width-request="100" space-expand="false" label="Btrfs Root:"></text>
                                                         <entry tooltip-text="(Optional-Btrfs only) Set root subvolume name">
                                                                 <variable>RT_ROOT_SUBVOL</variable>
                                                         </entry>
@@ -656,10 +659,11 @@ If you want spaces in mountpoints replace them with //">
                                                 </hbox>
                                         </vbox>
                                 </notebook>
+                                <text xalign="0" use-markup="true" label="<b>Mode Settings</b>"></text>
                                 <notebook labels="Restore Mode|Transfer Mode">
                                         <vbox>
                                                 <hbox>
-                                                        <text width-request="135" space-expand="false" label="Backup archive:"></text>
+                                                        <text width-request="135" space-expand="false" label="Backup Archive:"></text>
                                                         <entry fs-action="file" tooltip-text="Choose a local backup archive or enter URL" fs-title="Select a backup archive">
                                                                 <variable>RS_ARCHIVE</variable>
                                                         </entry>
@@ -684,7 +688,7 @@ If you want spaces in mountpoints replace them with //">
                                                         </entry>
                                                 </hbox>
                                                 <hbox>
-                                                        <text width-request="135" space-expand="false" label="Additional options:"></text>
+                                                        <text width-request="135" space-expand="false" label="Tar Options:"></text>
                                                         <entry space-expand="true" space-fill="true" tooltip-text="Set extra tar options. See tar --help for more info. If you want spaces in names replace them with //
 
 Default options:
@@ -696,7 +700,7 @@ Default options:
                                                         </entry>
                                                 </hbox>
                                                 <hbox>
-                                                        <text width-request="135" space-expand="false" label="Remote user/pass:"></text>
+                                                        <text width-request="135" space-expand="false" label="Remote User/Pass:"></text>
                                                         <entry tooltip-text="Set ftp/http username">
                                                                 <variable>RS_USERNAME</variable>
                                                         </entry>
@@ -707,7 +711,7 @@ Default options:
                                         </vbox>
                                         <vbox>
                                                 <hbox>
-                                                        <text width-request="135" space-expand="false" label="Home directory:"></text>
+                                                        <text width-request="135" space-expand="false" label="Home Directory:"></text>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Choose what to do with your /home directory">
                                                                 <variable>TS_HOME</variable>
                                                                 <item>Include</item>
@@ -716,7 +720,7 @@ Default options:
                                                         </comboboxtext>
                                                 </hbox>
                                                 <hbox>
-                                                        <text width-request="135" space-expand="false" label="Additional options:"></text>
+                                                        <text width-request="135" space-expand="false" label="Rsync Options:"></text>
                                                         <entry space-expand="true" space-fill="true" tooltip-text="Set extra rsync options. See rsync --help for more info. If you want spaces in names replace them with //">
                                                                 <variable>TS_OPTIONS</variable>
                                                         </entry>

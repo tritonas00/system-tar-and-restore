@@ -381,7 +381,7 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                 <hbox>
                                         <vbox space-expand="true">
                                                 <hbox>
-                                                        <text width-request="135" space-expand="false" label="Compressor:"></text>
+                                                        <text width-request="135" space-expand="false" label="Compression:"></text>
                                                         <comboboxtext space-expand="true" space-fill="true" tooltip-text="Select compressor">
                                                                 <variable>BC_COMPRESSION</variable>
                                                                 <default>'"$BC_COMPRESSION"'</default>

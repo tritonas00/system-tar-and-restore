@@ -300,7 +300,7 @@ export RT_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 export RT_ROOT="$(echo "$RT_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
-<window icon-name="gtk-preferences" height-request="650" width-request="525">
+<window icon-name="gtk-preferences" height-request="650" width-request="480">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_pid</input>
@@ -493,15 +493,26 @@ lost+found">
                                 </checkbox>
                         </vbox>
                         <vbox shadow-type="0">
-                                <text height-request="25" wrap="false" tooltip-text="==>In the first case, you should use a LiveCD of the
+                                <notebook show-tabs="false" show-border="false">
+                                        <vbox>
+                                                <text height-request="25" wrap="false" tooltip-text="==>You should run the script from a LiveCD of the
        backed up distro
 
 ==>A target root partition is required. Optionally you
        can use any other partition for /boot /home
-       esp swap or custom mountpoints
+       esp swap or custom mountpoints"><label>"Restore a backup archive in user defined partitions"</label></text>
+                                        </vbox>
+                                        <vbox>
+                                                <text height-request="25" wrap="false" tooltip-text="==>If you plan to transfer in lvm/mdadm/luks,
+       configure this system accordingly
 
-==>If you plan to transfer in lvm/mdadm/luks,
-       configure this system accordingly"><label>"Restore a backup archive or transfer this system in user defined partitions"</label></text>
+==>A target root partition is required. Optionally you
+       can use any other partition for /boot /home
+       esp swap or custom mountpoints"><label>"Transfer this system in user defined partitions"</label></text>
+                                        </vbox>
+                                        <variable>RT_TEXT</variable>
+                                        <input>[ "$RT_TAB" = 1 ] && echo 1 || echo 0</input>
+                                </notebook>
                                 <text xalign="0" use-markup="true" label="<b>Partitions and Bootloader</b>"></text>
                                 <notebook labels="Root Partition|More Partitions|Bootloader">
                                         <vbox>
@@ -746,6 +757,8 @@ lost+found">
                                                 </hbox>
                                         </vbox>
                                         <variable>RT_TAB</variable>
+                                        <action signal="button-release-event">refresh:RT_TEXT</action>
+                                        <action signal="key-release-event">refresh:RT_TEXT</action> 
                                 </notebook>
                                 <checkbox label="Override options" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
                                         <variable>RT_OVERRIDE</variable>

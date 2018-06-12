@@ -758,7 +758,7 @@ lost+found">
                                         </vbox>
                                         <variable>RT_TAB</variable>
                                         <action signal="button-release-event">refresh:RT_TEXT</action>
-                                        <action signal="key-release-event">refresh:RT_TEXT</action> 
+                                        <action signal="key-release-event">refresh:RT_TEXT</action>
                                 </notebook>
                                 <checkbox label="Override options" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
                                         <variable>RT_OVERRIDE</variable>

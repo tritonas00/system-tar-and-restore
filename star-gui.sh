@@ -320,7 +320,7 @@ export MAIN_DIALOG='
                 </entry>
                 <notebook labels="Backup|Restore/Transfer|Log|About" space-expand="true" space-fill="true">
                         <vbox shadow-type="0">
-                                <text height-request="25" tooltip-text="==>Make sure destination has enough space
+                                <text tooltip-text="==>Make sure destination has enough space
 
 ==>If you plan to restore in lvm/mdadm/luks,
        configure this system accordingly
@@ -495,7 +495,7 @@ lost+found">
                         <vbox shadow-type="0">
                                 <notebook show-tabs="false" show-border="false">
                                         <vbox>
-                                                <text height-request="25" wrap="false" tooltip-text="==>You should run the script from a LiveCD of the
+                                                <text tooltip-text="==>You should run the script from a LiveCD of the
        backed up distro
 
 ==>A target root partition is required. Optionally you
@@ -503,7 +503,7 @@ lost+found">
        esp swap or custom mountpoints"><label>"Restore a backup archive in user defined partitions"</label></text>
                                         </vbox>
                                         <vbox>
-                                                <text height-request="25" wrap="false" tooltip-text="==>If you plan to transfer in lvm/mdadm/luks,
+                                                <text tooltip-text="==>If you plan to transfer in lvm/mdadm/luks,
        configure this system accordingly
 
 ==>A target root partition is required. Optionally you

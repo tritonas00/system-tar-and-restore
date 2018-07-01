@@ -300,7 +300,7 @@ export RT_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 export RT_ROOT="$(echo "$RT_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
-<window icon-name="gtk-preferences" height-request="650" width-request="480">
+<window icon-name="gtk-preferences" height-request="620" width-request="480">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_pid</input>
@@ -348,7 +348,6 @@ SYSLINUX PACKAGES
 
 OTHER PACKAGES
 efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</label></text>
-                                <text xalign="0" use-markup="true" label="<b>Archive Settings</b>"></text>
                                 <hseparator></hseparator>
                                 <hbox>
                                         <text width-request="135" label="Filename:"></text>
@@ -376,7 +375,6 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 <action>fileselect:BC_SOURCE</action>
                                         </button>
                                 </hbox>
-                                <text xalign="0" use-markup="true" label="<b>Compression and Encryption</b>"></text>
                                 <hseparator></hseparator>
                                 <hbox>
                                         <vbox space-expand="true">
@@ -432,7 +430,6 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                 </entry>
                                         </vbox>
                                 </hbox>
-                                <text xalign="0" use-markup="true" label="<b>Additional Options</b>"></text>
                                 <hseparator></hseparator>
                                 <hbox>
                                         <text width-request="135" space-expand="false" label="Home Directory:"></text>
@@ -513,7 +510,7 @@ lost+found">
                                         <variable>RT_TEXT</variable>
                                         <input>[ "$RT_TAB" = 1 ] && echo 1 || echo 0</input>
                                 </notebook>
-                                <text xalign="0" use-markup="true" label="<b>Partitions and Bootloader</b>"></text>
+                                <hseparator></hseparator>
                                 <notebook labels="Root Partition|More Partitions|Bootloader">
                                         <vbox>
                                                 <hbox>
@@ -670,7 +667,6 @@ If you want spaces in mountpoints replace them with //">
                                                 </hbox>
                                         </vbox>
                                 </notebook>
-                                <text xalign="0" use-markup="true" label="<b>Mode Settings</b>"></text>
                                 <notebook labels="Restore Mode|Transfer Mode">
                                         <vbox>
                                                 <hbox>

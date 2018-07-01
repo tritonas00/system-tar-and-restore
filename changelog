@@ -1,7 +1,13 @@
+6.9
+  added pbzip2 parallel decompression support (thanks to 0rinsb3lt)
+  simplified multi-core (de)compression logic
+  gui layout improvements
+  cleanups in star.sh
+
 6.8
   use basic date/time format in default backup name (fixes issues with fat file system destinations)
   reworked restore/transfer tab
-  many code cleanups in star.sh  
+  many code cleanups in star.sh
 
 6.7
   show generated configuration file to gui wrapper log

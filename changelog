@@ -1,7 +1,7 @@
 6.9
   added pbzip2 parallel decompression support (thanks to 0rinsb3lt)
-  simplified multi-core (de)compression logic
-  gui layout improvements
+  simplified multi-core threads number logic
+  gui layout and functionality improvements
   cleanups in star.sh
 
 6.8

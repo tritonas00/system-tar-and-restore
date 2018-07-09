@@ -493,19 +493,11 @@ lost+found">
                                 <notebook show-tabs="false" show-border="false">
                                         <vbox>
                                                 <text tooltip-text="==>You should run the script from a LiveCD of the
-       backed up distro
-
-==>A target root partition is required. Optionally you
-       can use any other partition for /boot /home
-       esp swap or custom mountpoints"><label>"Restore a backup archive in user defined partitions"</label></text>
+       backed up distro"><label>"Restore a backup archive in user defined partitions"</label></text>
                                         </vbox>
                                         <vbox>
                                                 <text tooltip-text="==>If you plan to transfer in lvm/mdadm/luks,
-       configure this system accordingly
-
-==>A target root partition is required. Optionally you
-       can use any other partition for /boot /home
-       esp swap or custom mountpoints"><label>"Transfer this system in user defined partitions"</label></text>
+       configure this system accordingly"><label>"Transfer this system in user defined partitions"</label></text>
                                         </vbox>
                                         <variable>RT_TEXT</variable>
                                         <input>[ "$RT_TAB" = 1 ] && echo 1 || echo 0</input>

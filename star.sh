@@ -47,11 +47,18 @@ print_err() {
   if [ "$2" = "1" ]; then clean_unmount; fi
 }
 
+# Set the configuration file for Backup mode. If called from the wrapper don't source, the gui wrapper will source it
+if [ -f "$1" ] && [ -z "$BRwrap" ]; then
+  BRconf="$1"
+elif [ -f /etc/backup.conf ] && [ -z "$BRwrap" ]; then
+  BRconf="/etc/backup.conf"
+fi
+
 # Show version
 echo -e "\n$BR_VERSION"
 
 # Set arguments and help page
-BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaC:Mr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,directory:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,conf:,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
+BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,directory:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -64,42 +71,45 @@ while true; do
   case "$1" in
     -i|--mode)
       BRmode="$2"
+      if [ -f "$BRconf" ] && [ "$BRmode" = "0" ]; then
+        source "$BRconf"
+      fi
       shift 2
     ;;
     -u|--user-opts)
-      _BR_USER_OPTS="$2"
+      BR_USER_OPTS="$2"
       shift 2
     ;;
     -d|--directory)
-      _BRFOLDER="$2"
+      BRFOLDER="$2"
       shift 2
     ;;
     -n|--filename)
-      _BRNAME="$2"
+      BRNAME="$2"
       shift 2
     ;;
     -c|--compression)
-      _BRcompression="$2"
+      BRcompression="$2"
       shift 2
     ;;
     -H|--home-dir)
-      _BRhomedir="$2"
+      BRhomedir="$2"
       shift 2
     ;;
     -P|--passphrase)
-      _BRencpass="$2"
+      BRencpass="$2"
       shift 2
     ;;
     -E|--encryption)
-      _BRencmethod="$2"
+      BRencmethod="$2"
       shift 2
     ;;
     -z|--threads)
-      _BRthreads="$2"
+      BRthreads="$2"
       shift 2
     ;;
     -T|--top-dir)
-      _BRsrc="$2"
+      BRsrc="$2"
       shift 2
     ;;
     -j|--no-color)
@@ -129,10 +139,6 @@ while true; do
     -a|--clean)
       BRclean="y"
       shift
-    ;;
-    -C|--conf)
-      BRconf="$2"
-      shift 2
     ;;
     -M|--multi-core)
       BRmcore="y"
@@ -219,7 +225,7 @@ while true; do
       shift
     ;;
     --help)
-      echo "Usage: star.sh -i mode [options]
+      echo "Usage: star.sh [backup.conf] -i mode [options]
 
 General Options:
   -i, --mode                  Select mode: 0 (Backup) 1 (Restore) 2 (Transfer)
@@ -250,7 +256,6 @@ Backup Mode:
     -P, --passphrase          Passphrase for encryption
 
   Misc Options:
-    -C, --conf                Alternative configuration file path
     -g, --generate            Generate configuration file (in case of successful backup)
     -a, --clean               Remove older backups in the destination directory
     -T, --src-dir             Create a non-system backup archive of a specified directory
@@ -331,31 +336,6 @@ elif [ -n "$BRmode" ] && [ ! "$BRmode" = "0" ] && [ ! "$BRmode" = "1" ] && [ ! "
 fi
 
 clean_tmp_files
-
-# Set and source the configuration file for Backup mode. If called from wrapper don't source, the gui wrapper will source it
-if [ "$BRmode" = "0" ] && [ -z "$BRwrap" ]; then
-  if [ -z "$BRconf" ]; then
-    BRconf="/etc/backup.conf"
-  elif [ -n "$BRconf" ] && [ ! -f "$BRconf" ]; then
-    print_err "-e [${RED}ERROR${NORM}] File does not exist: $BRconf" 0
-  fi
-  if [ -f "$BRconf" ]; then
-    source "$BRconf"
-  fi
-fi
-
-# Arguments should override configuration file
-if [ -n "$_BR_USER_OPTS" ]; then BR_USER_OPTS="$_BR_USER_OPTS"; fi
-if [ -n "$_BRFOLDER" ]; then BRFOLDER="$_BRFOLDER"; fi
-if [ -n "$_BRNAME" ]; then BRNAME="$_BRNAME"; fi
-if [ -n "$_BRcompression" ]; then BRcompression="$_BRcompression"; fi
-if [ -n "$_BRencmethod" ]; then BRencmethod="$_BRencmethod"; fi
-if [ -n "$_BRencpass" ]; then BRencpass="$_BRencpass"; fi
-if [ -n "$_BRhomedir" ]; then BRhomedir="$_BRhomedir"; fi
-if [ -n "$_BRthreads" ]; then BRthreads="$_BRthreads"; fi
-if [ -n "$_BRsrc" ]; then BRsrc="$_BRsrc"; fi
-
-
 
 # Set default /home directory option for Backup and Transfer mode, check user input
 if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ]; then
@@ -704,7 +684,7 @@ if [ "$BRmode" = "0" ]; then
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
-  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRconf BRsrc
+  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRsrc
 
   # Print success message, set var for processing partitions
   ok_status() {

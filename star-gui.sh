@@ -17,6 +17,7 @@ clean_tmp_files() {
 clean_tmp_files
 
 export BRtitle="System Tar & Restore"
+export BRwrap="y"
 
 echo -n > /tmp/wr_log
 echo true > /tmp/wr_pid
@@ -96,7 +97,7 @@ echo '
 set_args() {
   # Backup mode arguments
   if [ "$BR_TAB" = "0" ]; then
-    SCR_ARGS=(-i 0 -jwq -d "$BC_DESTINATION" -c "$BC_COMPRESSION")
+    SCR_ARGS=(-i 0 -jq -d "$BC_DESTINATION" -c "$BC_COMPRESSION")
 
     if [ -n "$BC_FILENAME" ] && [[ ! "$BC_FILENAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9] ]]; then
       SCR_ARGS+=(-n "$BC_FILENAME")
@@ -147,7 +148,7 @@ set_args() {
   elif [ "$BR_TAB" = "1" ]; then
     # Restore mode arguments
     if [ "$RT_TAB" = "0" ]; then
-      SCR_ARGS=(-i 1 -jwq -f "$RS_ARCHIVE")
+      SCR_ARGS=(-i 1 -jq -f "$RS_ARCHIVE")
 
       if [ -n "$RS_PASSPHRASE" ]; then
         SCR_ARGS+=(-P "$RS_PASSPHRASE")
@@ -171,7 +172,7 @@ set_args() {
 
     # Transfer mode arguments
     elif [ "$RT_TAB" = "1" ]; then
-      SCR_ARGS=(-i 2 -jwq)
+      SCR_ARGS=(-i 2 -jq)
       if [ "$TS_HOME" = "Only hidden files and folders" ]; then
         SCR_ARGS+=(-H 1)
       elif [ "$TS_HOME" = "Exclude" ]; then

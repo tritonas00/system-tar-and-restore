@@ -34,7 +34,7 @@ pgrs_bar() {
   done
 }
 
-# Print various messages and update the gui wrapper if -w is given
+# Print various messages and update the gui wrapper
 print_msg() {
   if [ ! "$1" = "0" ]; then echo ${1}; fi
   if [ -n "$BRwrap" ]; then echo "$2" > /tmp/wr_proc; fi
@@ -51,7 +51,7 @@ print_err() {
 echo -e "\n$BR_VERSION"
 
 # Set arguments and help page
-BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,directory:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
+BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaC:Mr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,directory:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,conf:,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -136,10 +136,6 @@ while true; do
     ;;
     -M|--multi-core)
       BRmcore="y"
-      shift
-    ;;
-    -w|--wrapper)
-      BRwrap="y"
       shift
     ;;
     -r|--root)
@@ -230,7 +226,6 @@ General Options:
   -j, --no-color              Disable colors
   -q, --quiet                 Don't ask, just run
   -v, --verbose               Enable verbose archiver output
-  -w, --wrapper               Make the script wrapper-friendly
   -u, --user-opts             Additional tar/rsync options. See tar/rsync --help
                               If you want spaces in names replace them with //
   -o, --override              Override the default tar/rsync options with user options (use with -u)
@@ -308,7 +303,7 @@ Restore / Transfer Mode:
   esac
 done
 
-# Give PID to gui wrapper if -w is given
+# Give PID to gui wrapper
 if [ -n "$BRwrap" ]; then
   echo "$$" >> /tmp/wr_pid
 fi
@@ -337,7 +332,7 @@ fi
 
 clean_tmp_files
 
-# Set and source the configuration file for Backup mode. If -w is given don't source, the gui wrapper will source it
+# Set and source the configuration file for Backup mode. If called from wrapper don't source, the gui wrapper will source it
 if [ "$BRmode" = "0" ] && [ -z "$BRwrap" ]; then
   if [ -z "$BRconf" ]; then
     BRconf="/etc/backup.conf"
@@ -694,7 +689,7 @@ if [ "$BRmode" = "0" ]; then
     echo -e "${CYAN}\nBackup archive and log saved in $BRFOLDER\nElapsed time: $elapsed${NORM}"
   fi
 
-  # Give log to gui wrapper if -w is given
+  # Give log to gui wrapper
   if [ -n "$BRwrap" ]; then
     cat "$BRFOLDER"/backup.log > /tmp/wr_log
     # Give generated configuration file to gui wrapper also
@@ -2092,7 +2087,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     if [[ ! "$BRuri" == /* ]]; then
       BRsource="$BRmaxsize/downloaded_backup"
-      # Give percentage to gui wrapper if -w is given
+      # Give percentage to gui wrapper
       if [ -n "$BRwrap" ]; then
         lastperc="-1"
         run_wget 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |

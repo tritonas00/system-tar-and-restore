@@ -53,12 +53,9 @@ else
   export BC_SOURCE="/"
 fi
 
-if [ -n "$BRonlyhidden" ] && [ -n "$BRnohome" ]; then
-  echo "Error parsing configuration file. Choose only one option for the /home directory"
-  exit
-elif [ -n "$BRonlyhidden" ]; then
+if [ "$BRhomedir" = "1" ]; then
   export BC_HOME="Only hidden files and folders"
-elif [ -n "$BRnohome" ]; then
+elif [ "$BRhomedir" = "2" ]; then
   export BC_HOME="Exclude"
 else
   export BC_HOME="Include"
@@ -110,9 +107,9 @@ set_args() {
     fi
 
     if [ "$BC_HOME" = "Only hidden files and folders" ]; then
-      SCR_ARGS+=(-O)
+      SCR_ARGS+=(-H 1)
     elif [ "$BC_HOME" = "Exclude" ]; then
-      SCR_ARGS+=(-H)
+      SCR_ARGS+=(-H 2)
     fi
 
     if [ ! "$BC_ENCRYPTION" = "none" ]; then
@@ -176,9 +173,9 @@ set_args() {
     elif [ "$RT_TAB" = "1" ]; then
       SCR_ARGS=(-i 2 -jwq)
       if [ "$TS_HOME" = "Only hidden files and folders" ]; then
-        SCR_ARGS+=(-O)
+        SCR_ARGS+=(-H 1)
       elif [ "$TS_HOME" = "Exclude" ]; then
-        SCR_ARGS+=(-H)
+        SCR_ARGS+=(-H 2)
       fi
 
       set -f
@@ -766,7 +763,7 @@ lost+found">
                         <vbox>
                                 <text use-markup="true" label="<b><big>System Tar &amp; Restore</big></b>"></text>
                                 <text wrap="false" label="Backup and Restore your system using tar or Transfer it with rsync"></text>
-                                <text use-markup="true" label="<i><small>Version 6.9 tritonas00@gmail.com 2012-2018</small></i>"></text>
+                                <text use-markup="true" label="<i><small>Version 7.0 tritonas00@gmail.com 2012-2018</small></i>"></text>
                                 <hseparator></hseparator>
                                 <vbox scrollable="true" shadow-type="0">
                                         <text xalign="0" wrap="false">

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 6.9"
+BR_VERSION="System Tar & Restore 7.0"
 
 # Set EFI detection directory
 BR_EFI_DIR="/sys/firmware/efi"
@@ -51,7 +51,7 @@ print_err() {
 echo -e "\n$BR_VERSION"
 
 # Set arguments and help page
-BRargs="$(getopt -o "i:d:n:c:u:HOjqvgDP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,directory:,filename:,compression:,user-opts:,exclude-home,only-hidden,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
+BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaC:Mwr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,directory:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,conf:,multi-core,wrapper,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -82,13 +82,9 @@ while true; do
       _BRcompression="$2"
       shift 2
     ;;
-    -H|--exclude-home)
-      _BRnohome="y"
-      shift
-    ;;
-    -O|--only-hidden)
-      _BRonlyhidden="y"
-      shift
+    -H|--home-dir)
+      _BRhomedir="$2"
+      shift 2
     ;;
     -P|--passphrase)
       _BRencpass="$2"
@@ -247,8 +243,7 @@ Backup Mode:
     -n, --filename            Backup filename (without extension)
 
   Home Directory:
-    -H, --exclude-home	      Exclude /home directory
-    -O, --only-hidden         Keep /home's hidden files and folders only
+    -H, --home-dir	      Backup /home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
 
   Archiver Options:
     -c, --compression         Compression type: gzip bzip2 xz none
@@ -298,8 +293,7 @@ Restore / Transfer Mode:
     -z,  --threads            Specify the number of threads for multi-core decompression
 
   Transfer Mode:
-    -O,  --only-hidden        Transfer /home's hidden files and folders only
-    -H,  --exclude-home	      Don't transfer /home directory
+    -H,  --home-dir	      Transfer /home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
 
   Misc Options:
     -x,  --dont-check-root    Don't check if the target root partition is empty (dangerous)
@@ -355,13 +349,6 @@ if [ "$BRmode" = "0" ] && [ -z "$BRwrap" ]; then
   fi
 fi
 
-# Check /home directory options for Backup and Transfer mode
-if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ] && [ -n "$_BRnohome" ] && [ -n "$_BRonlyhidden" ]; then
-  print_err "-e [${YELLOW}WARNING${NORM}] Choose only one option for the /home directory" 0
-elif [ "$BRmode" = "0" ] && [ -n "$BRnohome" ] && [ -n "$BRonlyhidden" ]; then
-  print_err "-e [${RED}ERROR${NORM}] Error parsing configuration file. Choose only one option for the /home directory" 0
-fi
-
 # Arguments should override configuration file
 if [ -n "$_BR_USER_OPTS" ]; then BR_USER_OPTS="$_BR_USER_OPTS"; fi
 if [ -n "$_BRFOLDER" ]; then BRFOLDER="$_BRFOLDER"; fi
@@ -369,12 +356,20 @@ if [ -n "$_BRNAME" ]; then BRNAME="$_BRNAME"; fi
 if [ -n "$_BRcompression" ]; then BRcompression="$_BRcompression"; fi
 if [ -n "$_BRencmethod" ]; then BRencmethod="$_BRencmethod"; fi
 if [ -n "$_BRencpass" ]; then BRencpass="$_BRencpass"; fi
-if [ -n "$_BRnohome" ]; then BRnohome="$_BRnohome"; fi
-if [ -n "$_BRonlyhidden" ]; then BRonlyhidden="$_BRonlyhidden"; fi
-if [ -n "$_BRnohome" ] && [ -n "$BRonlyhidden" ]; then unset BRonlyhidden; fi
-if [ -n "$_BRonlyhidden" ] && [ -n "$BRnohome" ]; then unset BRnohome; fi
+if [ -n "$_BRhomedir" ]; then BRhomedir="$_BRhomedir"; fi
 if [ -n "$_BRthreads" ]; then BRthreads="$_BRthreads"; fi
 if [ -n "$_BRsrc" ]; then BRsrc="$_BRsrc"; fi
+
+
+
+# Set default /home directory option for Backup and Transfer mode, check user input
+if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ]; then
+  if [ -n "$BRhomedir" ] && [ ! "$BRhomedir" = "0" ] && [ ! "$BRhomedir" = "1" ] && [ ! "$BRhomedir" = "2" ]; then
+    print_err "-e [${RED}ERROR${NORM}] Wrong /home directory option: $BRhomedir. Available options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)" 0
+  elif [ -z "$BRhomedir" ]; then
+    BRhomedir="0"
+  fi
+fi
 
 # Set default multi-core threads for Backup and Restore mode, check user input
 if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcore" ]; then
@@ -406,11 +401,11 @@ if [ "$BRmode" = "0" ]; then
 
     if [ "$BRsrc" = "/" ]; then
       echo -e "\nHOME DIRECTORY"
-      if [ -n "$BRonlyhidden" ]; then
+      if [ "$BRhomedir" = "1" ]; then
         echo "Only hidden files and folders"
-      elif [ -n "$BRnohome" ]; then
+      elif [ "$BRhomedir" = "2" ]; then
         echo "Exclude"
-      else
+      elif [ "$BRhomedir" = "0" ]; then
         echo "Include"
       fi
 
@@ -462,8 +457,7 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9] ]]; then echo BRNAME=\"$BRNAME\"; fi # Strictly check the default filename format
     if [ -n "$BR_USER_OPTS" ]; then echo BR_USER_OPTS=\"$(echo $BR_USER_OPTS)\"; fi # trim leading/trailing and multiple spaces
     echo BRcompression=\"$BRcompression\"
-    if [ -n "$BRnohome" ]; then echo BRnohome=\"Yes\"; fi
-    if [ -n "$BRonlyhidden" ]; then echo BRonlyhidden=\"Yes\"; fi
+    if [ -n "$BRhomedir" ]; then echo BRhomedir=\"$BRhomedir\"; fi
     if [ -n "$BRnocolor" ]; then echo BRnocolor=\"Yes\"; fi
     if [ -n "$BRverb" ]; then echo BRverb=\"Yes\"; fi
     if [ -n "$BRquiet" ]; then echo BRquiet=\"Yes\"; fi
@@ -591,9 +585,9 @@ if [ "$BRmode" = "0" ]; then
   BR_TR_OPTS+=(--exclude="$(basename "$BRFOLDER")")
 
   # Set /home directory options
-  if [ -n "$BRnohome" ] && [ "$BRsrc" = "/" ]; then
+  if [ "$BRhomedir" = "2" ] && [ "$BRsrc" = "/" ]; then
     BR_TR_OPTS+=(--exclude=/home/*)
-  elif [ -n "$BRonlyhidden" ] && [ "$BRsrc" = "/" ]; then
+  elif [ "$BRhomedir" = "1" ] && [ "$BRsrc" = "/" ]; then
     # Find everything that doesn't start with dot and exclude it
     while read item; do
       BR_TR_OPTS+=(--exclude="$item")
@@ -933,9 +927,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
                    --exclude=/home/*/.gvfs  \
                    --exclude=lost+found)
     fi
-    if [ -n "$BRonlyhidden" ]; then
+    if [ "$BRhomedir" = "1" ]; then
       BR_TR_OPTS+=(--exclude=/home/*/[^.]*)
-    elif [ -n "$BRnohome" ]; then
+    elif [ "$BRhomedir" = "2" ]; then
       BR_TR_OPTS+=(--exclude=/home/*)
     fi
   }
@@ -1153,11 +1147,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     elif [ "$BRmode" = "2" ]; then
       echo "Mode:    Transfer"
-      if [ -n "$BRonlyhidden" ]; then
+      if [ "$BRhomedir" = "1" ]; then
         echo "Home:    Only hidden files and folders"
-      elif [ -n "$BRnohome" ]; then
+      elif [ "$BRhomedir" = "2" ]; then
         echo "Home:    Exclude"
-      else
+      elif [ "$BRhomedir" = "0" ]; then
         echo "Home:    Include"
       fi
     fi

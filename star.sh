@@ -653,8 +653,9 @@ if [ "$BRmode" = "0" ]; then
     generate_conf > "$BRFOLDER"/backup.conf
   fi
 
-  # Give destination subdirectory full permissions with some nice messages
-  OUTPUT="$(chmod ugo+rw -R "$BRFOLDER" 2>&1)" && echo -ne "Setting permissions: Done\n" || echo -ne "Setting permissions: Failed\n$OUTPUT\n"
+  # Give destination subdirectory full permissions
+  echo "Setting permissions to $BRFOLDER"
+  chmod ugo+rw -R "$BRFOLDER"
 
   # Calculate elapsed time
   elapsed="$(($(($(date +%s)-start))/3600)) hours $((($(($(date +%s)-start))%3600)/60)) min $(($(($(date +%s)-start))%60)) sec"
@@ -685,18 +686,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
   unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRsrc
-
-  # Print success message, set var for processing partitions
-  ok_status() {
-    echo -e "\r[${GREEN}SUCCESS${NORM}]"
-    BRcontinue="y"
-  }
-
-  # Print failure message, set var for stop processing partitions
-  error_status() {
-    echo -e "\r[${RED}FAILURE${NORM}]\n$OUTPUT"
-    BRstop="y"
-  }
 
   # Detect backup archive encryption
   detect_encryption() {
@@ -947,12 +936,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # Create directory to mount the target root partition
     echo -e "\n${BOLD}[MOUNTING]${NORM}"
-    print_msg "-ne ${WRK}Making working directory" "Making working directory"
-    OUTPUT="$(mkdir /mnt/target 2>&1)" && ok_status || error_status
+    print_msg "Making working directory" "Making working directory"
+    mkdir /mnt/target || BRstop="y"
 
     # Mount the target root partition
-    print_msg "-ne ${WRK}Mounting $BRroot" "Mounting $BRroot"
-    OUTPUT="$(mount -o "$BRmountopts" "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
+    print_msg "Mounting $BRroot" "Mounting $BRroot"
+    mount -o "$BRmountopts" "$BRroot" /mnt/target || BRstop="y"
     # Store it's size
     BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
     if [ -n "$BRstop" ]; then
@@ -963,13 +952,17 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Check if the target root partition is not empty
     if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
       if [ -n "$BRrootclean" ]; then
-        print_msg "-e [${YELLOW}WARNING${NORM}] Root partition not empty, cleaning" "Cleaning $BRroot"
+        print_msg "Cleaning $BRroot" "Cleaning $BRroot"
         rm -r /mnt/target/*
         sleep 1
       elif [ -z "$BRdontckroot" ]; then
-        print_msg "-ne ${WRK}Unmounting $BRroot" "Unmounting $BRroot"
+        print_msg "Unmounting $BRroot" "Unmounting $BRroot"
         sleep 1
-        OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && sleep 1 && rm -r /mnt/target) || error_status
+        umount "$BRroot" || BRstop="y"
+        if [ -z "$BRstop" ]; then
+          sleep 1
+          rm -r /mnt/target
+        fi
         print_err "-e [${RED}ERROR${NORM}] Root partition not empty, refusing to use it" 0
       else
         # Just warn if -x is given
@@ -979,24 +972,24 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # Create btrfs root subvolume if specified by the user
     if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
-      print_msg "-ne ${WRK}Creating $BRrootsubvol" "Creating $BRrootsubvol"
-      OUTPUT="$(btrfs subvolume create /mnt/target/"$BRrootsubvol" 2>&1 1>/dev/null)" && ok_status || error_status
+      print_msg "Creating $BRrootsubvol" "Creating $BRrootsubvol"
+      btrfs subvolume create /mnt/target/"$BRrootsubvol" 1>/dev/null || BRstop="y"
 
       # Create other btrfs subvolumes if specified by the user
       if [ -n "$BRsubvols" ]; then
         while read ln; do
-          print_msg "-ne ${WRK}Creating $BRrootsubvol$ln" "Creating $BRrootsubvol$ln"
-          OUTPUT="$(btrfs subvolume create /mnt/target/"$BRrootsubvol$ln" 2>&1 1>/dev/null)" && ok_status || error_status
+          print_msg "Creating $BRrootsubvol$ln" "Creating $BRrootsubvol$ln"
+          btrfs subvolume create /mnt/target/"$BRrootsubvol$ln" 1>/dev/null || BRstop="y"
         done< <(for subvol in "${BRsubvols[@]}"; do echo "$subvol"; done | sort)
       fi
 
      # Unmount the target root partition
-      print_msg "-ne ${WRK}Unmounting $BRroot" "Unmounting $BRroot"
-      OUTPUT="$(umount "$BRroot" 2>&1)" && ok_status || error_status
+      print_msg "Unmounting $BRroot" "Unmounting $BRroot"
+      umount "$BRroot" || BRstop="y"
 
      # Mount the root btrfs subvolume
-      print_msg "-ne ${WRK}Mounting $BRrootsubvol" "Mounting $BRrootsubvol"
-      OUTPUT="$(mount -t btrfs -o "$BRmountopts",subvol="$BRrootsubvol" "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
+      print_msg "Mounting $BRrootsubvol" "Mounting $BRrootsubvol"
+      mount -t btrfs -o "$BRmountopts",subvol="$BRrootsubvol" "$BRroot" /mnt/target || BRstop="y"
       if [ -n "$BRstop" ]; then
         unset BRstop
         print_err "-e [${RED}ERROR${NORM}] Error while making subvolumes" 1
@@ -1007,28 +1000,26 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRparts" ]; then
       # Sort target partitions array by their mountpoint so we can mount in order, keep trailing @ if given so we know what to clean
       BRpartsorted=(`for part in "${BRparts[@]}"; do echo "$part"; done | sort -k 1,1 -t =`)
-      unset BRcontinue
       # We read a sorted array with items in the form of mountpoint=partition (e.g /home=/dev/sda2) and we use = as delimiter
       for part in "${BRpartsorted[@]}"; do
         BRpart=$(echo "$part" | cut -f2 -d"=")
         BRmpoint=$(echo "$part" | cut -f1 -d"=")
         # Replace any // with space
         BRmpoint="${BRmpoint///\//\ }"
-        print_msg "-ne ${WRK}Mounting ${BRpart//@}" "Mounting ${BRpart//@}"
+        print_msg "Mounting ${BRpart//@}" "Mounting ${BRpart//@}"
         # Create the corresponding mounting directory
         mkdir -p /mnt/target"$BRmpoint"
         # Mount it
-        OUTPUT="$(mount "${BRpart//@}" /mnt/target"$BRmpoint" 2>&1)" && ok_status || error_status
+        mount "${BRpart//@}" /mnt/target"$BRmpoint" || BRstop="y"
         # Store sizes
         BRsizes+=(`lsblk -n -b -o size "${BRpart//@}" 2>/dev/null`=/mnt/target"$BRmpoint")
-        if [ -n "$BRcontinue" ]; then
-          unset BRcontinue
+        if [ -z "$BRstop" ]; then
           # Store successfully mounted partitions so we can unmount them later
           BRumountparts+=("$BRmpoint"="${BRpart//@}")
           # Check if partitions are not empty and warn, clean if they end with @
           if [ "$(ls -A /mnt/target"$BRmpoint" | grep -vw "lost+found")" ]; then
             if [[ "$BRpart" == *@ ]]; then
-              print_msg "-e [${YELLOW}WARNING${NORM}] $BRmpoint partition not empty, cleaning" "Cleaning ${BRpart//@}"
+              print_msg "Cleaning ${BRpart//@}" "Cleaning ${BRpart//@}"
               rm -r /mnt/target"$BRmpoint"/*
               sleep 1
             else
@@ -1763,30 +1754,30 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRparts" ]; then
       while read ln; do
         sleep 1
-        print_msg "-ne ${WRK}Unmounting $ln" "Unmounting $ln"
-        OUTPUT="$(umount "$ln" 2>&1)" && ok_status || error_status
+        print_msg "Unmounting $ln" "Unmounting $ln"
+        umount "$ln" || BRstop="y"
       done < <(for BRpart in "${BRumountparts[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | tac)
     fi
 
     if [ -z "$post_umt" ]; then
       # In case of btrfs subvolumes, unmount the root subvolume and mount the target root partition again
       if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
-        print_msg "-ne ${WRK}Unmounting $BRrootsubvol" "Unmounting $BRrootsubvol"
-        OUTPUT="$(umount "$BRroot" 2>&1)" && ok_status || error_status
+        print_msg "Unmounting $BRrootsubvol" "Unmounting $BRrootsubvol"
+        umount "$BRroot" || BRstop="y"
         sleep 1
-        print_msg "-ne ${WRK}Mounting $BRroot" "Mounting $BRroot"
-        OUTPUT="$(mount "$BRroot" /mnt/target 2>&1)" && ok_status || error_status
+        print_msg "Mounting $BRroot" "Mounting $BRroot"
+        mount "$BRroot" /mnt/target || BRstop="y"
 
         # Delete the created subvolumes
         if [ -n "$BRsubvols" ]; then
           while read ln; do
             sleep 1
-            print_msg "-ne ${WRK}Deleting $BRrootsubvol$ln" "Deleting $BRrootsubvol$ln"
-            OUTPUT="$(btrfs subvolume delete /mnt/target/"$BRrootsubvol$ln" 2>&1 1>/dev/null)" && ok_status || error_status
+            print_msg "Deleting $BRrootsubvol$ln" "Deleting $BRrootsubvol$ln"
+            btrfs subvolume delete /mnt/target/"$BRrootsubvol$ln" 1>/dev/null || BRstop="y"
           done < <(for subvol in "${BRsubvols[@]}"; do echo "$subvol"; done | sort -r)
         fi
-        print_msg "-ne ${WRK}Deleting $BRrootsubvol" "Deleting $BRrootsubvol"
-        OUTPUT="$(btrfs subvolume delete /mnt/target/"$BRrootsubvol" 2>&1 1>/dev/null)" && ok_status || error_status
+        print_msg "Deleting $BRrootsubvol" "Deleting $BRrootsubvol"
+        btrfs subvolume delete /mnt/target/"$BRrootsubvol" 1>/dev/null || BRstop="y"
       fi
 
       # If no error occured above and -x is not given clean the target root partition from created mountpoints
@@ -1798,8 +1789,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Remove leftovers and unmount the target root partition
     rm /mnt/target/target_architecture.$(uname -m) 2>/dev/null
     sleep 1
-    print_msg "-ne ${WRK}Unmounting $BRroot" "Unmounting $BRroot"
-    OUTPUT="$(umount "$BRroot" 2>&1)" && (ok_status && sleep 1 && rm -r /mnt/target) || error_status
+    print_msg "Unmounting $BRroot" "Unmounting $BRroot"
+    umount "$BRroot" || BRstop="y"
+    if [ -z "$BRstop" ]; then
+      sleep 1
+      rm -r /mnt/target
+    fi
 
     if [ -n "$BRwrap" ] && [ -n "$post_umt" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
     clean_tmp_files
@@ -1849,9 +1844,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   if [[ "$BRuri" == /* ]]; then
     BRsource="$BRuri"
   fi
-
-  # A nice working info
-  WRK="[${CYAN}WORKING${NORM}] "
 
   # Add ESP, /home and /boot partitions if given by the user
   if [ -n "$BResp" ] && [ -n "$BRespmpoint" ]; then

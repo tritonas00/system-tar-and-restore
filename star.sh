@@ -457,15 +457,15 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" 0
+    print_err "-e [${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" 0
   fi
 
   if [ -z "$BRencmethod" ] || [ "$BRencmethod" = "none" ] && [ -n "$BRencpass" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] You must specify an encryption method" 0
+    print_err "-e [${RED}ERROR${NORM}] You must specify an encryption method" 0
   fi
 
   if [ -z "$BRencpass" ] && [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "none" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] You must specify a passphrase" 0
+    print_err "-e [${RED}ERROR${NORM}] You must specify a passphrase" 0
   fi
 
   if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ] && [ ! "$BRencmethod" = "none" ]; then
@@ -473,7 +473,7 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   if [ -n "$BRmcore" ] && [ -z "$BRcompression" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] You must specify compression type" 0
+    print_err "-e [${RED}ERROR${NORM}] You must specify compression type" 0
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z "$(which pigz 2>/dev/null)" ]; then
     print_err "-e [${RED}ERROR${NORM}] Package pigz is not installed. Install the package and re-run the script" 0
   elif [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
@@ -1017,7 +1017,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
               rm -r /mnt/target"$BRmpoint"/*
               sleep 1
             else
-              echo -e "[${CYAN}INFO${NORM}] $BRmpoint partition not empty"
+              echo -e "[${YELLOW}WARNING${NORM}] $BRmpoint partition not empty"
             fi
           fi
         fi
@@ -1923,7 +1923,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ ! "$BRrootcheck" = "true" ]; then
       print_err "-e [${RED}ERROR${NORM}] Wrong root partition: $BRroot" 0
     elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot")" ]; then
-      print_err "-e [${YELLOW}WARNING${NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot"), refusing to use it" 0
+      print_err "-e [${RED}ERROR${NORM}] $BRroot is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot"), refusing to use it" 0
     fi
   fi
 
@@ -1933,7 +1933,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       print_err "-e [${RED}ERROR${NORM}] Wrong swap partition: $BRswap" 0
     fi
     if [ "$BRswap" = "$BRroot" ]; then
-      print_err "-e [${YELLOW}WARNING${NORM}] $BRswap already used" 0
+      print_err "-e [${RED}ERROR${NORM}] $BRswap already used" 0
     fi
   fi
 
@@ -1941,10 +1941,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     BRpartused=(`for BRpart in "${BRparts[@]}"; do echo "${BRpart//@}" | cut -f2 -d"="; done | sort | uniq -d`)
     BRmpointused=(`for BRmpoint in "${BRparts[@]}"; do echo "$BRmpoint" | cut -f1 -d"="; done | sort | uniq -d`)
     if [ -n "$BRpartused" ]; then
-      print_err "-e [${YELLOW}WARNING${NORM}] $BRpartused already used" 0
+      print_err "-e [${RED}ERROR${NORM}] $BRpartused already used" 0
     fi
     if [ -n "$BRmpointused" ]; then
-      print_err "-e [${YELLOW}WARNING${NORM}] Duplicate mountpoint: $BRmpointused" 0
+      print_err "-e [${RED}ERROR${NORM}] Duplicate mountpoint: $BRmpointused" 0
     fi
 
     for part in "${BRparts[@]}"; do
@@ -1955,13 +1955,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       if [ ! "$BRpartscheck" = "true" ]; then
         print_err "-e [${RED}ERROR${NORM}] Wrong $BRmpoint partition: $BRpart" 0
       elif [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart")" ]; then
-        print_err "-e [${YELLOW}WARNING${NORM}] $BRpart is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart"), refusing to use it" 0
+        print_err "-e [${RED}ERROR${NORM}] $BRpart is already mounted as $(lsblk -d -n -o mountpoint 2>/dev/null "$BRpart"), refusing to use it" 0
       fi
       if [ "$BRpart" = "$BRroot" ] || [ "$BRpart" = "$BRswap" ]; then
-        print_err "-e [${YELLOW}WARNING${NORM}] $BRpart already used" 0
+        print_err "-e [${RED}ERROR${NORM}] $BRpart already used" 0
       fi
       if [ "$BRmpoint" = "/" ]; then
-        print_err "-e [${YELLOW}WARNING${NORM}] Use -r for the root partition" 0
+        print_err "-e [${RED}ERROR${NORM}] Use -r for the root partition" 0
       fi
       if [[ ! "$BRmpoint" == /* ]]; then
         print_err "-e [${RED}ERROR${NORM}] Wrong mountpoint syntax: $BRmpoint" 0
@@ -1971,14 +1971,14 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   fi
 
   if [ -n "$BRsubvols" ] && [ -z "$BRrootsubvol" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] You must specify a root subvolume name" 0
+    print_err "-e [${RED}ERROR${NORM}] You must specify a root subvolume name" 0
   fi
 
   if [ -n "$BRsubvols" ]; then
     BRsubvolused=(`for BRsubvol in "${BRsubvols[@]}"; do echo "$BRsubvol"; done | sort | uniq -d`)
     if [ -n "$BRsubvolused" ]; then
       for a in "${BRsubvolused[@]}"; do
-        print_err "-e [${YELLOW}WARNING${NORM}] Duplicate subvolume: $a" 0
+        print_err "-e [${RED}ERROR${NORM}] Duplicate subvolume: $a" 0
       done
     fi
 
@@ -1987,7 +1987,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         print_err "-e [${RED}ERROR${NORM}] Wrong subvolume syntax: $b" 0
       fi
       if [ "$b" = "/" ]; then
-        print_err "-e [${YELLOW}WARNING${NORM}] Use -R to assign root subvolume" 0
+        print_err "-e [${RED}ERROR${NORM}] Use -R to assign root subvolume" 0
       fi
     done
   fi
@@ -2004,7 +2004,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   fi
 
   if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ] && [ -d "$BR_EFI_DIR" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] In UEFI environment use 'auto' for grub device" 0
+    print_err "-e [${RED}ERROR${NORM}] In UEFI environment use 'auto' for grub device" 0
   fi
 
   if [ -n "$BRsyslinux" ]; then
@@ -2018,7 +2018,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   fi
 
   if [ ! -d "$BR_EFI_DIR" ] && [ -n "$BResp" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] Don't use EFI system partition in bios mode" 0
+    print_err "-e [${RED}ERROR${NORM}] Don't use EFI system partition in bios mode" 0
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -n "$BRroot" ] && [ -z "$BResp" ]; then
@@ -2034,9 +2034,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   fi
 
   if [ -n "$BResp" ] && [ -z "$BRespmpoint" ] && [ -d "$BR_EFI_DIR" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] You must specify mount point for ESP ($BResp)" 0
+    print_err "-e [${RED}ERROR${NORM}] You must specify mount point for ESP ($BResp)" 0
   elif [ -n "$BResp" ] && [ ! "$BRespmpoint" = "/boot/efi" ] && [ ! "$BRespmpoint" = "/boot" ] && [ -d "$BR_EFI_DIR" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot" 0
+    print_err "-e [${RED}ERROR${NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot" 0
   fi
 
   mount_all
@@ -2098,7 +2098,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Check archive for genkernel in case of Gentoo if -D is not given
   if [ "$BRmode" = "1" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
-    print_err "-e [${YELLOW}WARNING${NORM}] Genkernel not found in the archived system. (you can disable this check with -D)" 1
+    print_err "-e [${RED}ERROR${NORM}] Genkernel not found in the archived system. (you can disable this check with -D)" 1
   fi
 
   if [ "$BRmode" = "1" ]; then

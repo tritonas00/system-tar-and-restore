@@ -281,8 +281,8 @@ run_main() {
     echo false > /tmp/wr_pid
     setsid ./star.sh "${SCR_ARGS[@]}" >&3 2> /tmp/wr_log
     sleep 0.1
-    if grep -qF -e [ERROR] -e [WARNING] /tmp/wr_log; then
-      grep -F -e [ERROR] -e [WARNING] /tmp/wr_log | cut -f2- -d" " > /tmp/wr_proc
+    if grep -qF [ERROR] /tmp/wr_log; then
+      grep -F [ERROR] /tmp/wr_log | cut -f2- -d" " > /tmp/wr_proc
     else
       echo "$BRtitle" > /tmp/wr_proc
     fi

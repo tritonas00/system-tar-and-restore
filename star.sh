@@ -2017,12 +2017,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   fi
 
-  if [ -n "$BRsyslinux" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -n "$BRgrub" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" 0
-  elif [ -n "$BRefistub" ] && [ -n "$BRbootctl" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] Don't use multiple bootloaders" 0
-  fi
-
   if [ ! -d "$BR_EFI_DIR" ] && [ -n "$BResp" ]; then
     print_err "-e [${YELLOW}WARNING${NORM}] Don't use EFI system partition in bios mode" 0
   fi

@@ -281,7 +281,11 @@ run_main() {
     echo false > /tmp/wr_pid
     setsid ./star.sh "${SCR_ARGS[@]}" >&3 2> /tmp/wr_log
     sleep 0.1
-    echo "$BRtitle" > /tmp/wr_proc
+    if grep -qF -e [ERROR] -e [WARNING] /tmp/wr_log; then
+      grep -F -e [ERROR] -e [WARNING] /tmp/wr_log | cut -f2 -d"]" > /tmp/wr_proc
+    else
+      echo "$BRtitle" > /tmp/wr_proc
+    fi
     echo true > /tmp/wr_pid
   fi
 }
@@ -310,7 +314,6 @@ export MAIN_DIALOG='
                         <action> if true enable:BTN_EXIT</action>
                         <action> if true enable:BR_TAB</action>
                         <action> if true disable:BTN_CANCEL</action>
-                        <action> if true refresh:BR_TAB</action>
                         <action> if false disable:BTN_RUN</action>
                         <action> if false disable:BTN_EXIT</action>
                         <action> if false enable:BTN_CANCEL</action>
@@ -783,7 +786,6 @@ lost+found">
                                 </checkbox>
                         </vbox>
                         <variable>BR_TAB</variable>
-                        <input>echo 2</input>
 		</notebook>
                 <hbox space-expand="false" space-fill="false">
                         <button tooltip-text="Run">

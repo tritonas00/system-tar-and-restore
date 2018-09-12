@@ -71,6 +71,7 @@ while true; do
   case "$1" in
     -i|--mode)
       BRmode="$2"
+      # Source configuration file in Backup mode early so arguments can override it
       if [ -f "$BRconf" ] && [ "$BRmode" = "0" ]; then
         source "$BRconf"
       fi

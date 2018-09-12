@@ -27,7 +27,7 @@ pgrs_bar() {
       echo -e "${CYAN}[$x / $total] ${YELLOW}[$per%] ${GREEN}$ln${NORM}"
     elif [[ "$per" -gt "$lastper" ]] && [[ "$per" -le "100" ]]; then
       lastper="$per"
-      print_msg 0 "$mode_job: $per% ($x / $total Files)"
+      print_msg "$mode_job: $per% ($x / $total Files)" 0
       # The main progress bar
       echo -ne "\r$mode_job: [${pstr:0:$((x*24/total))}${dstr:0:24-$((x*24/total))}] $per%"
     fi
@@ -36,8 +36,8 @@ pgrs_bar() {
 
 # Print various messages and update the gui wrapper
 print_msg() {
-  if [ ! "$1" = "0" ]; then echo ${1}; fi
-  if [ -n "$BRwrap" ]; then echo "$2" > /tmp/wr_proc; fi
+  if [ ! "$2" = "0" ]; then echo -e ${1}; fi
+  if [ -n "$BRwrap" ]; then echo ${1#*'\n'} > /tmp/wr_proc; fi #also ignore leading newlines if any
 }
 
 # Print various error messages and exit
@@ -616,7 +616,7 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   echo -e "\n${BOLD}[PROCESSING]${NORM}"
-  print_msg 0 "Preparing"
+  print_msg "Preparing" 0
   # Restore mode will check and read this file in the archive
   if [ "$BRsrc" = "/" ]; then touch /target_architecture.$(uname -m); fi
   # Create the destination subdirectory
@@ -635,7 +635,7 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Calculate the number of files
-  print_msg 0 "Please wait while calculating files"
+  print_msg "Please wait while calculating files" 0
   run_calc | while read ln; do a="$((a + 1))" && echo -en "\rCalculating: $a Files"; done
   # Store the number of files we found from run_calc
   total="$(cat /tmp/filelist | wc -l)"
@@ -698,7 +698,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Detect backup archive filetype and set tar options accordingly
   detect_filetype() {
-    print_msg "Checking archive type" "Checking archive type"
+    print_msg "Checking archive type"
     # If archive is encrypted decrypt first, pipe output to 'file'
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
       BRtype="$(openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | file -b -)"
@@ -936,11 +936,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # Create directory to mount the target root partition
     echo -e "\n${BOLD}[MOUNTING]${NORM}"
-    print_msg "Making working directory" "Making working directory"
+    print_msg "Making working directory"
     mkdir /mnt/target || BRstop="y"
 
     # Mount the target root partition
-    print_msg "Mounting $BRroot" "Mounting $BRroot"
+    print_msg "Mounting $BRroot"
     mount -o "$BRmountopts" "$BRroot" /mnt/target || BRstop="y"
     # Store it's size
     BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
@@ -952,11 +952,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Check if the target root partition is not empty
     if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
       if [ -n "$BRrootclean" ]; then
-        print_msg "Cleaning $BRroot" "Cleaning $BRroot"
+        print_msg "Cleaning $BRroot"
         rm -r /mnt/target/*
         sleep 1
       elif [ -z "$BRdontckroot" ]; then
-        print_msg "Unmounting $BRroot" "Unmounting $BRroot"
+        print_msg "Unmounting $BRroot"
         sleep 1
         umount "$BRroot" || BRstop="y"
         if [ -z "$BRstop" ]; then
@@ -972,23 +972,23 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # Create btrfs root subvolume if specified by the user
     if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
-      print_msg "Creating $BRrootsubvol" "Creating $BRrootsubvol"
+      print_msg "Creating $BRrootsubvol"
       btrfs subvolume create /mnt/target/"$BRrootsubvol" 1>/dev/null || BRstop="y"
 
       # Create other btrfs subvolumes if specified by the user
       if [ -n "$BRsubvols" ]; then
         while read ln; do
-          print_msg "Creating $BRrootsubvol$ln" "Creating $BRrootsubvol$ln"
+          print_msg "Creating $BRrootsubvol$ln"
           btrfs subvolume create /mnt/target/"$BRrootsubvol$ln" 1>/dev/null || BRstop="y"
         done< <(for subvol in "${BRsubvols[@]}"; do echo "$subvol"; done | sort)
       fi
 
      # Unmount the target root partition
-      print_msg "Unmounting $BRroot" "Unmounting $BRroot"
+      print_msg "Unmounting $BRroot"
       umount "$BRroot" || BRstop="y"
 
      # Mount the root btrfs subvolume
-      print_msg "Mounting $BRrootsubvol" "Mounting $BRrootsubvol"
+      print_msg "Mounting $BRrootsubvol"
       mount -t btrfs -o "$BRmountopts",subvol="$BRrootsubvol" "$BRroot" /mnt/target || BRstop="y"
       if [ -n "$BRstop" ]; then
         unset BRstop
@@ -1006,7 +1006,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         BRmpoint=$(echo "$part" | cut -f1 -d"=")
         # Replace any // with space
         BRmpoint="${BRmpoint///\//\ }"
-        print_msg "Mounting ${BRpart//@}" "Mounting ${BRpart//@}"
+        print_msg "Mounting ${BRpart//@}"
         # Create the corresponding mounting directory
         mkdir -p /mnt/target"$BRmpoint"
         # Mount it
@@ -1019,7 +1019,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           # Check if partitions are not empty and warn, clean if they end with @
           if [ "$(ls -A /mnt/target"$BRmpoint" | grep -vw "lost+found")" ]; then
             if [[ "$BRpart" == *@ ]]; then
-              print_msg "Cleaning ${BRpart//@}" "Cleaning ${BRpart//@}"
+              print_msg "Cleaning ${BRpart//@}"
               rm -r /mnt/target"$BRmpoint"/*
               sleep 1
             else
@@ -1144,7 +1144,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Bind needed directories so we can chroot in the target system
   prepare_chroot() {
-    print_msg "-e \nPreparing chroot environment" "Preparing chroot environment"
+    print_msg "\nPreparing chroot environment"
     echo "Binding /run"
     mount --bind /run /mnt/target/run
     echo "Binding /dev"
@@ -1247,7 +1247,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         cn=$(echo "$FILE" | sed -n 's/[^-]*-//p') # Cutted kernel name without any prefix (eg without vmlinuz-)
 
         if [ ! "$BRdistro" = "Gentoo" ] && [ ! "$BRdistro" = "Unsupported" ]; then
-          print_msg 0 "Building initramfs image for $cn"
+          print_msg "Building initramfs image for $cn" 0
         fi
 
         # Use distro tools to rebuild initramfs images
@@ -1267,7 +1267,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
       echo "Skipping..."
     elif [ "$BRdistro" = "Gentoo" ]; then
-      print_msg 0 "Building initramfs images"
+      print_msg "Building initramfs images" 0
       chroot /mnt/target genkernel --no-color --install initramfs
     fi
   }
@@ -1425,7 +1425,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # GRUB
     if [ -n "$BRgrub" ]; then
-      print_msg "-e \nInstalling and updating Grub in $BRgrub" "Installing Grub in $BRgrub"
+      print_msg "\nInstalling Grub in $BRgrub"
       # In case of ESP on /boot, if target boot/efi exists move it as boot/efi-old so we have a clean directory to work
       if [ -d "$BR_EFI_DIR" ] && [ "$BRespmpoint" = "/boot" ] && [ -d /mnt/target/boot/efi ]; then
         # Also if boot/efi-old already exists remove it
@@ -1493,7 +1493,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # SYSLINUX
     elif [ -n "$BRsyslinux" ]; then
-      print_msg "-e \nInstalling and configuring Syslinux in $BRsyslinux" "Installing Syslinux in $BRsyslinux"
+      print_msg "\nInstalling Syslinux in $BRsyslinux"
       # If target boot/syslinux exists remove it so we have a clean directory to work
       if [ -d /mnt/target/boot/syslinux ]; then
         # Save the configuration file first
@@ -1557,7 +1557,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
    # EFISTUB
     elif [ -n "$BRefistub" ]; then
-      print_msg "-e \nSetting boot entries" "Setting boot entries using efibootmgr"
+      print_msg "\nSetting boot entries using efibootmgr"
       # Seperate device and partition number
       if [[ "$BResp" == *mmcblk* ]] || [[ "$BResp" == *nvme* ]]; then
         BRespdev="${BResp%[[:alpha:]]*}"
@@ -1596,7 +1596,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # BOOTCTL
     elif [ -n "$BRbootctl" ]; then
-      print_msg "-e \nInstalling Bootctl in $BRespmpoint" "Installing Bootctl in $BRespmpoint"
+      print_msg "\nInstalling Bootctl in $BRespmpoint"
       # Save old configuration entries first
       if [ -d /mnt/target"$BRespmpoint"/loader/entries ]; then
         for CONF in /mnt/target"$BRespmpoint"/loader/entries/*; do
@@ -1725,7 +1725,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Generate target system's locales
   generate_locales() {
     if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Gentoo" ]; then
-      print_msg "-e \nGenerating locales" "Generating locales"
+      print_msg "\nGenerating locales"
       chroot /mnt/target locale-gen
     fi
   }
@@ -1754,7 +1754,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRparts" ]; then
       while read ln; do
         sleep 1
-        print_msg "Unmounting $ln" "Unmounting $ln"
+        print_msg "Unmounting $ln"
         umount "$ln" || BRstop="y"
       done < <(for BRpart in "${BRumountparts[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | tac)
     fi
@@ -1762,21 +1762,21 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -z "$post_umt" ]; then
       # In case of btrfs subvolumes, unmount the root subvolume and mount the target root partition again
       if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
-        print_msg "Unmounting $BRrootsubvol" "Unmounting $BRrootsubvol"
+        print_msg "Unmounting $BRrootsubvol"
         umount "$BRroot" || BRstop="y"
         sleep 1
-        print_msg "Mounting $BRroot" "Mounting $BRroot"
+        print_msg "Mounting $BRroot"
         mount "$BRroot" /mnt/target || BRstop="y"
 
         # Delete the created subvolumes
         if [ -n "$BRsubvols" ]; then
           while read ln; do
             sleep 1
-            print_msg "Deleting $BRrootsubvol$ln" "Deleting $BRrootsubvol$ln"
+            print_msg "Deleting $BRrootsubvol$ln"
             btrfs subvolume delete /mnt/target/"$BRrootsubvol$ln" 1>/dev/null || BRstop="y"
           done < <(for subvol in "${BRsubvols[@]}"; do echo "$subvol"; done | sort -r)
         fi
-        print_msg "Deleting $BRrootsubvol" "Deleting $BRrootsubvol"
+        print_msg "Deleting $BRrootsubvol"
         btrfs subvolume delete /mnt/target/"$BRrootsubvol" 1>/dev/null || BRstop="y"
       fi
 
@@ -1789,7 +1789,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Remove leftovers and unmount the target root partition
     rm /mnt/target/target_architecture.$(uname -m) 2>/dev/null
     sleep 1
-    print_msg "Unmounting $BRroot" "Unmounting $BRroot"
+    print_msg "Unmounting $BRroot"
     umount "$BRroot" || BRstop="y"
     if [ -z "$BRstop" ]; then
       sleep 1
@@ -2090,7 +2090,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
 
-    print_msg 0 "Please wait while checking and reading archive"
+    print_msg "Please wait while checking and reading archive" 0
     # Read the backup archive and give list of files in /tmp/filelist also
     read_archive | tee /tmp/filelist | while read ln; do a="$((a + 1))" && echo -en "\rChecking and reading archive ($a Files) "; done
     echo
@@ -2155,7 +2155,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Transfer mode
   elif [ "$BRmode" = "2" ]; then
     # Calculate the number of files
-    print_msg 0 "Please wait while calculating files"
+    print_msg "Please wait while calculating files" 0
     run_calc | while read ln; do a="$((a + 1))" && echo -en "\rCalculating: $a Files"; done
     sleep 1
     # Store the number of files we found from run_calc
@@ -2170,7 +2170,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   prepare_chroot 1> >(tee -a /tmp/restore.log) 2>&1
   sleep 1
 
-  print_msg "-e \nGenerating fstab" "Generating fstab"
+  print_msg "\nGenerating fstab"
   # Save the old fstab first
   cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
   generate_fstab > /mnt/target/etc/fstab

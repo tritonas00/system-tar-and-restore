@@ -346,7 +346,7 @@ if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ]; then
   fi
 fi
 
-# Set default multi-core threads for Backup and Restore mode, check user input
+# Set default multi-core threads for Backup and Restore mode
 if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcore" ] && [ -z "$BRthreads" ]; then
   BRthreads="$(nproc --all)"
 fi

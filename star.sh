@@ -37,7 +37,7 @@ pgrs_bar() {
 # Print various messages and update the gui wrapper
 print_msg() {
   if [ ! "$2" = "0" ]; then echo -e ${1}; fi
-  if [ -n "$BRwrap" ]; then echo ${1#*'\n'} > /tmp/wr_proc; fi #also ignore leading newlines if any
+  if [ -n "$BRwrap" ]; then echo ${1#*'\n'} > /tmp/wr_proc; fi # also ignore leading newlines if any
 }
 
 # Print various error messages and exit
@@ -347,10 +347,8 @@ if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ]; then
 fi
 
 # Set default multi-core threads for Backup and Restore mode, check user input
-if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcore" ]; then
-  if [ -z "$BRthreads" ] || [ "$BRthreads" -lt "1" ] || [ "$BRthreads" -gt "$(nproc --all)" ]; then
-    BRthreads="$(nproc --all)"
-  fi
+if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcore" ] && [ -z "$BRthreads" ]; then
+  BRthreads="$(nproc --all)"
 fi
 
 # Add tar/rsync user options to the main array, replace any // with space, add only options starting with -

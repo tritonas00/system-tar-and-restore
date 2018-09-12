@@ -482,10 +482,6 @@ if [ "$BRmode" = "0" ]; then
     print_err "-e [${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script" 0
   fi
 
-  if [ -n "$BRwrap" ] && [ -z "$BRFOLDER" ]; then
-    print_err "-e [${YELLOW}WARNING${NORM}] You must specify destination directory" 0
-  fi
-
   # Set some defaults if not given by the user
   if [ -z "$BRFOLDER" ]; then BRFOLDER="/"; fi
   if [ -z "$BRNAME" ]; then BRNAME="Backup-$(hostname)-$(date +%Y%m%d-%H%M%S)"; fi

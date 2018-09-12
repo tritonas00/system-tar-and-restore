@@ -97,7 +97,11 @@ echo '
 set_args() {
   # Backup mode arguments
   if [ "$BR_TAB" = "0" ]; then
-    SCR_ARGS=(-i 0 -jq -d "$BC_DESTINATION" -c "$BC_COMPRESSION")
+    SCR_ARGS=(-i 0 -jq -c "$BC_COMPRESSION")
+
+    if [ -n "$BC_DESTINATION" ] && [ ! "$BC_DESTINATION" = "/" ]; then
+      SCR_ARGS+=(-d "$BC_DESTINATION")
+    fi
 
     if [ -n "$BC_FILENAME" ] && [[ ! "$BC_FILENAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9] ]]; then
       SCR_ARGS+=(-n "$BC_FILENAME")

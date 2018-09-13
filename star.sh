@@ -1642,81 +1642,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   }
 
-  # Set the bootloader, check for gptfdisk/gdisk packages, check backup archive if contains the selected bootloader, exit on errors
-  set_bootloader() {
-    if [ -n "$BRgrub" ]; then
-      BRbootloader="Grub"
-    elif [ -n "$BRsyslinux" ]; then
-      BRbootloader="Syslinux"
-    elif [ -n "$BRefistub" ]; then
-      BRbootloader="EFISTUB/efibootmgr"
-    elif [ -n "$BRbootctl" ]; then
-      BRbootloader="Systemd/bootctl"
-    fi
-
-    if [ -n "$BRsyslinux" ]; then
-      # If the target Syslinux device is a raid array detect the partition table of one of the underlying devices. Probably all have the same partition table
-      if [[ "$BRsyslinux" == *md* ]]; then
-        for device in $(grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]'); do
-          BRdevice="/dev/$device"
-        done
-      fi
-      detect_partition_table_syslinux
-      # Search for sgdisk in case of GPT
-      if [ ! "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ -z "$(which sgdisk 2>/dev/null)" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" 1
-      elif [ "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ "$BRmode" = "2" ] && [ -z "$(which sgdisk 2>/dev/null)" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" 1
-      # In case of Arch we run syslinux-install_update from chroot so it calls sgdisk from chroot also. Thats why in Restore mode sgdisk has to be in the archive
-      elif [ "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ "$BRmode" = "1" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist; then
-        print_err "-e [${RED}ERROR${NORM}] sgdisk not found in the archived system" 1
-      fi
-    fi
-
-    if [ "$BRmode" = "1" ]; then
-      # Search archive contents for grub(2)-mkconfig
-      if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist; then
-        print_err "-e [${RED}ERROR${NORM}] Grub not found in the archived system" 1
-      # Search archive contents for sys/extlinux
-      elif ! grep -Fq "bin/extlinux" /tmp/filelist || ! grep -Fq "bin/syslinux" /tmp/filelist && [ -n "$BRsyslinux" ]; then
-        print_err "-e [${RED}ERROR${NORM}] Extlinux/Syslinux not found in the archived system" 1
-      fi
-
-      # Search archive contents for efibootmgr
-      if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
-        print_err "-e [${RED}ERROR${NORM}] efibootmgr not found in the archived system" 1
-      fi
-      # Search archive contents for mkfs.vfat
-      if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
-        print_err "-e [${RED}ERROR${NORM}] dosfstools not found in the archived system" 1
-      fi
-      # Search archive contents for bootctl
-      if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/bootctl" /tmp/filelist; then
-        print_err "-e [${RED}ERROR${NORM}] Bootctl not found in the archived system" 1
-      fi
-      # Set the EFI Grub architecture in Restore Mode
-      if [ "$target_arch" = "x86_64" ]; then
-        BRgrubefiarch="x86_64-efi"
-      elif [ "$target_arch" = "i686" ]; then
-        BRgrubefiarch="i386-efi"
-      fi
-    fi
-
-    # Set the EFI Grub architecture in Transfer Mode
-    if [ -n "$BRgrub" ] && [ "$BRmode" = "2" ] && [ -d "$BR_EFI_DIR" ]; then
-      if [ "$(uname -m)" = "x86_64" ]; then
-        BRgrubefiarch="x86_64-efi"
-      elif [ "$(uname -m)" = "i686" ]; then
-        BRgrubefiarch="i386-efi"
-      fi
-    fi
-
-    # In case of EFI and Grub, set the defined ESP mountpoint as --efi-directory
-    if [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ]; then
-      BRgrub="$BRespmpoint"
-    fi
-  }
-
   # Generate target system's locales
   generate_locales() {
     if [ "$BRdistro" = "Arch" ] || [ "$BRdistro" = "Debian" ] || [ "$BRdistro" = "Gentoo" ]; then
@@ -2094,7 +2019,80 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   fi
 
   detect_distro
-  set_bootloader
+
+  # Set the bootloader
+  if [ -n "$BRgrub" ]; then
+    BRbootloader="Grub"
+  elif [ -n "$BRsyslinux" ]; then
+    BRbootloader="Syslinux"
+  elif [ -n "$BRefistub" ]; then
+    BRbootloader="EFISTUB/efibootmgr"
+  elif [ -n "$BRbootctl" ]; then
+    BRbootloader="Systemd/bootctl"
+  fi
+
+  if [ -n "$BRsyslinux" ]; then
+    # If the target Syslinux device is a raid array detect the partition table of one of the underlying devices. Probably all have the same partition table
+    if [[ "$BRsyslinux" == *md* ]]; then
+      for device in $(grep -w "${BRsyslinux##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]'); do
+        BRdevice="/dev/$device"
+      done
+    fi
+    detect_partition_table_syslinux
+    # Search for sgdisk in case of GPT
+    if [ ! "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ -z "$(which sgdisk 2>/dev/null)" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" 1
+    elif [ "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ "$BRmode" = "2" ] && [ -z "$(which sgdisk 2>/dev/null)" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" 1
+    # In case of Arch we run syslinux-install_update from chroot so it calls sgdisk from chroot also. Thats why in Restore mode sgdisk has to be in the archive
+    elif [ "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ "$BRmode" = "1" ] && ! grep -Fq "bin/sgdisk" /tmp/filelist; then
+      print_err "-e [${RED}ERROR${NORM}] sgdisk not found in the archived system" 1
+    fi
+  fi
+
+  if [ "$BRmode" = "1" ]; then
+    # Search archive contents for grub(2)-mkconfig
+    if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist; then
+      print_err "-e [${RED}ERROR${NORM}] Grub not found in the archived system" 1
+    # Search archive contents for sys/extlinux
+    elif ! grep -Fq "bin/extlinux" /tmp/filelist || ! grep -Fq "bin/syslinux" /tmp/filelist && [ -n "$BRsyslinux" ]; then
+      print_err "-e [${RED}ERROR${NORM}] Extlinux/Syslinux not found in the archived system" 1
+    fi
+
+    # Search archive contents for efibootmgr
+    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
+      print_err "-e [${RED}ERROR${NORM}] efibootmgr not found in the archived system" 1
+    fi
+    # Search archive contents for mkfs.vfat
+    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
+      print_err "-e [${RED}ERROR${NORM}] dosfstools not found in the archived system" 1
+    fi
+    # Search archive contents for bootctl
+    if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/bootctl" /tmp/filelist; then
+      print_err "-e [${RED}ERROR${NORM}] Bootctl not found in the archived system" 1
+    fi
+    # Set the EFI Grub architecture in Restore Mode
+    if [ "$target_arch" = "x86_64" ]; then
+      BRgrubefiarch="x86_64-efi"
+    elif [ "$target_arch" = "i686" ]; then
+      BRgrubefiarch="i386-efi"
+    fi
+  fi
+
+  # Set the EFI Grub architecture in Transfer Mode
+  if [ -n "$BRgrub" ] && [ "$BRmode" = "2" ] && [ -d "$BR_EFI_DIR" ]; then
+    if [ "$(uname -m)" = "x86_64" ]; then
+      BRgrubefiarch="x86_64-efi"
+    elif [ "$(uname -m)" = "i686" ]; then
+      BRgrubefiarch="i386-efi"
+    fi
+  fi
+
+  # In case of EFI and Grub, set the defined ESP mountpoint as --efi-directory
+  if [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ]; then
+    BRgrub="$BRespmpoint"
+  fi
+
   detect_root_map
 
   # Check archive for genkernel in case of Gentoo if -D is not given

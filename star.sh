@@ -1679,7 +1679,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       done < <(for BRpart in "${BRumountparts[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | tac)
     fi
 
-    if [ -z "$post_umt" ]; then
+    if [ -z "$post_umt" ] && [ -z "$BRdontckroot" ]; then
       # In case of btrfs subvolumes, unmount the root subvolume and mount the target root partition again
       if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
         print_msg "Unmounting $BRrootsubvol"

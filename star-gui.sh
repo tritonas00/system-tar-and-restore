@@ -274,6 +274,37 @@ set_args() {
   fi
 }
 
+toggle_umount() {
+  if [ "$BR_TAB" = "1" ]; then
+    cd /
+    sleep 1
+
+    if [ -n "$RT_ROOT" ]; then parts_array+=("/"="${RT_ROOT%% *}"); fi
+    if [ -n "$RT_ESP" ]; then parts_array+=("$RT_ESP_MOUNTPOINT"="${RT_ESP%% *}"); fi
+    if [ -n "$RT_BOOT" ]; then parts_array+=(/boot="${RT_BOOT%% *}"); fi
+    if [ -n "$RT_HOME" ]; then parts_array+=(/home="${RT_HOME%% *}"); fi
+    if [ -n "$RT_OTHER_PARTS" ]; then parts_array+=($RT_OTHER_PARTS); fi
+    parts_array_sorted=(`for item in "${parts_array[@]}"; do echo "${item//@}"; done | sort -k 1,1 -t =`)
+
+    umount /mnt/target/dev/pts
+    umount /mnt/target/proc
+    umount /mnt/target/dev
+    umount /mnt/target/sys/firmware/efi/efivars
+    umount /mnt/target/sys
+    umount /mnt/target/run
+
+    if [ -n "$parts_array_sorted" ]; then
+      while read ln; do
+        sleep 1
+        if [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$ln")" ]; then
+          umount "$ln" || _err="y"
+        fi
+      done < <(for part in "${parts_array_sorted[@]}"; do echo "$part" | cut -f2 -d"="; done | tac)
+    fi
+    if [ -z "$_err" ]; then rm -r /mnt/target; fi
+  fi
+}
+
 run_main() {
   if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ] && [ "$BR_DEBUG" = "true" ]; then
     echo star.sh "${SCR_ARGS[@]}" > /tmp/wr_proc
@@ -800,6 +831,7 @@ lost+found">
                                 <label>Cancel</label>
                                 <action>kill -9 -$(tail -1 /tmp/wr_pid)</action>
                                 <action>echo "PID $(tail -1 /tmp/wr_pid) Killed" > /tmp/wr_log</action>
+                                <action>bash -c "source /tmp/wr_functions; toggle_umount"</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>

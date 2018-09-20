@@ -427,10 +427,9 @@ if [ "$BRmode" = "0" ]; then
  # Generate configuration file
   generate_conf() {
     echo -e "# Auto-generated configuration file for backup mode. Place it in /etc\n"
-    echo BRdestination=\"$(dirname "$BRdestination")\"
+    echo -e "BRdestination=\"$(dirname "$BRdestination")\"\nBRcompression=\"$BRcompression\""
     if [ -n "$BRname" ] && [[ ! "$BRname" == Backup-$(hostname)-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9] ]]; then echo BRname=\"$BRname\"; fi # Strictly check the default filename format
     if [ -n "$BRuseropts" ]; then echo BRuseropts=\"$(echo $BRuseropts)\"; fi # trim leading/trailing and multiple spaces
-    echo BRcompression=\"$BRcompression\"
     if [ -n "$BRhomedir" ]; then echo BRhomedir=\"$BRhomedir\"; fi
     if [ -n "$BRnocolor" ]; then echo BRnocolor=\"Yes\"; fi
     if [ -n "$BRverb" ]; then echo BRverb=\"Yes\"; fi
@@ -439,8 +438,7 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRencpass" ]; then echo -e "BRencmethod=\"$BRencmethod\"\nBRencpass=\"$BRencpass\""; fi
     if [ -n "$BRclean" ]; then echo BRclean=\"Yes\"; fi
     if [ -n "$BRgenkernel" ]; then echo BRgenkernel=\"No\"; fi
-    if [ -n "$BRmcore" ]; then echo BRmcore=\"Yes\"; fi
-    if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo BRthreads=\"$BRthreads\"; fi
+    if [ -n "$BRmcore" ]; then echo -e "BRmcore=\"Yes\"\nBRthreads=\"$BRthreads\""; fi
     if [ -n "$BRsrc" ] && [ ! "$BRsrc" = "/" ]; then echo BRsrc=\"$BRsrcfull\"; fi
   }
 

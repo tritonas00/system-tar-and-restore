@@ -42,8 +42,8 @@ else
   export BC_FILENAME="Backup-$(hostname)-$(date +%Y%m%d-%H%M%S)"
 fi
 
-if [ -n "$BRFOLDER" ]; then
-  export BC_DESTINATION="$BRFOLDER"
+if [ -n "$BRdestination" ]; then
+  export BC_DESTINATION="$BRdestination"
 else
   export BC_DESTINATION="/"
 fi

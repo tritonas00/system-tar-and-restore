@@ -58,7 +58,7 @@ fi
 echo -e "\n$BR_VERSION"
 
 # Set arguments and help page
-BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,directory:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
+BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -81,8 +81,8 @@ while true; do
       BR_USER_OPTS="$2"
       shift 2
     ;;
-    -d|--directory)
-      BRFOLDER="$2"
+    -d|--destination)
+      BRdestination="$2"
       shift 2
     ;;
     -n|--filename)
@@ -241,7 +241,7 @@ General Options:
 
 Backup Mode:
   Destination:
-    -d, --directory           Backup destination path
+    -d, --destination           Backup destination path
     -n, --filename            Backup filename (without extension)
 
   Home Directory:
@@ -368,7 +368,7 @@ if [ "$BRmode" = "0" ]; then
   # Show a nice summary
   show_summary() {
     echo "ARCHIVE"
-    echo "$BRFOLDER/$BRNAME.$BR_EXT ($BRsrc) $mcinfo"
+    echo "$BRdestination/$BRNAME.$BR_EXT ($BRsrc) $mcinfo"
 
     echo -e "\nARCHIVER OPTIONS"
     for opt in "${BR_TR_OPTS[@]}"; do echo "$opt"; done
@@ -414,20 +414,20 @@ if [ "$BRmode" = "0" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      tar "${BR_MAIN_OPTS[@]}" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BR_MAIN_OPTS[@]}" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRdestination"/"$BRNAME"."$BR_EXT" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      tar "${BR_MAIN_OPTS[@]}" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRFOLDER"/"$BRNAME"."$BR_EXT" 2>> "$BRFOLDER"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BR_MAIN_OPTS[@]}" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRdestination"/"$BRNAME"."$BR_EXT" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
     # Without encryption
     else
-      tar "${BR_MAIN_OPTS[@]}" "$BRFOLDER"/"$BRNAME"."$BR_EXT" "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BR_MAIN_OPTS[@]}" "$BRdestination"/"$BRNAME"."$BR_EXT" "${BR_TR_OPTS[@]}" "$BRsrc"
     fi
   }
 
  # Generate configuration file
   generate_conf() {
     echo -e "# Auto-generated configuration file for backup mode. Place it in /etc\n"
-    echo BRFOLDER=\"$(dirname "$BRFOLDER")\"
+    echo BRdestination=\"$(dirname "$BRdestination")\"
     if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9] ]]; then echo BRNAME=\"$BRNAME\"; fi # Strictly check the default filename format
     if [ -n "$BR_USER_OPTS" ]; then echo BR_USER_OPTS=\"$(echo $BR_USER_OPTS)\"; fi # trim leading/trailing and multiple spaces
     echo BRcompression=\"$BRcompression\"
@@ -445,8 +445,8 @@ if [ "$BRmode" = "0" ]; then
   }
 
   # Check user input, exit on error
-  if [ -n "$BRFOLDER" ] && [ ! -d "$BRFOLDER" ]; then
-    print_err "[${RED}ERROR${NORM}] Directory does not exist: $BRFOLDER" 0
+  if [ -n "$BRdestination" ] && [ ! -d "$BRdestination" ]; then
+    print_err "[${RED}ERROR${NORM}] Directory does not exist: $BRdestination" 0
   fi
 
   if [ -n "$BRsrc" ] && [ ! -d "$BRsrc" ]; then
@@ -484,13 +484,13 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Set some defaults if not given by the user
-  if [ -z "$BRFOLDER" ]; then BRFOLDER="/"; fi
+  if [ -z "$BRdestination" ]; then BRdestination="/"; fi
   if [ -z "$BRNAME" ]; then BRNAME="Backup-$(hostname)-$(date +%Y%m%d-%H%M%S)"; fi
   if [ -z "$BRcompression" ]; then BRcompression="gzip"; fi
   if [ -z "$BRsrc" ]; then BRsrc="/"; fi
 
  # Set backup subdirectory
-  BRFOLDER="$(echo "$BRFOLDER"/Backup-$(date +%Y-%m-%d) | sed 's://*:/:g')" # Also eliminate multiple forward slashes in the path
+  BRdestination="$(echo "$BRdestination"/Backup-$(date +%Y-%m-%d) | sed 's://*:/:g')" # Also eliminate multiple forward slashes in the path
 
   if [ ! "$BRsrc" = "/" ]; then
     BRsrc="$(echo "$BRsrc" | sed 's://*:/:g')" # Eliminate multiple forward slashes in the path
@@ -552,7 +552,7 @@ if [ "$BRmode" = "0" ]; then
       BR_TR_OPTS+=(--selinux)
     fi
   fi
-  BR_TR_OPTS+=(--exclude="$(basename "$BRFOLDER")")
+  BR_TR_OPTS+=(--exclude="$(basename "$BRdestination")")
 
   # Set /home directory options
   if [ "$BRhomedir" = "2" ] && [ "$BRsrc" = "/" ]; then
@@ -567,15 +567,15 @@ if [ "$BRmode" = "0" ]; then
   # Check destination for backup directories with older date, strictly check directory name format
   if [ -n "$BRclean" ]; then
     while read dir; do
-      if [ "${dir//[^0-9]/}" -lt "${BRFOLDER//[^0-9]/}" ]; then # Compare the date numbers
+      if [ "${dir//[^0-9]/}" -lt "${BRdestination//[^0-9]/}" ]; then # Compare the date numbers
         BRoldbackups+=("$dir")
       fi
-    done < <(find "$(dirname "$BRFOLDER")" -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
+    done < <(find "$(dirname "$BRdestination")" -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
   fi
 
   # Check if backup file already exists and prompt the user to overwrite. If -q is given overwrite automatically
   if [ -z "$BRquiet" ]; then
-    while [ -f "$BRFOLDER/$BRNAME.$BR_EXT" ]; do
+    while [ -f "$BRdestination/$BRNAME.$BR_EXT" ]; do
       echo -e "${BOLD}"
       read -p "File $BRNAME.$BR_EXT already exists. Overwrite? [y/N]: $(echo -e "${NORM}")" an
       if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
@@ -615,10 +615,10 @@ if [ "$BRmode" = "0" ]; then
   # Restore mode will check and read this file in the archive
   if [ "$BRsrc" = "/" ]; then touch /target_architecture.$(uname -m); fi
   # Create the destination subdirectory
-  mkdir -p "$BRFOLDER"
+  mkdir -p "$BRdestination"
   sleep 1
   # Start the log
-  echo -e "$BR_VERSION\n\n[SUMMARY]\n$(show_summary)\n\n[ARCHIVER]" > "$BRFOLDER"/backup.log
+  echo -e "$BR_VERSION\n\n[SUMMARY]\n$(show_summary)\n\n[ARCHIVER]" > "$BRdestination"/backup.log
   # Store start time
   start=$(date +%s)
 
@@ -639,38 +639,38 @@ if [ "$BRmode" = "0" ]; then
 
   # Run tar and pipe it through the progress calculation, give errors to log
   mode_job="Archiving"
-  (run_tar 2>> "$BRFOLDER"/backup.log && echo "$total Files archived successfully" >> "$BRFOLDER"/backup.log || touch /tmp/error) | pgrs_bar
+  (run_tar 2>> "$BRdestination"/backup.log && echo "$total Files archived successfully" >> "$BRdestination"/backup.log || touch /tmp/error) | pgrs_bar
   echo
 
   # Generate configuration file if -g is given and no error occurred
   if [ -n "$BRgen" ] && [ ! -f /tmp/error ]; then
     echo "Generating backup.conf..."
-    generate_conf > "$BRFOLDER"/backup.conf
+    generate_conf > "$BRdestination"/backup.conf
   fi
 
   # Give destination subdirectory full permissions
-  echo "Setting permissions to $BRFOLDER"
-  chmod ugo+rw -R "$BRFOLDER"
+  echo "Setting permissions to $BRdestination"
+  chmod ugo+rw -R "$BRdestination"
 
   # Calculate elapsed time
   elapsed="$(($(($(date +%s)-start))/3600)) hours $((($(($(date +%s)-start))%3600)/60)) min $(($(($(date +%s)-start))%60)) sec"
 
   # Complete the log
-  echo "Elapsed time: $elapsed" >> "$BRFOLDER"/backup.log
+  echo "Elapsed time: $elapsed" >> "$BRdestination"/backup.log
 
   # Inform the user if error occurred or not
   if [ -f /tmp/error ]; then
-    echo -e "${RED}\nAn error occurred.\n\nCheck $BRFOLDER/backup.log for details.\nElapsed time: $elapsed${NORM}"
+    echo -e "${RED}\nAn error occurred.\n\nCheck $BRdestination/backup.log for details.\nElapsed time: $elapsed${NORM}"
   else
-    echo -e "${CYAN}\nBackup archive and log saved in $BRFOLDER\nElapsed time: $elapsed${NORM}"
+    echo -e "${CYAN}\nBackup archive and log saved in $BRdestination\nElapsed time: $elapsed${NORM}"
   fi
 
   # Give log to gui wrapper
   if [ -n "$BRwrap" ]; then
-    cat "$BRFOLDER"/backup.log > /tmp/wr_log
+    cat "$BRdestination"/backup.log > /tmp/wr_log
     # Give generated configuration file to gui wrapper also
     if [ -n "$BRgen" ] && [ ! -f /tmp/error ]; then
-      echo -e "\n[CONFIGURATION FILE]\n$(cat "$BRFOLDER"/backup.conf)" >> /tmp/wr_log
+      echo -e "\n[CONFIGURATION FILE]\n$(cat "$BRdestination"/backup.conf)" >> /tmp/wr_log
     fi
   fi
 
@@ -680,7 +680,7 @@ if [ "$BRmode" = "0" ]; then
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
-  unset BRFOLDER BRNAME BRcompression BRgen BRencmethod BRclean BRsrc
+  unset BRdestination BRNAME BRcompression BRgen BRencmethod BRclean BRsrc
 
   # Detect backup archive encryption
   detect_encryption() {

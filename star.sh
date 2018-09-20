@@ -368,7 +368,7 @@ if [ "$BRmode" = "0" ]; then
   # Show a nice summary
   show_summary() {
     echo "ARCHIVE"
-    echo "$BRdestination/$BRname.$BR_EXT ($BRsrc) $mcinfo"
+    echo "$BRdestination/$BRname.$BRext ($BRsrc) $mcinfo"
 
     echo -e "\nARCHIVER OPTIONS"
     for opt in "${BR_TR_OPTS[@]}"; do echo "$opt"; done
@@ -414,13 +414,13 @@ if [ "$BRmode" = "0" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      tar "${BR_MAIN_OPTS[@]}" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRdestination"/"$BRname"."$BR_EXT" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BR_MAIN_OPTS[@]}" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRdestination"/"$BRname"."$BRext" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      tar "${BR_MAIN_OPTS[@]}" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRdestination"/"$BRname"."$BR_EXT" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BR_MAIN_OPTS[@]}" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRdestination"/"$BRname"."$BRext" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
     # Without encryption
     else
-      tar "${BR_MAIN_OPTS[@]}" "$BRdestination"/"$BRname"."$BR_EXT" "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BR_MAIN_OPTS[@]}" "$BRdestination"/"$BRname"."$BRext" "${BR_TR_OPTS[@]}" "$BRsrc"
     fi
   }
 
@@ -499,35 +499,35 @@ if [ "$BRmode" = "0" ]; then
   # Set tar compression options and backup file extension
   if [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ]; then
     BR_MAIN_OPTS=(-c -I "pigz -p$BRthreads" -vpf)
-    BR_EXT="tar.gz"
+    BRext="tar.gz"
     mcinfo="(pigz $BRthreads threads)"
   elif [ "$BRcompression" = "gzip" ]; then
     BR_MAIN_OPTS=(cvpzf)
-    BR_EXT="tar.gz"
+    BRext="tar.gz"
   elif [ "$BRcompression" = "xz" ] && [ -n "$BRmcore" ]; then
     BR_MAIN_OPTS=(-c -I "pxz -T$BRthreads" -vpf)
-    BR_EXT="tar.xz"
+    BRext="tar.xz"
     mcinfo="(pxz $BRthreads threads)"
   elif [ "$BRcompression" = "xz" ]; then
     BR_MAIN_OPTS=(cvpJf)
-    BR_EXT="tar.xz"
+    BRext="tar.xz"
   elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcore" ]; then
     BR_MAIN_OPTS=(-c -I "pbzip2 -p$BRthreads" -vpf)
-    BR_EXT="tar.bz2"
+    BRext="tar.bz2"
     mcinfo="(pbzip2 $BRthreads threads)"
   elif [ "$BRcompression" = "bzip2" ]; then
     BR_MAIN_OPTS=(cvpjf)
-    BR_EXT="tar.bz2"
+    BRext="tar.bz2"
   elif [ "$BRcompression" = "none" ]; then
     BR_MAIN_OPTS=(cvpf)
-    BR_EXT="tar"
+    BRext="tar"
   fi
 
   # Set backup file extension based on encryption
   if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-    BR_EXT="$BR_EXT.aes"
+    BRext="$BRext.aes"
   elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-    BR_EXT="$BR_EXT.gpg"
+    BRext="$BRext.gpg"
   fi
 
   # Set tar default options
@@ -575,9 +575,9 @@ if [ "$BRmode" = "0" ]; then
 
   # Check if backup file already exists and prompt the user to overwrite. If -q is given overwrite automatically
   if [ -z "$BRquiet" ]; then
-    while [ -f "$BRdestination/$BRname.$BR_EXT" ]; do
+    while [ -f "$BRdestination/$BRname.$BRext" ]; do
       echo -e "${BOLD}"
-      read -p "File $BRname.$BR_EXT already exists. Overwrite? [y/N]: $(echo -e "${NORM}")" an
+      read -p "File $BRname.$BRext already exists. Overwrite? [y/N]: $(echo -e "${NORM}")" an
       if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
         break
       elif [ "$an" = "n" ] || [ "$an" = "N" ] || [ -z "$an" ]; then

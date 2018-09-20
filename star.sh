@@ -241,7 +241,7 @@ General Options:
 
 Backup Mode:
   Destination:
-    -d, --destination           Backup destination path
+    -d, --destination         Backup destination path
     -n, --filename            Backup filename (without extension)
 
   Home Directory:

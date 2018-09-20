@@ -314,6 +314,8 @@ run_main() {
     sleep 0.1
     if grep -qF [ERROR] /tmp/wr_log; then
       grep -F [ERROR] /tmp/wr_log | cut -f2- -d" " > /tmp/wr_proc
+    elif grep -qF [SUMMARY] /tmp/wr_log; then
+      echo "Completed. See Log tab for details" > /tmp/wr_proc
     else
       echo "$BRtitle" > /tmp/wr_proc
     fi

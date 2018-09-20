@@ -97,6 +97,7 @@ echo '
 set_args() {
   # Backup mode arguments
   if [ "$BR_TAB" = "0" ]; then
+    _mode="Backup"
     SCR_ARGS=(-i 0 -jq -c "$BC_COMPRESSION")
 
     if [ -n "$BC_DESTINATION" ] && [ ! "$BC_DESTINATION" = "/" ]; then
@@ -152,6 +153,7 @@ set_args() {
   elif [ "$BR_TAB" = "1" ]; then
     # Restore mode arguments
     if [ "$RT_TAB" = "0" ]; then
+      _mode="Restore"
       SCR_ARGS=(-i 1 -jq -f "$RS_ARCHIVE")
 
       if [ -n "$RS_PASSPHRASE" ]; then
@@ -176,6 +178,7 @@ set_args() {
 
     # Transfer mode arguments
     elif [ "$RT_TAB" = "1" ]; then
+      _mode="Transfer"
       SCR_ARGS=(-i 2 -jq)
       if [ "$TS_HOME" = "Only hidden files and folders" ]; then
         SCR_ARGS+=(-H 1)
@@ -315,7 +318,7 @@ run_main() {
     if grep -qF [ERROR] /tmp/wr_log; then
       grep -F [ERROR] /tmp/wr_log | cut -f2- -d" " > /tmp/wr_proc
     elif grep -qF [SUMMARY] /tmp/wr_log; then
-      echo "Completed. See Log tab for details" > /tmp/wr_proc
+      echo "$_mode completed. See Log tab for details" > /tmp/wr_proc
     else
       echo "$BRtitle" > /tmp/wr_proc
     fi

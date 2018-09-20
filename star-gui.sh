@@ -81,8 +81,8 @@ else
 fi
 
 # Set user tar options if given from configuration file, separate entries
-if [ -n "$BR_USER_OPTS" ]; then
-  for opt in $BR_USER_OPTS; do
+if [ -n "$BRuseropts" ]; then
+  for opt in $BRuseropts; do
     if [[ "$opt" == --exclude=* ]]; then
       export BC_EXCLUDE="$(echo "$opt" | cut -f2 -d"=") $BC_EXCLUDE"
     elif [[ "$opt" == -* ]]; then

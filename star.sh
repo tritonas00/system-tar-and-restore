@@ -78,7 +78,7 @@ while true; do
       shift 2
     ;;
     -u|--user-opts)
-      BR_USER_OPTS="$2"
+      BRuseropts="$2"
       shift 2
     ;;
     -d|--destination)
@@ -353,7 +353,7 @@ if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcore" ] && [ -z "$BRt
 fi
 
 # Add tar/rsync user options to the main array, replace any // with space, add only options starting with -
-for opt in $BR_USER_OPTS; do
+for opt in $BRuseropts; do
   if [[ "$opt" == -* ]]; then
     BR_TR_OPTS+=("${opt///\//\ }")
   fi
@@ -429,7 +429,7 @@ if [ "$BRmode" = "0" ]; then
     echo -e "# Auto-generated configuration file for backup mode. Place it in /etc\n"
     echo BRdestination=\"$(dirname "$BRdestination")\"
     if [ -n "$BRname" ] && [[ ! "$BRname" == Backup-$(hostname)-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9] ]]; then echo BRname=\"$BRname\"; fi # Strictly check the default filename format
-    if [ -n "$BR_USER_OPTS" ]; then echo BR_USER_OPTS=\"$(echo $BR_USER_OPTS)\"; fi # trim leading/trailing and multiple spaces
+    if [ -n "$BRuseropts" ]; then echo BRuseropts=\"$(echo $BRuseropts)\"; fi # trim leading/trailing and multiple spaces
     echo BRcompression=\"$BRcompression\"
     if [ -n "$BRhomedir" ]; then echo BRhomedir=\"$BRhomedir\"; fi
     if [ -n "$BRnocolor" ]; then echo BRnocolor=\"Yes\"; fi

@@ -259,7 +259,7 @@ Backup Mode:
   Misc Options:
     -g, --generate            Generate configuration file (in case of successful backup)
     -a, --clean               Remove older backups in the destination directory
-    -T, --src-dir             Create a non-system backup archive of a specified directory
+    -T, --src-dir             Specify an alternative source directory to create a non-system backup archive
 
 Restore / Transfer Mode:
   Partitions:

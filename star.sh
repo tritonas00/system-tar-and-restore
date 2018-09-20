@@ -15,7 +15,7 @@ clean_tmp_files() {
 
 # Calculate percentage and compose a simple progress bar
 pstr="========================"
-dstr="                        "
+dstr="------------------------"
 lastper="-1"
 
 pgrs_bar() {

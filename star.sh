@@ -109,7 +109,7 @@ while true; do
       BRthreads="$2"
       shift 2
     ;;
-    -T|--top-dir)
+    -T|--src-dir)
       BRsrc="$2"
       shift 2
     ;;

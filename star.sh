@@ -86,7 +86,7 @@ while true; do
       shift 2
     ;;
     -n|--filename)
-      BRNAME="$2"
+      BRname="$2"
       shift 2
     ;;
     -c|--compression)
@@ -368,7 +368,7 @@ if [ "$BRmode" = "0" ]; then
   # Show a nice summary
   show_summary() {
     echo "ARCHIVE"
-    echo "$BRdestination/$BRNAME.$BR_EXT ($BRsrc) $mcinfo"
+    echo "$BRdestination/$BRname.$BR_EXT ($BRsrc) $mcinfo"
 
     echo -e "\nARCHIVER OPTIONS"
     for opt in "${BR_TR_OPTS[@]}"; do echo "$opt"; done
@@ -414,13 +414,13 @@ if [ "$BRmode" = "0" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      tar "${BR_MAIN_OPTS[@]}" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRdestination"/"$BRNAME"."$BR_EXT" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BR_MAIN_OPTS[@]}" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRdestination"/"$BRname"."$BR_EXT" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      tar "${BR_MAIN_OPTS[@]}" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRdestination"/"$BRNAME"."$BR_EXT" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BR_MAIN_OPTS[@]}" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRdestination"/"$BRname"."$BR_EXT" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
     # Without encryption
     else
-      tar "${BR_MAIN_OPTS[@]}" "$BRdestination"/"$BRNAME"."$BR_EXT" "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BR_MAIN_OPTS[@]}" "$BRdestination"/"$BRname"."$BR_EXT" "${BR_TR_OPTS[@]}" "$BRsrc"
     fi
   }
 
@@ -428,7 +428,7 @@ if [ "$BRmode" = "0" ]; then
   generate_conf() {
     echo -e "# Auto-generated configuration file for backup mode. Place it in /etc\n"
     echo BRdestination=\"$(dirname "$BRdestination")\"
-    if [ -n "$BRNAME" ] && [[ ! "$BRNAME" == Backup-$(hostname)-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9] ]]; then echo BRNAME=\"$BRNAME\"; fi # Strictly check the default filename format
+    if [ -n "$BRname" ] && [[ ! "$BRname" == Backup-$(hostname)-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9] ]]; then echo BRname=\"$BRname\"; fi # Strictly check the default filename format
     if [ -n "$BR_USER_OPTS" ]; then echo BR_USER_OPTS=\"$(echo $BR_USER_OPTS)\"; fi # trim leading/trailing and multiple spaces
     echo BRcompression=\"$BRcompression\"
     if [ -n "$BRhomedir" ]; then echo BRhomedir=\"$BRhomedir\"; fi
@@ -485,7 +485,7 @@ if [ "$BRmode" = "0" ]; then
 
   # Set some defaults if not given by the user
   if [ -z "$BRdestination" ]; then BRdestination="/"; fi
-  if [ -z "$BRNAME" ]; then BRNAME="Backup-$(hostname)-$(date +%Y%m%d-%H%M%S)"; fi
+  if [ -z "$BRname" ]; then BRname="Backup-$(hostname)-$(date +%Y%m%d-%H%M%S)"; fi
   if [ -z "$BRcompression" ]; then BRcompression="gzip"; fi
   if [ -z "$BRsrc" ]; then BRsrc="/"; fi
 
@@ -575,9 +575,9 @@ if [ "$BRmode" = "0" ]; then
 
   # Check if backup file already exists and prompt the user to overwrite. If -q is given overwrite automatically
   if [ -z "$BRquiet" ]; then
-    while [ -f "$BRdestination/$BRNAME.$BR_EXT" ]; do
+    while [ -f "$BRdestination/$BRname.$BR_EXT" ]; do
       echo -e "${BOLD}"
-      read -p "File $BRNAME.$BR_EXT already exists. Overwrite? [y/N]: $(echo -e "${NORM}")" an
+      read -p "File $BRname.$BR_EXT already exists. Overwrite? [y/N]: $(echo -e "${NORM}")" an
       if [ "$an" = "y" ] || [ "$an" = "Y" ]; then
         break
       elif [ "$an" = "n" ] || [ "$an" = "N" ] || [ -z "$an" ]; then
@@ -680,7 +680,7 @@ if [ "$BRmode" = "0" ]; then
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
-  unset BRdestination BRNAME BRcompression BRgen BRencmethod BRclean BRsrc
+  unset BRdestination BRname BRcompression BRgen BRencmethod BRclean BRsrc
 
   # Detect backup archive encryption
   detect_encryption() {

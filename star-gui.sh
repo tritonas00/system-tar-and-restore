@@ -277,7 +277,10 @@ set_args() {
   fi
 }
 
-toggle_umount() {
+kill_umount() {
+  kill -9 -$(tail -1 /tmp/wr_pid)
+  echo "PID $(tail -1 /tmp/wr_pid) Killed" > /tmp/wr_log
+
   if [ "$BR_TAB" = "1" ]; then
     cd /
     sleep 1
@@ -834,9 +837,7 @@ lost+found">
                                 <input file stock="gtk-stop"></input>
                                 <variable>BTN_CANCEL</variable>
                                 <label>Cancel</label>
-                                <action>kill -9 -$(tail -1 /tmp/wr_pid)</action>
-                                <action>echo "PID $(tail -1 /tmp/wr_pid) Killed" > /tmp/wr_log</action>
-                                <action>bash -c "source /tmp/wr_functions; toggle_umount"</action>
+                                <action>bash -c "source /tmp/wr_functions; kill_umount"</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>

@@ -279,7 +279,7 @@ set_args() {
 
 kill_umount() {
   kill -9 -$(tail -1 /tmp/wr_pid)
-  echo "PID $(tail -1 /tmp/wr_pid) Killed" > /tmp/wr_log
+  echo "Process ID $(tail -1 /tmp/wr_pid) killed" > /tmp/wr_log
 
   if [ "$BR_TAB" = "1" ]; then
     cd /

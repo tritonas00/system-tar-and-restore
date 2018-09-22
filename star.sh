@@ -240,7 +240,7 @@ General Options:
       --help	              Print this page
 
 Backup Mode:
-  Destination:
+  Archive Options:
     -d, --destination         Backup destination path
     -n, --filename            Backup filename (without extension)
 
@@ -249,7 +249,7 @@ Backup Mode:
 
   Archiver Options:
     -c, --compression         Compression type: gzip bzip2 xz none
-    -M, --multi-core          Enable multi-core compression (via pigz, pbzip2 or pxz)
+    -M, --multi-core          Enable multi-core compression via pigz, pbzip2 or pxz
     -z, --threads             Specify the number of threads for multi-core compression
 
   Encryption Options:
@@ -290,7 +290,7 @@ Restore / Transfer Mode:
     -y,  --username           Ftp/http username
     -p,  --password           Ftp/http password
     -P,  --passphrase         Passphrase for decryption
-    -M,  --multi-core         Enable multi-core decompression (via pbzip2)
+    -M,  --multi-core         Enable multi-core decompression via pbzip2
     -z,  --threads            Specify the number of threads for multi-core decompression
 
   Transfer Mode:

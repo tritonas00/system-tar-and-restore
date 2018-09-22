@@ -368,21 +368,9 @@ if [ "$BRmode" = "0" ]; then
   # Show a nice summary
   show_summary() {
     echo "ARCHIVE"
-    echo "$BRdestination/$BRname.$BRext ($BRsrc) $mcinfo"
-
-    echo -e "\nARCHIVER OPTIONS"
-    for opt in "${BR_TR_OPTS[@]}"; do echo "$opt"; done
+    echo "$BRdestination/$BRname.$BRext"
 
     if [ "$BRsrc" = "/" ]; then
-      echo -e "\nHOME DIRECTORY"
-      if [ "$BRhomedir" = "1" ]; then
-        echo "Only hidden files and folders"
-      elif [ "$BRhomedir" = "2" ]; then
-        echo "Exclude"
-      elif [ "$BRhomedir" = "0" ]; then
-        echo "Include"
-      fi
-
       echo -e "\nFOUND BOOTLOADERS"
       # If grub(2)-mkconfig found, probably grub is installed
       if which grub-mkconfig &>/dev/null || which grub2-mkconfig &>/dev/null; then echo "Grub"; else BRgrub="n"; fi
@@ -394,11 +382,27 @@ if [ "$BRmode" = "0" ]; then
       if which bootctl &>/dev/null; then echo "Systemd/bootctl"; else BRbootctl="n"; fi
       # In case none of the above found
       if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ] && [ -n "$BRefibootmgr" ] && [ -n "$BRbootctl" ]; then
-        echo "None or not supported"
+        echo "None or not supported (WARNING)"
       fi
     fi
 
-    # Show older backup directories that we remove later if -a is given
+    echo -e "\nPROCESS"
+    echo "Mode:    Backup"
+    if [ "$BRhomedir" = "1" ] && [ "$BRsrc" = "/" ]; then
+      echo "Home:    Only hidden files and folders"
+    elif [ "$BRhomedir" = "2" ] && [ "$BRsrc" = "/" ]; then
+      echo "Home:    Exclude"
+    elif [ "$BRhomedir" = "0" ] && [ "$BRsrc" = "/" ]; then
+      echo "Home:    Include"
+    fi
+    echo "Source:  $BRsrc"
+    if [ -n "$BRmcore" ]; then
+      echo "Multicore: $mcinfo"
+    fi
+
+    echo -e "\nTAR OPTIONS"
+    for opt in "${BR_TR_OPTS[@]}"; do echo "$opt"; done
+
     if [ -n "$BRoldbackups" ] && [ -n "$BRclean" ]; then
       echo -e "\nREMOVE BACKUPS"
       for backup in "${BRoldbackups[@]}"; do echo "$backup"; done
@@ -498,21 +502,21 @@ if [ "$BRmode" = "0" ]; then
   if [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ]; then
     BR_MAIN_OPTS=(-c -I "pigz -p$BRthreads" -vpf)
     BRext="tar.gz"
-    mcinfo="(pigz $BRthreads threads)"
+    mcinfo="pigz $BRthreads threads"
   elif [ "$BRcompression" = "gzip" ]; then
     BR_MAIN_OPTS=(cvpzf)
     BRext="tar.gz"
   elif [ "$BRcompression" = "xz" ] && [ -n "$BRmcore" ]; then
     BR_MAIN_OPTS=(-c -I "pxz -T$BRthreads" -vpf)
     BRext="tar.xz"
-    mcinfo="(pxz $BRthreads threads)"
+    mcinfo="pxz $BRthreads threads"
   elif [ "$BRcompression" = "xz" ]; then
     BR_MAIN_OPTS=(cvpJf)
     BRext="tar.xz"
   elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcore" ]; then
     BR_MAIN_OPTS=(-c -I "pbzip2 -p$BRthreads" -vpf)
     BRext="tar.bz2"
-    mcinfo="(pbzip2 $BRthreads threads)"
+    mcinfo="pbzip2 $BRthreads threads"
   elif [ "$BRcompression" = "bzip2" ]; then
     BR_MAIN_OPTS=(cvpjf)
     BRext="tar.bz2"
@@ -707,8 +711,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRreadopts=(tfz)
       BR_MAIN_OPTS=(xvpfz)
     elif echo "$BRtype" | grep -q -w bzip2 && [ -n "$BRmcore" ]; then
-      BRfiletype="bzip2 compressed"
-      mcinfo="(pbzip2 $BRthreads threads)"
+      BRfiletype="pbzip2 compressed"
+      mcinfo="$BRthreads threads"
       BRreadopts=(-I "pbzip2 --ignore-trailing-garbage=1 -p$BRthreads" -tf)
       BR_MAIN_OPTS=(-I "pbzip2 --ignore-trailing-garbage=1 -p$BRthreads" -xvpf)
     elif echo "$BRtype" | grep -q -w bzip2; then
@@ -1130,7 +1134,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ "$BRmode" = "2" ] && [ -n "$BR_TR_OPTS" ]; then
       echo -e "\nRSYNC OPTIONS"
     elif [ "$BRmode" = "1" ] && [ -n "$BR_TR_OPTS" ]; then
-      echo -e "\nARCHIVER OPTIONS"
+      echo -e "\nTAR OPTIONS"
     fi
     for opt in "${BR_TR_OPTS[@]}"; do echo "$opt"; done
   }

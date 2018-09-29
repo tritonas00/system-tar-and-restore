@@ -58,7 +58,7 @@ fi
 echo -e "\n$BR_VERSION"
 
 # Set arguments and help page
-BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,bios,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
+BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,ignore-efi,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -213,7 +213,7 @@ while true; do
       BRdontckroot="y"
       shift
     ;;
-    -W|--bios)
+    -W|--ignore-efi)
       unset BR_EFI_DIR
       shift
     ;;
@@ -298,7 +298,7 @@ Restore / Transfer Mode:
 
   Misc Options:
     -x,  --dont-check-root    Don't check if the target root partition is empty (dangerous)
-    -W,  --bios               Ignore UEFI environment"
+    -W,  --ignore-efi         Ignore UEFI environment"
       exit
       shift
     ;;
@@ -1940,7 +1940,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   fi
 
   if [ ! -d "$BR_EFI_DIR" ] && [ -n "$BResp" ]; then
-    print_err "[${RED}ERROR${NORM}] Don't use EFI system partition in bios mode" 0
+    print_err "[${RED}ERROR${NORM}] Don't use EFI system partition in bios environment" 0
   fi
 
   if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -n "$BRroot" ] && [ -z "$BResp" ]; then

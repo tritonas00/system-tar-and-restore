@@ -271,7 +271,7 @@ set_args() {
       SCR_ARGS+=(-x)
     fi
 
-    if [ "$RT_BIOS" = "true" ]; then
+    if [ "$RT_NOEFI" = "true" ]; then
       SCR_ARGS+=(-W)
     fi
   fi
@@ -798,8 +798,8 @@ lost+found">
                                 <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check and initramfs building in gentoo">
                                         <variable>RT_GENKERNEL</variable>
                                 </checkbox>
-                                <checkbox label="Bios" tooltip-text="Ignore UEFI environment">
-                                        <variable>RT_BIOS</variable>
+                                <checkbox label="Ignore UEFI" tooltip-text="Ignore UEFI environment">
+                                        <variable>RT_NOEFI</variable>
                                 </checkbox>
 			</vbox>
                         <vbox scrollable="true" shadow-type="0">

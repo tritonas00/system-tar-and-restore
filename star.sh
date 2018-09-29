@@ -393,9 +393,7 @@ if [ "$BRmode" = "0" ]; then
       # If bootctl found, probably systemd-boot is available
       if which bootctl &>/dev/null; then echo "Systemd/bootctl"; else BRbootctl="n"; fi
       # In case none of the above found
-      if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ] && [ -n "$BRefibootmgr" ] && [ -n "$BRbootctl" ]; then
-        echo "None or not supported"
-      fi
+      if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ] && [ -n "$BRefibootmgr" ] && [ -n "$BRbootctl" ]; then echo "None or not supported"; fi
     fi
 
     # Show older backup directories that we remove later if -a is given

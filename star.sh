@@ -245,7 +245,7 @@ Backup Mode:
     -n, --filename            Backup filename (without extension)
 
   Home Directory:
-    -H, --home-dir	      Backup /home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
+    -H, --home-dir	      Backup /home directory options: 0 (Only hidden files and folders) 1 (Exclude)
 
   Archiver Options:
     -c, --compression         Compression type: gzip bzip2 xz none
@@ -294,7 +294,7 @@ Restore / Transfer Mode:
     -z,  --threads            Specify the number of threads for multi-core decompression
 
   Transfer Mode:
-    -H,  --home-dir	      Transfer /home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
+    -H,  --home-dir	      Transfer /home directory options: 0 (Only hidden files and folders) 1 (Exclude)
 
   Misc Options:
     -x,  --dont-check-root    Don't check if the target root partition is empty (dangerous)
@@ -338,13 +338,9 @@ fi
 
 clean_tmp_files
 
-# Set default /home directory option for Backup and Transfer mode, check user input
-if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ]; then
-  if [ -n "$BRhomedir" ] && [ ! "$BRhomedir" = "0" ] && [ ! "$BRhomedir" = "1" ] && [ ! "$BRhomedir" = "2" ]; then
-    print_err "[${RED}ERROR${NORM}] Wrong /home directory option: $BRhomedir. Available options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)" 0
-  elif [ -z "$BRhomedir" ]; then
-    BRhomedir="0"
-  fi
+# Check /home directory option for Backup and Transfer mode
+if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ] && [ -n "$BRhomedir" ] && [ ! "$BRhomedir" = "0" ] && [ ! "$BRhomedir" = "1" ]; then
+  print_err "[${RED}ERROR${NORM}] Wrong /home directory option: $BRhomedir. Available options: 0 (Only hidden files and folders) 1 (Exclude)" 0
 fi
 
 # Set default multi-core threads for Backup and Restore mode
@@ -375,11 +371,11 @@ if [ "$BRmode" = "0" ]; then
 
     if [ "$BRsrc" = "/" ]; then
       echo -e "\nHOME DIRECTORY"
-      if [ "$BRhomedir" = "1" ]; then
+      if [ "$BRhomedir" = "0" ]; then
         echo "Only hidden files and folders"
-      elif [ "$BRhomedir" = "2" ]; then
+      elif [ "$BRhomedir" = "1" ]; then
         echo "Exclude"
-      elif [ "$BRhomedir" = "0" ]; then
+      else
         echo "Include"
       fi
 
@@ -551,13 +547,13 @@ if [ "$BRmode" = "0" ]; then
   BR_TR_OPTS+=(--exclude="$(basename "$BRdestination")")
 
   # Set /home directory options
-  if [ "$BRhomedir" = "2" ] && [ "$BRsrc" = "/" ]; then
-    BR_TR_OPTS+=(--exclude=/home/*)
-  elif [ "$BRhomedir" = "1" ] && [ "$BRsrc" = "/" ]; then
+  if [ "$BRhomedir" = "0" ] && [ "$BRsrc" = "/" ]; then
     # Find everything that doesn't start with dot and exclude it
     while read item; do
       BR_TR_OPTS+=(--exclude="$item")
     done< <(find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print)
+  elif [ "$BRhomedir" = "1" ] && [ "$BRsrc" = "/" ]; then
+    BR_TR_OPTS+=(--exclude=/home/*)
   fi
 
   # Check destination for backup directories with older date, strictly check directory name format
@@ -882,9 +878,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
                    --exclude=/home/*/.gvfs  \
                    --exclude=lost+found)
     fi
-    if [ "$BRhomedir" = "1" ]; then
+    if [ "$BRhomedir" = "0" ]; then
       BR_TR_OPTS+=(--exclude=/home/*/[^.]*)
-    elif [ "$BRhomedir" = "2" ]; then
+    elif [ "$BRhomedir" = "1" ]; then
       BR_TR_OPTS+=(--exclude=/home/*)
     fi
   }
@@ -1104,11 +1100,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     elif [ "$BRmode" = "2" ]; then
       echo "Mode:    Transfer"
-      if [ "$BRhomedir" = "1" ]; then
+      if [ "$BRhomedir" = "0" ]; then
         echo "Home:    Only hidden files and folders"
-      elif [ "$BRhomedir" = "2" ]; then
+      elif [ "$BRhomedir" = "1" ]; then
         echo "Home:    Exclude"
-      elif [ "$BRhomedir" = "0" ]; then
+      else
         echo "Home:    Include"
       fi
     fi

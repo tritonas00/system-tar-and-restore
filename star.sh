@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Set program version
-BR_VERSION="System Tar & Restore 7.0"
+BRversion="System Tar & Restore 7.0"
 
 # Set EFI detection directory
-BR_EFI_DIR="/sys/firmware/efi"
+BRefidir="/sys/firmware/efi"
 
 # Delete temporary files if exist
 clean_tmp_files() {
@@ -55,7 +55,7 @@ elif [ -f /etc/backup.conf ] && [ -z "$BRwrap" ]; then
 fi
 
 # Show version
-echo -e "\n$BR_VERSION"
+echo -e "\n$BRversion"
 
 # Set arguments and help page
 BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,ignore-efi,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
@@ -214,7 +214,7 @@ while true; do
       shift
     ;;
     -W|--ignore-efi)
-      unset BR_EFI_DIR
+      unset BRefidir
       shift
     ;;
     -F|--efistub)
@@ -610,7 +610,7 @@ if [ "$BRmode" = "0" ]; then
   mkdir -p "$BRdestination"
   sleep 1
   # Start the log
-  echo -e "$BR_VERSION\n\n[SUMMARY]\n$(show_summary)\n\n[ARCHIVER]" > "$BRdestination"/backup.log
+  echo -e "$BRversion\n\n[SUMMARY]\n$(show_summary)\n\n[ARCHIVER]" > "$BRdestination"/backup.log
   # Store start time
   start=$(date +%s)
 
@@ -1061,7 +1061,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     echo -e "\nBOOTLOADER"
     if [ -n "$BRgrub" ]; then
-      if [ -d "$BR_EFI_DIR" ]; then
+      if [ -d "$BRefidir" ]; then
         echo "$BRbootloader ($BRgrubefiarch)"
       else
         echo "$BRbootloader (i386-pc)"
@@ -1069,7 +1069,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       # If the target Grub device is a raid array, show all devices the array contains
       if [[ "$BRgrub" == *md* ]]; then
         echo Devices: $(grep -w "${BRgrub##*/}" /proc/mdstat | grep -oP '[vhs]d[a-z]')
-      elif [ ! -d "$BR_EFI_DIR" ]; then
+      elif [ ! -d "$BRefidir" ]; then
         echo "Device: $BRgrub"
       fi
     elif [ -n "$BRsyslinux" ]; then
@@ -1142,7 +1142,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     mount --bind /proc /mnt/target/proc
     echo "Binding /sys"
     mount --bind /sys /mnt/target/sys
-    if [ -d "$BR_EFI_DIR" ]; then
+    if [ -d "$BRefidir" ]; then
       echo "Binding /sys/firmware/efi/efivars"
       mount --bind /sys/firmware/efi/efivars /mnt/target/sys/firmware/efi/efivars
     fi
@@ -1414,7 +1414,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRgrub" ]; then
       print_msg "\nInstalling Grub in $BRgrub"
       # In case of ESP on /boot, if target boot/efi exists move it as boot/efi-old so we have a clean directory to work
-      if [ -d "$BR_EFI_DIR" ] && [ "$BRespmpoint" = "/boot" ] && [ -d /mnt/target/boot/efi ]; then
+      if [ -d "$BRefidir" ] && [ "$BRespmpoint" = "/boot" ] && [ -d /mnt/target/boot/efi ]; then
         # Also if boot/efi-old already exists remove it
         if [ -d /mnt/target/boot/efi-old ]; then rm -r /mnt/target/boot/efi-old; fi
         mv /mnt/target/boot/efi /mnt/target/boot/efi-old
@@ -1432,24 +1432,24 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           fi
         done
       # Normal install
-      elif [ "$BRdistro" = "Arch" ] && [ -d "$BR_EFI_DIR" ]; then
+      elif [ "$BRdistro" = "Arch" ] && [ -d "$BRefidir" ]; then
         chroot /mnt/target grub-install --target="$BRgrubefiarch" --efi-directory="$BRgrub" --bootloader-id=grub --recheck || touch /tmp/error
       elif [ "$BRdistro" = "Arch" ]; then
         chroot /mnt/target grub-install --target=i386-pc --recheck "$BRgrub" || touch /tmp/error
-      elif [ "$BRdistro" = "Debian" ] && [ -d "$BR_EFI_DIR" ]; then
+      elif [ "$BRdistro" = "Debian" ] && [ -d "$BRefidir" ]; then
         chroot /mnt/target grub-install --efi-directory="$BRgrub" --recheck || touch /tmp/error
       elif [ "$BRdistro" = "Debian" ]; then
         chroot /mnt/target grub-install --recheck "$BRgrub" || touch /tmp/error
-      elif [ -d "$BR_EFI_DIR" ]; then
+      elif [ -d "$BRefidir" ]; then
         chroot /mnt/target grub2-install --efi-directory="$BRgrub" --recheck || touch /tmp/error
       else
         chroot /mnt/target grub2-install --recheck "$BRgrub" || touch /tmp/error
       fi
 
       # Fedora already does this
-      if [ ! "$BRdistro" = "Fedora" ] && [ -d "$BR_EFI_DIR" ]; then cp_grub_efi; fi
+      if [ ! "$BRdistro" = "Fedora" ] && [ -d "$BRefidir" ]; then cp_grub_efi; fi
       # In case of ESP in /boot we do it for Fedora
-      if [ "$BRdistro" = "Fedora" ] && [ -d "$BR_EFI_DIR" ] && [ "$BRespmpoint" = "/boot" ]; then cp_grub_efi; fi
+      if [ "$BRdistro" = "Fedora" ] && [ -d "$BRefidir" ] && [ "$BRespmpoint" = "/boot" ]; then cp_grub_efi; fi
 
       # Save old grub configuration
       if [ -n "$BRkernopts" ]; then
@@ -1655,7 +1655,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       umount /mnt/target/dev/pts
       umount /mnt/target/proc
       umount /mnt/target/dev
-      if [ -d "$BR_EFI_DIR" ]; then
+      if [ -d "$BRefidir" ]; then
         umount /mnt/target/sys/firmware/efi/efivars
       fi
       umount /mnt/target/sys
@@ -1786,7 +1786,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   PATH="$PATH:/usr/sbin:/bin:/sbin"
 
   # Inform in case of UEFI environment
-  if [ -d "$BR_EFI_DIR" ]; then
+  if [ -d "$BRefidir" ]; then
     echo -e "[${CYAN}INFO${NORM}] UEFI environment detected. (use -W to ignore)"
   fi
 
@@ -1825,13 +1825,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         print_err "[${RED}ERROR${NORM}] Syslinux not found. Install it and re-run the script" 0
       fi
     fi
-    if [ -n "$BRbootctl" ] || [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which mkfs.vfat 2>/dev/null)" ]; then
+    if [ -n "$BRbootctl" ] || [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BRefidir" ] && [ -z "$(which mkfs.vfat 2>/dev/null)" ]; then
       print_err "[${RED}ERROR${NORM}] Package dosfstools is not installed. Install the package and re-run the script" 0
     fi
-    if [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which efibootmgr 2>/dev/null)" ]; then
+    if [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BRefidir" ] && [ -z "$(which efibootmgr 2>/dev/null)" ]; then
       print_err "[${RED}ERROR${NORM}] Package efibootmgr is not installed. Install the package and re-run the script" 0
     fi
-    if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -z "$(which bootctl 2>/dev/null)" ]; then
+    if [ -n "$BRbootctl" ] && [ -d "$BRefidir" ] && [ -z "$(which bootctl 2>/dev/null)" ]; then
       print_err "[${RED}ERROR${NORM}] Bootctl not found" 0
     fi
   fi
@@ -1917,11 +1917,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   fi
 
-  if [ -n "$BRgrub" ] && [ "$BRgrub" = "auto" ] && [ ! -d "$BR_EFI_DIR" ]; then
+  if [ -n "$BRgrub" ] && [ "$BRgrub" = "auto" ] && [ ! -d "$BRefidir" ]; then
     print_err "[${RED}ERROR${NORM}] Use 'auto' in UEFI environment only" 0
   fi
 
-  if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ] && [ -d "$BR_EFI_DIR" ]; then
+  if [ -n "$BRgrub" ] && [ ! "$BRgrub" = "auto" ] && [ -d "$BRefidir" ]; then
     print_err "[${RED}ERROR${NORM}] In UEFI environment use 'auto' for grub device" 0
   fi
 
@@ -1930,30 +1930,30 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ ! "$BRsyslinuxcheck" = "true" ]; then
       print_err "[${RED}ERROR${NORM}] Wrong syslinux device: $BRsyslinux" 0
     fi
-    if [ -d "$BR_EFI_DIR" ]; then
+    if [ -d "$BRefidir" ]; then
       print_err "[${RED}ERROR${NORM}] The script does not support Syslinux as UEFI bootloader" 0
     fi
   fi
 
-  if [ ! -d "$BR_EFI_DIR" ] && [ -n "$BResp" ]; then
+  if [ ! -d "$BRefidir" ] && [ -n "$BResp" ]; then
     print_err "[${RED}ERROR${NORM}] Don't use EFI system partition in bios environment" 0
   fi
 
-  if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && [ -n "$BRroot" ] && [ -z "$BResp" ]; then
+  if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BRefidir" ] && [ -n "$BRroot" ] && [ -z "$BResp" ]; then
     print_err "[${RED}ERROR${NORM}] You must specify a target EFI system partition" 0
   fi
 
-  if [ -n "$BRefistub" ] && [ ! -d "$BR_EFI_DIR" ]; then
+  if [ -n "$BRefistub" ] && [ ! -d "$BRefidir" ]; then
     print_err "[${RED}ERROR${NORM}] EFISTUB is available in UEFI environment only" 0
   fi
 
-  if [ -n "$BRbootctl" ] && [ ! -d "$BR_EFI_DIR" ]; then
+  if [ -n "$BRbootctl" ] && [ ! -d "$BRefidir" ]; then
     print_err "[${RED}ERROR${NORM}] Bootctl is available in UEFI environment only" 0
   fi
 
-  if [ -n "$BResp" ] && [ -z "$BRespmpoint" ] && [ -d "$BR_EFI_DIR" ]; then
+  if [ -n "$BResp" ] && [ -z "$BRespmpoint" ] && [ -d "$BRefidir" ]; then
     print_err "[${RED}ERROR${NORM}] You must specify mount point for ESP ($BResp)" 0
-  elif [ -n "$BResp" ] && [ ! "$BRespmpoint" = "/boot/efi" ] && [ ! "$BRespmpoint" = "/boot" ] && [ -d "$BR_EFI_DIR" ]; then
+  elif [ -n "$BResp" ] && [ ! "$BRespmpoint" = "/boot/efi" ] && [ ! "$BRespmpoint" = "/boot" ] && [ -d "$BRefidir" ]; then
     print_err "[${RED}ERROR${NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot" 0
   fi
 
@@ -2052,15 +2052,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     # Search archive contents for efibootmgr
-    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
+    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] && [ -d "$BRefidir" ] && ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
       print_err "[${RED}ERROR${NORM}] efibootmgr not found in the archived system" 1
     fi
     # Search archive contents for mkfs.vfat
-    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
+    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BRefidir" ] && ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
       print_err "[${RED}ERROR${NORM}] dosfstools not found in the archived system" 1
     fi
     # Search archive contents for bootctl
-    if [ -n "$BRbootctl" ] && [ -d "$BR_EFI_DIR" ] && ! grep -Fq "bin/bootctl" /tmp/filelist; then
+    if [ -n "$BRbootctl" ] && [ -d "$BRefidir" ] && ! grep -Fq "bin/bootctl" /tmp/filelist; then
       print_err "[${RED}ERROR${NORM}] Bootctl not found in the archived system" 1
     fi
     # Set the EFI Grub architecture in Restore Mode
@@ -2072,7 +2072,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   fi
 
   # Set the EFI Grub architecture in Transfer Mode
-  if [ -n "$BRgrub" ] && [ "$BRmode" = "2" ] && [ -d "$BR_EFI_DIR" ]; then
+  if [ -n "$BRgrub" ] && [ "$BRmode" = "2" ] && [ -d "$BRefidir" ]; then
     if [ "$(uname -m)" = "x86_64" ]; then
       BRgrubefiarch="x86_64-efi"
     elif [ "$(uname -m)" = "i686" ]; then
@@ -2081,7 +2081,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   fi
 
   # In case of EFI and Grub, set the defined ESP mountpoint as --efi-directory
-  if [ -n "$BRgrub" ] && [ -d "$BR_EFI_DIR" ]; then
+  if [ -n "$BRgrub" ] && [ -d "$BRefidir" ]; then
     BRgrub="$BRespmpoint"
   fi
 
@@ -2119,7 +2119,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   done
 
   # Start the log
-  echo -e "$BR_VERSION\n\n[SUMMARY]\n$(show_summary)\n\n[PROCESSING]" > /tmp/restore.log
+  echo -e "$BRversion\n\n[SUMMARY]\n$(show_summary)\n\n[PROCESSING]" > /tmp/restore.log
 
   echo -e "\n${BOLD}[PROCESSING]${NORM}"
   # Restore mode

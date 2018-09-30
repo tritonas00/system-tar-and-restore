@@ -35,6 +35,13 @@ elif [ -f /etc/backup.conf ]; then
   source /etc/backup.conf
 fi
 
+# Keep compatibility with older backup.conf vars - will be removed in the future
+if [ -n "$BRFOLDER" ]; then BRdestination="$BRFOLDER"; fi
+if [ -n "$BRNAME" ]; then BRname="$BRNAME"; fi
+if [ -n "$BR_USER_OPTS" ]; then BRuseropts="$BR_USER_OPTS"; fi
+if [ -n "$BRonlyhidden" ]; then BRhomedir="0"; fi
+if [ -n "$BRnohome" ]; then BRhomedir="1"; fi
+
 # Export basic vars from configuration file, set defaults if not given
 if [ -n "$BRname" ]; then
   export BC_FILENAME="$BRname"

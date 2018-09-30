@@ -74,6 +74,12 @@ while true; do
       # Source configuration file in Backup mode early so arguments can override it
       if [ -f "$BRconf" ] && [ "$BRmode" = "0" ]; then
         source "$BRconf"
+        # Keep compatibility with older vars - will be removed in the future
+        if [ -n "$BRFOLDER" ]; then BRdestination="$BRFOLDER"; fi
+        if [ -n "$BRNAME" ]; then BRname="$BRNAME"; fi
+        if [ -n "$BR_USER_OPTS" ]; then BRuseropts="$BR_USER_OPTS"; fi
+        if [ -n "$BRonlyhidden" ]; then BRhomedir="0"; fi
+        if [ -n "$BRnohome" ]; then BRhomedir="1"; fi
       fi
       shift 2
     ;;

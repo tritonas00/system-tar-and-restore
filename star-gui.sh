@@ -39,8 +39,8 @@ fi
 if [ -n "$BRFOLDER" ]; then BRdestination="$BRFOLDER"; fi
 if [ -n "$BRNAME" ]; then BRname="$BRNAME"; fi
 if [ -n "$BR_USER_OPTS" ]; then BRuseropts="$BR_USER_OPTS"; fi
-if [ -n "$BRonlyhidden" ]; then BRhomedir="0"; fi
-if [ -n "$BRnohome" ]; then BRhomedir="1"; fi
+if [ -n "$BRonlyhidden" ]; then BRhomedir="1"; fi
+if [ -n "$BRnohome" ]; then BRhomedir="2"; fi
 
 # Export basic vars from configuration file, set defaults if not given
 if [ -n "$BRname" ]; then

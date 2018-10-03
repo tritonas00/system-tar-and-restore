@@ -61,9 +61,9 @@ else
   export BC_SOURCE="/"
 fi
 
-if [ "$BRhomedir" = "0" ]; then
+if [ "$BRhomedir" = "1" ]; then
   export BC_HOME="Only hidden files and folders"
-elif [ "$BRhomedir" = "1" ]; then
+elif [ "$BRhomedir" = "2" ]; then
   export BC_HOME="Exclude"
 else
   export BC_HOME="Include"
@@ -120,9 +120,9 @@ set_args() {
     fi
 
     if [ "$BC_HOME" = "Only hidden files and folders" ]; then
-      SCR_ARGS+=(-H 0)
-    elif [ "$BC_HOME" = "Exclude" ]; then
       SCR_ARGS+=(-H 1)
+    elif [ "$BC_HOME" = "Exclude" ]; then
+      SCR_ARGS+=(-H 2)
     fi
 
     if [ ! "$BC_ENCRYPTION" = "none" ]; then

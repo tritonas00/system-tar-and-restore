@@ -37,7 +37,7 @@ pgrs_bar() {
 # Print various messages and update the gui wrapper
 print_msg() {
   if [ ! "$2" = "0" ]; then echo -e ${1}; fi
-  if [ -n "$BRwrap" ]; then echo ${1#*'\n'} > /tmp/wr_proc; fi # also ignore leading newlines if any
+  if [ -n "$BRwrtl" ]; then echo ${1#*'\n'} > /tmp/wr_proc; fi # also ignore leading newlines if any
 }
 
 # Print various error messages and exit
@@ -48,9 +48,9 @@ print_err() {
 }
 
 # Set the configuration file for Backup mode. If called from the wrapper don't source, the gui wrapper will source it
-if [ -f "$1" ] && [ -z "$BRwrap" ]; then
+if [ -f "$1" ] && [ -z "$BRwrtl" ]; then
   BRconf="$1"
-elif [ -f /etc/backup.conf ] && [ -z "$BRwrap" ]; then
+elif [ -f /etc/backup.conf ] && [ -z "$BRwrtl" ]; then
   BRconf="/etc/backup.conf"
 fi
 
@@ -316,7 +316,7 @@ Restore / Transfer Mode:
 done
 
 # Give PID to gui wrapper
-if [ -n "$BRwrap" ]; then
+if [ -n "$BRwrtl" ]; then
   echo "$$" >> /tmp/wr_pid
 fi
 
@@ -664,7 +664,7 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Give log to gui wrapper
-  if [ -n "$BRwrap" ]; then
+  if [ -n "$BRwrtl" ]; then
     cat "$BRdestination"/backup.log > /tmp/wr_log
     # Give generated configuration file to gui wrapper also
     if [ -n "$BRgen" ] && [ ! -f /tmp/error ]; then
@@ -1714,7 +1714,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       rm -r /mnt/target
     fi
 
-    if [ -n "$BRwrap" ] && [ -n "$post_umt" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
+    if [ -n "$BRwrtl" ] && [ -n "$post_umt" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
     clean_tmp_files
     exit
   }
@@ -1972,7 +1972,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [[ ! "$BRuri" == /* ]]; then
       BRsource="$BRmaxsize/downloaded_backup"
       # Give percentage to gui wrapper
-      if [ -n "$BRwrap" ]; then
+      if [ -n "$BRwrtl" ]; then
         lastperc="-1"
         run_wget 2>&1 | sed -nru '/[0-9]%/ s/.* ([0-9]+)%.*/\1/p' |
         while read perc; do
@@ -1989,7 +1989,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       else
         detect_encryption
         # If the downloaded archive is encrypted prompt the user for passphrase
-        if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ] && [ -z "$BRwrap" ]; then
+        if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ] && [ -z "$BRwrtl" ]; then
           echo -ne "${BOLD}"
           read -p "Enter Passphrase: $(echo -e "${NORM}")" BRencpass
         fi

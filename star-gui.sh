@@ -16,12 +16,11 @@ clean_tmp_files() {
 
 clean_tmp_files
 
-export BRtitle="System Tar & Restore"
-export BRwrap="y"
+export BRwrtl="System Tar & Restore"
 
 echo -n > /tmp/wr_log
 echo true > /tmp/wr_pid
-echo "$BRtitle" > /tmp/wr_proc
+echo "$BRwrtl" > /tmp/wr_proc
 
 if [ -f changelog ]; then
   export BRchangelog="changelog"
@@ -330,7 +329,7 @@ run_main() {
     elif grep -qF [SUMMARY] /tmp/wr_log; then
       echo "$_mode completed. See Log tab for details" > /tmp/wr_proc
     else
-      echo "$BRtitle" > /tmp/wr_proc
+      echo "$BRwrtl" > /tmp/wr_proc
     fi
     echo true > /tmp/wr_pid
   fi
@@ -827,8 +826,8 @@ lost+found">
                                 <hseparator></hseparator>
                                 <checkbox label="Debug" tooltip-text="Show the generated command instead of run it">
                                         <variable>BR_DEBUG</variable>
-                                        <action> if true echo "$BRtitle (debug)" > /tmp/wr_proc</action>
-                                        <action> if false echo "$BRtitle" > /tmp/wr_proc</action>
+                                        <action> if true echo "$BRwrtl (debug)" > /tmp/wr_proc</action>
+                                        <action> if false echo "$BRwrtl" > /tmp/wr_proc</action>
                                 </checkbox>
                         </vbox>
                         <variable>BR_TAB</variable>

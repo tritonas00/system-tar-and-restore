@@ -351,7 +351,7 @@ export RT_DISKS="$(for f in /dev/[vhs]d[a-z]; do echo "$f $(lsblk -d -n -o size 
 export RT_ROOT="$(echo "$RT_PARTS" | head -n 1)"
 
 export MAIN_DIALOG='
-<window icon-name="gtk-preferences" height-request="620" width-request="480">
+<window icon-name="gtk-preferences" height-request="620" width-request="480" auto-refresh="true">
         <vbox>
                 <checkbox visible="false" auto-refresh="true">
                         <input file>/tmp/wr_pid</input>
@@ -361,13 +361,9 @@ export MAIN_DIALOG='
                         <action> if true disable:BTN_CANCEL</action>
                         <action> if false disable:BTN_RUN</action>
                         <action> if false disable:BTN_EXIT</action>
+                        <action> if false disable:BR_TAB</action>
                         <action> if false enable:BTN_CANCEL</action>
                 </checkbox>
-                <entry visible="false" auto-refresh="true">
-                        <input file>/tmp/wr_proc</input>
-                        <action>refresh:WND_TITLE</action>
-                        <action condition="file_is_false(/tmp/wr_pid)">disable:BR_TAB</action>
-                </entry>
                 <notebook labels="Backup|Restore/Transfer|Log|About" space-expand="true" space-fill="true">
                         <vbox shadow-type="0">
                                 <text tooltip-text="==>Make sure destination has enough space
@@ -852,7 +848,6 @@ lost+found">
                         </button>
                 </hbox>
         </vbox>
-	<variable>WND_TITLE</variable>
 	<input file>/tmp/wr_proc</input>
 </window>
 '

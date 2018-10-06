@@ -285,14 +285,8 @@ set_args() {
 
 clean_umount() {
   cd /
+  echo Aborting > /tmp/wr_proc
   sleep 1
-  if [ -n "$RT_ROOT" ]; then parts_array+=("/"="${RT_ROOT%% *}"); fi
-  if [ -n "$RT_ESP" ]; then parts_array+=("$RT_ESP_MOUNTPOINT"="${RT_ESP%% *}"); fi
-  if [ -n "$RT_BOOT" ]; then parts_array+=(/boot="${RT_BOOT%% *}"); fi
-  if [ -n "$RT_HOME" ]; then parts_array+=(/home="${RT_HOME%% *}"); fi
-  if [ -n "$RT_OTHER_PARTS" ]; then parts_array+=($RT_OTHER_PARTS); fi
-  parts_array_sorted=(`for item in "${parts_array[@]}"; do echo "${item//@}"; done | sort -k 1,1 -t =`)
-
   umount /mnt/target/dev/pts
   umount /mnt/target/proc
   umount /mnt/target/dev
@@ -300,15 +294,20 @@ clean_umount() {
   umount /mnt/target/sys
   umount /mnt/target/run
 
-  if [ -n "$parts_array_sorted" ]; then
-    while read ln; do
-      sleep 1
-      if [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$ln")" ]; then
-        echo "Unmounting $ln" > /tmp/wr_proc
-        umount "$ln" || _err="y"
-      fi
-    done < <(for part in "${parts_array_sorted[@]}"; do echo "$part" | cut -f2 -d"="; done | tac)
-  fi
+  if [ -n "$RT_ROOT" ]; then parts_array+=("/"="${RT_ROOT%% *}"); fi
+  if [ -n "$RT_ESP" ]; then parts_array+=("$RT_ESP_MOUNTPOINT"="${RT_ESP%% *}"); fi
+  if [ -n "$RT_BOOT" ]; then parts_array+=(/boot="${RT_BOOT%% *}"); fi
+  if [ -n "$RT_HOME" ]; then parts_array+=(/home="${RT_HOME%% *}"); fi
+  if [ -n "$RT_OTHER_PARTS" ]; then parts_array+=($RT_OTHER_PARTS); fi
+
+  parts_array_sorted=(`for item in "${parts_array[@]}"; do echo "${item//@}"; done | sort -k 1,1 -t =`)
+  while read ln; do
+    sleep 1
+    if [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$ln")" ]; then
+      echo "Unmounting $ln" > /tmp/wr_proc
+      umount "$ln" || _err="y"
+    fi
+  done < <(for part in "${parts_array_sorted[@]}"; do echo "$part" | cut -f2 -d"="; done | tac)
   if [ -z "$_err" ]; then rm -r /mnt/target; fi
 }
 
@@ -320,7 +319,6 @@ run_main() {
     setsid ./star.sh "${SCR_ARGS[@]}" >&3 2> /tmp/wr_log
     sleep 0.1
     if [ "$BR_TAB" = "1" ] && grep -qF "Process ID" /tmp/wr_log; then
-      echo Aborting > /tmp/wr_proc
       clean_umount
     fi
     if grep -qF [ERROR] /tmp/wr_log; then

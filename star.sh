@@ -317,7 +317,7 @@ done
 
 # Give PID to gui wrapper
 if [ -n "$BRwrtl" ]; then
-  echo "$$" >> /tmp/wr_pid
+  echo "$$" > /tmp/wr_pid
 fi
 
 # Set colors if -j is not given

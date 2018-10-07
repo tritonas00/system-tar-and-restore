@@ -829,7 +829,7 @@ lost+found">
                                 <input file stock="gtk-stop"></input>
                                 <variable>BTN_CANCEL</variable>
                                 <label>Cancel</label>
-                                <action>kill -9 -$(tail -1 /tmp/wr_pid) && echo "Process ID $(tail -1 /tmp/wr_pid) killed" > /tmp/wr_log</action>
+                                <action>kill -9 -$(cat /tmp/wr_pid) && echo "Process ID $(cat /tmp/wr_pid) killed" > /tmp/wr_log</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>

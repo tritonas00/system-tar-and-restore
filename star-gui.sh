@@ -314,7 +314,7 @@ run_main() {
   elif [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
     echo false > /tmp/wr_pid
     setsid ./star.sh "${SCR_ARGS[@]}" >&3 2> /tmp/wr_log
-    sleep 0.1
+    sleep 0.3
     if [ "$BR_TAB" = "1" ] && grep -qF "Process ID" /tmp/wr_log; then
       clean_umount
     fi

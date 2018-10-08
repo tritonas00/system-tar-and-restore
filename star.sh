@@ -1035,8 +1035,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         print_err "[${RED}ERROR${NORM}] Error while mounting partitions" 1
       fi
       # Now trim trailing @ from partitions, we dont need it any more
-      if [[ "$BRhome" == *@ ]]; then BRhome="${BRhome//@}"; fi
-      if [[ "$BRboot" == *@ ]]; then BRboot="${BRboot//@}"; fi
+      BRhome="${BRhome//@}"
+      BRboot="${BRboot//@}"
       BRpartsorted=(`for part in "${BRpartsorted[@]}"; do echo "${part//@}"; done`)
     fi
     # Find the bigger partition to save the downloaded backup archive

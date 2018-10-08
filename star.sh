@@ -1006,8 +1006,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         # Store sizes
         BRsizes+=(`lsblk -n -b -o size "${BRpart//@}" 2>/dev/null`=/mnt/target"$BRmpoint")
         if [ -z "$BRstop" ]; then
-          # Store successfully mounted partitions so we can unmount them later
-          BRumountparts+=("$BRmpoint"="${BRpart//@}")
           # Check if partitions are not empty and warn, clean if they end with @
           if [ "$(ls -A /mnt/target"$BRmpoint" | grep -vw "lost+found")" ]; then
             if [[ "$BRpart" == *@ ]]; then
@@ -1667,13 +1665,16 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       umount /mnt/target/run
     fi
 
-    # Read BRumountparts we created in mount_all and unmount backwards
+    # Sort target partitions array by their mountpoint so we can unmount in order, remove trailing @ if given
+    BRpartsorted=(`for part in "${BRparts[@]}"; do echo "${part//@}"; done | sort -k 1,1 -t =`)
     if [ -n "$BRparts" ]; then
       while read ln; do
         sleep 1
-        print_msg "Unmounting $ln"
-        umount "$ln" || BRstop="y"
-      done < <(for BRpart in "${BRumountparts[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | tac)
+        if [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$ln")" ]; then
+          print_msg "Unmounting $ln"
+          umount "$ln" || BRstop="y"
+        fi
+      done < <(for BRpart in "${BRpartsorted[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | tac)
     fi
 
     if [ -z "$post_umt" ] && [ -z "$BRdontckroot" ]; then
@@ -1706,14 +1707,14 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     # Remove leftovers and unmount the target root partition
     rm /mnt/target/target_architecture.$(uname -m) 2>/dev/null
     sleep 1
-    print_msg "Unmounting $BRroot"
-    umount "$BRroot" || BRstop="y"
+    if [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot")" ]; then
+      print_msg "Unmounting $BRroot"
+      umount "$BRroot" || BRstop="y"
+    fi
     if [ -z "$BRstop" ]; then
       sleep 1
       rm -r /mnt/target
     fi
-
-    if [ -n "$BRwrtl" ] && [ -n "$post_umt" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
     clean_tmp_files
     exit
   }
@@ -2209,5 +2210,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   sleep 1
   post_umt="y"
+  if [ -n "$BRwrtl" ]; then cat /tmp/restore.log > /tmp/wr_log; fi
   clean_unmount
 fi

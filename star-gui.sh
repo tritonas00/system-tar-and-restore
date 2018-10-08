@@ -280,34 +280,6 @@ set_args() {
   fi
 }
 
-clean_umount() {
-  cd /
-  echo Aborting > /tmp/wr_proc
-  sleep 1
-  umount /mnt/target/dev/pts
-  umount /mnt/target/proc
-  umount /mnt/target/dev
-  umount /mnt/target/sys/firmware/efi/efivars
-  umount /mnt/target/sys
-  umount /mnt/target/run
-
-  if [ -n "$RT_ROOT" ]; then parts_array+=("/"="${RT_ROOT%% *}"); fi
-  if [ -n "$RT_ESP" ]; then parts_array+=("$RT_ESP_MOUNTPOINT"="${RT_ESP%% *}"); fi
-  if [ -n "$RT_BOOT" ]; then parts_array+=(/boot="${RT_BOOT%% *}"); fi
-  if [ -n "$RT_HOME" ]; then parts_array+=(/home="${RT_HOME%% *}"); fi
-  if [ -n "$RT_OTHER_PARTS" ]; then parts_array+=($RT_OTHER_PARTS); fi
-
-  parts_array_sorted=(`for item in "${parts_array[@]}"; do echo "${item//@}"; done | sort -k 1,1 -t =`)
-  while read ln; do
-    sleep 1
-    if [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$ln")" ]; then
-      echo "Unmounting $ln" > /tmp/wr_proc
-      umount "$ln" || _err="y"
-    fi
-  done < <(for part in "${parts_array_sorted[@]}"; do echo "$part" | cut -f2 -d"="; done | tac)
-  if [ -z "$_err" ]; then rm -r /mnt/target; fi
-}
-
 run_main() {
   if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ] && [ "$BR_DEBUG" = "true" ]; then
     echo star.sh "${SCR_ARGS[@]}" > /tmp/wr_proc
@@ -315,9 +287,6 @@ run_main() {
     echo false > /tmp/wr_pid
     setsid ./star.sh "${SCR_ARGS[@]}" >&3 2> /tmp/wr_log
     sleep 0.3
-    if [ "$BR_TAB" = "1" ] && grep -qF "Process ID" /tmp/wr_log; then
-      clean_umount
-    fi
     echo "$BRwrtl" > /tmp/wr_proc
     echo true > /tmp/wr_pid
   fi
@@ -829,7 +798,7 @@ lost+found">
                                 <input file stock="gtk-stop"></input>
                                 <variable>BTN_CANCEL</variable>
                                 <label>Cancel</label>
-                                <action>kill -9 -$(cat /tmp/wr_pid) && echo "Process ID $(cat /tmp/wr_pid) killed" > /tmp/wr_log</action>
+                                <action>kill -15 -$(cat /tmp/wr_pid)</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>

@@ -320,6 +320,19 @@ if [ -n "$BRwrtl" ]; then
   echo "$$" > /tmp/wr_pid
 fi
 
+# Run if Cancel pressed from the gui wrapper
+abort() {
+  echo "Process ID $$ terminated" > /tmp/wr_log
+  if [ "$BRmode" = "0" ]; then
+    clean_tmp_files
+    exit
+  elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
+    post_umt="y"
+    clean_unmount 2>/dev/null
+  fi
+}
+trap abort SIGTERM
+
 # Set colors if -j is not given
 if [ -z "$BRnocolor" ]; then
   NORM='\e[00m'

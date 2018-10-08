@@ -1026,7 +1026,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       # Now trim trailing @ from partitions, we dont need it any more
       if [[ "$BRhome" == *@ ]]; then BRhome="${BRhome//@}"; fi
       if [[ "$BRboot" == *@ ]]; then BRboot="${BRboot//@}"; fi
-      BRpartsorted=(`for part in "${BRparts[@]}"; do echo "${part//@}"; done | sort -k 1,1 -t =`)
+      BRpartsorted=(`for part in "${BRpartsorted[@]}"; do echo "${part//@}"; done`)
     fi
     # Find the bigger partition to save the downloaded backup archive
     BRmaxsize="$(for size in "${BRsizes[@]}"; do echo "$size"; done | sort -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")"

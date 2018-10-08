@@ -984,7 +984,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       print_msg "Mounting $BRrootsubvol"
       mount -t btrfs -o "$BRmountopts",subvol="$BRrootsubvol" "$BRroot" /mnt/target || BRstop="y"
       if [ -n "$BRstop" ]; then
-        unset BRstop
         print_err "[${RED}ERROR${NORM}] Error while making subvolumes" 1
       fi
     fi
@@ -1022,7 +1021,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         fi
       done
       if [ -n "$BRstop" ]; then
-        unset BRstop
         print_err "[${RED}ERROR${NORM}] Error while mounting partitions" 1
       fi
       # Now trim trailing @ from partitions, we dont need it any more
@@ -1651,6 +1649,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Clean and unmount
   clean_unmount() {
     echo -e "\n${BOLD}[CLEANING AND UNMOUNTING]${NORM}"
+    unset BRstop
     # Make sure we are outside of /mnt/target
     cd /
     # Delete the downloaded backup archive

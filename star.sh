@@ -974,6 +974,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         # Just warn if -x is given
         echo -e "[${YELLOW}WARNING${NORM}] Root partition not empty"
       fi
+    else
+      # Unset -x if given and root partition is already empty
+      unset BRdontckroot
     fi
 
     # Create btrfs root subvolume if specified by the user
@@ -1711,8 +1714,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         btrfs subvolume delete /mnt/target/"$BRrootsubvol" 1>/dev/null || BRstop="y"
       fi
 
-      # If no error occured above and -x is not given clean the target root partition from created mountpoints
-      if [ -z "$BRstop" ] && [ -z "$BRdontckroot" ]; then
+      # If no error occured above clean the target root partition from created mountpoints
+      if [ -z "$BRstop" ]; then
         rm -r /mnt/target/* 2>/dev/null
       fi
     fi

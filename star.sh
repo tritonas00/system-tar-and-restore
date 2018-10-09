@@ -1678,15 +1678,14 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       done < <(for BRpart in "${BRpartsorted[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | tac)
     fi
 
+    # In target root partition was empty, return it empty as well
     if [ -z "$post_umt" ] && [ -n "$BRrootempty" ]; then
-      # In case of btrfs subvolumes, unmount the root subvolume and mount the target root partition again
       if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
         print_msg "Unmounting $BRrootsubvol"
         umount "$BRroot" || BRstop="y"
         sleep 1
         print_msg "Mounting $BRroot"
         mount "$BRroot" /mnt/target || BRstop="y"
-
         # Delete the created subvolumes
         if [ -n "$BRsubvols" ]; then
           while read ln; do
@@ -1699,7 +1698,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         btrfs subvolume delete /mnt/target/"$BRrootsubvol" 1>/dev/null || BRstop="y"
       fi
 
-      # If no error occured above clean the target root partition from created mountpoints
+      # If no error occured above clean the target root partition
       if [ -z "$BRstop" ]; then
         rm -r /mnt/target/* 2>/dev/null
       fi

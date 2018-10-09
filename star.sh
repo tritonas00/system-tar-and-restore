@@ -926,111 +926,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     for f in $(find /dev -regex "/dev/nvme[0-9]+n[0-9]+"); do echo "$f"; done
   }
 
-  # Main mount function. Exit and clean on errors
-  mount_all() {
-    # Check the target root partition
-    BRrootfs="$(blkid -s TYPE -o value "$BRroot")"
-    BRrootsize="$(lsblk -d -n -o size 2>/dev/null "$BRroot" | sed -e 's/ *//')" # Remove leading spaces
-    if [ -z "$BRrootfs" ]; then
-      print_err "[${RED}ERROR${NORM}] Unknown root file system" 0
-    fi
-
-    # Create directory to mount the target root partition
-    echo -e "\n${BOLD}[MOUNTING]${NORM}"
-    print_msg "Making working directory"
-    mkdir /mnt/target || BRstop="y"
-
-    # Mount the target root partition
-    print_msg "Mounting $BRroot"
-    mount -o "$BRmountopts" "$BRroot" /mnt/target || BRstop="y"
-    # Store it's size
-    BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
-    if [ -n "$BRstop" ]; then
-      rm -r /mnt/target
-      print_err "[${RED}ERROR${NORM}] Error while mounting partitions" 0
-    fi
-
-    # Check if the target root partition is not empty
-    if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
-      if [ -n "$BRrootclean" ]; then
-        print_msg "Cleaning $BRroot"
-        rm -r /mnt/target/*
-        sleep 1
-        BRrootempty="y"
-      else
-        echo -e "[${YELLOW}WARNING${NORM}] Root partition not empty"
-      fi
-    else
-      BRrootempty="y"
-    fi
-
-    # Create btrfs root subvolume if specified by the user
-    if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
-      print_msg "Creating $BRrootsubvol"
-      btrfs subvolume create /mnt/target/"$BRrootsubvol" 1>/dev/null || BRstop="y"
-
-      # Create other btrfs subvolumes if specified by the user
-      if [ -n "$BRsubvols" ]; then
-        while read ln; do
-          print_msg "Creating $BRrootsubvol$ln"
-          btrfs subvolume create /mnt/target/"$BRrootsubvol$ln" 1>/dev/null || BRstop="y"
-        done< <(for subvol in "${BRsubvols[@]}"; do echo "$subvol"; done | sort)
-      fi
-
-     # Unmount the target root partition
-      print_msg "Unmounting $BRroot"
-      umount "$BRroot" || BRstop="y"
-
-     # Mount the root btrfs subvolume
-      print_msg "Mounting $BRrootsubvol"
-      mount -t btrfs -o "$BRmountopts",subvol="$BRrootsubvol" "$BRroot" /mnt/target || BRstop="y"
-      if [ -n "$BRstop" ]; then
-        print_err "[${RED}ERROR${NORM}] Error while making subvolumes" 1
-      fi
-    fi
-
-    # Mount any other target partition if given by the user
-    if [ -n "$BRparts" ]; then
-      # Sort target partitions array by their mountpoint so we can mount in order, keep trailing @ if given so we know what to clean
-      BRpartsorted=(`for part in "${BRparts[@]}"; do echo "$part"; done | sort -k 1,1 -t =`)
-      # We read a sorted array with items in the form of mountpoint=partition (e.g /home=/dev/sda2) and we use = as delimiter
-      for part in "${BRpartsorted[@]}"; do
-        BRpart=$(echo "$part" | cut -f2 -d"=")
-        BRmpoint=$(echo "$part" | cut -f1 -d"=")
-        # Replace any // with space
-        BRmpoint="${BRmpoint///\//\ }"
-        print_msg "Mounting ${BRpart//@}"
-        # Create the corresponding mounting directory
-        mkdir -p /mnt/target"$BRmpoint"
-        # Mount it
-        mount "${BRpart//@}" /mnt/target"$BRmpoint" || BRstop="y"
-        # Store sizes
-        BRsizes+=(`lsblk -n -b -o size "${BRpart//@}" 2>/dev/null`=/mnt/target"$BRmpoint")
-        if [ -z "$BRstop" ]; then
-          # Check if partitions are not empty and warn, clean if they end with @
-          if [ "$(ls -A /mnt/target"$BRmpoint" | grep -vw "lost+found")" ]; then
-            if [[ "$BRpart" == *@ ]]; then
-              print_msg "Cleaning ${BRpart//@}"
-              rm -r /mnt/target"$BRmpoint"/*
-              sleep 1
-            else
-              echo -e "[${YELLOW}WARNING${NORM}] $BRmpoint partition not empty"
-            fi
-          fi
-        fi
-      done
-      if [ -n "$BRstop" ]; then
-        print_err "[${RED}ERROR${NORM}] Error while mounting partitions" 1
-      fi
-      # Now trim trailing @ from partitions, we dont need it any more
-      BRhome="${BRhome//@}"
-      BRboot="${BRboot//@}"
-      BRpartsorted=(`for part in "${BRpartsorted[@]}"; do echo "${part//@}"; done`)
-    fi
-    # Find the bigger partition to save the downloaded backup archive
-    BRmaxsize="$(for size in "${BRsizes[@]}"; do echo "$size"; done | sort -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")"
-  }
-
   # Show a nice summary
   show_summary() {
     echo "TARGET PARTITION SCHEME"
@@ -1747,7 +1642,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     print_err "[${RED}ERROR${NORM}] You must specify a target root partition" 0
   fi
 
-  # Check if root partition ends with @, trim it and set var for clean it in mount_all
+  # Check if root partition ends with @, trim it and set var for clean it later
   if [[ "$BRroot" == *@ ]]; then
     BRroot="${BRroot//@}"
     BRrootclean="y"
@@ -1963,7 +1858,107 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     print_err "[${RED}ERROR${NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot" 0
   fi
 
-  mount_all
+  # Check the target root partition
+  BRrootfs="$(blkid -s TYPE -o value "$BRroot")"
+  BRrootsize="$(lsblk -d -n -o size 2>/dev/null "$BRroot" | sed -e 's/ *//')" # Remove leading spaces
+  if [ -z "$BRrootfs" ]; then
+    print_err "[${RED}ERROR${NORM}] Unknown root file system" 0
+  fi
+
+  echo -e "\n${BOLD}[MOUNTING]${NORM}"
+  # Create directory to mount the target root partition
+  print_msg "Making working directory"
+  mkdir /mnt/target || BRstop="y"
+
+  # Mount the target root partition
+  print_msg "Mounting $BRroot"
+  mount -o "$BRmountopts" "$BRroot" /mnt/target || BRstop="y"
+  # Store it's size
+  BRsizes+=(`lsblk -n -b -o size "$BRroot" 2>/dev/null`=/mnt/target)
+  if [ -n "$BRstop" ]; then
+    rm -r /mnt/target
+    print_err "[${RED}ERROR${NORM}] Error while mounting partitions" 0
+  fi
+
+  # Check if the target root partition is not empty
+  if [ "$(ls -A /mnt/target | grep -vw "lost+found")" ]; then
+    if [ -n "$BRrootclean" ]; then
+      print_msg "Cleaning $BRroot"
+      rm -r /mnt/target/*
+      sleep 1
+      BRrootempty="y"
+    else
+      echo -e "[${YELLOW}WARNING${NORM}] Root partition not empty"
+    fi
+  else
+    BRrootempty="y"
+  fi
+
+  # Create btrfs root subvolume if specified by the user
+  if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
+    print_msg "Creating $BRrootsubvol"
+    btrfs subvolume create /mnt/target/"$BRrootsubvol" 1>/dev/null || BRstop="y"
+
+    # Create other btrfs subvolumes if specified by the user
+    if [ -n "$BRsubvols" ]; then
+      while read ln; do
+        print_msg "Creating $BRrootsubvol$ln"
+        btrfs subvolume create /mnt/target/"$BRrootsubvol$ln" 1>/dev/null || BRstop="y"
+      done< <(for subvol in "${BRsubvols[@]}"; do echo "$subvol"; done | sort)
+    fi
+
+    # Unmount the target root partition
+    print_msg "Unmounting $BRroot"
+    umount "$BRroot" || BRstop="y"
+
+    # Mount the root btrfs subvolume
+    print_msg "Mounting $BRrootsubvol"
+    mount -t btrfs -o "$BRmountopts",subvol="$BRrootsubvol" "$BRroot" /mnt/target || BRstop="y"
+    if [ -n "$BRstop" ]; then
+      print_err "[${RED}ERROR${NORM}] Error while making subvolumes" 1
+    fi
+  fi
+
+  # Mount any other target partition if given by the user
+  if [ -n "$BRparts" ]; then
+    # Sort target partitions array by their mountpoint so we can mount in order, keep trailing @ if given so we know what to clean
+    BRpartsorted=(`for part in "${BRparts[@]}"; do echo "$part"; done | sort -k 1,1 -t =`)
+    # We read a sorted array with items in the form of mountpoint=partition (e.g /home=/dev/sda2) and we use = as delimiter
+    for part in "${BRpartsorted[@]}"; do
+      BRpart=$(echo "$part" | cut -f2 -d"=")
+      BRmpoint=$(echo "$part" | cut -f1 -d"=")
+      # Replace any // with space
+      BRmpoint="${BRmpoint///\//\ }"
+      print_msg "Mounting ${BRpart//@}"
+      # Create the corresponding mounting directory
+      mkdir -p /mnt/target"$BRmpoint"
+      # Mount it
+      mount "${BRpart//@}" /mnt/target"$BRmpoint" || BRstop="y"
+      # Store sizes
+      BRsizes+=(`lsblk -n -b -o size "${BRpart//@}" 2>/dev/null`=/mnt/target"$BRmpoint")
+      if [ -z "$BRstop" ]; then
+        # Check if partitions are not empty and warn, clean if they end with @
+        if [ "$(ls -A /mnt/target"$BRmpoint" | grep -vw "lost+found")" ]; then
+          if [[ "$BRpart" == *@ ]]; then
+            print_msg "Cleaning ${BRpart//@}"
+            rm -r /mnt/target"$BRmpoint"/*
+            sleep 1
+          else
+            echo -e "[${YELLOW}WARNING${NORM}] $BRmpoint partition not empty"
+          fi
+        fi
+      fi
+    done
+    if [ -n "$BRstop" ]; then
+      print_err "[${RED}ERROR${NORM}] Error while mounting partitions" 1
+    fi
+    # Now trim trailing @ from partitions, we dont need it any more
+    BRhome="${BRhome//@}"
+    BRboot="${BRboot//@}"
+    BRpartsorted=(`for part in "${BRpartsorted[@]}"; do echo "${part//@}"; done`)
+  fi
+  # Find the bigger partition to save the downloaded backup archive
+  BRmaxsize="$(for size in "${BRsizes[@]}"; do echo "$size"; done | sort -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")"
 
   # In Restore mode download the backup archive if url is given, read it and check it
   if [ "$BRmode" = "1" ]; then

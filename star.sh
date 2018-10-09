@@ -1858,7 +1858,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     print_err "[${RED}ERROR${NORM}] Wrong ESP mount point: $BRespmpoint. Available options: /boot/efi /boot" 0
   fi
 
-  # Check the target root partition
+  # Find target root partition filesystem and size
   BRrootfs="$(blkid -s TYPE -o value "$BRroot")"
   BRrootsize="$(lsblk -d -n -o size 2>/dev/null "$BRroot" | sed -e 's/ *//')" # Remove leading spaces
   if [ -z "$BRrootfs" ]; then

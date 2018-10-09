@@ -58,7 +58,7 @@ fi
 echo -e "\n$BRversion"
 
 # Set arguments and help page
-BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:xWFLz:T:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,dont-check-root,ignore-efi,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
+BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:WFLz:T:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,ignore-efi,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -215,10 +215,6 @@ while true; do
       BRsubvols=($2)
       shift 2
     ;;
-    -x|--dont-check-root)
-      BRdontckroot="y"
-      shift
-    ;;
     -W|--ignore-efi)
       unset BRefidir
       shift
@@ -303,7 +299,6 @@ Restore / Transfer Mode:
     -H,  --home-dir	      Home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
 
   Misc Options:
-    -x,  --dont-check-root    Don't check if the target root partition is empty (dangerous)
     -W,  --ignore-efi         Ignore UEFI environment"
       exit
       shift
@@ -378,7 +373,7 @@ done
 if [ "$BRmode" = "0" ]; then
 
   # Unset Restore/Transfer mode vars
-  unset BRroot BResp BRespmpoint BRswap BRboot BRhome BRgrub BRsyslinux BRuri BRusername BRpassword BRrootsubvol BRmountopts BRkernopts BRparts BRsubvols BRdontckroot BRefistub BRbootctl
+  unset BRroot BResp BRespmpoint BRswap BRboot BRhome BRgrub BRsyslinux BRuri BRusername BRpassword BRrootsubvol BRmountopts BRkernopts BRparts BRsubvols BRefistub BRbootctl
 
   # Show a nice summary
   show_summary() {
@@ -961,22 +956,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         print_msg "Cleaning $BRroot"
         rm -r /mnt/target/*
         sleep 1
-      elif [ -z "$BRdontckroot" ]; then
-        print_msg "Unmounting $BRroot"
-        sleep 1
-        umount "$BRroot" || BRstop="y"
-        if [ -z "$BRstop" ]; then
-          sleep 1
-          rm -r /mnt/target
-        fi
-        print_err "[${RED}ERROR${NORM}] Root partition not empty, refusing to use it" 0
+        BRrootempty="y"
       else
-        # Just warn if -x is given
         echo -e "[${YELLOW}WARNING${NORM}] Root partition not empty"
       fi
     else
-      # Unset -x if given and root partition is already empty
-      unset BRdontckroot
+      BRrootempty="y"
     fi
 
     # Create btrfs root subvolume if specified by the user
@@ -1693,7 +1678,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       done < <(for BRpart in "${BRpartsorted[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | tac)
     fi
 
-    if [ -z "$post_umt" ] && [ -z "$BRdontckroot" ]; then
+    if [ -z "$post_umt" ] && [ -n "$BRrootempty" ]; then
       # In case of btrfs subvolumes, unmount the root subvolume and mount the target root partition again
       if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
         print_msg "Unmounting $BRrootsubvol"

@@ -270,10 +270,6 @@ set_args() {
       SCR_ARGS+=(-D)
     fi
 
-    if [ "$RT_CHECK_ROOT" = "true" ]; then
-      SCR_ARGS+=(-x)
-    fi
-
     if [ "$RT_NOEFI" = "true" ]; then
       SCR_ARGS+=(-W)
     fi
@@ -520,9 +516,6 @@ lost+found">
                                                                 <action>refresh:RT_HOME</action>
                                                                 <action>refresh:RT_SWAP</action>
 		                                        </comboboxtext>
-                                                        <togglebutton label="Non-Empty" tooltip-text="Allow non-empty target root partition (dangerous)">
-                                                                <variable>RT_CHECK_ROOT</variable>
-                                                        </togglebutton>
                                                         <togglebutton label="Clean" tooltip-text="Clean the target root partition if it is not empty">
                                                                 <variable>RT_ROOT_CLEAN</variable>
                                                         </togglebutton>

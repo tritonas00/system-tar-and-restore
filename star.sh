@@ -1678,7 +1678,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       done < <(for BRpart in "${BRpartsorted[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | tac)
     fi
 
-    # In target root partition was empty, return it empty as well
+    # If target root partition was empty, return it empty as well
     if [ -z "$post_umt" ] && [ -n "$BRrootempty" ]; then
       if [ "$BRrootfs" = "btrfs" ] && [ -n "$BRrootsubvol" ]; then
         print_msg "Unmounting $BRrootsubvol"

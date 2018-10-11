@@ -55,7 +55,7 @@ elif [ -f /etc/backup.conf ] && [ -z "$BRwrtl" ]; then
 fi
 
 # Show version
-echo -e "\n$BRversion"
+echo "$BRversion"
 
 # Set arguments and help page
 BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:WFLz:T:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,ignore-efi,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"

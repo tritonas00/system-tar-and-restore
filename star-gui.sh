@@ -281,7 +281,7 @@ run_main() {
     echo star.sh "${SCR_ARGS[@]}" > /tmp/wr_proc
   elif [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
     echo false > /tmp/wr_pid
-    setsid ./star.sh "${SCR_ARGS[@]}" >&3 2> /tmp/wr_log
+    setsid ./star.sh "${SCR_ARGS[@]}" 1>&2 2>/tmp/wr_log
     sleep 0.3
     echo "$BRwrtl" > /tmp/wr_proc
     echo true > /tmp/wr_pid
@@ -803,7 +803,6 @@ lost+found">
 	<input file>/tmp/wr_proc</input>
 </window>
 '
-exec 3>&1
 gtkdialog --program=MAIN_DIALOG > /dev/null
 
 clean_tmp_files

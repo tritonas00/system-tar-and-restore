@@ -1562,7 +1562,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     # Sort target partitions array by their mountpoint so we can unmount in order, remove trailing @ if given
-    BRpartsorted=(`for part in "${BRparts[@]}"; do echo "${part//@}"; done | sort -k 1,1 -t =`)
     if [ -n "$BRparts" ]; then
       while read ln; do
         sleep 1
@@ -1570,7 +1569,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           print_msg "Unmounting $ln"
           umount "$ln" || BRstop="y"
         fi
-      done < <(for BRpart in "${BRpartsorted[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | tac)
+      done < <(for part in "${BRparts[@]}"; do echo "${part//@}"; done | sort -k 1,1 -t = | cut -f2 -d"=" | tac)
     fi
 
     # If target root partition was empty, return it empty as well
@@ -1997,8 +1996,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
 
-    print_msg "Please wait while checking and reading archive" 0
     # Read the backup archive and give list of files in /tmp/filelist also
+    print_msg "Please wait while checking and reading archive" 0
     read_archive | tee /tmp/filelist | while read ln; do a="$((a + 1))" && echo -en "\rChecking and reading archive ($a Files) "; done
     echo
     if [ -f /tmp/error ]; then

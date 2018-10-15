@@ -931,7 +931,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     echo "TARGET PARTITION SCHEME"
     BRpartitions="Partition|Mountpoint|Filesystem|Size|Options\n$BRroot $BRmap|/|$BRrootfs|$BRrootsize|$BRmountopts"
     if [ -n "$BRparts" ]; then
-      for part in "${BRpartsorted[@]}"; do
+      for part in "${BRparts[@]}"; do
         BRpart=$(echo "$part" | cut -f2 -d"=")
         BRmpoint=$(echo "$part" | cut -f1 -d"=")
         # Replace any // with space
@@ -1066,7 +1066,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     # Other partitions
     if [ -n "$BRparts" ]; then
-      for part in "${BRpartsorted[@]}"; do
+      for part in "${BRparts[@]}"; do
         BRpart="$(echo "$part" | cut -f2 -d"=")"
         BRmpoint="$(echo "$part" | cut -f1 -d"=")"
         # Convert // with 040, needed for paths with spaces
@@ -1561,7 +1561,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       umount /mnt/target/run
     fi
 
-    # Sort target partitions array by their mountpoint so we can unmount in order, remove trailing @ if given
+    # Unmount other target partitions
     if [ -n "$BRparts" ]; then
       while read ln; do
         sleep 1
@@ -1569,7 +1569,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           print_msg "Unmounting $ln"
           umount "$ln" || BRstop="y"
         fi
-      done < <(for part in "${BRparts[@]}"; do echo "${part//@}"; done | sort -k 1,1 -t = | cut -f2 -d"=" | tac)
+      done < <(for part in "${BRparts[@]}"; do echo "$part"; done | cut -f2 -d"=" | tac)
     fi
 
     # If target root partition was empty, return it empty as well
@@ -1641,12 +1641,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     print_err "[${RED}ERROR${NORM}] You must specify a target root partition" 0
   fi
 
-  # Check if root partition ends with @, trim it and set var for clean it later
-  if [[ "$BRroot" == *@ ]]; then
-    BRroot="${BRroot//@}"
-    BRrootclean="y"
-  fi
-
   # Check if backup archive is given in Restore Mode
   if [ "$BRmode" = "1" ] && [ -z "$BRuri" ]; then
     print_err "[${RED}ERROR${NORM}] You must specify a backup archive" 0
@@ -1667,6 +1661,16 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   if [ -n "$BRboot" ]; then
     BRparts+=(/boot="$BRboot")
   fi
+
+  # Check partitions if end with @, set var for clean root later, write temp array including @ so we know what to clean upon mount, sort by mountpoint so we can (un)mount in order
+  if [[ "$BRroot" == *@ ]]; then
+    BRroot="${BRroot//@}"
+    BRrootclean="y"
+  fi
+  BRpartsmount=(`for part in "${BRparts[@]}"; do echo "$part"; done | sort -k 1,1 -t =`)
+  BRhome="${BRhome//@}"
+  BRboot="${BRboot//@}"
+  BRparts=(`for part in "${BRparts[@]}"; do echo "${part//@}"; done | sort -k 1,1 -t =`)
 
   # Set default root mount options
   if [ -z "$BRmountopts" ]; then
@@ -1756,7 +1760,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   fi
 
   if [ -n "$BRparts" ]; then
-    BRpartused=(`for BRpart in "${BRparts[@]}"; do echo "${BRpart//@}" | cut -f2 -d"="; done | sort | uniq -d`)
+    BRpartused=(`for BRpart in "${BRparts[@]}"; do echo "$BRpart" | cut -f2 -d"="; done | sort | uniq -d`)
     BRmpointused=(`for BRmpoint in "${BRparts[@]}"; do echo "$BRmpoint" | cut -f1 -d"="; done | sort | uniq -d`)
     if [ -n "$BRpartused" ]; then
       print_err "[${RED}ERROR${NORM}] $BRpartused already used" 0
@@ -1767,7 +1771,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
     for part in "${BRparts[@]}"; do
       BRmpoint=$(echo "$part" | cut -f1 -d"=")
-      BRpart=$(echo "${part//@}" | cut -f2 -d"=")
+      BRpart=$(echo "$part" | cut -f2 -d"=")
 
       for i in $(scan_parts); do if [ "$i" = "$BRpart" ]; then BRpartscheck="true"; fi; done
       if [ ! "$BRpartscheck" = "true" ]; then
@@ -1920,10 +1924,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Mount any other target partition if given by the user
   if [ -n "$BRparts" ]; then
-    # Sort target partitions array by their mountpoint so we can mount in order, keep trailing @ if given so we know what to clean
-    BRpartsorted=(`for part in "${BRparts[@]}"; do echo "$part"; done | sort -k 1,1 -t =`)
-    # We read a sorted array with items in the form of mountpoint=partition (e.g /home=/dev/sda2) and we use = as delimiter
-    for part in "${BRpartsorted[@]}"; do
+    # We read an array with items in the form of mountpoint=partition (e.g /home=/dev/sda2) and we use = as delimiter
+    for part in "${BRpartsmount[@]}"; do
       BRpart=$(echo "$part" | cut -f2 -d"=")
       BRmpoint=$(echo "$part" | cut -f1 -d"=")
       # Replace any // with space
@@ -1951,10 +1953,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRstop" ]; then
       print_err "[${RED}ERROR${NORM}] Error while mounting partitions" 1
     fi
-    # Now trim trailing @ from partitions, we dont need it any more
-    BRhome="${BRhome//@}"
-    BRboot="${BRboot//@}"
-    BRpartsorted=(`for part in "${BRpartsorted[@]}"; do echo "${part//@}"; done`)
   fi
   # Find the bigger partition to save the downloaded backup archive
   BRmaxsize="$(for size in "${BRsizes[@]}"; do echo "$size"; done | sort -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")"

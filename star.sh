@@ -539,19 +539,19 @@ if [ "$BRmode" = "0" ]; then
   # Set tar default options
   if [ -z "$BRoverride" ] && [ "$BRsrc" = "/" ]; then
     BRtropts+=(--sparse               \
-                 --acls                 \
-                 --xattrs               \
-                 --exclude=/run/*       \
-                 --exclude=/dev/*       \
-                 --exclude=/sys/*       \
-                 --exclude=/tmp/*       \
-                 --exclude=/mnt/*       \
-                 --exclude=/proc/*      \
-                 --exclude=/media/*     \
-                 --exclude=/var/run/*   \
-                 --exclude=/var/lock/*  \
-                 --exclude=.gvfs        \
-                 --exclude=lost+found)
+               --acls                 \
+               --xattrs               \
+               --exclude=/run/*       \
+               --exclude=/dev/*       \
+               --exclude=/sys/*       \
+               --exclude=/tmp/*       \
+               --exclude=/mnt/*       \
+               --exclude=/proc/*      \
+               --exclude=/media/*     \
+               --exclude=/var/run/*   \
+               --exclude=/var/lock/*  \
+               --exclude=.gvfs        \
+               --exclude=lost+found)
 
     # Needed by Fedora
     if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then

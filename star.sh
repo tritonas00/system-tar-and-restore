@@ -365,7 +365,7 @@ fi
 # Add tar/rsync user options to the main array, replace any // with space, add only options starting with -
 for opt in $BRuseropts; do
   if [[ "$opt" == -* ]]; then
-    BR_TR_OPTS+=("${opt///\//\ }")
+    BRtropts+=("${opt///\//\ }")
   fi
 done
 
@@ -381,7 +381,7 @@ if [ "$BRmode" = "0" ]; then
     echo "$BRdestination/$BRname.$BRext ($BRsrc) $mcinfo"
 
     echo -e "\nARCHIVER OPTIONS"
-    for opt in "${BR_TR_OPTS[@]}"; do echo "$opt"; done
+    for opt in "${BRtropts[@]}"; do echo "$opt"; done
 
     if [ "$BRsrc" = "/" ]; then
       echo -e "\nHOME DIRECTORY"
@@ -415,20 +415,20 @@ if [ "$BRmode" = "0" ]; then
 
   # Calculate files to create percentage and progress bar
   run_calc() {
-    tar cvf /dev/null "${BR_TR_OPTS[@]}" "$BRsrc" 2>/dev/null | tee /tmp/filelist
+    tar cvf /dev/null "${BRtropts[@]}" "$BRsrc" 2>/dev/null | tee /tmp/filelist
   }
 
   # Run tar with given input
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      tar "${BR_MAIN_OPTS[@]}" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRdestination"/"$BRname"."$BRext" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BRmainopts[@]}" >(openssl aes-256-cbc -salt -k "$BRencpass" -out "$BRdestination"/"$BRname"."$BRext" 2>> "$BRdestination"/backup.log) "${BRtropts[@]}" "$BRsrc"
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      tar "${BR_MAIN_OPTS[@]}" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRdestination"/"$BRname"."$BRext" 2>> "$BRdestination"/backup.log) "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BRmainopts[@]}" >(gpg -c --batch --yes --passphrase "$BRencpass" -z 0 -o "$BRdestination"/"$BRname"."$BRext" 2>> "$BRdestination"/backup.log) "${BRtropts[@]}" "$BRsrc"
     # Without encryption
     else
-      tar "${BR_MAIN_OPTS[@]}" "$BRdestination"/"$BRname"."$BRext" "${BR_TR_OPTS[@]}" "$BRsrc"
+      tar "${BRmainopts[@]}" "$BRdestination"/"$BRname"."$BRext" "${BRtropts[@]}" "$BRsrc"
     fi
   }
 
@@ -504,28 +504,28 @@ if [ "$BRmode" = "0" ]; then
 
   # Set tar compression options and backup file extension
   if [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ]; then
-    BR_MAIN_OPTS=(-c -I "pigz -p$BRthreads" -vpf)
+    BRmainopts=(-c -I "pigz -p$BRthreads" -vpf)
     BRext="tar.gz"
     mcinfo="(pigz $BRthreads threads)"
   elif [ "$BRcompression" = "gzip" ]; then
-    BR_MAIN_OPTS=(cvpzf)
+    BRmainopts=(cvpzf)
     BRext="tar.gz"
   elif [ "$BRcompression" = "xz" ] && [ -n "$BRmcore" ]; then
-    BR_MAIN_OPTS=(-c -I "pxz -T$BRthreads" -vpf)
+    BRmainopts=(-c -I "pxz -T$BRthreads" -vpf)
     BRext="tar.xz"
     mcinfo="(pxz $BRthreads threads)"
   elif [ "$BRcompression" = "xz" ]; then
-    BR_MAIN_OPTS=(cvpJf)
+    BRmainopts=(cvpJf)
     BRext="tar.xz"
   elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcore" ]; then
-    BR_MAIN_OPTS=(-c -I "pbzip2 -p$BRthreads" -vpf)
+    BRmainopts=(-c -I "pbzip2 -p$BRthreads" -vpf)
     BRext="tar.bz2"
     mcinfo="(pbzip2 $BRthreads threads)"
   elif [ "$BRcompression" = "bzip2" ]; then
-    BR_MAIN_OPTS=(cvpjf)
+    BRmainopts=(cvpjf)
     BRext="tar.bz2"
   elif [ "$BRcompression" = "none" ]; then
-    BR_MAIN_OPTS=(cvpf)
+    BRmainopts=(cvpf)
     BRext="tar"
   fi
 
@@ -538,7 +538,7 @@ if [ "$BRmode" = "0" ]; then
 
   # Set tar default options
   if [ -z "$BRoverride" ] && [ "$BRsrc" = "/" ]; then
-    BR_TR_OPTS+=(--sparse               \
+    BRtropts+=(--sparse               \
                  --acls                 \
                  --xattrs               \
                  --exclude=/run/*       \
@@ -555,19 +555,19 @@ if [ "$BRmode" = "0" ]; then
 
     # Needed by Fedora
     if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
-      BR_TR_OPTS+=(--selinux)
+      BRtropts+=(--selinux)
     fi
   fi
-  BR_TR_OPTS+=(--exclude="$(basename "$BRdestination")")
+  BRtropts+=(--exclude="$(basename "$BRdestination")")
 
   # Set /home directory options
   if [ "$BRhomedir" = "1" ] && [ "$BRsrc" = "/" ]; then
     # Find everything that doesn't start with dot and exclude it
     while read item; do
-      BR_TR_OPTS+=(--exclude="$item")
+      BRtropts+=(--exclude="$item")
     done< <(find /home/*/* -maxdepth 0 -iname ".*" -prune -o -print)
   elif [ "$BRhomedir" = "2" ] && [ "$BRsrc" = "/" ]; then
-    BR_TR_OPTS+=(--exclude=/home/*)
+    BRtropts+=(--exclude=/home/*)
   fi
 
   # Check destination for backup directories with older date, strictly check directory name format
@@ -713,24 +713,24 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if echo "$BRtype" | grep -q -w gzip; then
       BRfiletype="gzip compressed"
       BRreadopts=(tfz)
-      BR_MAIN_OPTS=(xvpfz)
+      BRmainopts=(xvpfz)
     elif echo "$BRtype" | grep -q -w bzip2 && [ -n "$BRmcore" ]; then
       BRfiletype="bzip2 compressed"
       mcinfo="(pbzip2 $BRthreads threads)"
       BRreadopts=(-I "pbzip2 --ignore-trailing-garbage=1 -p$BRthreads" -tf)
-      BR_MAIN_OPTS=(-I "pbzip2 --ignore-trailing-garbage=1 -p$BRthreads" -xvpf)
+      BRmainopts=(-I "pbzip2 --ignore-trailing-garbage=1 -p$BRthreads" -xvpf)
     elif echo "$BRtype" | grep -q -w bzip2; then
       BRfiletype="bzip2 compressed"
       BRreadopts=(tfj)
-      BR_MAIN_OPTS=(xvpfj)
+      BRmainopts=(xvpfj)
     elif echo "$BRtype" | grep -q -w XZ; then
       BRfiletype="xz compressed"
       BRreadopts=(tfJ)
-      BR_MAIN_OPTS=(xvpfJ)
+      BRmainopts=(xvpfJ)
     elif echo "$BRtype" | grep -q -w POSIX; then
       BRfiletype="uncompressed"
       BRreadopts=(tf)
-      BR_MAIN_OPTS=(xvpf)
+      BRmainopts=(xvpf)
     else
       BRfiletype="wrong"
     fi
@@ -857,9 +857,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Set tar default options
   set_tar_opts() {
    if [ "$BRdistro" = "Fedora" ] && [ -z "$BRoverride" ]; then
-     BR_TR_OPTS+=(--selinux --acls "--xattrs-include='*'")
+     BRtropts+=(--selinux --acls "--xattrs-include='*'")
    elif [ -z "$BRoverride" ]; then
-     BR_TR_OPTS+=(--acls --xattrs)
+     BRtropts+=(--acls --xattrs)
    fi
   }
 
@@ -867,20 +867,20 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   run_tar() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar "${BR_MAIN_OPTS[@]}" - "${BR_TR_OPTS[@]}" -C /mnt/target
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>> /tmp/restore.log | tar "${BRmainopts[@]}" - "${BRtropts[@]}" -C /mnt/target
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar "${BR_MAIN_OPTS[@]}" - "${BR_TR_OPTS[@]}" -C /mnt/target
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>> /tmp/restore.log | tar "${BRmainopts[@]}" - "${BRtropts[@]}" -C /mnt/target
     # Without encryption
     else
-      tar "${BR_MAIN_OPTS[@]}" "$BRsource" "${BR_TR_OPTS[@]}" -C /mnt/target
+      tar "${BRmainopts[@]}" "$BRsource" "${BRtropts[@]}" -C /mnt/target
     fi
   }
 
   # Set default rsync options if -o is not given
   set_rsync_opts() {
     if [ -z "$BRoverride" ]; then
-      BR_TR_OPTS+=(--exclude=/run/*         \
+      BRtropts+=(--exclude=/run/*         \
                    --exclude=/dev/*         \
                    --exclude=/sys/*         \
                    --exclude=/tmp/*         \
@@ -893,20 +893,20 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
                    --exclude=lost+found)
     fi
     if [ "$BRhomedir" = "1" ]; then
-      BR_TR_OPTS+=(--exclude=/home/*/[^.]*)
+      BRtropts+=(--exclude=/home/*/[^.]*)
     elif [ "$BRhomedir" = "2" ]; then
-      BR_TR_OPTS+=(--exclude=/home/*)
+      BRtropts+=(--exclude=/home/*)
     fi
   }
 
   # Calculate files to create percentage and progress bar in Transfer mode
   run_calc() {
-    rsync -a --out-format=%n / /mnt/target "${BR_TR_OPTS[@]}" --dry-run 2>/dev/null | tee /tmp/filelist
+    rsync -a --out-format=%n / /mnt/target "${BRtropts[@]}" --dry-run 2>/dev/null | tee /tmp/filelist
   }
 
   # Run rsync with given input
   run_rsync() {
-    rsync -aAX --out-format=%n / /mnt/target "${BR_TR_OPTS[@]}"
+    rsync -aAX --out-format=%n / /mnt/target "${BRtropts[@]}"
   }
 
   # Scan normal partitions, lvm, md arrays and sd card partitions
@@ -1019,12 +1019,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo "Info:    Skip initramfs building"
     fi
 
-    if [ "$BRmode" = "2" ] && [ -n "$BR_TR_OPTS" ]; then
+    if [ "$BRmode" = "2" ] && [ -n "$BRtropts" ]; then
       echo -e "\nRSYNC OPTIONS"
-    elif [ "$BRmode" = "1" ] && [ -n "$BR_TR_OPTS" ]; then
+    elif [ "$BRmode" = "1" ] && [ -n "$BRtropts" ]; then
       echo -e "\nARCHIVER OPTIONS"
     fi
-    for opt in "${BR_TR_OPTS[@]}"; do echo "$opt"; done
+    for opt in "${BRtropts[@]}"; do echo "$opt"; done
   }
 
   # Bind needed directories so we can chroot in the target system
@@ -1099,17 +1099,17 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo "Generating mdadm.conf..."
       # Set mdadm.conf path
       if [ "$BRdistro" = "Debian" ]; then
-        BR_MDADM_PATH="/mnt/target/etc/mdadm"
+        BRmdadmpath="/mnt/target/etc/mdadm"
       else
-        BR_MDADM_PATH="/mnt/target/etc"
+        BRmdadmpath="/mnt/target/etc"
       fi
       # Save old mdadm.conf if found
-      if [ -f "$BR_MDADM_PATH/mdadm.conf" ]; then
-        mv "$BR_MDADM_PATH/mdadm.conf" "$BR_MDADM_PATH/mdadm.conf-old"
+      if [ -f "$BRmdadmpath/mdadm.conf" ]; then
+        mv "$BRmdadmpath/mdadm.conf" "$BRmdadmpath/mdadm.conf-old"
       fi
       # Generate mdadm.conf
-      mdadm --examine --scan > "$BR_MDADM_PATH/mdadm.conf"
-      cat "$BR_MDADM_PATH/mdadm.conf"
+      mdadm --examine --scan > "$BRmdadmpath/mdadm.conf"
+      cat "$BRmdadmpath/mdadm.conf"
       echo
     fi
 
@@ -1173,15 +1173,15 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
 
     # Check for both architectures
-    BR_GRUBX64_EFI="$(find /mnt/target"$BRespmpoint"/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubx64.efi" 2>/dev/null)"
-    BR_GRUBIA32_EFI="$(find /mnt/target"$BRespmpoint"/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubia32.efi" 2>/dev/null)"
+    BRgrubx64efi="$(find /mnt/target"$BRespmpoint"/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubx64.efi" 2>/dev/null)"
+    BRgrubia32efi="$(find /mnt/target"$BRespmpoint"/EFI ! -path "*/EFI/boot/*" ! -path "*/EFI/BOOT/*" -name "grubia32.efi" 2>/dev/null)"
 
-    if [ -f "$BR_GRUBX64_EFI" ]; then
-      echo "Copying "$BR_GRUBX64_EFI" as /mnt/target$BRespmpoint/EFI/boot/bootx64.efi..."
-      cp "$BR_GRUBX64_EFI" /mnt/target"$BRespmpoint"/EFI/boot/bootx64.efi
-    elif [ -f "$BR_GRUBIA32_EFI" ]; then
-      echo "Copying "$BR_GRUBIA32_EFI" as /mnt/target$BRespmpoint/EFI/boot/bootx32.efi..."
-      cp "$BR_GRUBIA32_EFI" /mnt/target"$BRespmpoint"/EFI/boot/bootx32.efi
+    if [ -f "$BRgrubx64efi" ]; then
+      echo "Copying "$BRgrubx64efi" as /mnt/target$BRespmpoint/EFI/boot/bootx64.efi..."
+      cp "$BRgrubx64efi" /mnt/target"$BRespmpoint"/EFI/boot/bootx64.efi
+    elif [ -f "$BRgrubia32efi" ]; then
+      echo "Copying "$BRgrubia32efi" as /mnt/target$BRespmpoint/EFI/boot/bootx32.efi..."
+      cp "$BRgrubia32efi" /mnt/target"$BRespmpoint"/EFI/boot/bootx32.efi
     fi
   }
 
@@ -1617,13 +1617,13 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   read_archive() {
     # In case of openssl encryption
     if [ -n "$BRencpass" ] && [ "$BRencmethod" = "openssl" ]; then
-      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar "${BRreadopts[@]}" - "${BR_TR_OPTS[@]}" || touch /tmp/error
+      openssl aes-256-cbc -d -salt -in "$BRsource" -k "$BRencpass" 2>/dev/null | tar "${BRreadopts[@]}" - "${BRtropts[@]}" || touch /tmp/error
     # In case of gpg encryption
     elif [ -n "$BRencpass" ] && [ "$BRencmethod" = "gpg" ]; then
-      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "${BRreadopts[@]}" - "${BR_TR_OPTS[@]}" || touch /tmp/error
+      gpg -d --batch --passphrase "$BRencpass" "$BRsource" 2>/dev/null | tar "${BRreadopts[@]}" - "${BRtropts[@]}" || touch /tmp/error
     # Without encryption
     else
-      tar "${BRreadopts[@]}" "$BRsource" "${BR_TR_OPTS[@]}" || touch /tmp/error
+      tar "${BRreadopts[@]}" "$BRsource" "${BRtropts[@]}" || touch /tmp/error
     fi
   }
 

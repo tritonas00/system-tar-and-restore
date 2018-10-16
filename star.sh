@@ -234,7 +234,7 @@ General Options:
   -i, --mode                  Select mode: 0 (Backup) 1 (Restore) 2 (Transfer)
   -j, --no-color              Disable colors
   -q, --quiet                 Don't ask, just run
-  -v, --verbose               Enable verbose archiver output
+  -v, --verbose               Enable verbose tar/rsync output
   -u, --user-opts             Additional tar/rsync options. See tar/rsync --help
                               If you want spaces in names replace them with //
   -o, --override              Override the default tar/rsync options with user options (use with -u)

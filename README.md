@@ -131,14 +131,14 @@ See <code>star.sh --help</code> for all available options.
 - Compression: xz  
 - Exclude /home directory  
 
-<code>star.sh -i 0 -d /home/john/ -c xz -H</code>   
+<code>star.sh -i 0 -d /home/john/ -c xz -H 2</code>   
 
 - Destination: /home/john/
 - Compression: bzip2  
 - Keep only /home's hidden files and folders
 - Encryption
 
-<code>star.sh -i 0 -d /home/john/ -c bzip2 -E openssl -P 1234 -O</code>   
+<code>star.sh -i 0 -d /home/john/ -c bzip2 -E openssl -P 1234 -H 1</code>   
 
 **Restore Mode:**
 
@@ -196,4 +196,4 @@ See <code>star.sh --help</code> for all available options.
 - transfer /home's hidden files and folders only
 - grub
 
-<code>star.sh -i 2 -r /dev/sdb2 -b /dev/sdb1 -t "/var=/dev/sdb4 /usr=/dev/sdb3" -G /dev/sdb -O</code>
+<code>star.sh -i 2 -r /dev/sdb2 -b /dev/sdb1 -t "/var=/dev/sdb4 /usr=/dev/sdb3" -G /dev/sdb -H 1</code>

@@ -740,7 +740,7 @@ lost+found">
                                 <checkbox label="Override options" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
                                         <variable>RT_OVERRIDE</variable>
                                 </checkbox>
-                                <checkbox label="Use genkernel" tooltip-text="Use genkernel for initramfs building in gentoo">
+                                <checkbox label="Use genkernel" tooltip-text="Use genkernel for initramfs building in Gentoo">
                                         <variable>RT_GENKERNEL</variable>
                                 </checkbox>
                                 <checkbox label="Ignore UEFI" tooltip-text="Ignore UEFI environment">

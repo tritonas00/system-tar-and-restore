@@ -311,7 +311,7 @@ Restore / Transfer Mode:
     -H, --home-dir	     Home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
 
   Misc Options:
-    -D, --use-genkernel      Use genkernel for initramfs building in gentoo
+    -D, --use-genkernel      Use genkernel for initramfs building in Gentoo
     -W, --ignore-efi         Ignore UEFI environment"
       exit
       shift

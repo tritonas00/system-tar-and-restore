@@ -84,7 +84,7 @@ See <code>star.sh --help</code> for all available options.
 
 ### NOTES
 
-- In case of Gentoo package genkernel is required to build initramfs. If you dont want initramfs image you can use -D to disable genkernel check and initramfs building.
+- In case of Gentoo initramfs is optional. You can use -D in Restore/Transfer Mode to enable initramfs building via genkernel.
 
 - In the target system, the script saves configuration files before generate/modify them with *-old* suffix.  
 

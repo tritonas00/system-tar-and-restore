@@ -151,10 +151,6 @@ set_args() {
       SCR_ARGS+=(-o)
     fi
 
-    if [ "$BC_GENKERNEL" = "true" ]; then
-      SCR_ARGS+=(-D)
-    fi
-
   elif [ "$BR_TAB" = "1" ]; then
     # Restore mode arguments
     if [ "$RT_TAB" = "0" ]; then
@@ -484,10 +480,6 @@ lost+found">
                                         <variable>BC_OVERRIDE</variable>
                                         '"$(if [ -n "$BRoverride" ]; then echo "<default>true</default>"; fi)"'
                                 </checkbox>
-                                <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check in gentoo">
-                                        <variable>BC_GENKERNEL</variable>
-                                        '"$(if [ -n "$BRgenkernel" ]; then echo "<default>true</default>"; fi)"'
-                                </checkbox>
                         </vbox>
                         <vbox shadow-type="0">
                                 <notebook show-tabs="false" show-border="false">
@@ -748,7 +740,7 @@ lost+found">
                                 <checkbox label="Override options" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
                                         <variable>RT_OVERRIDE</variable>
                                 </checkbox>
-                                <checkbox label="Disable genkernel" tooltip-text="Disable genkernel check and initramfs building in gentoo">
+                                <checkbox label="Use genkernel" tooltip-text="Use genkernel for initramfs building in gentoo">
                                         <variable>RT_GENKERNEL</variable>
                                 </checkbox>
                                 <checkbox label="Ignore UEFI" tooltip-text="Ignore UEFI environment">

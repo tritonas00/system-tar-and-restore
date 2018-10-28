@@ -71,7 +71,7 @@ fi
 echo "$BRversion"
 
 # Set arguments and help page
-BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:WFLz:T:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,disable-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,ignore-efi,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
+BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:WFLz:T:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,use-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,ignore-efi,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -148,8 +148,8 @@ while true; do
       BRgen="y"
       shift
     ;;
-    -D|--disable-genkernel)
-      BRgenkernel="n"
+    -D|--use-genkernel)
+      BRgenkernel="y"
       shift
     ;;
     -o|--override)
@@ -244,75 +244,75 @@ while true; do
       echo "Usage: star.sh [backup.conf] -i mode [options]
 
 General Options:
-  -i, --mode                  Select mode: 0 (Backup) 1 (Restore) 2 (Transfer)
-  -j, --no-color              Disable colors
-  -q, --quiet                 Don't ask, just run
-  -v, --verbose               Enable verbose tar/rsync output
-  -u, --user-opts             Additional tar/rsync options. See tar/rsync --help
-                              If you want spaces in names replace them with //
-  -o, --override              Override the default tar/rsync options with user options (use with -u)
-  -D, --disable-genkernel     Disable genkernel check and initramfs building in gentoo
-      --help	              Print this page
+  -i, --mode                 Select mode: 0 (Backup) 1 (Restore) 2 (Transfer)
+  -j, --no-color             Disable colors
+  -q, --quiet                Don't ask, just run
+  -v, --verbose              Enable verbose tar/rsync output
+  -u, --user-opts            Additional tar/rsync options. See tar/rsync --help
+                             If you want spaces in names replace them with //
+  -o, --override             Override the default tar/rsync options with user options (use with -u)
+      --help	             Print this page
 
 Backup Mode:
   Archive Options:
-    -d, --destination         Backup destination path
-    -n, --filename            Backup filename (without extension)
+    -d, --destination        Backup destination path
+    -n, --filename           Backup filename (without extension)
 
   Home Directory:
-    -H, --home-dir	      Home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
+    -H, --home-dir	     Home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
 
   Archiver Options:
-    -c, --compression         Compression type: gzip bzip2 xz none
-    -M, --multi-core          Enable multi-core compression via pigz, pbzip2 or pxz
-    -z, --threads             Specify the number of threads for multi-core compression
+    -c, --compression        Compression type: gzip bzip2 xz none
+    -M, --multi-core         Enable multi-core compression via pigz, pbzip2 or pxz
+    -z, --threads            Specify the number of threads for multi-core compression
 
   Encryption Options:
-    -E, --encryption          Encryption method: openssl gpg
-    -P, --passphrase          Passphrase for encryption
+    -E, --encryption         Encryption method: openssl gpg
+    -P, --passphrase         Passphrase for encryption
 
   Misc Options:
-    -g, --generate            Generate configuration file (in case of successful backup)
-    -a, --clean               Remove older backups in the destination directory
-    -T, --src-dir             Specify an alternative source directory to create a non-system backup archive
+    -g, --generate           Generate configuration file (in case of successful backup)
+    -a, --clean              Remove older backups in the destination directory
+    -T, --src-dir            Specify an alternative source directory to create a non-system backup archive
 
 Restore / Transfer Mode:
   Partitions:
-    -r,  --root               Target root partition
-    -m,  --mount-opts         Comma-separated list of mount options for the root partition
-    -e,  --esp                Target EFI system partition
-    -l,  --esp-mpoint         Mount point for ESP: /boot/efi /boot
-    -b,  --boot               Target /boot partition
-    -h,  --home               Target /home partition
-    -s,  --swap               Swap partition
-    -t,  --other-parts        Specify other partitions. Syntax is mountpoint=partition (e.g /var=/dev/sda3)
-                              If you want spaces in mountpoints replace them with //
+    -r, --root               Target root partition
+    -m, --mount-opts         Comma-separated list of mount options for the root partition
+    -e, --esp                Target EFI system partition
+    -l, --esp-mpoint         Mount point for ESP: /boot/efi /boot
+    -b, --boot               Target /boot partition
+    -h, --home               Target /home partition
+    -s, --swap               Swap partition
+    -t, --other-parts        Specify other partitions. Syntax is mountpoint=partition (e.g /var=/dev/sda3)
+                             If you want spaces in mountpoints replace them with //
      Add a trailing @ in any of the above, if it is not empty and you want to clean it (e.g -r /dev/sda2@)
 
   Btrfs Subvolumes:
-    -R,  --rootsubvol         Subvolume name for /
-    -B,  --other-subvols      Specify other subvolumes (subvolume path e.g /home /var /usr ...)
+    -R, --rootsubvol         Subvolume name for /
+    -B, --other-subvols      Specify other subvolumes (subvolume path e.g /home /var /usr ...)
 
   Bootloaders:
-    -G,  --grub               Target grub device
-    -S,  --syslinux           Target syslinux device
-    -F,  --efistub            Enable EFISTUB/efibootmgr
-    -L,  --bootctl            Enable Systemd/bootctl
-    -k,  --kernel-opts        Additional kernel options
+    -G, --grub               Target grub device
+    -S, --syslinux           Target syslinux device
+    -F, --efistub            Enable EFISTUB/efibootmgr
+    -L, --bootctl            Enable Systemd/bootctl
+    -k, --kernel-opts        Additional kernel options
 
   Restore Mode:
-    -f,  --file               Backup file path or url
-    -y,  --username           Ftp/http username
-    -p,  --password           Ftp/http password
-    -P,  --passphrase         Passphrase for decryption
-    -M,  --multi-core         Enable multi-core decompression via pbzip2
-    -z,  --threads            Specify the number of threads for multi-core decompression
+    -f, --file               Backup file path or url
+    -y, --username           Ftp/http username
+    -p, --password           Ftp/http password
+    -P, --passphrase         Passphrase for decryption
+    -M, --multi-core         Enable multi-core decompression via pbzip2
+    -z, --threads            Specify the number of threads for multi-core decompression
 
   Transfer Mode:
-    -H,  --home-dir	      Home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
+    -H, --home-dir	     Home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
 
   Misc Options:
-    -W,  --ignore-efi         Ignore UEFI environment"
+    -D, --use-genkernel      Use genkernel for initramfs building in gentoo
+    -W, --ignore-efi         Ignore UEFI environment"
       exit
       shift
     ;;
@@ -447,7 +447,6 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRoverride" ]; then echo BRoverride=\"Yes\"; fi
     if [ -n "$BRencpass" ]; then echo -e "BRencmethod=\"$BRencmethod\"\nBRencpass=\"$BRencpass\""; fi
     if [ -n "$BRclean" ]; then echo BRclean=\"Yes\"; fi
-    if [ -n "$BRgenkernel" ]; then echo BRgenkernel=\"No\"; fi
     if [ -n "$BRmcore" ]; then echo -e "BRmcore=\"Yes\"\nBRthreads=\"$BRthreads\""; fi
     if [ -n "$BRsrc" ] && [ ! "$BRsrc" = "/" ]; then echo BRsrc=\"$BRsrcfull\"; fi
   }
@@ -463,10 +462,6 @@ if [ "$BRmode" = "0" ]; then
 
   if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ] && [ ! "$BRcompression" = "bzip2" ] && [ ! "$BRcompression" = "none" ]; then
     print_err "[${RED}ERROR${NORM}] Wrong compression type: $BRcompression. Available options: gzip bzip2 xz none" 0
-  fi
-
-  if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
-    print_err "[${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" 0
   fi
 
   if [ -z "$BRencmethod" ] || [ "$BRencmethod" = "none" ] && [ -n "$BRencpass" ]; then
@@ -847,7 +842,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
           echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND root=$bl_root $BRkernopts\n\tINITRD ../$ipn-$cn"
         elif [ "$BRdistro" = "Mandriva" ]; then
           echo -e "LABEL suse\n\tMENU LABEL $BRdistro-$cn\n\tLINUX ../$kn\n\tAPPEND root=$bl_root $BRkernopts\n\tINITRD ../$ipn-$cn.img"
-        elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
+        elif [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
           echo -e "LABEL gentoo\n\tMENU LABEL $BRdistro-$kn\n\tLINUX ../$kn\n\tAPPEND root=$bl_root $BRkernopts\n\tINITRD ../$ipn-$cn"
         elif [ "$BRdistro" = "Gentoo" ]; then
           echo -e "LABEL gentoo\n\tMENU LABEL $BRdistro-$kn\n\tLINUX ../$kn\n\tAPPEND root=$BRroot $BRkernopts"
@@ -1017,7 +1012,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       echo "System:  $BRdistro based $(uname -m)"
     fi
 
-    if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
+    if [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
       echo "Info:    Skip initramfs building"
     fi
 
@@ -1150,12 +1145,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     done
 
-    # Use genkernel in Gentoo if -D is not given
-    if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
-      echo "Skipping..."
-    elif [ "$BRdistro" = "Gentoo" ]; then
+    # Use genkernel in Gentoo if -D is given
+    if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ] ; then
       print_msg "Building initramfs images" 0
       chroot /mnt/target genkernel --no-color --install initramfs
+    elif [ "$BRdistro" = "Gentoo" ]; then
+      echo "Skipping..."
     fi
   }
 
@@ -1471,7 +1466,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
             chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "root=$bl_root $BRkernopts initrd=/$ipn-$cn.img" || touch /tmp/error
           elif [ "$BRdistro" = "Suse" ]; then
             chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$cn" -l /"$kn" -u "root=$bl_root $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
-          elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
+          elif [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
             chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$kn" -l /"$kn" -u "root=$bl_root $BRkernopts initrd=/$ipn-$cn" || touch /tmp/error
           elif [ "$BRdistro" = "Gentoo" ]; then
             chroot /mnt/target efibootmgr -d "$BRespdev" -p "$BRespart" -c -L "$BRdistro-$kn" -l /"$kn" -u "root=$BRroot $BRkernopts" || touch /tmp/error
@@ -1519,7 +1514,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
             echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn.img\noptions root=$bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Suse" ]; then
             echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions root=$bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
-          elif [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ]; then
+          elif [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ]; then
             echo -e "title $BRdistro $cn\nlinux /$kn\ninitrd /$ipn-$cn\noptions root=$bl_root $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
           elif [ "$BRdistro" = "Gentoo" ]; then
             echo -e "title $BRdistro $cn\nlinux /$kn\noptions root=$BRroot $BRkernopts" > /mnt/target"$BRespmpoint"/loader/entries/"$BRdistro"-"$cn".conf
@@ -1717,8 +1712,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -z "$(which rsync 2>/dev/null)" ]; then
       print_err "[${RED}ERROR${NORM}] Package rsync is not installed. Install the package and re-run the script" 0
     fi
-    if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -z "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
-      print_err "[${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script (you can disable this check with -D)" 0
+    if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -n "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
+      print_err "[${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script" 0
     fi
     if [ -n "$BRgrub" ] && [ -z "$(which grub-mkconfig 2>/dev/null)" ] && [ -z "$(which grub2-mkconfig 2>/dev/null)" ]; then
       print_err "[${RED}ERROR${NORM}] Grub not found. Install it and re-run the script" 0
@@ -2081,9 +2076,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   detect_root_map
 
-  # Check archive for genkernel in case of Gentoo if -D is not given
-  if [ "$BRmode" = "1" ] && [ "$BRdistro" = "Gentoo" ] && [ -z "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
-    print_err "[${RED}ERROR${NORM}] Genkernel not found in the archived system. (you can disable this check with -D)" 1
+  # Check archive for genkernel in case of Gentoo if -D is given
+  if [ "$BRmode" = "1" ] && [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
+    print_err "[${RED}ERROR${NORM}] Genkernel not found in the archived system" 1
   fi
 
   if [ "$BRmode" = "1" ]; then

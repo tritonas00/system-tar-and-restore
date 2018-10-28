@@ -55,7 +55,7 @@ With this mode you can make a tar backup archive of your system. You can define:
 
 - **Archive filename:** A desired name for the backup archive. Default is <code>Backup-$(hostname)-$(date +%Y%m%d-%H%M%S)</code>.
 - **Destination directory:** Set where you want to save the backup archive. Default is <code>/</code>.
-- **/home directory:** You have three options: fully include it, keep only it's hidden files and folders (which are necessary to login and keep basic settings) or completely exclude it (in case it's located in separate partition and you want to use that in restore mode).
+- **Home directory:** You have three options: fully include it, keep only it's hidden files and folders (which are necessary to login and keep basic settings) or completely exclude it (in case it's located in separate partition and you want to use that in restore mode).
 - **Compression:** You can choose between gzip, bzip2, xz and none (for no compression). Gzip should be fine.
 - **Encryption method and passphrase:** Select encryption method (openssl or gpg) and enter a passphrase if you want to encrypt the archive.
 - **Archiver options:** You can pass your own extra options in the archiver. See <code>tar --help</code> for more info.

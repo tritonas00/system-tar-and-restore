@@ -371,6 +371,25 @@ for opt in $BRuseropts; do
   fi
 done
 
+# Detect the distro in Backup and Transfer mode by checking for known package manager files
+if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ]; then
+  if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
+    BRdistro="Fedora"
+  elif [ -f /etc/pacman.conf ]; then
+    BRdistro="Arch"
+  elif [ -f /etc/apt/sources.list ]; then
+    BRdistro="Debian"
+  elif [ -f /etc/zypp/zypp.conf ]; then
+    BRdistro="Suse"
+  elif [ -f /etc/urpmi/urpmi.cfg ]; then
+    BRdistro="Mandriva"
+  elif [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
+    BRdistro="Gentoo"
+  else
+    BRdistro="Unsupported"
+  fi
+fi
+
 # Backup mode
 if [ "$BRmode" = "0" ]; then
 
@@ -551,7 +570,7 @@ if [ "$BRmode" = "0" ]; then
                --exclude=lost+found)
 
     # Needed by Fedora
-    if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
+    if [ "$BRdistro" = "Fedora" ]; then
       BRtropts+=(--selinux)
     fi
   fi
@@ -730,46 +749,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRmainopts=(xvpf)
     else
       BRfiletype="wrong"
-    fi
-  }
-
-  # Detect the distro by checking for known package manager files
-  detect_distro() {
-    # In Restore mode check the archive contents
-    if [ "$BRmode" = "1" ]; then
-      if grep -Fxq "etc/yum.conf" /tmp/filelist || grep -Fxq "etc/dnf/dnf.conf" /tmp/filelist; then
-        BRdistro="Fedora"
-      elif grep -Fxq "etc/pacman.conf" /tmp/filelist; then
-        BRdistro="Arch"
-      elif grep -Fxq "etc/apt/sources.list" /tmp/filelist; then
-        BRdistro="Debian"
-      elif grep -Fxq "etc/zypp/zypp.conf" /tmp/filelist; then
-        BRdistro="Suse"
-      elif grep -Fxq "etc/urpmi/urpmi.cfg" /tmp/filelist; then
-        BRdistro="Mandriva"
-      elif grep -Fxq "etc/portage/make.conf" /tmp/filelist || grep -Fxq "etc/make.conf" /tmp/filelist; then
-        BRdistro="Gentoo"
-      else
-        BRdistro="Unsupported"
-      fi
-
-    # In Transfer mode check the running system
-    elif [ "$BRmode" = "2" ]; then
-      if [ -f /etc/yum.conf ] || [ -f /etc/dnf/dnf.conf ]; then
-        BRdistro="Fedora"
-      elif [ -f /etc/pacman.conf ]; then
-        BRdistro="Arch"
-      elif [ -f /etc/apt/sources.list ]; then
-        BRdistro="Debian"
-      elif [ -f /etc/zypp/zypp.conf ]; then
-        BRdistro="Suse"
-      elif [ -f /etc/urpmi/urpmi.cfg ]; then
-        BRdistro="Mandriva"
-      elif [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ]; then
-        BRdistro="Gentoo"
-      else
-        BRdistro="Unsupported"
-      fi
     fi
   }
 
@@ -1712,7 +1691,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -z "$(which rsync 2>/dev/null)" ]; then
       print_err "[${RED}ERROR${NORM}] Package rsync is not installed. Install the package and re-run the script" 0
     fi
-    if [ -f /etc/portage/make.conf ] || [ -f /etc/make.conf ] && [ -n "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
+    if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ] && [ -z "$(which genkernel 2>/dev/null)" ]; then
       print_err "[${RED}ERROR${NORM}] Package genkernel is not installed. Install the package and re-run the script" 0
     fi
     if [ -n "$BRgrub" ] && [ -z "$(which grub-mkconfig 2>/dev/null)" ] && [ -z "$(which grub2-mkconfig 2>/dev/null)" ]; then
@@ -1997,9 +1976,24 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         print_err "[${RED}ERROR${NORM}] Running and target system architecture mismatch or invalid archive" 1
       fi
     fi
-  fi
 
-  detect_distro
+    # Detect the distro by checking the archive for known package manager files
+    if grep -Fxq "etc/yum.conf" /tmp/filelist || grep -Fxq "etc/dnf/dnf.conf" /tmp/filelist; then
+      BRdistro="Fedora"
+    elif grep -Fxq "etc/pacman.conf" /tmp/filelist; then
+      BRdistro="Arch"
+    elif grep -Fxq "etc/apt/sources.list" /tmp/filelist; then
+      BRdistro="Debian"
+    elif grep -Fxq "etc/zypp/zypp.conf" /tmp/filelist; then
+      BRdistro="Suse"
+    elif grep -Fxq "etc/urpmi/urpmi.cfg" /tmp/filelist; then
+      BRdistro="Mandriva"
+    elif grep -Fxq "etc/portage/make.conf" /tmp/filelist || grep -Fxq "etc/make.conf" /tmp/filelist; then
+      BRdistro="Gentoo"
+    else
+      BRdistro="Unsupported"
+    fi
+  fi
 
   # Set the bootloader
   if [ -n "$BRgrub" ]; then

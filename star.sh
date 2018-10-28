@@ -275,7 +275,7 @@ Backup Mode:
     -a, --clean              Remove older backups in the destination directory
     -T, --src-dir            Specify an alternative source directory to create a non-system backup archive
 
-Restore / Transfer Mode:
+Restore/Transfer Mode:
   Partitions:
     -r, --root               Target root partition
     -m, --mount-opts         Comma-separated list of mount options for the root partition

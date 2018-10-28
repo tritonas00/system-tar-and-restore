@@ -1722,13 +1722,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
     if [ -n "$BRgrub" ] && [ -z "$(which grub-mkconfig 2>/dev/null)" ] && [ -z "$(which grub2-mkconfig 2>/dev/null)" ]; then
       print_err "[${RED}ERROR${NORM}] Grub not found. Install it and re-run the script" 0
-    elif [ -n "$BRsyslinux" ]; then
-      if [ -z "$(which extlinux 2>/dev/null)" ]; then
-        print_err "[${RED}ERROR${NORM}] Extlinux not found. Install it and re-run the script" 0
-      fi
-      if [ -z "$(which syslinux 2>/dev/null)" ]; then
-        print_err "[${RED}ERROR${NORM}] Syslinux not found. Install it and re-run the script" 0
-      fi
+    elif [ -z "$(which extlinux 2>/dev/null)" ] || [ -z "$(which syslinux 2>/dev/null)" ] && [ -n "$BRsyslinux" ]; then
+      print_err "[${RED}ERROR${NORM}] Extlinux/Syslinux not found. Install it and re-run the script" 0
     fi
     if [ -n "$BRbootctl" ] || [ -n "$BRefistub" ] || [ -n "$BRgrub" ] && [ -d "$BRefidir" ] && [ -z "$(which mkfs.vfat 2>/dev/null)" ]; then
       print_err "[${RED}ERROR${NORM}] Package dosfstools is not installed. Install the package and re-run the script" 0

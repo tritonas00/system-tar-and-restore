@@ -783,6 +783,7 @@ lost+found">
                                 <input file stock="gtk-stop"></input>
                                 <variable>BTN_CANCEL</variable>
                                 <label>Cancel</label>
+                                <action>disable:BTN_CANCEL</action>
                                 <action>kill -15 -$(cat /tmp/wr_pid)</action>
                         </button>
                         <button tooltip-text="Exit">

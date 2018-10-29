@@ -698,7 +698,7 @@ if [ "$BRmode" = "0" ]; then
 
   clean_tmp_files
 
-# Restore / Transfer Mode
+# Restore/Transfer Mode
 elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   # Unset Backup mode vars
@@ -2004,7 +2004,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRdistro="Unsupported"
     fi
 
-    # Search archive contents for given bootloaders
+    # Search archive contents for given bootloaders and utilities
     if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist; then
       print_err "[${RED}ERROR${NORM}] Grub not found in the archived system" 1
     elif ! grep -Fq "bin/extlinux" /tmp/filelist || ! grep -Fq "bin/syslinux" /tmp/filelist && [ -n "$BRsyslinux" ]; then
@@ -2019,7 +2019,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     if [ -n "$BRbootctl" ] && [ -d "$BRefidir" ] && ! grep -Fq "bin/bootctl" /tmp/filelist; then
       print_err "[${RED}ERROR${NORM}] Bootctl not found in the archived system" 1
     fi
-    # Check archive for genkernel in case of Gentoo if -D is given
     if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
       print_err "[${RED}ERROR${NORM}] Genkernel not found in the archived system" 1
     fi

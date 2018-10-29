@@ -2041,7 +2041,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     set_rsync_opts
   fi
 
-  # Search for sgdisk in case of Syslinux/GPT
+  # Set the partition table for Syslinux and search for sgdisk in case of GPT
   if [ -n "$BRsyslinux" ]; then
     # If the target Syslinux device is a raid array detect the partition table of one of the underlying devices. Probably all have the same partition table
     if [[ "$BRsyslinux" == *md* ]]; then

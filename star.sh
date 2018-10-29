@@ -1652,6 +1652,17 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     BRmountopts="defaults,noatime"
   fi
 
+  # Set bootloader name
+  if [ -n "$BRgrub" ]; then
+    BRbootloader="Grub"
+  elif [ -n "$BRsyslinux" ]; then
+    BRbootloader="Syslinux"
+  elif [ -n "$BRefistub" ]; then
+    BRbootloader="EFISTUB/efibootmgr"
+  elif [ -n "$BRbootctl" ]; then
+    BRbootloader="Systemd/bootctl"
+  fi
+
   # Exit if no partitions found by scan_parts
   if [ -z "$(scan_parts 2>/dev/null)" ]; then
     print_err "[${RED}ERROR${NORM}] No partitions found" 0
@@ -1927,10 +1938,9 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   # Find the bigger partition to save the downloaded backup archive
   BRmaxsize="$(for size in "${BRsizes[@]}"; do echo "$size"; done | sort -nr -k 1,1 -t = | head -n1 | cut -f2 -d"=")"
 
-  # In Restore mode download the backup archive if url is given, read it and check it
   if [ "$BRmode" = "1" ]; then
     echo -e "\n${BOLD}[BACKUP ARCHIVE]${NORM}"
-
+    # Download the backup archive if url is given, read it and check it
     if [[ ! "$BRuri" == /* ]]; then
       BRsource="$BRmaxsize/downloaded_backup"
       # Give percentage to gui wrapper
@@ -1993,19 +2003,47 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     else
       BRdistro="Unsupported"
     fi
+
+    # Search archive contents for given bootloaders
+    if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist; then
+      print_err "[${RED}ERROR${NORM}] Grub not found in the archived system" 1
+    elif ! grep -Fq "bin/extlinux" /tmp/filelist || ! grep -Fq "bin/syslinux" /tmp/filelist && [ -n "$BRsyslinux" ]; then
+      print_err "[${RED}ERROR${NORM}] Extlinux/Syslinux not found in the archived system" 1
+    fi
+    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] && [ -d "$BRefidir" ] && ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
+      print_err "[${RED}ERROR${NORM}] efibootmgr not found in the archived system" 1
+    fi
+    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BRefidir" ] && ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
+      print_err "[${RED}ERROR${NORM}] dosfstools not found in the archived system" 1
+    fi
+    if [ -n "$BRbootctl" ] && [ -d "$BRefidir" ] && ! grep -Fq "bin/bootctl" /tmp/filelist; then
+      print_err "[${RED}ERROR${NORM}] Bootctl not found in the archived system" 1
+    fi
+    # Check archive for genkernel in case of Gentoo if -D is given
+    if [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
+      print_err "[${RED}ERROR${NORM}] Genkernel not found in the archived system" 1
+    fi
+
+    # Set the EFI Grub architecture in Restore Mode
+    if [ "$target_arch" = "x86_64" ]; then
+      BRgrubefiarch="x86_64-efi"
+    elif [ "$target_arch" = "i686" ]; then
+      BRgrubefiarch="i386-efi"
+    fi
+    set_tar_opts
   fi
 
-  # Set the bootloader
-  if [ -n "$BRgrub" ]; then
-    BRbootloader="Grub"
-  elif [ -n "$BRsyslinux" ]; then
-    BRbootloader="Syslinux"
-  elif [ -n "$BRefistub" ]; then
-    BRbootloader="EFISTUB/efibootmgr"
-  elif [ -n "$BRbootctl" ]; then
-    BRbootloader="Systemd/bootctl"
+  if [ "$BRmode" = "2" ]; then
+    # Set the EFI Grub architecture in Transfer Mode
+    if [ "$(uname -m)" = "x86_64" ]; then
+      BRgrubefiarch="x86_64-efi"
+    elif [ "$(uname -m)" = "i686" ]; then
+      BRgrubefiarch="i386-efi"
+    fi
+    set_rsync_opts
   fi
 
+  # Search for sgdisk in case of Syslinux/GPT
   if [ -n "$BRsyslinux" ]; then
     # If the target Syslinux device is a raid array detect the partition table of one of the underlying devices. Probably all have the same partition table
     if [[ "$BRsyslinux" == *md* ]]; then
@@ -2014,7 +2052,6 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       done
     fi
     detect_partition_table_syslinux
-    # Search for sgdisk in case of GPT
     if [ ! "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ -z "$(which sgdisk 2>/dev/null)" ]; then
       print_err "[${RED}ERROR${NORM}] Package gptfdisk/gdisk is not installed. Install the package and re-run the script" 1
     elif [ "$BRdistro" = "Arch" ] && [ "$BRtable" = "gpt" ] && [ "$BRmode" = "2" ] && [ -z "$(which sgdisk 2>/dev/null)" ]; then
@@ -2025,61 +2062,12 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     fi
   fi
 
-  if [ "$BRmode" = "1" ]; then
-    # Search archive contents for grub(2)-mkconfig
-    if [ -n "$BRgrub" ] && ! grep -Fq "bin/grub-mkconfig" /tmp/filelist && ! grep -Fq "bin/grub2-mkconfig" /tmp/filelist; then
-      print_err "[${RED}ERROR${NORM}] Grub not found in the archived system" 1
-    # Search archive contents for sys/extlinux
-    elif ! grep -Fq "bin/extlinux" /tmp/filelist || ! grep -Fq "bin/syslinux" /tmp/filelist && [ -n "$BRsyslinux" ]; then
-      print_err "[${RED}ERROR${NORM}] Extlinux/Syslinux not found in the archived system" 1
-    fi
-
-    # Search archive contents for efibootmgr
-    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] && [ -d "$BRefidir" ] && ! grep -Fq "bin/efibootmgr" /tmp/filelist; then
-      print_err "[${RED}ERROR${NORM}] efibootmgr not found in the archived system" 1
-    fi
-    # Search archive contents for mkfs.vfat
-    if [ -n "$BRgrub" ] || [ -n "$BRefistub" ] || [ -n "$BRbootctl" ] && [ -d "$BRefidir" ] && ! grep -Fq "bin/mkfs.vfat" /tmp/filelist; then
-      print_err "[${RED}ERROR${NORM}] dosfstools not found in the archived system" 1
-    fi
-    # Search archive contents for bootctl
-    if [ -n "$BRbootctl" ] && [ -d "$BRefidir" ] && ! grep -Fq "bin/bootctl" /tmp/filelist; then
-      print_err "[${RED}ERROR${NORM}] Bootctl not found in the archived system" 1
-    fi
-    # Set the EFI Grub architecture in Restore Mode
-    if [ "$target_arch" = "x86_64" ]; then
-      BRgrubefiarch="x86_64-efi"
-    elif [ "$target_arch" = "i686" ]; then
-      BRgrubefiarch="i386-efi"
-    fi
-  fi
-
-  # Set the EFI Grub architecture in Transfer Mode
-  if [ -n "$BRgrub" ] && [ "$BRmode" = "2" ] && [ -d "$BRefidir" ]; then
-    if [ "$(uname -m)" = "x86_64" ]; then
-      BRgrubefiarch="x86_64-efi"
-    elif [ "$(uname -m)" = "i686" ]; then
-      BRgrubefiarch="i386-efi"
-    fi
-  fi
-
   # In case of EFI and Grub, set the defined ESP mountpoint as --efi-directory
   if [ -n "$BRgrub" ] && [ -d "$BRefidir" ]; then
     BRgrub="$BRespmpoint"
   fi
 
   detect_root_map
-
-  # Check archive for genkernel in case of Gentoo if -D is given
-  if [ "$BRmode" = "1" ] && [ "$BRdistro" = "Gentoo" ] && [ -n "$BRgenkernel" ] && ! grep -Fq "bin/genkernel" /tmp/filelist; then
-    print_err "[${RED}ERROR${NORM}] Genkernel not found in the archived system" 1
-  fi
-
-  if [ "$BRmode" = "1" ]; then
-    set_tar_opts
-  elif [ "$BRmode" = "2" ]; then
-    set_rsync_opts
-  fi
   if [ -n "$BRbootloader" ]; then
     set_kern_opts
   fi

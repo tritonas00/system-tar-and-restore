@@ -318,7 +318,6 @@ fi
 
 # Run if Cancel pressed from the gui wrapper
 abort() {
-  echo "Process ID $$ terminated" > /tmp/wr_log
   if [ "$BRmode" = "0" ]; then
     clean_tmp_files
     exit

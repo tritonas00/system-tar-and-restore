@@ -784,7 +784,7 @@ lost+found">
                                 <variable>BTN_CANCEL</variable>
                                 <label>Cancel</label>
                                 <action>disable:BTN_CANCEL</action>
-                                <action>kill -15 -$(cat /tmp/wr_pid)</action>
+                                <action>kill -15 -$(cat /tmp/wr_pid) && echo "Process ID $(cat /tmp/wr_pid) terminated" > /tmp/wr_log</action>
                         </button>
                         <button tooltip-text="Exit">
                                 <variable>BTN_EXIT</variable>

@@ -273,9 +273,8 @@ set_args() {
 }
 
 run_main() {
-  if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ] && [ "$BR_DEBUG" = "true" ]; then
-    echo star.sh "${SCR_ARGS[@]}" > /tmp/wr_proc
-  elif [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
+  if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
+    echo star.sh ${SCR_ARGS[@]} 1>&2
     echo false > /tmp/wr_pid
     setsid ./star.sh "${SCR_ARGS[@]}" 1>&2 2>/tmp/wr_log
     sleep 0.3
@@ -763,11 +762,6 @@ lost+found">
                                         </text>
                                 </vbox>
                                 <hseparator></hseparator>
-                                <checkbox label="Debug" tooltip-text="Show the generated command instead of run it">
-                                        <variable>BR_DEBUG</variable>
-                                        <action> if true echo "$BRwrtl (debug)" > /tmp/wr_proc</action>
-                                        <action> if false echo "$BRwrtl" > /tmp/wr_proc</action>
-                                </checkbox>
                         </vbox>
                         <variable>BR_TAB</variable>
                         <input>echo 2</input>

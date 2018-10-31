@@ -12,6 +12,7 @@ clean_tmp_files() {
   if [ -f /tmp/error ]; then rm /tmp/error; fi
   if [ -f /target_architecture.$(uname -m) ]; then rm /target_architecture.$(uname -m); fi
   if [ -f /mnt/target/target_architecture.$(uname -m) ]; then rm /mnt/target/target_architecture.$(uname -m); fi
+  if [ -f "$BRmaxsize"/downloaded_backup ]; then rm "$BRmaxsize"/downloaded_backup; fi
 }
 
 # Calculate percentage and compose a simple progress bar
@@ -1519,10 +1520,8 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
   clean_unmount() {
     echo -e "\n${BOLD}[CLEANING AND UNMOUNTING]${NORM}"
     unset BRstop
-    # Make sure we are outside of /mnt/target
     cd /
-    # Delete the downloaded backup archive
-    rm "$BRmaxsize"/downloaded_backup 2>/dev/null
+    clean_tmp_files
 
     if [ -n "$post_umt" ]; then
       # Unmount everything we mounted in prepare_chroot
@@ -1573,8 +1572,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       fi
     fi
 
-    # Remove leftovers and unmount the target root partition
-    clean_tmp_files
+    # Unmount the target root partition
     sleep 1
     if [ ! -z "$(lsblk -d -n -o mountpoint 2>/dev/null "$BRroot")" ]; then
       print_msg "Unmounting $BRroot"

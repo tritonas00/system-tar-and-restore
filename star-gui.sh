@@ -97,6 +97,17 @@ if [ -n "$BRuseropts" ]; then
   done
 fi
 
+# Check if cron job file exists and assign vars
+if [ -f /etc/cron.d/starbackup ]; then
+  export BC_MIN="$(cat /etc/cron.d/starbackup | cut -f1 -d ' ')"
+  export BC_HOUR="$(cat /etc/cron.d/starbackup | cut -f2 -d ' ')"
+  export BC_DAYS="$(cat /etc/cron.d/starbackup | cut -f3 -d ' ' | cut -f2 -d '/')"
+else
+  export BC_MIN="00"
+  export BC_HOUR="00"
+  export BC_DAYS="1"
+fi
+
 # Store needed functions to a temporary file so we can source it inside gtkdialog
 # This ensures compatibility with Ubuntu 16.04 and variants
 echo '
@@ -270,11 +281,39 @@ set_args() {
       SCR_ARGS+=(-W)
     fi
   fi
+
+  # Parse arguments array, write a new one with necessary quoted args so we can export a valid command
+  quote_args=(-d -n -T -P -u -f -y -p -m -t -R -B -k)
+  for arg in "${SCR_ARGS[@]}"; do
+    if [ "$quote_arg" = "y" ]; then
+      unset quote_arg
+      CMD_ARGS+=(\"$arg\")
+    else
+      CMD_ARGS+=($arg)
+    fi
+    if [[ "${quote_args[@]}" =~ "${arg}" ]]; then
+      quote_arg="y"
+    fi
+  done
+}
+
+set_schedule() {
+  if [ "$BC_DAYS" = "1" ]; then
+    sch_info="Added schedule: Every day at $BC_HOUR:$BC_MIN"
+  else
+    sch_info="Added schedule: Every $BC_DAYS days at $BC_HOUR:$BC_MIN"
+  fi
+
+  if [ "$BC_SCHEDULE" = "true" ]; then
+    echo $BC_MIN $BC_HOUR \*/$BC_DAYS \* \* root \""$(pwd)"\"/./star.sh ${CMD_ARGS[@]} > /etc/cron.d/starbackup && echo "$sch_info" > /tmp/wr_proc
+  elif [ "$BC_SCHEDULE" = "false" ] && [ -f /etc/cron.d/starbackup ]; then
+    rm -f /etc/cron.d/starbackup && echo "Removed schedule" > /tmp/wr_proc
+  fi
 }
 
 run_main() {
   if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
-    echo star.sh ${SCR_ARGS[@]} 1>&2
+    echo star.sh ${CMD_ARGS[@]} 1>&2
     echo false > /tmp/wr_pid
     setsid ./star.sh "${SCR_ARGS[@]}" 1>&2 2>/tmp/wr_log
     sleep 0.3
@@ -411,7 +450,7 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                                 <action>if true enable:BC_THREADS</action>
                                                                 <action>if false disable:BC_THREADS</action>
                                                         </togglebutton>
-                                                        <spinbutton space-fill="true" range-min="1" range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core compression">
+                                                        <spinbutton space-fill="true" range-min="1" range-max="'"$(nproc --all)"'" editable="no" tooltip-text="Specify the number of threads for multi-core compression">
                                                                 '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                                 <variable>BC_THREADS</variable>
                                                                 <default>'"$BC_THREADS"'</default>
@@ -466,6 +505,32 @@ Excluded by default:
 lost+found">
                                                 <variable>BC_EXCLUDE</variable>
                                         </entry>
+                                </hbox>
+                                <hseparator></hseparator>
+                                <hbox>
+                                        <text width-request="135" label="Schedule:"></text>
+                                        <text space-expand="false" label="Every"></text>
+                                        <spinbutton range-min="1" range-max="365" editable="no" space-expand="true" space-fill="true" tooltip-text="Days">
+                                                <variable>BC_DAYS</variable>
+                                                <default>'"$BC_DAYS"'</default>
+                                        </spinbutton>
+                                        <text label="days at"></text>
+                                        <comboboxtext tooltip-text="Hour">
+                                                <variable>BC_HOUR</variable>
+                                                <default>'"$BC_HOUR"'</default>
+                                                <input>for h in {00..23}; do echo $h; done</input>
+                                        </comboboxtext>
+                                        <text label=":"></text>
+                                        <comboboxtext tooltip-text="Minutes">
+                                                <variable>BC_MIN</variable>
+                                                <default>'"$BC_MIN"'</default>
+                                                <input>for m in {00..59}; do echo $m; done</input>
+                                        </comboboxtext>
+                                        <togglebutton label="Set" tooltip-text="Create or remove a cron job file with the current settings">
+                                                <variable>BC_SCHEDULE</variable>
+                                                '"$(if [ -f /etc/cron.d/starbackup ]; then echo "<default>true</default>"; fi)"'
+                                                <action>bash -c "source /tmp/wr_functions; set_args && set_schedule"</action>
+                                        </togglebutton>
                                 </hbox>
                                 <hseparator></hseparator>
                                 <checkbox label="Generate configuration file" tooltip-text="Generate configuration file in case of successful backup">
@@ -663,7 +728,7 @@ If you want spaces in mountpoints replace them with //">
                                                                 <action>if true enable:RS_THREADS</action>
                                                                 <action>if false disable:RS_THREADS</action>
                                                         </togglebutton>
-                                                        <spinbutton range-min="1" range-max="'"$(nproc --all)"'" tooltip-text="Specify the number of threads for multi-core decompression" sensitive="false">
+                                                        <spinbutton range-min="1" range-max="'"$(nproc --all)"'" editable="no" tooltip-text="Specify the number of threads for multi-core decompression" sensitive="false">
                                                                 <variable>RS_THREADS</variable>
                                                                 <default>"'"$(nproc --all)"'"</default>
                                                         </spinbutton>
@@ -773,7 +838,7 @@ lost+found">
                                 <variable>BTN_RUN</variable>
                                 <action>bash -c "source /tmp/wr_functions; set_args && run_main &"</action>
                         </button>
-                        <button tooltip-text="Kill the process" sensitive="false">
+                        <button tooltip-text="Abort" sensitive="false">
                                 <input file stock="gtk-stop"></input>
                                 <variable>BTN_CANCEL</variable>
                                 <label>Cancel</label>

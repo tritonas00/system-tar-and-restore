@@ -360,7 +360,7 @@ if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ] && [ -n "$BRhomedir" ] && [ ! "$BR
 fi
 
 # Set default multi-core threads for Backup and Restore mode
-if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcore" ] && [ -z "$BRthreads" ]; then
+if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcore" ] && [[ ! "$BRthreads" == [1-"$(nproc --all)"] ]]; then
   BRthreads="$(nproc --all)"
 fi
 

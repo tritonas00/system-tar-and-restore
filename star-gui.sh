@@ -165,7 +165,11 @@ set_args() {
   elif [ "$BR_TAB" = "1" ]; then
     # Restore mode arguments
     if [ "$RT_TAB" = "0" ]; then
-      SCR_ARGS=(-i 1 -jq -f "$RS_ARCHIVE")
+      SCR_ARGS=(-i 1 -jq)
+
+      if [ -n "$RS_ARCHIVE" ]; then
+        SCR_ARGS+=(-f "$RS_ARCHIVE")
+      fi
 
       if [ -n "$RS_PASSPHRASE" ]; then
         SCR_ARGS+=(-P "$RS_PASSPHRASE")

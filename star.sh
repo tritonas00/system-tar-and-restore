@@ -2114,7 +2114,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
 
   print_msg "\nGenerating fstab"
   # Save the old fstab first
-  cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old
+  if [ -f /mnt/target/etc/fstab ]; then cp /mnt/target/etc/fstab /mnt/target/etc/fstab-old; fi
   generate_fstab > /mnt/target/etc/fstab
   cat /mnt/target/etc/fstab
   detect_initramfs_prefix

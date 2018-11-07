@@ -60,7 +60,7 @@ fi
 echo "$BRversion"
 
 # Set arguments and help page
-BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaMr:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:WFLz:T:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,use-genkernel,passphrase:,encryption:,override,clean,multi-core,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,ignore-efi,efistub,bootctl,threads:,src-dir:,help" -n "$1" -- "$@")"
+BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaM:r:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:WFLT:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,use-genkernel,passphrase:,encryption:,override,clean,mc-threads:,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,ignore-efi,efistub,bootctl,src-dir:,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -82,6 +82,8 @@ while true; do
         if [ -n "$BR_USER_OPTS" ]; then BRuseropts="$BR_USER_OPTS"; fi
         if [ -n "$BRonlyhidden" ]; then BRhomedir="1"; fi
         if [ -n "$BRnohome" ]; then BRhomedir="2"; fi
+        if [ -n "$BRmcore" ] && [ -z "$BRthreads" ]; then BRmcthreads="$(nproc --all)"; fi
+        if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then BRmcthreads="$BRthreads"; fi
       fi
       shift 2
     ;;
@@ -111,10 +113,6 @@ while true; do
     ;;
     -E|--encryption)
       BRencmethod="$2"
-      shift 2
-    ;;
-    -z|--threads)
-      BRthreads="$2"
       shift 2
     ;;
     -T|--src-dir)
@@ -149,9 +147,9 @@ while true; do
       BRclean="y"
       shift
     ;;
-    -M|--multi-core)
-      BRmcore="y"
-      shift
+    -M|--mc-threads)
+      BRmcthreads="$2"
+      shift 2
     ;;
     -r|--root)
       BRroot="$2"
@@ -252,8 +250,7 @@ Backup Mode:
 
   Archiver Options:
     -c, --compression        Compression type: gzip bzip2 xz none
-    -M, --multi-core         Enable multi-core compression via pigz, pbzip2 or pxz
-    -z, --threads            Specify the number of threads for multi-core compression
+    -M, --mc-threads         Enable multi-core compression via pigz, pbzip2 or pxz. Specify number of threads
 
   Encryption Options:
     -E, --encryption         Encryption method: openssl gpg
@@ -293,8 +290,7 @@ Restore/Transfer Mode:
     -y, --username           Ftp/http username
     -p, --password           Ftp/http password
     -P, --passphrase         Passphrase for decryption
-    -M, --multi-core         Enable multi-core decompression via pbzip2
-    -z, --threads            Specify the number of threads for multi-core decompression
+    -M, --mc-threads         Enable multi-core decompression via pbzip2. Specify number of threads
 
   Transfer Mode:
     -H, --home-dir	     Home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
@@ -359,9 +355,9 @@ if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ] && [ -n "$BRhomedir" ] && [ ! "$BR
   print_err "[${RED}ERROR${NORM}] Wrong /home directory option: $BRhomedir. Available options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)" 0
 fi
 
-# Set default multi-core threads for Backup and Restore mode
-if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcore" ] && [[ ! "$BRthreads" == [1-"$(nproc --all)"] ]]; then
-  BRthreads="$(nproc --all)"
+# Check multi-core threads for Backup and Restore mode
+if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcthreads" ] && [[ ! "$BRmcthreads" == [1-"$(nproc --all)"] ]]; then
+  print_err "[${RED}ERROR${NORM}] Wrong threads number: $BRmcthreads. Available options: 1-$(nproc --all)" 0
 fi
 
 # Add tar/rsync user options to the main array, replace any // with space, add only options starting with -
@@ -466,7 +462,7 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRoverride" ]; then echo BRoverride=\"Yes\"; fi
     if [ -n "$BRencpass" ]; then echo -e "BRencmethod=\"$BRencmethod\"\nBRencpass=\"$BRencpass\""; fi
     if [ -n "$BRclean" ]; then echo BRclean=\"Yes\"; fi
-    if [ -n "$BRmcore" ]; then echo -e "BRmcore=\"Yes\"\nBRthreads=\"$BRthreads\""; fi
+    if [ -n "$BRmcthreads" ]; then echo BRmcthreads=\"$BRmcthreads\"; fi
     if [ -n "$BRsrc" ] && [ ! "$BRsrc" = "/" ]; then echo BRsrc=\"$BRsrcfull\"; fi
   }
 
@@ -495,13 +491,13 @@ if [ "$BRmode" = "0" ]; then
     print_err "[${RED}ERROR${NORM}] Wrong encryption method: $BRencmethod. Available options: openssl gpg" 0
   fi
 
-  if [ -n "$BRmcore" ] && [ -z "$BRcompression" ]; then
+  if [ -n "$BRmcthreads" ] && [ -z "$BRcompression" ]; then
     print_err "[${RED}ERROR${NORM}] You must specify compression type" 0
-  elif [ -n "$BRmcore" ] && [ "$BRcompression" = "gzip" ] && [ -z "$(which pigz 2>/dev/null)" ]; then
+  elif [ -n "$BRmcthreads" ] && [ "$BRcompression" = "gzip" ] && [ -z "$(which pigz 2>/dev/null)" ]; then
     print_err "[${RED}ERROR${NORM}] Package pigz is not installed. Install the package and re-run the script" 0
-  elif [ -n "$BRmcore" ] && [ "$BRcompression" = "bzip2" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
+  elif [ -n "$BRmcthreads" ] && [ "$BRcompression" = "bzip2" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
     print_err "[${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script" 0
-  elif [ -n "$BRmcore" ] && [ "$BRcompression" = "xz" ] && [ -z "$(which pxz 2>/dev/null)" ]; then
+  elif [ -n "$BRmcthreads" ] && [ "$BRcompression" = "xz" ] && [ -z "$(which pxz 2>/dev/null)" ]; then
     print_err "[${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script" 0
   fi
 
@@ -519,24 +515,24 @@ if [ "$BRmode" = "0" ]; then
   fi
 
   # Set tar compression options and backup file extension
-  if [ "$BRcompression" = "gzip" ] && [ -n "$BRmcore" ]; then
-    BRmainopts=(-c -I "pigz -p$BRthreads" -vpf)
+  if [ "$BRcompression" = "gzip" ] && [ -n "$BRmcthreads" ]; then
+    BRmainopts=(-c -I "pigz -p$BRmcthreads" -vpf)
     BRext="tar.gz"
-    mcinfo="(pigz $BRthreads threads)"
+    mcinfo="(pigz $BRmcthreads threads)"
   elif [ "$BRcompression" = "gzip" ]; then
     BRmainopts=(cvpzf)
     BRext="tar.gz"
-  elif [ "$BRcompression" = "xz" ] && [ -n "$BRmcore" ]; then
-    BRmainopts=(-c -I "pxz -T$BRthreads" -vpf)
+  elif [ "$BRcompression" = "xz" ] && [ -n "$BRmcthreads" ]; then
+    BRmainopts=(-c -I "pxz -T$BRmcthreads" -vpf)
     BRext="tar.xz"
-    mcinfo="(pxz $BRthreads threads)"
+    mcinfo="(pxz $BRmcthreads threads)"
   elif [ "$BRcompression" = "xz" ]; then
     BRmainopts=(cvpJf)
     BRext="tar.xz"
-  elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcore" ]; then
-    BRmainopts=(-c -I "pbzip2 -p$BRthreads" -vpf)
+  elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcthreads" ]; then
+    BRmainopts=(-c -I "pbzip2 -p$BRmcthreads" -vpf)
     BRext="tar.bz2"
-    mcinfo="(pbzip2 $BRthreads threads)"
+    mcinfo="(pbzip2 $BRmcthreads threads)"
   elif [ "$BRcompression" = "bzip2" ]; then
     BRmainopts=(cvpjf)
     BRext="tar.bz2"
@@ -730,11 +726,11 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRfiletype="gzip compressed"
       BRreadopts=(tfz)
       BRmainopts=(xvpfz)
-    elif echo "$BRtype" | grep -q -w bzip2 && [ -n "$BRmcore" ]; then
+    elif echo "$BRtype" | grep -q -w bzip2 && [ -n "$BRmcthreads" ]; then
       BRfiletype="bzip2 compressed"
-      mcinfo="(pbzip2 $BRthreads threads)"
-      BRreadopts=(-I "pbzip2 --ignore-trailing-garbage=1 -p$BRthreads" -tf)
-      BRmainopts=(-I "pbzip2 --ignore-trailing-garbage=1 -p$BRthreads" -xvpf)
+      mcinfo="(pbzip2 $BRmcthreads threads)"
+      BRreadopts=(-I "pbzip2 --ignore-trailing-garbage=1 -p$BRmcthreads" -tf)
+      BRmainopts=(-I "pbzip2 --ignore-trailing-garbage=1 -p$BRmcthreads" -xvpf)
     elif echo "$BRtype" | grep -q -w bzip2; then
       BRfiletype="bzip2 compressed"
       BRreadopts=(tfj)
@@ -1686,7 +1682,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       detect_filetype
       if [ "$BRfiletype" = "wrong" ]; then
         print_err "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase" 0
-      elif [ -n "$BRmcore" ] && [ "$BRfiletype" = "bzip2 compressed" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
+      elif [ -n "$BRmcthreads" ] && [ "$BRfiletype" = "bzip2 compressed" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
         print_err "[${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script" 0
       fi
     fi
@@ -1965,7 +1961,7 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
         detect_filetype
         if [ "$BRfiletype" = "wrong" ]; then
           print_err "[${RED}ERROR${NORM}] Invalid file type or wrong passphrase" 1
-        elif [ -n "$BRmcore" ] && [ "$BRfiletype" = "bzip2 compressed" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
+        elif [ -n "$BRmcthreads" ] && [ "$BRfiletype" = "bzip2 compressed" ] && [ -z "$(which pbzip2 2>/dev/null)" ]; then
           print_err "[${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script" 1
         fi
       fi

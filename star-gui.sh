@@ -40,6 +40,8 @@ if [ -n "$BRNAME" ]; then BRname="$BRNAME"; fi
 if [ -n "$BR_USER_OPTS" ]; then BRuseropts="$BR_USER_OPTS"; fi
 if [ -n "$BRonlyhidden" ]; then BRhomedir="1"; fi
 if [ -n "$BRnohome" ]; then BRhomedir="2"; fi
+if [ -n "$BRmcore" ] && [ -z "$BRthreads" ]; then BRmcthreads="$(nproc --all)"; fi
+if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then BRmcthreads="$BRthreads"; fi
 
 # Export basic vars from configuration file, set defaults if not given
 if [ -n "$BRname" ]; then
@@ -80,8 +82,8 @@ else
   export BC_ENCRYPTION="none"
 fi
 
-if [ -n "$BRthreads" ]; then
-  export BC_THREADS="$BRthreads"
+if [ -n "$BRmcthreads" ]; then
+  export BC_THREADS="$BRmcthreads"
 else
   BC_THREADS="$(nproc --all)"
 fi
@@ -147,7 +149,7 @@ set_args() {
     fi
 
     if [ "$BC_MULTICORE" = "true" ] && [ ! "$BC_COMPRESSION" = "none" ]; then
-      SCR_ARGS+=(-M -z "$BC_THREADS")
+      SCR_ARGS+=(-M "$BC_THREADS")
     fi
 
     if [ "$BC_GENERATE" = "true" ]; then
@@ -188,7 +190,7 @@ set_args() {
       fi
 
       if [ "$RS_MULTICORE" = "true" ]; then
-        SCR_ARGS+=(-M -z "$RS_THREADS")
+        SCR_ARGS+=(-M "$RS_THREADS")
       fi
 
     # Transfer mode arguments
@@ -450,15 +452,15 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                         <togglebutton space-expand="true" label="Multi-Core" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
                                                                 '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                                 <variable>BC_MULTICORE</variable>
-                                                                '"$(if [ -n "$BRmcore" ]; then echo "<default>true</default>"; fi)"'
+                                                                '"$(if [ -n "$BRmcthreads" ]; then echo "<default>true</default>"; fi)"'
                                                                 <action>if true enable:BC_THREADS</action>
                                                                 <action>if false disable:BC_THREADS</action>
                                                         </togglebutton>
                                                         <spinbutton space-fill="true" range-min="1" range-max="'"$(nproc --all)"'" editable="no" tooltip-text="Specify the number of threads for multi-core compression">
-                                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcore" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                                '"$(if [ "$BC_COMPRESSION" = "none" ] || [ -z "$BRmcthreads" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                                 <variable>BC_THREADS</variable>
                                                                 <default>'"$BC_THREADS"'</default>
-                                                                '"$(if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then echo "<default>$BRthreads</default>"; fi)"'
+                                                                '"$(if [ -n "$BRmcthreads" ]; then echo "<default>$BRmcthreads</default>"; fi)"'
                                                         </spinbutton>
                                                 </hbox>
                                                 <entry visibility="false" tooltip-text="Set passphrase for encryption">

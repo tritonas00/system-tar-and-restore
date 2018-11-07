@@ -514,8 +514,7 @@ lost+found">
                                 </hbox>
                                 <hseparator></hseparator>
                                 <hbox>
-                                        <text width-request="135" label="Schedule:"></text>
-                                        <text space-expand="false" label="Every"></text>
+                                        <text space-expand="false" width-request="135" label="Run Every:"></text>
                                         <spinbutton range-min="1" range-max="365" editable="no" space-expand="true" space-fill="true" tooltip-text="Days">
                                                 <variable>BC_DAYS</variable>
                                                 <default>'"$BC_DAYS"'</default>

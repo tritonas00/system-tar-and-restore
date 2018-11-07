@@ -356,8 +356,10 @@ if [ "$BRmode" = "0" ] || [ "$BRmode" = "2" ] && [ -n "$BRhomedir" ] && [ ! "$BR
 fi
 
 # Check multi-core threads for Backup and Restore mode
-if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcthreads" ] && [[ ! "$BRmcthreads" == [1-"$(nproc --all)"] ]]; then
-  print_err "[${RED}ERROR${NORM}] Wrong threads number: $BRmcthreads. Available options: 1-$(nproc --all)" 0
+if [ "$BRmode" = "0" ] || [ "$BRmode" = "1" ] && [ -n "$BRmcthreads" ]; then
+  if [[ ! "$BRmcthreads" =~ ^[0-9]+$ ]] || [ "$BRmcthreads" -lt 1 ] || [ "$BRmcthreads" -gt "$(nproc --all)" ]; then
+    print_err "[${RED}ERROR${NORM}] Wrong threads number: $BRmcthreads. Available options: 1-$(nproc --all)" 0
+  fi
 fi
 
 # Add tar/rsync user options to the main array, replace any // with space, add only options starting with -

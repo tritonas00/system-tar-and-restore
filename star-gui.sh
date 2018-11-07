@@ -85,7 +85,7 @@ fi
 if [ -n "$BRmcthreads" ]; then
   export BC_THREADS="$BRmcthreads"
 else
-  BC_THREADS="$(nproc --all)"
+  export BC_THREADS="$(nproc --all)"
 fi
 
 # Set user tar options if given from configuration file, separate entries

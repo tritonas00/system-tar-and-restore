@@ -60,7 +60,7 @@ fi
 echo "$BRversion"
 
 # Set arguments and help page
-BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oaM:r:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:WFLT:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,use-genkernel,passphrase:,encryption:,override,clean,mc-threads:,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,ignore-efi,efistub,bootctl,src-dir:,help" -n "$1" -- "$@")"
+BRargs="$(getopt -o "i:d:n:c:u:H:jqvgDP:E:oa:M:r:e:l:s:b:h:G:S:f:y:p:R:m:k:t:B:WFLT:" -l "mode:,destination:,filename:,compression:,user-opts:,home-dir:,no-color,quiet,verbose,generate,use-genkernel,passphrase:,encryption:,override,clean:,mc-threads:,root:,esp:,esp-mpoint:,swap:,boot:,home:,grub:,syslinux:,file:,username:,password:,rootsubvol:,mount-opts:,kernel-opts:,other-parts:,other-subvols:,ignore-efi,efistub,bootctl,src-dir:,help" -n "$1" -- "$@")"
 
 if [ "$?" -ne "0" ]; then
   echo "See star.sh --help"
@@ -84,6 +84,7 @@ while true; do
         if [ -n "$BRnohome" ]; then BRhomedir="2"; fi
         if [ -n "$BRmcore" ] && [ -z "$BRthreads" ]; then BRmcthreads="$(nproc --all)"; fi
         if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then BRmcthreads="$BRthreads"; fi
+        if [ "$BRclean" = "Yes" ]; then BRclean="0"; fi
       fi
       shift 2
     ;;
@@ -144,8 +145,8 @@ while true; do
       shift
     ;;
     -a|--clean)
-      BRclean="y"
-      shift
+      BRclean="$2"
+      shift 2
     ;;
     -M|--mc-threads)
       BRmcthreads="$2"
@@ -258,7 +259,7 @@ Backup Mode:
 
   Misc Options:
     -g, --generate           Generate configuration file (in case of successful backup)
-    -a, --clean              Remove older backups in the destination directory
+    -a, --clean              Delete older backups in the destination directory. Specify number of latest backups to keep
     -T, --src-dir            Specify an alternative source directory to create a non-system backup archive
 
 Restore/Transfer Mode:
@@ -425,9 +426,9 @@ if [ "$BRmode" = "0" ]; then
       if [ -n "$BRgrub" ] && [ -n "$BRsyslinux" ] && [ -n "$BRefibootmgr" ] && [ -n "$BRbootctl" ]; then echo "None or not supported"; fi
     fi
 
-    # Show older backup directories that we remove later if -a is given
+    # Show older backup directories that we delete later if -a is given
     if [ -n "$BRoldbackups" ] && [ -n "$BRclean" ]; then
-      echo -e "\nREMOVE BACKUPS"
+      echo -e "\nDELETE BACKUPS"
       for backup in "${BRoldbackups[@]}"; do echo "$backup"; done
     fi
   }
@@ -463,7 +464,7 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRquiet" ]; then echo BRquiet=\"Yes\"; fi
     if [ -n "$BRoverride" ]; then echo BRoverride=\"Yes\"; fi
     if [ -n "$BRencpass" ]; then echo -e "BRencmethod=\"$BRencmethod\"\nBRencpass=\"$BRencpass\""; fi
-    if [ -n "$BRclean" ]; then echo BRclean=\"Yes\"; fi
+    if [ -n "$BRclean" ]; then echo BRclean=\"$BRclean\"; fi
     if [ -n "$BRmcthreads" ]; then echo BRmcthreads=\"$BRmcthreads\"; fi
     if [ -n "$BRsrc" ] && [ ! "$BRsrc" = "/" ]; then echo BRsrc=\"$BRsrcfull\"; fi
   }
@@ -501,6 +502,10 @@ if [ "$BRmode" = "0" ]; then
     print_err "[${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script" 0
   elif [ -n "$BRmcthreads" ] && [ "$BRcompression" = "xz" ] && [ -z "$(which pxz 2>/dev/null)" ]; then
     print_err "[${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script" 0
+  fi
+
+  if [[ ! "$BRclean" =~ ^[0-9]+$ ]] || [ "$BRclean" -lt 0 ] && [ -n "$BRclean" ]; then
+    print_err "[${RED}ERROR${NORM}] Wrong backups number: $BRclean" 0
   fi
 
   # Set some defaults if not given by the user
@@ -584,13 +589,13 @@ if [ "$BRmode" = "0" ]; then
     BRtropts+=(--exclude=/home/*)
   fi
 
-  # Check destination for backup directories with older date, strictly check directory name format
+  # Check destination for backup directories with older date, strictly check directory name format, sort and remove the first N items given by the user so we don't delete them
   if [ -n "$BRclean" ]; then
     while read dir; do
       if [ "${dir//[^0-9]/}" -lt "${BRdestination//[^0-9]/}" ]; then # Compare the date numbers
         BRoldbackups+=("$dir")
       fi
-    done < <(find "$(dirname "$BRdestination")" -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
+    done < <(find "$(dirname "$BRdestination")" -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]" | sort -nr | tail -n +$(($BRclean + 1)))
   fi
 
   # Check if backup file already exists and prompt the user to overwrite. If -q is given overwrite automatically

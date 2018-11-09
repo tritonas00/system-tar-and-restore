@@ -42,6 +42,7 @@ if [ -n "$BRonlyhidden" ]; then BRhomedir="1"; fi
 if [ -n "$BRnohome" ]; then BRhomedir="2"; fi
 if [ -n "$BRmcore" ] && [ -z "$BRthreads" ]; then BRmcthreads="$(nproc --all)"; fi
 if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then BRmcthreads="$BRthreads"; fi
+if [ "$BRclean" = "Yes" ]; then BRclean="0"; fi
 
 # Export basic vars from configuration file, set defaults if not given
 if [ -n "$BRname" ]; then
@@ -86,6 +87,12 @@ if [ -n "$BRmcthreads" ]; then
   export BC_THREADS="$BRmcthreads"
 else
   export BC_THREADS="$(nproc --all)"
+fi
+
+if [ -n "$BRclean" ]; then
+  export BC_KEEP="$BRclean"
+else
+  export BC_KEEP="0"
 fi
 
 # Set user tar options if given from configuration file, separate entries
@@ -157,7 +164,7 @@ set_args() {
     fi
 
     if [ "$BC_CLEAN" = "true" ]; then
-      SCR_ARGS+=(-a)
+      SCR_ARGS+=(-a "$BC_KEEP")
     fi
 
     if [ "$BC_OVERRIDE" = "true" ]; then
@@ -538,12 +545,22 @@ lost+found">
                                         </togglebutton>
                                 </hbox>
                                 <hseparator></hseparator>
+                                <hbox>
+                                        <checkbox space-expand="true" space-fill="true" label="Delete older backups" tooltip-text="Delete older backups in the destination directory">
+                                                <variable>BC_CLEAN</variable>
+                                                '"$(if [ -n "$BRclean" ]; then echo "<default>true</default>"; fi)"'
+                                                <action>if true enable:BC_KEEP</action>
+                                                <action>if false disable:BC_KEEP</action>
+                                        </checkbox>
+                                        <text label="Keep last"></text>
+                                        <spinbutton space-expand="false"range-min="0" editable="no" tooltip-text="Number of backups to keep">
+                                                '"$(if [ -z "$BRclean" ]; then echo "<sensitive>false</sensitive>"; fi)"'
+                                                <variable>BC_KEEP</variable>
+                                                <default>'"$BC_KEEP"'</default>
+                                        </spinbutton>
+                                </hbox>
                                 <checkbox label="Generate configuration file" tooltip-text="Generate configuration file in case of successful backup">
                                         <variable>BC_GENERATE</variable>
-                                </checkbox>
-                                <checkbox label="Remove older backups" tooltip-text="Remove older backups in the destination directory">
-                                        <variable>BC_CLEAN</variable>
-                                        '"$(if [ -n "$BRclean" ]; then echo "<default>true</default>"; fi)"'
                                 </checkbox>
                                 <checkbox label="Override options" tooltip-text="Override the default tar options/excludes with user defined ones">
                                         <variable>BC_OVERRIDE</variable>

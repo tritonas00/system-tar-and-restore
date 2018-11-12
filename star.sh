@@ -238,7 +238,7 @@ General Options:
   -v, --verbose              Enable verbose tar/rsync output
   -u, --user-opts            Additional tar/rsync options. See tar/rsync --help
                              If you want spaces in names replace them with //
-  -o, --override             Override the default tar/rsync options with user options (use with -u)
+  -o, --override             Override default tar/rsync options
       --help	             Print this page
 
 Backup Mode:

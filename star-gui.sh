@@ -562,7 +562,7 @@ lost+found">
                                 <checkbox label="Generate configuration file" tooltip-text="Generate configuration file in case of successful backup">
                                         <variable>BC_GENERATE</variable>
                                 </checkbox>
-                                <checkbox label="Override options" tooltip-text="Override the default tar options/excludes with user defined ones">
+                                <checkbox label="Override options" tooltip-text="Override default tar options/excludes">
                                         <variable>BC_OVERRIDE</variable>
                                         '"$(if [ -n "$BRoverride" ]; then echo "<default>true</default>"; fi)"'
                                 </checkbox>
@@ -823,7 +823,7 @@ lost+found">
                                         <action signal="button-release-event">refresh:RT_TEXT</action>
                                         <action signal="key-release-event">refresh:RT_TEXT</action>
                                 </notebook>
-                                <checkbox label="Override options" tooltip-text="Override the default tar/rsync options/excludes with user defined ones">
+                                <checkbox label="Override options" tooltip-text="Override default tar/rsync options/excludes">
                                         <variable>RT_OVERRIDE</variable>
                                 </checkbox>
                                 <checkbox label="Use genkernel" tooltip-text="Use genkernel for initramfs building in Gentoo">

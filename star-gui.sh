@@ -553,7 +553,7 @@ lost+found">
                                                 <action>if false disable:BC_KEEP</action>
                                         </checkbox>
                                         <text label="Keep last"></text>
-                                        <spinbutton space-expand="false"range-min="0" editable="no" tooltip-text="Number of backups to keep">
+                                        <spinbutton range-min="0" editable="no" tooltip-text="Number of backups to keep">
                                                 '"$(if [ -z "$BRclean" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                 <variable>BC_KEEP</variable>
                                                 <default>'"$BC_KEEP"'</default>

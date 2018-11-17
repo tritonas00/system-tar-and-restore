@@ -521,37 +521,21 @@ lost+found">
                                 </hbox>
                                 <hseparator></hseparator>
                                 <hbox>
-                                        <text space-expand="false" width-request="135" label="Run Every:"></text>
-                                        <spinbutton range-min="1" range-max="365" editable="no" space-expand="true" space-fill="true" tooltip-text="Days">
-                                                <variable>BC_DAYS</variable>
-                                                <default>'"$BC_DAYS"'</default>
-                                        </spinbutton>
-                                        <text label="days at"></text>
-                                        <comboboxtext tooltip-text="Hour">
-                                                <variable>BC_HOUR</variable>
-                                                <default>'"$BC_HOUR"'</default>
-                                                <input>for h in {00..23}; do echo $h; done</input>
-                                        </comboboxtext>
-                                        <text label=":"></text>
-                                        <comboboxtext tooltip-text="Minutes">
-                                                <variable>BC_MIN</variable>
-                                                <default>'"$BC_MIN"'</default>
-                                                <input>for m in {00..59}; do echo $m; done</input>
-                                        </comboboxtext>
-                                        <togglebutton label="Set" tooltip-text="Create or remove a cron job file with the current settings">
-                                                <variable>BC_SCHEDULE</variable>
-                                                '"$(if [ -f /etc/cron.d/starbackup ]; then echo "<default>true</default>"; fi)"'
-                                                <action>bash -c "source /tmp/wr_functions; set_args && set_schedule"</action>
-                                        </togglebutton>
-                                </hbox>
-                                <hseparator></hseparator>
-                                <hbox>
-                                        <checkbox space-expand="true" space-fill="true" label="Delete older backups" tooltip-text="Delete older backups in the destination directory">
-                                                <variable>BC_CLEAN</variable>
-                                                '"$(if [ -n "$BRclean" ]; then echo "<default>true</default>"; fi)"'
-                                                <action>if true enable:BC_KEEP</action>
-                                                <action>if false disable:BC_KEEP</action>
-                                        </checkbox>
+                                        <vbox space-expand="true" space-fill="true">
+                                                <checkbox label="Generate configuration file" tooltip-text="Generate configuration file in case of successful backup">
+                                                        <variable>BC_GENERATE</variable>
+                                                </checkbox>
+                                                <checkbox label="Delete older backups" tooltip-text="Delete older backups in the destination directory">
+                                                        <variable>BC_CLEAN</variable>
+                                                        '"$(if [ -n "$BRclean" ]; then echo "<default>true</default>"; fi)"'
+                                                        <action>if true enable:BC_KEEP</action>
+                                                        <action>if false disable:BC_KEEP</action>
+                                                </checkbox>
+                                                <checkbox label="Override options" tooltip-text="Override default tar options/excludes">
+                                                        <variable>BC_OVERRIDE</variable>
+                                                        '"$(if [ -n "$BRoverride" ]; then echo "<default>true</default>"; fi)"'
+                                                </checkbox>
+                                        </vbox>
                                         <text label="Keep last"></text>
                                         <spinbutton range-min="0" editable="no" tooltip-text="Number of backups to keep">
                                                 '"$(if [ -z "$BRclean" ]; then echo "<sensitive>false</sensitive>"; fi)"'
@@ -559,13 +543,34 @@ lost+found">
                                                 <default>'"$BC_KEEP"'</default>
                                         </spinbutton>
                                 </hbox>
-                                <checkbox label="Generate configuration file" tooltip-text="Generate configuration file in case of successful backup">
-                                        <variable>BC_GENERATE</variable>
-                                </checkbox>
-                                <checkbox label="Override options" tooltip-text="Override default tar options/excludes">
-                                        <variable>BC_OVERRIDE</variable>
-                                        '"$(if [ -n "$BRoverride" ]; then echo "<default>true</default>"; fi)"'
-                                </checkbox>
+                                <vbox space-expand="false">
+                                        <frame Schedule>
+                                                <hbox>
+                                                        <text space-expand="false" label="Run Every:"></text>
+                                                        <spinbutton range-min="1" range-max="365" editable="no" space-expand="true" space-fill="true" tooltip-text="Days">
+                                                                <variable>BC_DAYS</variable>
+                                                                <default>'"$BC_DAYS"'</default>
+                                                        </spinbutton>
+                                                        <text label="days at"></text>
+                                                        <comboboxtext tooltip-text="Hour">
+                                                                <variable>BC_HOUR</variable>
+                                                                <default>'"$BC_HOUR"'</default>
+                                                                <input>for h in {00..23}; do echo $h; done</input>
+                                                        </comboboxtext>
+                                                        <text label=":"></text>
+                                                        <comboboxtext tooltip-text="Minutes">
+                                                                <variable>BC_MIN</variable>
+                                                                <default>'"$BC_MIN"'</default>
+                                                                <input>for m in {00..59}; do echo $m; done</input>
+                                                        </comboboxtext>
+                                                        <togglebutton label="Add/Remove" tooltip-text="Create or remove a cron job file with the current settings">
+                                                                <variable>BC_SCHEDULE</variable>
+                                                                '"$(if [ -f /etc/cron.d/starbackup ]; then echo "<default>true</default>"; fi)"'
+                                                                <action>bash -c "source /tmp/wr_functions; set_args && set_schedule"</action>
+                                                        </togglebutton>
+                                                </hbox>
+                                        </frame>
+                                </vbox>
                         </vbox>
                         <vbox shadow-type="0">
                                 <notebook show-tabs="false" show-border="false">

@@ -463,7 +463,7 @@ if [ "$BRmode" = "0" ]; then
     if [ -n "$BRverb" ]; then echo BRverb=\"Yes\"; fi
     if [ -n "$BRquiet" ]; then echo BRquiet=\"Yes\"; fi
     if [ -n "$BRoverride" ]; then echo BRoverride=\"Yes\"; fi
-    if [ -n "$BRencpass" ]; then echo -e "BRencmethod=\"$BRencmethod\"\nBRencpass=\"$BRencpass\""; fi
+    if [ -n "$BRencmethod" ]; then echo -e "BRencmethod=\"$BRencmethod\"\nBRencpass=\"$BRencpass\""; fi
     if [ -n "$BRclean" ]; then echo BRclean=\"$BRclean\"; fi
     if [ -n "$BRmcthreads" ]; then echo BRmcthreads=\"$BRmcthreads\"; fi
     if [ -n "$BRsrc" ] && [ ! "$BRsrc" = "/" ]; then echo BRsrc=\"$BRsrcfull\"; fi

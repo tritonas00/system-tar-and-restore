@@ -482,16 +482,16 @@ if [ "$BRmode" = "0" ]; then
     print_err "[${RED}ERROR${NORM}] Wrong compression type: $BRcompression. Available options: gzip bzip2 xz none" 0
   fi
 
-  if [ -z "$BRencmethod" ] || [ "$BRencmethod" = "none" ] && [ -n "$BRencpass" ]; then
-    print_err "[${RED}ERROR${NORM}] You must specify an encryption method" 0
+  if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ]; then
+    print_err "[${RED}ERROR${NORM}] Wrong encryption method: $BRencmethod. Available options: openssl gpg" 0
   fi
 
-  if [ -z "$BRencpass" ] && [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "none" ]; then
+  if [ -n "$BRencmethod" ] && [ -z "$BRencpass" ]; then
     print_err "[${RED}ERROR${NORM}] You must specify a passphrase" 0
   fi
 
-  if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ] && [ ! "$BRencmethod" = "none" ]; then
-    print_err "[${RED}ERROR${NORM}] Wrong encryption method: $BRencmethod. Available options: openssl gpg" 0
+  if [ -n "$BRencpass" ] && [ -z "$BRencmethod" ]; then
+    print_err "[${RED}ERROR${NORM}] You must specify an encryption method" 0
   fi
 
   if [ -n "$BRmcthreads" ] && [ -z "$BRcompression" ]; then

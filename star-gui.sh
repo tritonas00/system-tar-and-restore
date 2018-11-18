@@ -143,8 +143,12 @@ set_args() {
       SCR_ARGS+=(-H 2)
     fi
 
-    if [ ! "$BC_ENCRYPTION" = "none" ] && [ -n "$BC_PASSPHRASE" ]; then
-      SCR_ARGS+=(-E "$BC_ENCRYPTION" -P "$BC_PASSPHRASE")
+    if [ ! "$BC_ENCRYPTION" = "none" ]; then
+      SCR_ARGS+=(-E "$BC_ENCRYPTION")
+    fi
+
+    if [ -n "$BC_PASSPHRASE" ]; then
+      SCR_ARGS+=(-P "$BC_PASSPHRASE")
     fi
 
     set -f

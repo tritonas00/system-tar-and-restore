@@ -322,7 +322,7 @@ abort() {
     exit
   elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
     post_umt="y"
-    clean_unmount 2>/dev/null
+    clean_unmount 2>>/tmp/wr_log
   fi
 }
 trap abort SIGTERM

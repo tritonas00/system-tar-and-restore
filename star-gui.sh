@@ -304,9 +304,9 @@ set_args() {
   for arg in "${SCR_ARGS[@]}"; do
     if [ "$quote_arg" = "y" ]; then
       unset quote_arg
-      CMD_ARGS+=(\"$arg\")
+      CMD_ARGS+=(\""$arg"\")
     else
-      CMD_ARGS+=($arg)
+      CMD_ARGS+=("$arg")
     fi
     if [[ "${quote_args[@]}" =~ "${arg}" ]]; then
       quote_arg="y"
@@ -322,7 +322,7 @@ set_schedule() {
   fi
 
   if [ "$BC_SCHEDULE" = "true" ]; then
-    echo $BC_MIN $BC_HOUR \*/$BC_DAYS \* \* root \""$(pwd)"\"/./star.sh ${CMD_ARGS[@]} > /etc/cron.d/starbackup && echo "$sch_info" > /tmp/wr_proc
+    echo $BC_MIN $BC_HOUR \*/$BC_DAYS \* \* root \""$(pwd)"\"/./star.sh "${CMD_ARGS[@]}" > /etc/cron.d/starbackup && echo "$sch_info" > /tmp/wr_proc
   elif [ "$BC_SCHEDULE" = "false" ] && [ -f /etc/cron.d/starbackup ]; then
     rm -f /etc/cron.d/starbackup && echo "Removed schedule" > /tmp/wr_proc
   fi
@@ -330,7 +330,7 @@ set_schedule() {
 
 run_main() {
   if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
-    echo star.sh ${CMD_ARGS[@]} 1>&2
+    echo star.sh "${CMD_ARGS[@]}" 1>&2
     echo false > /tmp/wr_pid
     setsid ./star.sh "${SCR_ARGS[@]}" 1>&2 2>/tmp/wr_log
     sleep 0.3

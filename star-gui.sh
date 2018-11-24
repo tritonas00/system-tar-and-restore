@@ -301,16 +301,20 @@ set_args() {
 
   # Parse arguments array, write a new one with necessary quoted args so we can export a valid command
   quote_args=(-d -n -T -P -u -f -y -p -m -t -R -B -k)
+  trim_args=(-u -t)
   for arg in "${SCR_ARGS[@]}"; do
-    if [ "$quote_arg" = "y" ]; then
+    if [ -n "$trim_arg" ]; then
+      unset trim_arg
+      arg="$(echo $arg)"
+    fi
+    if [ -n "$quote_arg" ]; then
       unset quote_arg
       CMD_ARGS+=(\""$arg"\")
     else
       CMD_ARGS+=("$arg")
     fi
-    if [[ "${quote_args[@]}" =~ "${arg}" ]]; then
-      quote_arg="y"
-    fi
+    if [[ "${trim_args[@]}" =~ "${arg}" ]]; then trim_arg="y"; fi
+    if [[ "${quote_args[@]}" =~ "${arg}" ]]; then quote_arg="y"; fi
   done
 }
 

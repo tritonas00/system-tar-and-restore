@@ -332,6 +332,14 @@ set_schedule() {
   fi
 }
 
+set_hour() {
+  for h in {00..23}; do echo "$h"; done
+}
+
+set_min() {
+  for m in {00..59}; do echo "$m"; done
+}
+
 run_main() {
   if [ "$BR_TAB" = "0" ] || [ "$BR_TAB" = "1" ]; then
     echo star.sh "${CMD_ARGS[@]}" 1>&2
@@ -563,13 +571,13 @@ lost+found">
                                                         <comboboxtext tooltip-text="Hour">
                                                                 <variable>BC_HOUR</variable>
                                                                 <default>'"$BC_HOUR"'</default>
-                                                                <input>for h in {00..23}; do echo $h; done</input>
+                                                                <input>bash -c "source /tmp/wr_functions; set_hour"</input>
                                                         </comboboxtext>
                                                         <text label=":"></text>
                                                         <comboboxtext tooltip-text="Minutes">
                                                                 <variable>BC_MIN</variable>
                                                                 <default>'"$BC_MIN"'</default>
-                                                                <input>for m in {00..59}; do echo $m; done</input>
+                                                                <input>bash -c "source /tmp/wr_functions; set_min"</input>
                                                         </comboboxtext>
                                                         <togglebutton label="Add/Remove" tooltip-text="Create or remove a cron job file with the current settings">
                                                                 <variable>BC_SCHEDULE</variable>

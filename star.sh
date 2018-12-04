@@ -595,9 +595,9 @@ if [ "$BRmode" = "0" ]; then
       if [ "${dir//[^0-9]/}" -lt "${BRdestination//[^0-9]/}" ]; then # Compare the date numbers
         BRoldbackups+=("$dir")
       fi
-    done < <(find "$(dirname "$BRdestination")" -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]")
-    # Sort array and remove the first N items given by the user so we don't delete them
-    BRoldbackups=("$(for backup in "${BRoldbackups[@]}"; do echo "$backup"; done | sort -r | tail -n +$((BRclean + 1)))")
+    done < <(find "$(dirname "$BRdestination")" -mindepth 1 -maxdepth 1 -type d -iname "Backup-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]" | sort -r)
+    # Remove the first N items given by the user so we don't delete them
+    BRoldbackups=("${BRoldbackups[@]:$BRclean}")
   fi
 
   # Check if backup file already exists and prompt the user to overwrite. If -q is given overwrite automatically

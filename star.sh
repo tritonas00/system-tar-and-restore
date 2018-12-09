@@ -76,15 +76,6 @@ while true; do
       # Source configuration file in Backup mode early so arguments can override it
       if [ -f "$BRconf" ] && [ "$BRmode" = "0" ]; then
         source "$BRconf"
-        # Keep compatibility with older vars - will be removed in the future
-        if [ -n "$BRFOLDER" ]; then BRdestination="$BRFOLDER"; fi
-        if [ -n "$BRNAME" ]; then BRname="$BRNAME"; fi
-        if [ -n "$BR_USER_OPTS" ]; then BRuseropts="$BR_USER_OPTS"; fi
-        if [ -n "$BRonlyhidden" ]; then BRhomedir="1"; fi
-        if [ -n "$BRnohome" ]; then BRhomedir="2"; fi
-        if [ -n "$BRmcore" ] && [ -z "$BRthreads" ]; then BRmcthreads="$(nproc --all)"; fi
-        if [ -n "$BRmcore" ] && [ -n "$BRthreads" ]; then BRmcthreads="$BRthreads"; fi
-        if [ "$BRclean" = "Yes" ]; then BRclean="0"; fi
       fi
       shift 2
     ;;

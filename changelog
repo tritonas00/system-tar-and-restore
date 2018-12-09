@@ -1,3 +1,24 @@
+7.0
+Major project cleanup. Completes the rewrite started with 6.0
+
+  introduced new variable names see backup.conf for changes
+  simplified /home directory options, see star.sh --help or backup.conf
+  simplified multicore options, see star.sh --help or backup.conf
+  simplified backup.conf sourcing method see star.sh --help or README.md
+  simplified clean_unmount and made it standalone
+  enhanced deleting older backups - you can now specify the number of latest backups to keep
+  accept non-empty target root partition without extra argument
+  genkernel on gentoo is now optional, use -D, --use-genkernel in Restore/Transfer mode το use it
+  properly clarified error/warning/info messages
+  clarified some arguments
+  cleaned up star.sh output
+  nicer progress bar
+  unified distro detection method
+  gui wrapper: added cron schedule backup option
+  gui wrapper: proper cancelling/cleaning method
+  gui wrapper: show generated command in terminal
+  code cleanup and re-ordering
+
 6.9
   added pbzip2 parallel decompression support (thanks to 0rinsb3lt)
   simplified multi-core threads number logic

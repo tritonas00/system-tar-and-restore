@@ -1,5 +1,5 @@
 7.0
-Major project cleanup. Completes the rewrite started with 6.0
+  Major project cleanup. Completes the rewrite started with 6.0
 
   introduced new variable names see backup.conf for changes
   simplified /home directory options, see star.sh --help or backup.conf

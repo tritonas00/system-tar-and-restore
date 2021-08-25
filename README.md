@@ -14,22 +14,22 @@ System Tar & Restore
 
 ### ABOUT
 
-System tar & restore contains two bash scripts, the main program **star.sh** and a gui wrapper **star-gui.sh**.  
+System tar & restore contains two bash scripts, the main program **star.sh** and a gui wrapper **star-gui.sh**.
 Three modes are available: Backup, Restore and Transfer.
 
-Supported distributions: Arch, Debian/Ubuntu, Fedora, openSUSE, Gentoo, Mandriva/Mageia          
+Supported distributions: Arch, Debian/Ubuntu, Fedora, openSUSE, Gentoo, Mandriva/Mageia
 
-[Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)  
+[Stable Releases](https://github.com/tritonas00/system-tar-and-restore/releases)
 
 ### DISTRIBUTION PACKAGES
 
-**Archlinux**  
+**Archlinux**
 See the [wiki page](https://wiki.archlinux.org/index.php/System-tar-and-restore).
 
-**Gentoo**  
+**Gentoo**
 The package is provided by the <code>gentoo-el</code> overlay. You can install it with the following commands as root. (you need to have `layman` installed and configured)
 
-    layman -a gentoo-el  
+    layman -a gentoo-el
     emerge app-backup/system-tar-and-restore
 
 ### REQUIREMENTS
@@ -56,7 +56,7 @@ With this mode you can make a tar backup archive of your system. You can define:
 - **Archive filename:** A desired name for the backup archive. Default is <code>Backup-$(hostname)-$(date +%Y%m%d-%H%M%S)</code>.
 - **Destination directory:** Set where you want to save the backup archive. Default is <code>/</code>.
 - **Home directory:** You have three options: fully include it, keep only it's hidden files and folders (which are necessary to login and keep basic settings) or completely exclude it (in case it's located in separate partition and you want to use that in restore mode).
-- **Compression:** You can choose between gzip, bzip2, xz and none (for no compression). Gzip should be fine.
+- **Compression:** You can choose between gzip, bzip2, xz, zstd and none (for no compression). Gzip should be fine.
 - **Encryption method and passphrase:** Select encryption method (openssl or gpg) and enter a passphrase if you want to encrypt the archive.
 - **Archiver options:** You can pass your own extra options in the archiver. See <code>tar --help</code> for more info.
 
@@ -77,8 +77,8 @@ Boot from a livecd - preferably one of the target (backed up) distro - or anothe
 - **Bootloader:** In BIOS systems you can choose Grub (version 2) or Syslinux and the target device. If you select a raid array as bootloader device, the script will install the bootloader in all devices that the array contains. In case of UEFI you can choose Grub, EFISTUB/efibootmgr or Systemd/bootctl. Also you can define additional kernel options.
 - **Modes:** In Restore mode you have to specify the backup archive (local path or remote url). If the archive is encrypted you must specify the passphrase. In Transfer mode you can choose if you want to transfer your entire /home directory, only it's hidden files and folders (which are necessary to login and keep basic settings) or exclude it.
 - **Tar/Rsync options:** You may want to specify any additional options. See <code>tar --help</code> or <code>rsync --help</code> for more info.
- 
-When the process completes check */tmp/restore.log*. 
+
+When the process completes check */tmp/restore.log*.
 
 See <code>star.sh --help</code> for all available options.
 
@@ -86,12 +86,12 @@ See <code>star.sh --help</code> for all available options.
 
 - In case of Gentoo initramfs is optional. You can use <code>-D, --use-genkernel</code> in Restore/Transfer mode to enable initramfs building via genkernel.
 
-- In the target system, the script saves configuration files before generate/modify them with *-old* suffix.  
+- In the target system, the script saves configuration files before generate/modify them with *-old* suffix.
 
 - In case of UEFI, you must boot in UEFI enviroment to restore a system. The script will check if */sys/firmware/efi* exists and act accordingly.
-   You must create an [EFI System Partition](https://wiki.archlinux.org/index.php/EFI_System_Partition). 
+   You must create an [EFI System Partition](https://wiki.archlinux.org/index.php/EFI_System_Partition).
 
-- Some tested Restore/Transfer scenarios are included in the table below.  
+- Some tested Restore/Transfer scenarios are included in the table below.
 
 <details>
 <summary>Tested scenarios</summary>
@@ -122,75 +122,75 @@ See <code>star.sh --help</code> for all available options.
 **Backup Mode:**
 
 - Destination: /home/john/
-- Compression: gzip  
-- Additional options: --exclude=/home/john/.cache/* --warning=none  
+- Compression: gzip
+- Additional options: --exclude=/home/john/.cache/* --warning=none
 
-<code>star.sh -i 0 -d /home/john/ -c gzip -u "--exclude=/home/john/.cache/* --warning=none"</code>  
-
-- Destination: /home/john/
-- Compression: xz  
-- Exclude /home directory  
-
-<code>star.sh -i 0 -d /home/john/ -c xz -H 2</code>   
+<code>star.sh -i 0 -d /home/john/ -c gzip -u "--exclude=/home/john/.cache/* --warning=none"</code>
 
 - Destination: /home/john/
-- Compression: bzip2  
+- Compression: xz
+- Exclude /home directory
+
+<code>star.sh -i 0 -d /home/john/ -c xz -H 2</code>
+
+- Destination: /home/john/
+- Compression: bzip2
 - Keep only /home's hidden files and folders
 - Encryption
 
-<code>star.sh -i 0 -d /home/john/ -c bzip2 -E openssl -P 1234 -H 1</code>   
+<code>star.sh -i 0 -d /home/john/ -c bzip2 -E openssl -P 1234 -H 1</code>
 
 **Restore Mode:**
 
 - root: /dev/sdb1
-- grub  
-- local archive  
+- grub
+- local archive
 
-<code>star.sh -i 1 -r /dev/sdb1 -G /dev/sdb -f /home/john/backup.tar.gz</code>  
+<code>star.sh -i 1 -r /dev/sdb1 -G /dev/sdb -f /home/john/backup.tar.gz</code>
 
 - root: /dev/sdb1, /home: /dev/sdb2, swap: /dev/sdb3
-- syslinux 
+- syslinux
 - remote archive on ftp server
 
 <code>star.sh -i 1 -r /dev/sdb1 -h /dev/sdb2 -s /dev/sdb3 -S /dev/sdb -f ftp://server/backup.tar.xz</code>
 
 - root: /dev/md1, /boot: /dev/md0
-- local archive  
-- syslinux  
+- local archive
+- syslinux
 
-<code>star.sh -i 1 -r /dev/md1 -b /dev/md0 -f /home/john/backup.tar.gz -S /dev/md0</code>  
+<code>star.sh -i 1 -r /dev/md1 -b /dev/md0 -f /home/john/backup.tar.gz -S /dev/md0</code>
 
 - root: /dev/sdb1
-- syslinux 
+- syslinux
 - remote file in protected http server
 
 <code>star.sh -i 1 -r /dev/sdb1 -S /dev/sdb -f http://server/backup.tar.gz -y username -p password</code>
 
 - root: /dev/sda2, esp: /dev/sda1
-- local archive  
+- local archive
 - grub
 
-<code>star.sh -i 1 -r /dev/sda2 -e /dev/sda1 -l /boot/efi -G auto -f /home/john/backup.tar.gz</code>   
+<code>star.sh -i 1 -r /dev/sda2 -e /dev/sda1 -l /boot/efi -G auto -f /home/john/backup.tar.gz</code>
 
 **Transfer Mode:**
 
 - root: /dev/sda1 (ssd)
-- syslinux  
+- syslinux
 - kernel options: nomodeset
 
-<code>star.sh -i 2 -r /dev/sda1 -m discard,errors=remount-ro -S /dev/sda -k nomodeset</code>  
+<code>star.sh -i 2 -r /dev/sda1 -m discard,errors=remount-ro -S /dev/sda -k nomodeset</code>
 
-- root: /dev/mapper/debian-root, /boot: /dev/sdb1  
-- grub  
+- root: /dev/mapper/debian-root, /boot: /dev/sdb1
+- grub
 
-<code>star.sh -i 2 -r /dev/mapper/debian-root -b /dev/sdb1 -G /dev/sdb</code>  
+<code>star.sh -i 2 -r /dev/mapper/debian-root -b /dev/sdb1 -G /dev/sdb</code>
 
 - root: /dev/sda2 (btrfs with compression), /boot: /dev/sda1
 - root subvolume: __active
 - /var, /usr and /home subvolumes
-- syslinux  
+- syslinux
 
-<code>star.sh -i 2 -r /dev/sda2 -m compress=lzo -b /dev/sda1 -S /dev/sda -R __active -B "/var /usr /home"</code>  
+<code>star.sh -i 2 -r /dev/sda2 -m compress=lzo -b /dev/sda1 -S /dev/sda -R __active -B "/var /usr /home"</code>
 
 - root: /dev/sdb2, /boot: /dev/sdb1, /var: /dev/sdb4, /usr: /dev/sdb3
 - transfer /home's hidden files and folders only

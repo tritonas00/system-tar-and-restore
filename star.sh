@@ -241,8 +241,8 @@ Backup Mode:
     -H, --home-dir	     Home directory options: 0 (Include) 1 (Only hidden files and folders) 2 (Exclude)
 
   Archiver Options:
-    -c, --compression        Compression type: gzip bzip2 xz none
-    -M, --mc-threads         Enable multi-core compression via pigz, pbzip2 or pxz. Specify number of threads
+    -c, --compression        Compression type: gzip bzip2 xz zstd none
+    -M, --mc-threads         Enable multi-core compression via pigz, pbzip2, pxz or zstd. Specify number of threads
 
   Encryption Options:
     -E, --encryption         Encryption method: openssl gpg
@@ -469,8 +469,8 @@ if [ "$BRmode" = "0" ]; then
     print_err "[${RED}ERROR${NORM}] Directory does not exist: $BRsrc" 0
   fi
 
-  if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ] && [ ! "$BRcompression" = "bzip2" ] && [ ! "$BRcompression" = "none" ]; then
-    print_err "[${RED}ERROR${NORM}] Wrong compression type: $BRcompression. Available options: gzip bzip2 xz none" 0
+  if [ -n "$BRcompression" ] && [ ! "$BRcompression" = "gzip" ] && [ ! "$BRcompression" = "xz" ] && [ ! "$BRcompression" = "bzip2" ] && [ ! "$BRcompression" = "zstd" ] &&[ ! "$BRcompression" = "none" ]; then
+    print_err "[${RED}ERROR${NORM}] Wrong compression type: $BRcompression. Available options: gzip bzip2 xz zstd none" 0
   fi
 
   if [ -n "$BRencmethod" ] && [ ! "$BRencmethod" = "openssl" ] && [ ! "$BRencmethod" = "gpg" ]; then
@@ -493,6 +493,8 @@ if [ "$BRmode" = "0" ]; then
     print_err "[${RED}ERROR${NORM}] Package pbzip2 is not installed. Install the package and re-run the script" 0
   elif [ -n "$BRmcthreads" ] && [ "$BRcompression" = "xz" ] && [ -z "$(which pxz 2>/dev/null)" ]; then
     print_err "[${RED}ERROR${NORM}] Package pxz is not installed. Install the package and re-run the script" 0
+  elif [ -n "$BRmcthreads" ] && [ "$BRcompression" = "zstd" ] && [ -z "$(which zstd 2>/dev/null)" ]; then
+    print_err "[${RED}ERROR${NORM}] Package zstd is not installed. Install the package and re-run the script" 0
   fi
 
   if [[ ! "$BRclean" =~ ^[0-9]+$ ]] || [ "$BRclean" -lt 0 ] && [ -n "$BRclean" ]; then
@@ -527,6 +529,13 @@ if [ "$BRmode" = "0" ]; then
   elif [ "$BRcompression" = "xz" ]; then
     BRmainopts=(cvpJf)
     BRext="tar.xz"
+  elif [ "$BRcompression" = "zstd" ] && [ -n "$BRmcthreads" ]; then
+    BRmainopts=(-c -I "zstd -T$BRmcthreads" -vpf)
+    BRext="tar.zst"
+    mcinfo="(zstd $BRmcthreads threads)"
+  elif [ "$BRcompression" = "zstd" ]; then
+    BRmainopts=(cvp --zstd --file)
+    BRext="tar.zst"
   elif [ "$BRcompression" = "bzip2" ] && [ -n "$BRmcthreads" ]; then
     BRmainopts=(-c -I "pbzip2 -p$BRmcthreads" -vpf)
     BRext="tar.bz2"
@@ -739,6 +748,10 @@ elif [ "$BRmode" = "1" ] || [ "$BRmode" = "2" ]; then
       BRfiletype="xz compressed"
       BRreadopts=(tfJ)
       BRmainopts=(xvpfJ)
+    elif echo "$BRtype" | grep -q -w zstd; then
+      BRfiletype="zstd compressed"
+      BRreadopts=(tf --zstd)
+      BRmainopts=(xvpf --zstd)
     elif echo "$BRtype" | grep -q -w POSIX; then
       BRfiletype="uncompressed"
       BRreadopts=(tf)

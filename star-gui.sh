@@ -439,6 +439,7 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                                                 <item>gzip</item>
                                                                 <item>bzip2</item>
                                                                 <item>xz</item>
+                                                                <item>zstd</item>
                                                                 <item>none</item>
                                                                 <action condition="command_is_true([ $BC_COMPRESSION = none ] && echo true)">disable:BC_MULTICORE</action>
                                                                 <action condition="command_is_true([ ! $BC_COMPRESSION = none ] && echo true)">enable:BC_MULTICORE</action>
@@ -462,7 +463,7 @@ efibootmgr dosfstools systemd"><label>"Make a backup archive of this system"</la
                                         <vseparator space-expand="false"></vseparator>
                                         <vbox space-expand="true" space-fill="true">
                                                 <hbox>
-                                                        <togglebutton space-expand="true" label="Multi-Core" tooltip-text="Enable multi-core compression via pigz, pbzip2 or pxz">
+                                                        <togglebutton space-expand="true" label="Multi-Core" tooltip-text="Enable multi-core compression via pigz, pbzip2, pxz or zstd">
                                                                 '"$(if [ "$BC_COMPRESSION" = "none" ]; then echo "<sensitive>false</sensitive>"; fi)"'
                                                                 <variable>BC_MULTICORE</variable>
                                                                 '"$(if [ -n "$BRmcthreads" ]; then echo "<default>true</default>"; fi)"'
